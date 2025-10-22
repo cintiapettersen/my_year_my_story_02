@@ -1,0 +1,59 @@
+name: my_year_my_story
+description: "Diário interativo mensal para registro de histórias, emoções e reflexões."
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  fl_chart: ^0.68.0
+  flutter_svg: ^2.0.7
+  smooth_page_indicator: ^1.1.0
+  audioplayers: ^6.0.0
+
+  # ✅ Localização e internacionalização
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
+  easy_localization: ^3.0.5
+
+  # Ícones e fontes
+  cupertino_icons: ^1.0.8
+  google_fonts: ^6.1.0
+  phosphor_flutter: ^2.1.0
+
+  # Autenticação e banco de dados
+  supabase_flutter: ">=1.10.0"
+  shared_preferences: ^2.5.3
+  google_sign_in: ^6.2.1
+
+  # Navegação e links
+  url_launcher: ^6.2.5
+
+  # Imagens e arquivos
+  image_picker: ^1.1.2
+  file_picker: ^10.3.3
+
+  # 📦 Informações do app (versão, nome, etc.)
+  package_info_plus: ^8.0.0
+  iconsax: ^0.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  generate: true
+  uses-material-design: true
+
+  assets:
+    - assets/imagens/
+    - assets/sounds/
+    - assets/sounds/click.mp3
+    - assets/translations/
+

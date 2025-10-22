@@ -1,0 +1,38 @@
+import java.util.Properties
+import java.io.FileInputStream
+
+buildscript {
+
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    dependencies {
+        // ✅ Android Gradle Plugin (ok)
+        classpath "com.android.tools.build:gradle:8.6.0"
+
+        // ✅ Kotlin plugin estável
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0"
+
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+rootProject.buildDir = "../build"
+
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+    project.evaluationDependsOn(":app")
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}
