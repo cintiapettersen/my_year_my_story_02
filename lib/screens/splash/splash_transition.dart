@@ -3,6 +3,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:my_year_my_story/screens/dashboard/dashboard_screen.dart';
 import 'package:my_year_my_story/screens/auth/login_screen.dart';
 import 'package:my_year_my_story/screens/splash/fade_page_transition.dart';
+import 'package:my_year_my_story/supabase/supabase_config.dart';
+import 'package:my_year_my_story/screens/auth/auth_page_view.dart';
+
 
 class SplashTransitionScreen extends StatefulWidget {
   const SplashTransitionScreen({super.key});
@@ -15,6 +18,7 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
   bool _showButtons = false;
 
   @override
@@ -31,13 +35,30 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
       curve: Curves.easeInOut,
     );
 
+    _scaleAnimation = Tween<double>(begin: 0.9, end: 1.05)
+        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+
     _controller.forward();
 
-    // Mostra os botões após a animação
-    Future.delayed(const Duration(seconds: 3), () async {
-      await _controller.reverse();
+    _checkSession();
+  }
+
+  Future<void> _checkSession() async {
+    await Future.delayed(const Duration(seconds: 2));
+
+    try {
+      final currentUser = SupabaseConfig.getCurrentUser();
+      if (currentUser != null) {
+        print('🔐 Sessão ativa detectada (${currentUser.email}) → Dashboard');
+        _goToDashboard();
+      } else {
+        print('🚫 Nenhum usuário ativo. Mostrando botões.');
+        setState(() => _showButtons = true);
+      }
+    } catch (e) {
+      print('⚠️ Erro ao verificar sessão: $e');
       setState(() => _showButtons = true);
-    });
+    }
   }
 
   @override
@@ -47,6 +68,7 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
   }
 
   void _enterAsGuest() {
+    print('🚸 Entrando como convidado...');
     Navigator.of(context).pushReplacement(
       fadePageTransition(
         DashboardScreen(
@@ -59,8 +81,17 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
 
   void _goToLogin() {
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (_) => const LoginScreen(),
+      fadePageTransition(const AuthPageView()),
+    );
+  }
+
+  void _goToDashboard() {
+    Navigator.of(context).pushReplacement(
+      fadePageTransition(
+        DashboardScreen(
+          month: DateTime.now().month,
+          year: DateTime.now().year,
+        ),
       ),
     );
   }
@@ -74,25 +105,35 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
         child: !_showButtons
             ? FadeTransition(
           opacity: _fadeAnimation,
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset(
-                  'assets/imagens/logo.png',
-                  height: 120,
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  'Um novo capítulo começa…',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w400,
-                    color: Color(0xFFC03B66),
-                    fontFamily: 'Poppins',
+          child: ScaleTransition(
+            scale: _scaleAnimation,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/imagens/logo.png',
+                    height: 120,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Um novo capítulo começa…',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFFC03B66),
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Color(0xFFC03B66),
+                    ),
+                    strokeWidth: 2.5,
+                  ),
+                ],
+              ),
             ),
           ),
         )
@@ -125,13 +166,13 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
             ),
             const SizedBox(height: 60),
 
-            // 🔹 BOTÃO PRINCIPAL — ENTRAR / CRIAR CONTA
+            // 🔹 ENTRAR / CRIAR CONTA
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _goToLogin,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFe2377d),
+                  backgroundColor: const Color(0xFFC03B66),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -150,13 +191,13 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
 
             const SizedBox(height: 15),
 
-            // 🔸 BOTÃO SECUNDÁRIO — EXPLORAR SEM LOGIN
+            // 🔸 EXPLORAR SEM LOGIN
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: _enterAsGuest,
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFFe2377d), width: 2),
+                  side: const BorderSide(color: Color(0xFFC03B66), width: 2),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -166,7 +207,7 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
                   'Explorar sem login',
                   style: TextStyle(
                     fontSize: 16,
-                    color: Color(0xFFe2377d),
+                    color: Color(0xFFC03B66),
                     fontWeight: FontWeight.w600,
                   ),
                 ),

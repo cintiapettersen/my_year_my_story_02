@@ -1,20 +1,23 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 // Import condicional: web usa web_storage_web.dart, mobile usa stub
 import 'web_storage_stub.dart'
 if (dart.library.html) 'web_storage_web.dart';
 
-// Global supabase client instance
-final SupabaseClient supabase = Supabase.instance.client;
+// 🌎 Instância global do cliente Supabase (lazy getter)
+SupabaseClient get supabase => Supabase.instance.client;
 
 class SupabaseConfig {
+  static bool _initialized = false;
+
+  // 🔗 Chaves e URLs do seu projeto Supabase
   static const String supabaseUrl = 'https://abrctowsfsgfxdoszmdq.supabase.co';
   static const String supabaseAnonKey =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFicmN0b3dzZnNnZnhkb3N6bWRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1Nzc5MTksImV4cCI6MjA3MDE1MzkxOX0.ptaOeholjF8dBsXocOsBrSdtYidWVm2BtixsIhE2WF8';
 
-  // Google OAuth Configuration
+  // 🔐 Google OAuth
   static const String googleClientIdWeb =
       '240120649571-4ateuuhpbc36cbcga7ghtnq40hdhuimu.apps.googleusercontent.com';
   static const String googleClientIdAndroid =
@@ -22,48 +25,70 @@ class SupabaseConfig {
   static const String googleClientSecret =
       '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';
 
-  // Multiple redirect URLs for different environments
-  static const String redirectUrl =
+  // 🌎 URLs de redirecionamento
+  static const String supabaseCallbackUrl =
       'https://abrctowsfsgfxdoszmdq.supabase.co/auth/v1/callback';
-  static const String dreamFlowRedirectUrl =
-      'https://l7gbb2ja6zoqkc1yeu48.share.dreamflow.app/';
 
-  static SupabaseClient get client => supabase;
+  static const String appRedirectUrl = 'http://localhost:55078/';
 
+  static SupabaseClient get client => Supabase.instance.client;
+
+  /// 🚀 Inicializa o Supabase (somente uma vez)
   static Future<void> initialize() async {
-    print('🧹 Starting comprehensive cache clearing...');
-    await clearAllCache();
+    if (_initialized) {
+      print('⚙️ Supabase já estava inicializado.');
+      return;
+    }
 
-    print('🔧 Initializing Supabase with URL: $supabaseUrl');
+    print('🚀 Inicializando Supabase...');
 
-    await Supabase.initialize(
-      url: supabaseUrl,
-      anonKey: supabaseAnonKey,
-      authOptions: const FlutterAuthClientOptions(
-        authFlowType: AuthFlowType.pkce,
-      ),
-      debug: true,
-    );
-
-    print('✅ Supabase initialized successfully');
-    await testConnection();
-  }
-
-  static Future<void> testConnection() async {
     try {
-      print('🧪 Testing Supabase connection...');
-      final response = await client.from('users').select('id').limit(1);
-      print('✅ Connection test successful: ${response != null}');
+      await Supabase.initialize(
+        url: supabaseUrl,
+        anonKey: supabaseAnonKey,
+        debug: true,
+        authOptions: const FlutterAuthClientOptions(
+          autoRefreshToken: true,
+          authFlowType: AuthFlowType.pkce,
+        ),
+      );
+
+      _initialized = true;
+      print('✅ Supabase inicializado com sucesso!');
+
+      // 🧠 Testa conexão, mas sem limpar cache (mantém sessão)
+      await testConnection();
     } catch (e) {
-      print('⚠️ Connection test failed: $e');
+      print('❌ Erro ao inicializar Supabase: $e');
+      rethrow;
     }
   }
 
+  /// 🧭 Garante que o Supabase esteja inicializado antes de usar
+  static Future<void> ensureInitialized() async {
+    if (!_initialized) {
+      await initialize();
+    }
+  }
+
+  /// 🔌 Testa conexão com o Supabase
+  static Future<void> testConnection() async {
+    try {
+      print('🧪 Testando conexão com Supabase...');
+      final response = await client.from('users').select('id').limit(1);
+      print('✅ Conexão Supabase OK: ${response != null}');
+    } catch (e) {
+      print('⚠️ Falha ao testar conexão: $e');
+    }
+  }
+
+  /// 👋 Faz logout completo
   static Future<void> signOut() async {
     try {
       await client.auth.signOut();
+      print('👋 Logout realizado com sucesso.');
     } catch (e) {
-      print('Sign out error (ignored): $e');
+      print('⚠️ Erro ao sair da conta: $e');
     }
   }
 
@@ -74,62 +99,65 @@ class SupabaseConfig {
     return await client.auth.updateUser(UserAttributes(data: metadata));
   }
 
-  static Future<void> clearAllCache() async {
-    print('🧹 Starting comprehensive cache clearing process...');
-
-    // Step 1: Clear Supabase auth state
-    try {
-      await Supabase.instance.client.auth.signOut();
-      print('✅ Supabase auth state cleared');
-    } catch (e) {
-      print('⚠️ Error clearing Supabase auth: $e');
+  /// 🧹 Limpeza manual de cache (somente se for chamada explicitamente)
+  static Future<void> clearAllCache({bool silent = false}) async {
+    if (!_initialized) {
+      if (!silent) print('⚠️ Supabase ainda não inicializado. Pulando limpeza.');
+      return;
     }
 
-    // Step 2: Clear SharedPreferences
+    if (!silent) print('🧹 Limpando cache local...');
+
+    try {
+      await Supabase.instance.client.auth.signOut();
+      if (!silent) print('✅ Sessão Supabase limpa.');
+    } catch (_) {
+      if (!silent) print('⚠️ Nenhuma sessão anterior encontrada.');
+    }
+
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
-      print('✅ SharedPreferences cleared');
+      if (!silent) print('✅ SharedPreferences limpo.');
     } catch (e) {
-      print('⚠️ Error clearing SharedPreferences: $e');
+      if (!silent) print('⚠️ Erro ao limpar SharedPreferences: $e');
     }
 
-    // Step 3: Clear browser storage (web only)
     if (kIsWeb) {
       try {
         WebStorage.clear();
-        print('✅ Browser storage cleared');
+        if (!silent) print('✅ Browser storage limpo.');
       } catch (e) {
-        print('⚠️ Error clearing browser storage: $e');
+        if (!silent) print('⚠️ Erro ao limpar browser storage: $e');
       }
-    } else {
-      print('📱 Running on mobile/desktop - skipping browser storage clear');
     }
 
-    print('🎉 Cache clearing completed!');
+    if (!silent) print('🎉 Limpeza concluída!');
   }
 
+  /// 🔧 Limpeza manual e reinicialização (somente para debug)
   static Future<void> manualCacheClear() async {
-    print('🔧 Manual cache clear initiated...');
+    print('🔧 Limpeza manual iniciada...');
     await clearAllCache();
 
     try {
       await Supabase.initialize(
         url: supabaseUrl,
         anonKey: supabaseAnonKey,
+        debug: true,
         authOptions: const FlutterAuthClientOptions(
+          autoRefreshToken: true,
           authFlowType: AuthFlowType.pkce,
         ),
-        debug: true,
       );
-      print('✅ Manual cache clear and reinitialization completed!');
+      print('✅ Reinitialização após limpeza concluída.');
     } catch (e) {
-      print('❌ Error during reinitialization: $e');
-      rethrow;
+      print('❌ Erro ao reinicializar Supabase: $e');
     }
   }
 }
 
+// 🔐 Utilitários de autenticação
 class SupabaseAuth {
   static SupabaseClient get _client => SupabaseConfig.client;
 
@@ -166,22 +194,28 @@ class SupabaseAuth {
 
   static Future<bool> signInWithOAuth(String provider) async {
     try {
+      // 🔍 Detecta automaticamente o ambiente atual (localhost, produção, etc)
+      final redirectUrl = SupabaseConfig.appRedirectUrl;
+
       await _client.auth.signInWithOAuth(
         OAuthProvider.values.firstWhere(
               (p) => p.name == provider,
           orElse: () => OAuthProvider.google,
         ),
-        redirectTo: SupabaseConfig.redirectUrl,
+        redirectTo: redirectUrl,
         authScreenLaunchMode: LaunchMode.externalApplication,
       );
+
+      print('✅ OAuth iniciado com redirectTo: $redirectUrl');
       return true;
     } catch (e) {
-      print('OAuth Error: $e');
+      print('❌ OAuth Error: $e');
       return false;
     }
   }
 }
 
+// 🧠 Funções CRUD e Realtime (mantidas)
 class SupabaseService {
   static SupabaseClient get _client => SupabaseConfig.client;
 

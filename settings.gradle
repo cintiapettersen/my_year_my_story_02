@@ -1,2 +1,3 @@
 include ':app'
-project(':app').projectDir = new File(rootDir, 'android/app/')
+project(':app').projectDir = new File(rootDir, 'androidold/app')
+

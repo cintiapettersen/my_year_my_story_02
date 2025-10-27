@@ -11,6 +11,8 @@ import 'package:my_year_my_story/screens/dashboard/dashboard_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:my_year_my_story/screens/splash/fade_page_transition.dart';
 import 'package:my_year_my_story/screens/auth/signup_screen.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:my_year_my_story/services/google_sign_in_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -26,14 +28,13 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   bool _rememberMe = false;
   bool _isGoogleLoading = false;
-  bool _isLoginSelected = true; // 👈 novo: controla o botão ativo
+  bool _isLoginSelected = true;
 
   @override
   void initState() {
     super.initState();
     _loadRememberedEmail();
 
-    // Preenche automaticamente em modo debug
     if (!kReleaseMode) {
       _emailController.text = 'teste@myyear.com';
       _passwordController.text = '123456';
@@ -167,49 +168,19 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  /// 🌸 Novo fluxo de login com Google — corrigido
   Future<void> _signInWithGoogle() async {
     setState(() => _isGoogleLoading = true);
 
     try {
-      final response = await UserService.signInWithGoogle();
-
-      if (mounted) {
-        if (response['success']) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Login com Google realizado com sucesso!'),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 1),
-            ),
-          );
-
-          await Future.delayed(const Duration(milliseconds: 500));
-          Navigator.of(context).pushReplacement(
-            fadePageTransition(
-              DashboardScreen(
-                month: DateTime.now().month,
-                year: DateTime.now().year,
-              ),
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(response['message'] ?? 'Erro ao entrar com Google.'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
+      await GoogleSignInService.signInWithGoogle(context);
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ao fazer login com Google: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao fazer login com Google: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     } finally {
       if (mounted) setState(() => _isGoogleLoading = false);
     }
@@ -276,7 +247,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 48),
 
-                    // 🌸 Toggle animado entre Entrar / Criar Conta
+                    // 🌸 Toggle Entrar / Criar Conta
                     Container(
                       height: 55,
                       decoration: BoxDecoration(
@@ -293,7 +264,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             curve: Curves.easeInOut,
                             child: Container(
                               width: MediaQuery.of(context).size.width * 0.4,
-                              margin: const EdgeInsets.symmetric(horizontal: 4),
+                              margin:
+                              const EdgeInsets.symmetric(horizontal: 4),
                               decoration: BoxDecoration(
                                 color: LightModeColors.lightSecondary,
                                 borderRadius: BorderRadius.circular(40),

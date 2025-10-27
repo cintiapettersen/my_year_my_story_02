@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'dart:math';
 import 'package:my_year_my_story/widgets/monthly/monthly_page_template.dart';
 import 'package:my_year_my_story/utils/month_colors.dart';
@@ -27,7 +26,7 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
   bool get wantKeepAlive => true;
 
   final supabase = Supabase.instance.client;
-  final player = AudioPlayer();
+  //final player = AudioPlayer();
 
   List<Map<String, dynamic>> skills = [];
   bool isLoading = true;
@@ -111,7 +110,7 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
     }
 
     // ✨ som suave e cor aleatória
-    await player.play(AssetSource('sounds/pop.mp3'));
+    //await player.play(AssetSource('sounds/pop.mp3'));
     final random = Random();
     final colors = categoryColors.values.toList();
     setState(() {

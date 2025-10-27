@@ -8,6 +8,8 @@ import 'package:my_year_my_story/widgets/auth/divider_with_text.dart';
 import 'package:my_year_my_story/services/user_service.dart';
 import 'package:my_year_my_story/screens/auth/login_screen.dart';
 import 'package:my_year_my_story/screens/splash/fade_page_transition.dart';
+import 'package:my_year_my_story/screens/auth/auth_page_view.dart';
+
 
 class SignupScreen extends StatefulWidget {
   final VoidCallback? onLoginTap;
@@ -95,7 +97,7 @@ class _SignupScreenState extends State<SignupScreen> {
           );
           await Future.delayed(const Duration(milliseconds: 800));
           Navigator.of(context).pushReplacement(
-            fadePageTransition(const LoginScreen()),
+            fadePageTransition(const AuthPageView()),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -174,7 +176,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         onPressed: widget.onLoginTap ?? () {
                           Navigator.pushReplacement(
                             context,
-                            fadePageTransition(const LoginScreen()),
+                            fadePageTransition(const AuthPageView()),
                           );
                         },
                       ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:audioplayers/audioplayers.dart';
+//import 'package:audioplayers/audioplayers.dart';
 import 'package:my_year_my_story/widgets/shared/app_bottom_menu.dart';
 import 'package:my_year_my_story/widgets/shared/month_header.dart';
 
@@ -25,11 +25,11 @@ class MonthlyPageTemplate extends StatefulWidget {
 }
 
 class _MonthlyPageTemplateState extends State<MonthlyPageTemplate> {
-  final AudioPlayer _player = AudioPlayer();
+  //final AudioPlayer _player = AudioPlayer();
 
   Future<void> _playClick() async {
     try {
-      await _player.play(AssetSource('sounds/click.mp3'));
+      //await _player.play(AssetSource('sounds/click.mp3'));
     } catch (e) {
       debugPrint('Erro ao tocar som: $e');
     }
@@ -104,7 +104,7 @@ class _MonthlyPageTemplateState extends State<MonthlyPageTemplate> {
 
   @override
   void dispose() {
-    _player.dispose();
+    //_player.dispose();
     super.dispose();
   }
 }

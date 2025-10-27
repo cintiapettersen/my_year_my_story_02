@@ -6,8 +6,8 @@
 build/
 ios/Flutter/.symlinks/
 ios/Pods/
-android/.gradle/
-android/app/build/
+androidold/.gradle/
+androidold/app/build/
 *.iml
 
 # IntelliJ / VSCode

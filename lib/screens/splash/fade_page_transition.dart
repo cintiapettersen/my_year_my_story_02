@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 /// 🌸 Transição personalizada com fade + zoom suave.
-/// Mantém o estilo delicado e poético do app Sonho de Papel.
+/// Mantém o estilo delicado e poético do app My Year, My Story.
 Route fadePageTransition(Widget page) {
   return PageRouteBuilder(
-    transitionDuration: const Duration(milliseconds: 900),
-    reverseTransitionDuration: const Duration(milliseconds: 700),
+    transitionDuration: const Duration(milliseconds: 1200),
+    reverseTransitionDuration: const Duration(milliseconds: 900),
     pageBuilder: (_, __, ___) => page,
     transitionsBuilder: (_, animation, __, child) {
       final curved = CurvedAnimation(
