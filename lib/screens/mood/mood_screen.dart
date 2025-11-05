@@ -113,7 +113,7 @@ class _MoodScreenState extends State<MoodScreen> {
     final int year = widget.year;
 
     return MainScaffold(
-      currentIndex: 3,
+      currentIndex: 4,
       title: 'My Year, my Story ',
       body: SafeArea(
         child: Padding(

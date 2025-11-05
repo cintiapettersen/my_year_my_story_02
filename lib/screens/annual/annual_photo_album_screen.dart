@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_year_my_story/supabase/supabase_config.dart';
-import 'package:my_year_my_story/widgets/shared/main_scaffold.dart'; // 👈 importa o scaffold base
+import 'package:my_year_my_story/widgets/shared/main_scaffold.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class AnnualPhotoAlbumScreen extends StatefulWidget {
   final int month;
@@ -41,7 +42,7 @@ class _AnnualPhotoAlbumScreenState extends State<AnnualPhotoAlbumScreen> {
       if (userId == null) return;
 
       final response = await _supabase
-          .from('monthly_photos') // 👈 tabela de fotos mensais
+          .from('monthly_photos')
           .select('id, month, year, file_path')
           .eq('user_id', userId)
           .eq('year', widget.year);
@@ -53,14 +54,13 @@ class _AnnualPhotoAlbumScreenState extends State<AnnualPhotoAlbumScreen> {
         final path = photo['file_path'] as String?;
         if (path != null) {
           final signedUrl = await _supabase.storage
-              .from('photos') // 👈 bucket
+              .from('photos')
               .createSignedUrl(path, 60 * 60 * 24);
           photo['signed_url'] = signedUrl;
         }
         photosWithUrls.add(photo);
       }
 
-      // Agrupar por mês (máx. 4 fotos)
       final Map<int, List<Map<String, dynamic>>> grouped = {};
       for (final photo in photosWithUrls) {
         final month = photo['month'] as int;
@@ -86,8 +86,8 @@ class _AnnualPhotoAlbumScreenState extends State<AnnualPhotoAlbumScreen> {
     final year = widget.year;
 
     return MainScaffold(
-      currentIndex: 3, // 👈 coloque o índice da aba "Fotos" ou o que for correto no menu
-      title: "Seu Álbum de Fotos $year",
+      currentIndex: 2,
+      title: "album.title".tr(args: [year.toString()]),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _photosByMonth.isEmpty
@@ -97,9 +97,12 @@ class _AnnualPhotoAlbumScreenState extends State<AnnualPhotoAlbumScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Suas memórias do ano registradas aqui, continue fazendo sua história!",
-              style: TextStyle(fontSize: 16, color: Colors.black87),
+            Text(
+              "album.description".tr(),
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.black87,
+              ),
             ),
             const SizedBox(height: 20),
             ..._buildPhotoSections(),
@@ -109,7 +112,6 @@ class _AnnualPhotoAlbumScreenState extends State<AnnualPhotoAlbumScreen> {
     );
   }
 
-
   /// ================== Fallback (nenhuma foto no ano) ==================
   Widget _buildFallback() {
     return Center(
@@ -117,27 +119,67 @@ class _AnnualPhotoAlbumScreenState extends State<AnnualPhotoAlbumScreen> {
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(Icons.photo_album_outlined, size: 80, color: Color(0xFF1fa396)),
-            SizedBox(height: 20),
+          children: [
+            const Icon(Icons.photo_album_outlined, size: 80, color: Color(0xFF1fa396)),
+            const SizedBox(height: 20),
             Text(
-              "Suas fotos mensais vão aparecer aqui 📷✨",
+              "album.empty_title".tr(),
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Text(
-              "Adicione fotos em cada mês para construir\n"
-                  "seu álbum anual automaticamente!",
+              "album.empty_description".tr(),
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 15, color: Colors.black54),
+              style: const TextStyle(fontSize: 15, color: Colors.black54),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE91E63),
+                foregroundColor: Colors.white, // 👉 cor do texto e ícones
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () => _showComingSoonPopup(),
+              child: Text("album.ok_button".tr()),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// ================== Popup ==================
+  void _showComingSoonPopup() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Center(
+          child: Text(
+            "album.popup_title".tr(),
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+        content: Text(
+          "album.popup_content".tr(),
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              "album.ok_button".tr(),
+              style: const TextStyle(color: Color(0xFFE91E63)),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -17,54 +18,66 @@ class GoogleSignInService {
       final redirectUrl = _getRedirectUrl();
       print('🔗 Redirect URL detectado: $redirectUrl');
 
+      // 🔹 Declara variável antes de usá-la
+      late final StreamSubscription<AuthState> authSubscription;
+
+      // 🔹 Listener: aguarda evento de autenticação do Supabase
+      authSubscription = client.auth.onAuthStateChange.listen((data) async {
+        final AuthChangeEvent event = data.event;
+        final Session? session = data.session;
+
+        print('🌀 Evento de autenticação detectado: $event');
+
+        if (event == AuthChangeEvent.signedIn && session?.user != null) {
+          print('🎉 Login concluído com sucesso!');
+          print('👤 ID do usuário: ${session!.user!.id}');
+          print('📧 E-mail: ${session.user!.email}');
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Login realizado com sucesso!')),
+          );
+
+          _goToDashboard(context);
+
+          // ✅ Agora o cancel funciona sem erro
+          await authSubscription.cancel();
+        } else if (event == AuthChangeEvent.signedOut) {
+          print('👋 Usuário saiu da conta.');
+        } else {
+          print('⏳ Aguardando sessão ser criada...');
+        }
+      });
+
+      // 🔹 Inicia o fluxo OAuth
       await client.auth.signInWithOAuth(
         OAuthProvider.google,
         redirectTo: redirectUrl,
         authScreenLaunchMode: LaunchMode.externalApplication,
       );
 
-      print('✅ Fluxo OAuth iniciado com sucesso!');
+      print('✅ Fluxo OAuth iniciado com sucesso. Aguardando retorno...');
 
-      // Aguarda sincronização da sessão (leve aumento para estabilidade)
-      await Future.delayed(const Duration(seconds: 4));
-
-      final user = SupabaseConfig.getCurrentUser();
-
-      if (user != null) {
-        print('🎉 Login bem-sucedido: ${user.email}');
-        _goToDashboard(context);
-      } else {
-        print('⚠️ Usuário não detectado após login. Tentando novamente...');
-        await Future.delayed(const Duration(seconds: 2));
-        final retryUser = SupabaseConfig.getCurrentUser();
-
-        if (retryUser != null) {
-          print('✅ Sessão confirmada na segunda tentativa: ${retryUser.email}');
-          _goToDashboard(context);
-        } else {
-          print('❌ Falha ao autenticar usuário.');
-          _showErrorDialog(context, 'Falha ao autenticar com o Google. Tente novamente.');
-        }
-      }
     } catch (e) {
       print('❌ Erro durante o login com Google: $e');
       _showErrorDialog(context, 'Ocorreu um erro durante o login com o Google.');
     }
   }
 
+
   /// ✨ Define URL de redirecionamento conforme ambiente
   static String _getRedirectUrl() {
     if (kIsWeb) {
-      // 👇 Evita erro "Platform._operatingSystem" e mantém compatibilidade local
-      return 'http://localhost:55078/';
-    } else if (Platform.isAndroid) {
-      return 'io.supabase.flutter://login-callback/';
-    } else if (Platform.isIOS) {
-      return 'com.myyear.mystory://login-callback/';
+      // 🌐 Quando rodar no Chrome, só pra testes
+      // (vai dar erro visual, mas o login do Supabase é validado no painel)
+      return 'https://abrctowsfsgfxdoszmdq.supabase.co/auth/v1/callback';
+    } else if (Platform.isAndroid || Platform.isIOS) {
+      // 📱 Fluxo real do app (mobile)
+      return 'com.myyear.my_year_my_story://login-callback/';
     } else {
-      return 'http://localhost:55078/';
+      return 'https://abrctowsfsgfxdoszmdq.supabase.co/auth/v1/callback';
     }
   }
+
 
   /// 🔒 Logout
   static Future<void> signOut(BuildContext context) async {

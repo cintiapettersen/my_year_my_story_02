@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:easy_localization/easy_localization.dart'; // 👈 Import necessário para usar .tr()
 import 'package:my_year_my_story/screens/dashboard/dashboard_screen.dart';
-import 'package:my_year_my_story/screens/auth/login_screen.dart';
+import 'package:my_year_my_story/screens/auth/auth_page_view.dart';
 import 'package:my_year_my_story/screens/splash/fade_page_transition.dart';
 import 'package:my_year_my_story/supabase/supabase_config.dart';
-import 'package:my_year_my_story/screens/auth/auth_page_view.dart';
-
 
 class SplashTransitionScreen extends StatefulWidget {
   const SplashTransitionScreen({super.key});
@@ -27,29 +26,39 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 4),
     );
 
     _fadeAnimation = CurvedAnimation(
       parent: _controller,
-      curve: Curves.easeInOut,
+      curve: Curves.easeInOutCubic,
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.9, end: 1.05)
-        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+    _scaleAnimation = Tween<double>(begin: 0.9, end: 1.03).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOutCubic,
+      ),
+    );
 
     _controller.forward();
-
     _checkSession();
   }
 
   Future<void> _checkSession() async {
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 4));
 
     try {
-      final currentUser = SupabaseConfig.getCurrentUser();
-      if (currentUser != null) {
-        print('🔐 Sessão ativa detectada (${currentUser.email}) → Dashboard');
+      print('🔎 Verificando sessão existente...');
+
+      await SupabaseConfig.ensureInitialized();
+      final client = SupabaseConfig.client;
+
+      final session = client.auth.currentSession;
+      final user = client.auth.currentUser;
+
+      if (session != null && user != null) {
+        print('🔐 Sessão ativa detectada (${user.email}) → Dashboard');
         _goToDashboard();
       } else {
         print('🚫 Nenhum usuário ativo. Mostrando botões.');
@@ -68,7 +77,6 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
   }
 
   void _enterAsGuest() {
-    print('🚸 Entrando como convidado...');
     Navigator.of(context).pushReplacement(
       fadePageTransition(
         DashboardScreen(
@@ -116,20 +124,22 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
                     height: 120,
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Um novo capítulo começa…',
-                    style: TextStyle(
+
+                  // 🔹 Frase principal traduzida
+                  Text(
+                    'splash.new_chapter'.tr(),
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w400,
                       color: Color(0xFFC03B66),
                       fontFamily: 'Poppins',
                     ),
                   ),
+
                   const SizedBox(height: 20),
-                  CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Color(0xFFC03B66),
-                    ),
+                  const CircularProgressIndicator(
+                    valueColor:
+                    AlwaysStoppedAnimation<Color>(Color(0xFFC03B66)),
                     strokeWidth: 2.5,
                   ),
                 ],
@@ -154,33 +164,36 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
               height: 120,
             ),
             const SizedBox(height: 30),
-            const Text(
-              'Seu diário digital de memórias 💕',
+
+            // 🔹 Subtítulo traduzido
+            Text(
+              'splash.subtitle'.tr(),
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w500,
                 color: Colors.black87,
                 fontFamily: 'Poppins',
               ),
             ),
+
             const SizedBox(height: 60),
 
-            // 🔹 ENTRAR / CRIAR CONTA
+            // 🔸 Botão de Login / Criar Conta
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _goToLogin,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFC03B66),
+                  backgroundColor: const Color(0xFFe2377d),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: const Text(
-                  'Entrar / Criar conta',
-                  style: TextStyle(
+                child: Text(
+                  'splash.login_button'.tr(),
+                  style: const TextStyle(
                     fontSize: 16,
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
@@ -191,7 +204,7 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
 
             const SizedBox(height: 15),
 
-            // 🔸 EXPLORAR SEM LOGIN
+            // 🔸 Botão de Explorar sem login
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
@@ -203,9 +216,9 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: const Text(
-                  'Explorar sem login',
-                  style: TextStyle(
+                child: Text(
+                  'splash.guest_button'.tr(),
+                  style: const TextStyle(
                     fontSize: 16,
                     color: Color(0xFFC03B66),
                     fontWeight: FontWeight.w600,

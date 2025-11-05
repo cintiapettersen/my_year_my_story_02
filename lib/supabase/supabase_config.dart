@@ -192,10 +192,19 @@ class SupabaseAuth {
     await _client.auth.resetPasswordForEmail(email);
   }
 
+  /// 🌸 Login com Google (corrigido para app e web)
   static Future<bool> signInWithOAuth(String provider) async {
     try {
-      // 🔍 Detecta automaticamente o ambiente atual (localhost, produção, etc)
-      final redirectUrl = SupabaseConfig.appRedirectUrl;
+      // Detecta automaticamente o ambiente atual
+      String redirectUrl;
+
+      if (kIsWeb) {
+        // Web usa o callback do Supabase
+        redirectUrl = SupabaseConfig.supabaseCallbackUrl;
+      } else {
+        // Mobile usa o esquema personalizado do app
+        redirectUrl = 'com.myyear.my_year_my_story://login-callback/';
+      }
 
       await _client.auth.signInWithOAuth(
         OAuthProvider.values.firstWhere(

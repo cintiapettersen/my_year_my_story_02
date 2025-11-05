@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:my_year_my_story/services/gratitude_service.dart';
 import 'package:my_year_my_story/supabase/supabase_config.dart';
-import 'package:my_year_my_story/widgets/shared/month_page_template.dart'; // 🌸 novo template
+import 'package:my_year_my_story/widgets/shared/month_page_template.dart';
+import 'package:my_year_my_story/utils/access_control.dart';
+import 'package:my_year_my_story/widgets/shared/show_login_prompt.dart';
+import 'package:my_year_my_story/screens/premium/premium_popup.dart';
 
 class GratitudeWidget extends StatefulWidget {
   final int month;
@@ -56,8 +59,32 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
     final user = SupabaseConfig.client.auth.currentUser;
     final text = _controller.text.trim();
 
-    if (user == null || text.isEmpty) return;
+    if (user == null) {
+      showLoginPrompt(context);
+      return;
+    }
 
+    if (text.isEmpty) return;
+
+    // 🌸 Busca o perfil do usuário no Supabase
+    final profile = await SupabaseConfig.client
+        .from('profiles')
+        .select()
+        .eq('id', user.id)
+        .maybeSingle();
+
+    final userProfile = profile ?? {'plan_type': 'guest'};
+
+    final isPremium = AccessControl.isPremium(userProfile);
+    final isFree = AccessControl.isFree(userProfile);
+
+    // 🚫 Limita usuários free a no máximo 3 registros
+    if (isFree && _gratitudes.length >= 3) {
+      showPremiumPrompt(context);
+      return;
+    }
+
+    // ✅ Usuário premium ou dentro do limite → prossegue
     setState(() => _isLoading = true);
 
     final newList = [..._gratitudes, text];
@@ -73,13 +100,13 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
       setState(() => _gratitudes = newList);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gratidão adicionada com sucesso!')),
+          const SnackBar(content: Text('Gratidão adicionada com sucesso! 💖')),
         );
       }
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erro ao salvar gratidão.')),
+          const SnackBar(content: Text('Erro ao salvar gratidão. 😞')),
         );
       }
     }
@@ -122,11 +149,11 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return MonthPageTemplate( // 🌸 novo template unificado
+    return MonthPageTemplate(
       month: widget.month,
       year: widget.year,
       title: 'Página da Gratidão',
-      description: 'Registre as coisas boas que aconteceram neste mês 💖',
+      description: 'A gratidão nos ajuda a enxergar o lado bom da vida e fortalecer o coração. Registre as coisas boas que aconteceram neste mês 💖',
       child: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(

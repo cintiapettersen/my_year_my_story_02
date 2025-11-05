@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-//import 'package:audioplayers/audioplayers.dart';
 import 'package:intl/intl.dart';
-import 'package:my_year_my_story/utils/month_colors.dart'; // 🌈 importa o arquivo de cores mensais
+import 'package:easy_localization/easy_localization.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'dart:ui' as ui;
+import 'package:my_year_my_story/utils/month_colors.dart'; // 🌈 cores mensais
+import 'package:my_year_my_story/widgets/monthly/dailyluckpage.dart';
 
 class MonthMenu extends StatelessWidget {
   final int month;
@@ -17,83 +20,107 @@ class MonthMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    //final player = AudioPlayer();
+    // 📱 Detecta idioma automaticamente
+    final lang = ui.PlatformDispatcher.instance.locale.languageCode;
+    final locale = lang == 'pt' ? const Locale('pt') : const Locale('en');
 
-    final String monthName = DateFormat.MMMM('pt_BR')
-        .format(DateTime(year, month))
-        .capitalize();
+    // 📅 Nome e data formatados conforme idioma
+    final String monthName =
+    DateFormat.MMMM(locale.languageCode).format(DateTime(year, month)).capitalize();
+    final String formattedDate =
+    DateFormat("d 'de' MMMM 'de' y", locale.languageCode).format(DateTime.now());
 
-    // 🌈 Pega a cor do mês pelo arquivo month_colors.dart
+    // 🌈 Cor dinâmica do mês
     final Color bannerColor = getMonthColor(month);
 
-    // 💕 Janeiro tem texto rosa pink, os outros meses — branco
-    final Color textColor =
-    (month == 1) ? const Color(0xFFE2377D) : Colors.white;
+    // 💕 Janeiro mantém texto rosa
+    final Color textColor = (month == 1) ? const Color(0xFFE2377D) : Colors.black;
 
-    // 🎨 Lista dos cards (mantém suas cores originais)
+    // 🌸 Itens do menu com chaves de tradução
     final List<Map<String, dynamic>> menuItems = [
-      {'title': 'Metas do Mês', 'icon': Icons.flag, 'color': const Color(0xFF679BD3)},
-      {'title': 'Curiosidades sobre Mim', 'icon': Icons.person_outline, 'color': const Color(0xFFDDBFEF)},
-      {'title': 'Quiz Interativo', 'icon': Icons.quiz_outlined, 'color': const Color(0xFFE2377D)},
-      {'title': 'Signos do Mês', 'icon': Icons.star_border_rounded, 'color': const Color(0xFFEA7ACD)},
-      {'title': 'Desenvolvendo Habilidades', 'icon': Icons.trending_up_rounded, 'color': const Color(0xFFCF8EE8)},
-      {'title': 'Você Sabia?', 'icon': Icons.lightbulb_outline, 'color': const Color(0xFFD1C269)},
-      {'title': 'Entrevista do Mês', 'icon': Icons.mic_none_rounded, 'color': const Color(0xFF679BD3)},
-      {'title': 'Minhas Listas Favoritas', 'icon': Icons.list_alt_outlined, 'color': const Color(0xFFDDBFEF)},
-      {'title': 'Página da Gratidão', 'icon': Icons.favorite_border_rounded, 'color': const Color(0xFFE2377D)},
-      {'title': 'Reflexões Mensais', 'icon': Icons.auto_stories_outlined, 'color': const Color(0xFFEA7ACD)},
-      {'title': 'Galeria de Fotos', 'icon': Icons.photo_library_outlined, 'color': const Color(0xFF679BD3)},
+      {'title': 'month_menu.goals', 'icon': PhosphorIconsRegular.sparkle, 'color': const Color(0xFF679BD3)},
+      {'title': 'month_menu.about_me', 'icon': PhosphorIconsRegular.userCircle, 'color': const Color(0xFFcf8ee8)},
+      {'title': 'month_menu.quiz', 'icon': PhosphorIconsRegular.listChecks, 'color': const Color(0xFFE2377D)},
+      {'title': 'month_menu.signs', 'icon': PhosphorIconsRegular.moonStars, 'color': const Color(0xFFe04cb7)},
+      {'title': 'month_menu.tips', 'icon': PhosphorIconsRegular.flower, 'color': const Color(0xFFb71691)},
+      {'title': 'month_menu.facts', 'icon': PhosphorIconsRegular.lightbulb, 'color': const Color(0xFFdbaf35)},
+      {'title': 'month_menu.interview', 'icon': PhosphorIconsRegular.microphone, 'color': const Color(0xFF3983c6)},
+      {'title': 'month_menu.lists', 'icon': PhosphorIconsRegular.star, 'color': const Color(0xFF776fb5)},
+      {'title': 'month_menu.gratitude', 'icon': PhosphorIconsRegular.heart, 'color': const Color(0xFFE2377D)},
+      {'title': 'month_menu.reflections', 'icon': PhosphorIconsRegular.quotes, 'color': const Color(0xFFb71691)},
+      {'title': 'month_menu.photos', 'icon': PhosphorIconsRegular.camera, 'color': const Color(0xFFdbaf35)},
+      {'title': 'month_menu.fortune', 'icon': PhosphorIconsRegular.clover, 'color': const Color(0xFF4DB6AC)},
     ];
 
     return Container(
       color: const Color(0xFFFFF7FA),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // 🌸 Banner com o mês atual (agora com cor dinâmica)
+          const SizedBox(height: 8),
+
+          // 🌸 Banner colorido
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 20),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: bannerColor,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Column(
-              children: [
-                Text(
-                  monthName,
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                    letterSpacing: 1.2,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Escolha uma página do mês',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: textColor.withOpacity(0.8),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    "$monthName $year",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: textColor,
+                      letterSpacing: 0.5,
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 4),
+                  Text(
+                    formattedDate,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: textColor.withOpacity(0.8),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
 
-          const SizedBox(height: 24),
-          const Text(
-            '✨ Por qual sessão do mês você quer passar hoje?',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF4F4F4F),
-            ),
-          ),
           const SizedBox(height: 20),
+          Center(
+            child: Text(
+              '✨ ${'month_menu.choose_section'.tr()}', // chave de tradução da frase principal
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF120D0D),
+                height: 1.3,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
 
-          // 🟪 Grade dos botões (sem mudanças)
+          // 🟪 Grade dos botões
           Expanded(
             child: GridView.builder(
               itemCount: menuItems.length,
@@ -106,9 +133,18 @@ class MonthMenu extends StatelessWidget {
               itemBuilder: (context, index) {
                 final item = menuItems[index];
                 return GestureDetector(
-                  onTap: () async {
-                    //await player.play(AssetSource('sounds/click.mp3'));
-                    if (onNavigateToPage != null) {
+                  onTap: () {
+                    final String titleKey = item['title'];
+
+                    // 🍀 Abre a página "Sorte do Dia"
+                    if (titleKey == 'month_menu.fortune') {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const DailyLuckPage(),
+                        ),
+                      );
+                    } else if (onNavigateToPage != null) {
                       onNavigateToPage!(index + 1);
                     }
                   },
@@ -128,13 +164,12 @@ class MonthMenu extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(item['icon'] as IconData,
-                            color: Colors.white, size: 36),
+                        Icon(item['icon'] as IconData, color: Colors.white, size: 36),
                         const SizedBox(height: 10),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 6),
                           child: Text(
-                            item['title'] as String,
+                            (item['title'] as String).tr(),
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                               fontSize: 14,
@@ -156,7 +191,7 @@ class MonthMenu extends StatelessWidget {
   }
 }
 
-// 🔤 Helper para capitalizar o nome do mês
+// 🔤 Capitaliza o nome do mês
 extension StringCasing on String {
   String capitalize() {
     if (isEmpty) return this;

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 // 🌸 Import das telas principais
 import 'package:my_year_my_story/screens/dashboard/dashboard_screen.dart';
-import 'package:my_year_my_story/widgets/monthly/month_menu.dart';
-import 'package:my_year_my_story/screens/annual/annual_photo_album_screen.dart';
+import 'package:my_year_my_story/screens/monthly/current_month_screen.dart';
 import 'package:my_year_my_story/screens/diary/diary_screen.dart';
 import 'package:my_year_my_story/screens/mood/mood_screen.dart';
-import 'package:my_year_my_story/screens/monthly/current_month_screen.dart';
-
+import 'package:my_year_my_story/widgets/monthly/dailyluckpage.dart';
+ // 🍀 nova tela da sorte
 
 class AppBottomMenu extends StatelessWidget {
   final int currentIndex;
@@ -17,7 +17,6 @@ class AppBottomMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 🌸 mês e ano automáticos
     final DateTime now = DateTime.now();
     final int currentMonth = now.month;
     final int currentYear = now.year;
@@ -48,7 +47,6 @@ class AppBottomMenu extends StatelessWidget {
             if (index == currentIndex) return;
 
             Widget nextScreen;
-
             switch (index) {
               case 0:
                 nextScreen = DashboardScreen(month: currentMonth, year: currentYear);
@@ -56,15 +54,11 @@ class AppBottomMenu extends StatelessWidget {
               case 1:
                 nextScreen = const CurrentMonthScreen();
                 break;
-
               case 2:
-                nextScreen = AnnualPhotoAlbumScreen(
-                  month: currentMonth,
-                  year: currentYear,
-                );
+                nextScreen = const DailyLuckPage(); // 🍀 substituindo Fotos por Sorte
                 break;
               case 3:
-                nextScreen = DiaryScreen(month: currentMonth, year: currentYear);
+                nextScreen = const DiaryScreen();
                 break;
               case 4:
                 nextScreen = MoodScreen(month: currentMonth, year: currentYear);
@@ -72,7 +66,6 @@ class AppBottomMenu extends StatelessWidget {
               default:
                 return;
             }
-
 
             Navigator.pushReplacement(
               context,
@@ -87,46 +80,80 @@ class AppBottomMenu extends StatelessWidget {
             );
           },
           type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.white,
-          selectedItemColor: const Color(0xFFC03B66),
-          unselectedItemColor: Colors.grey[500],
-          selectedLabelStyle: const TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 13,
-          ),
-          unselectedLabelStyle: const TextStyle(
-            fontWeight: FontWeight.w400,
-            fontSize: 12,
-          ),
+          backgroundColor: const Color(0xFFE32278),
+          selectedItemColor: const Color(0xFFFFB500),
+          unselectedItemColor: Colors.white,
           showUnselectedLabels: true,
           elevation: 0,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(PhosphorIconsRegular.house),
-              activeIcon: Icon(PhosphorIconsFill.house),
-              label: 'Início',
+          items: [
+            _buildItem(
+              context,
+              index: 0,
+              currentIndex: currentIndex,
+              icon: PhosphorIconsRegular.house,
+              activeIcon: PhosphorIconsFill.house,
+              label: 'bottom.home'.tr(),
             ),
-            BottomNavigationBarItem(
-              icon: Icon(PhosphorIconsRegular.calendarBlank),
-              activeIcon: Icon(PhosphorIconsFill.calendarBlank),
-              label: 'Mês Atual',
+            _buildItem(
+              context,
+              index: 1,
+              currentIndex: currentIndex,
+              icon: PhosphorIconsRegular.calendarBlank,
+              activeIcon: PhosphorIconsFill.calendarBlank,
+              label: 'bottom.current_month'.tr(),
             ),
-            BottomNavigationBarItem(
-              icon: Icon(PhosphorIconsRegular.images),
-              activeIcon: Icon(PhosphorIconsFill.images),
-              label: 'Fotos',
+            _buildItem(
+              context,
+              index: 2,
+              currentIndex: currentIndex,
+              icon: PhosphorIconsRegular.clover, // 🍀 novo ícone da sorte
+              activeIcon: PhosphorIconsFill.clover,
+              label: 'Sorte do Dia', // pode traduzir depois se quiser
             ),
-            BottomNavigationBarItem(
-              icon: Icon(PhosphorIconsRegular.bookOpenText),
-              activeIcon: Icon(PhosphorIconsFill.bookOpenText),
-              label: 'Diário',
+            _buildItem(
+              context,
+              index: 3,
+              currentIndex: currentIndex,
+              icon: PhosphorIconsRegular.bookOpenText,
+              activeIcon: PhosphorIconsFill.bookOpenText,
+              label: 'bottom.diary'.tr(),
             ),
-            BottomNavigationBarItem(
-              icon: Icon(PhosphorIconsRegular.smiley),
-              activeIcon: Icon(PhosphorIconsFill.smiley),
-              label: 'Humor',
+            _buildItem(
+              context,
+              index: 4,
+              currentIndex: currentIndex,
+              icon: PhosphorIconsRegular.smiley,
+              activeIcon: PhosphorIconsFill.smiley,
+              label: 'bottom.mood'.tr(),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  BottomNavigationBarItem _buildItem(
+      BuildContext context, {
+        required int index,
+        required int currentIndex,
+        required IconData icon,
+        required IconData activeIcon,
+        required String label,
+      }) {
+    final bool isActive = index == currentIndex;
+
+    return BottomNavigationBarItem(
+      label: label,
+      icon: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutQuad,
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Icon(
+          isActive ? activeIcon : icon,
+          size: isActive ? 28 : 24,
+          color: isActive
+              ? const Color(0xFFFFB500) // dourado do ícone ativo
+              : Colors.white,           // branco inativo
         ),
       ),
     );

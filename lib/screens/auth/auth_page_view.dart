@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'login_screen.dart';
 import 'signup_screen.dart';
 
@@ -12,7 +13,6 @@ class AuthPageView extends StatefulWidget {
 class _AuthPageViewState extends State<AuthPageView> {
   final PageController _pageController = PageController(initialPage: 0);
 
-  /// Vai para a tela de login
   void _goToLogin() {
     FocusScope.of(context).unfocus();
     _pageController.animateToPage(
@@ -22,7 +22,6 @@ class _AuthPageViewState extends State<AuthPageView> {
     );
   }
 
-  /// Vai para a tela de cadastro
   void _goToSignup() {
     FocusScope.of(context).unfocus();
     _pageController.animateToPage(
@@ -32,7 +31,6 @@ class _AuthPageViewState extends State<AuthPageView> {
     );
   }
 
-  /// Entra como convidado
   void _enterAsGuest() {
     Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
   }
@@ -51,13 +49,10 @@ class _AuthPageViewState extends State<AuthPageView> {
           controller: _pageController,
           physics: const NeverScrollableScrollPhysics(),
           children: [
-            /// 👇 Tela antiga de login direto
             const LoginScreen(),
-
-            /// Tela de cadastro
             SignupScreen(onLoginTap: _goToLogin),
 
-            /// (Tela nova de boas-vindas — mantida, mas não mostrada agora)
+            // Opcional: tela de boas-vindas
             // _buildWelcomeScreen(),
           ],
         ),
@@ -65,7 +60,6 @@ class _AuthPageViewState extends State<AuthPageView> {
     );
   }
 
-  /// 🩵 Tela de boas-vindas (guardada para uso futuro)
   Widget _buildWelcomeScreen() {
     return Center(
       child: Padding(
@@ -81,7 +75,7 @@ class _AuthPageViewState extends State<AuthPageView> {
             ),
             const SizedBox(height: 20),
             Text(
-              'Bem-vindo(a) ao My Year, My Story!',
+              'auth.welcome_title'.tr(),
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
@@ -89,14 +83,14 @@ class _AuthPageViewState extends State<AuthPageView> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Escolha como deseja começar:',
+              'auth.welcome_subtitle'.tr(),
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const Spacer(),
             ElevatedButton.icon(
               onPressed: _goToLogin,
               icon: const Icon(Icons.login),
-              label: const Text('Entrar com Google ou E-mail'),
+              label: Text('auth.login_google_email'.tr()),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
               ),
@@ -105,7 +99,7 @@ class _AuthPageViewState extends State<AuthPageView> {
             OutlinedButton.icon(
               onPressed: _enterAsGuest,
               icon: const Icon(Icons.person_outline),
-              label: const Text('Entrar como convidado'),
+              label: Text('auth.enter_guest'.tr()),
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
               ),
@@ -113,7 +107,7 @@ class _AuthPageViewState extends State<AuthPageView> {
             const Spacer(),
             TextButton(
               onPressed: _goToSignup,
-              child: const Text('Criar uma conta'),
+              child: Text('auth.create_account'.tr()),
             ),
             const SizedBox(height: 30),
           ],

@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 /// Mantém o estilo delicado e poético do app My Year, My Story.
 Route fadePageTransition(Widget page) {
   return PageRouteBuilder(
-    transitionDuration: const Duration(milliseconds: 1200),
-    reverseTransitionDuration: const Duration(milliseconds: 900),
+    transitionDuration: const Duration(milliseconds: 900),
+    reverseTransitionDuration: const Duration(milliseconds: 700),
     pageBuilder: (_, __, ___) => page,
     transitionsBuilder: (_, animation, __, child) {
       final curved = CurvedAnimation(
         parent: animation,
-        curve: Curves.easeInOut,
+        curve:Curves.easeInOut,
       );
 
       return FadeTransition(

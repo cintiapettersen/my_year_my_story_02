@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:my_year_my_story/models/monthly_goal_model.dart';
 import 'package:my_year_my_story/services/monthly_goal_service.dart';
 import 'package:my_year_my_story/supabase/supabase_config.dart';
 import 'package:my_year_my_story/widgets/monthly/monthly_page_template.dart';
-import 'package:my_year_my_story/widgets/shared/show_login_prompt.dart'; // 🌸 Import do helper
+import 'package:my_year_my_story/utils/access_control.dart';
+import 'package:my_year_my_story/screens/premium/premium_popup.dart'; // usamos showPremiumPrompt()
 
 class MonthlyGoalsWidget extends StatefulWidget {
   final int? month;
@@ -44,7 +46,7 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
 
   Future<void> _loadGoals() async {
     final user = SupabaseConfig.client.auth.currentUser;
-    if (user == null) return; // 👈 convidado: não carrega nada
+    if (user == null) return;
 
     setState(() => _isLoading = true);
     try {
@@ -57,7 +59,7 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao carregar metas: $e')),
+          SnackBar(content: Text('error_load_goals'.tr())),
         );
       }
     } finally {
@@ -69,10 +71,18 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
     final user = SupabaseConfig.client.auth.currentUser;
     final text = _goalController.text.trim();
 
-    print('🔎 Usuário atual: ${user?.id}');
-// 🌷 se não estiver logado, mostra o aviso e interrompe
+    // 🌸 convidado → popup de login
     if (user == null) {
-      showLoginPrompt(context);
+      AccessControl.showLoginPopup(context);
+      return;
+    }
+
+    // 💎 verifica status premium
+    final isPremium = await AccessControl.checkPremiumStatus(user.id);
+
+    // 🌸 usuário free e já tem 5 metas → mostra popup premium
+    if (!isPremium && _goals.length >= 5) {
+      showPremiumPrompt(context, month: currentMonth, year: currentYear);
       return;
     }
 
@@ -94,13 +104,13 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Meta adicionada com sucesso!')),
+          SnackBar(content: Text('goal_added'.tr())),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao adicionar meta: $e')),
+          SnackBar(content: Text('error_add_goal'.tr())),
         );
       }
     } finally {
@@ -112,11 +122,10 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
     final user = SupabaseConfig.client.auth.currentUser;
     if (user == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        showLoginPrompt(context);
+        AccessControl.showLoginPopup(context);
       });
       return;
     }
-
 
     setState(() => _isLoading = true);
     try {
@@ -129,7 +138,7 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao atualizar meta: $e')),
+          SnackBar(content: Text('error_update_goal'.tr())),
         );
       }
     } finally {
@@ -140,7 +149,7 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
   Future<void> _deleteGoal(MonthlyGoal goal) async {
     final user = SupabaseConfig.client.auth.currentUser;
     if (user == null) {
-      showLoginPrompt(context); // 🌸 avisa antes de excluir meta
+      AccessControl.showLoginPopup(context);
       return;
     }
 
@@ -151,13 +160,13 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Meta removida com sucesso!')),
+          SnackBar(content: Text('goal_removed'.tr())),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao remover meta: $e')),
+          SnackBar(content: Text('error_remove_goal'.tr())),
         );
       }
     } finally {
@@ -170,7 +179,7 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
     return MonthlyPageTemplate(
       month: currentMonth,
       year: currentYear,
-      title: 'Metas do Mês',
+      title: 'monthly_goals_title'.tr(),
       child: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -178,14 +187,26 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // 🌸 Descrição inspiracional
+            Text(
+              'monthly_goals_description'.tr(),
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.black87,
+                height: 1.6,
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // 🌸 Campo nova meta
             Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _goalController,
-                    decoration: const InputDecoration(
-                      hintText: 'Digite sua nova meta...',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      hintText: 'add_goal_hint'.tr(),
+                      border: const OutlineInputBorder(),
                     ),
                     onSubmitted: (_) => _addGoal(),
                   ),
@@ -204,6 +225,8 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
               ],
             ),
             const SizedBox(height: 20),
+
+            // 🌸 Lista de metas
             if (_goals.isEmpty)
               Container(
                 padding: const EdgeInsets.all(20),
@@ -211,11 +234,11 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
                   color: Colors.grey.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
-                    'Nenhuma meta adicionada ainda.\nComece definindo suas metas para este mês!',
+                    'no_goals_yet'.tr(),
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16,
                       color: Colors.grey,
                     ),

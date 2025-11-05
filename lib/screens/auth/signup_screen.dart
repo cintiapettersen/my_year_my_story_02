@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:my_year_my_story/theme.dart';
@@ -6,10 +7,8 @@ import 'package:my_year_my_story/widgets/auth/custom_text_field.dart';
 import 'package:my_year_my_story/widgets/auth/auth_button.dart';
 import 'package:my_year_my_story/widgets/auth/divider_with_text.dart';
 import 'package:my_year_my_story/services/user_service.dart';
-import 'package:my_year_my_story/screens/auth/login_screen.dart';
-import 'package:my_year_my_story/screens/splash/fade_page_transition.dart';
 import 'package:my_year_my_story/screens/auth/auth_page_view.dart';
-
+import 'package:my_year_my_story/screens/splash/fade_page_transition.dart';
 
 class SignupScreen extends StatefulWidget {
   final VoidCallback? onLoginTap;
@@ -89,10 +88,10 @@ class _SignupScreenState extends State<SignupScreen> {
 
         if (response['success']) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Conta criada com sucesso!'),
+            SnackBar(
+              content: Text('signup.success'.tr()),
               backgroundColor: Colors.green,
-              duration: Duration(seconds: 2),
+              duration: const Duration(seconds: 2),
             ),
           );
           await Future.delayed(const Duration(milliseconds: 800));
@@ -107,7 +106,7 @@ class _SignupScreenState extends State<SignupScreen> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Erro ao criar conta: $e')),
+            SnackBar(content: Text('signup.error'.tr(args: [e.toString()]))),
           );
         }
       } finally {
@@ -133,7 +132,7 @@ class _SignupScreenState extends State<SignupScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao conectar com Google: $e')),
+          SnackBar(content: Text('signup.google_error'.tr(args: [e.toString()]))),
         );
       }
     } finally {
@@ -210,7 +209,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     const SizedBox(height: 16),
 
                     Text(
-                      'Crie sua conta e comece sua jornada de autoconhecimento e registro de memórias.',
+                      'signup.subtitle'.tr(),
                       style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                         color: Colors.black87,
                         height: 1.4,
@@ -222,10 +221,10 @@ class _SignupScreenState extends State<SignupScreen> {
 
                     CustomTextField(
                       controller: _nameController,
-                      labelText: 'Nome completo',
+                      labelText: 'signup.full_name'.tr(),
                       prefixIcon: Icons.person_outline,
                       validator: (value) =>
-                      value == null || value.isEmpty ? 'Digite seu nome' : null,
+                      value == null || value.isEmpty ? 'signup.error_name'.tr() : null,
                     ),
 
                     const SizedBox(height: 16),
@@ -235,7 +234,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       readOnly: true,
                       onTap: () => _pickDate(context),
                       decoration: InputDecoration(
-                        labelText: 'Data de nascimento',
+                        labelText: 'signup.birth_date'.tr(),
                         prefixIcon: const Icon(Icons.cake, color: Color(0xFFE06B8B)),
                         filled: true,
                         fillColor: Colors.white,
@@ -246,7 +245,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Por favor, selecione sua data de nascimento';
+                          return 'signup.error_birth'.tr();
                         }
                         return null;
                       },
@@ -256,16 +255,15 @@ class _SignupScreenState extends State<SignupScreen> {
 
                     CustomTextField(
                       controller: _emailController,
-                      labelText: 'Email',
+                      labelText: 'signup.email'.tr(),
                       prefixIcon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Digite seu email';
+                          return 'signup.error_email_empty'.tr();
                         }
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                            .hasMatch(value)) {
-                          return 'Email inválido';
+                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                          return 'signup.error_email_invalid'.tr();
                         }
                         return null;
                       },
@@ -275,12 +273,12 @@ class _SignupScreenState extends State<SignupScreen> {
 
                     CustomTextField(
                       controller: _passwordController,
-                      labelText: 'Senha',
+                      labelText: 'signup.password'.tr(),
                       prefixIcon: Icons.lock_outline,
                       obscureText: true,
                       validator: (value) {
                         if (value == null || value.length < 6) {
-                          return 'A senha deve ter pelo menos 6 caracteres';
+                          return 'signup.error_password'.tr();
                         }
                         return null;
                       },
@@ -290,12 +288,12 @@ class _SignupScreenState extends State<SignupScreen> {
 
                     CustomTextField(
                       controller: _confirmPasswordController,
-                      labelText: 'Confirmar senha',
+                      labelText: 'signup.confirm_password'.tr(),
                       prefixIcon: Icons.lock_outline,
                       obscureText: true,
                       validator: (value) {
                         if (value != _passwordController.text) {
-                          return 'As senhas não coincidem';
+                          return 'signup.error_confirm'.tr();
                         }
                         return null;
                       },
@@ -304,18 +302,18 @@ class _SignupScreenState extends State<SignupScreen> {
                     const SizedBox(height: 24),
 
                     AuthButton(
-                      text: 'Criar Conta',
+                      text: 'signup.button_create'.tr(),
                       isLoading: _isLoading,
                       onPressed: _signUp,
                       backgroundColor: const Color(0xFFA66ABD),
                     ),
 
                     const SizedBox(height: 24),
-                    const DividerWithText(text: 'OU'),
+                    DividerWithText(text: 'signup.or'.tr()),
                     const SizedBox(height: 24),
 
                     AuthButton(
-                      text: 'Criar conta com Google',
+                      text: 'signup.google_button'.tr(),
                       icon: Icons.account_circle,
                       isOutlined: true,
                       isLoading: _isGoogleLoading,
@@ -326,9 +324,9 @@ class _SignupScreenState extends State<SignupScreen> {
 
                     TextButton(
                       onPressed: widget.onLoginTap,
-                      child: const Text(
-                        'Já tenho conta',
-                        style: TextStyle(
+                      child: Text(
+                        'signup.have_account'.tr(),
+                        style: const TextStyle(
                           color: Color(0xFFA66ABD),
                           fontWeight: FontWeight.w600,
                           fontSize: 16,

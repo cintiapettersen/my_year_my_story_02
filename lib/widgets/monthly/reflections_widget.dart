@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:my_year_my_story/services/reflections_service.dart';
 import 'package:my_year_my_story/supabase/supabase_config.dart';
 import 'package:my_year_my_story/widgets/shared/month_page_template.dart';
-
+import 'package:my_year_my_story/screens/premium/premium_popup.dart';
 
 class ReflectionsWidget extends StatefulWidget {
   final int? month;
@@ -26,6 +26,8 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
   bool _isSaving = false;
   bool _isOfflineMode = false;
   String? _currentUserId;
+  bool isPremiumUser = false;
+  int _insertCount = 0; // 💕 Controle de quantas inserções a usuária fez
 
   @override
   bool get wantKeepAlive => true;
@@ -85,11 +87,32 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
     _currentUserId = _supabase.auth.currentUser?.id;
     _isOfflineMode = _currentUserId == null;
 
+    await _checkPremiumStatus();
+
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted && _isLoading) setState(() => _isLoading = false);
     });
 
     await _loadReflectionsData();
+  }
+
+  // 💎 Verifica status Premium ou convidado
+  Future<void> _checkPremiumStatus() async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) {
+      setState(() => isPremiumUser = false);
+      return;
+    }
+
+    final response = await _supabase
+        .from('users')
+        .select('is_premium')
+        .eq('id', user.id)
+        .maybeSingle();
+
+    setState(() {
+      isPremiumUser = response != null && response['is_premium'] == true;
+    });
   }
 
   Future<void> _loadReflectionsData() async {
@@ -119,15 +142,17 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
   }
 
   Future<void> _saveReflectionsData() async {
-    final userId = _supabase.auth.currentUser?.id;
+    final user = _supabase.auth.currentUser;
 
-    if (userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Você precisa estar logada para salvar.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+    // 🩶 Se convidado → popup login/premium
+    if (user == null) {
+      showPremiumPrompt(context);
+      return;
+    }
+
+    // 💕 Logada, mas não premium → só 1 inserção antes de bloquear
+    if (!isPremiumUser && _insertCount >= 1) {
+      showPremiumPrompt(context);
       return;
     }
 
@@ -145,8 +170,10 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
         reflections,
         widget.month ?? DateTime.now().month,
         widget.year ?? DateTime.now().year,
-        userId,
+        user.id,
       );
+
+      if (!isPremiumUser) _insertCount++; // 💕 Conta 1 inserção
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -198,32 +225,7 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (_isOfflineMode)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                margin: const EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
-                  border: Border.all(color: Colors.orange.withOpacity(0.3)),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: const [
-                    Icon(Icons.wifi_off, color: Colors.orange),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Modo offline: você pode escrever, mas faça login para salvar no Supabase.',
-                        style: TextStyle(
-                          color: Colors.orange,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+
 
             const Text(
               'Tire um momento para refletir sobre seu mês: o que te fez crescer, '
@@ -235,9 +237,9 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 50),
 
-            // 📝 Lista com fade-in suave
+            // 📝 Lista de reflexões
             ..._reflectionPrompts.asMap().entries.map((entry) {
               final index = entry.key;
               final prompt = entry.value;
@@ -267,7 +269,6 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
                     children: [
                       Text(
                         prompt['title']!,
-
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -286,6 +287,13 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
                       TextField(
                         controller: controller,
                         maxLines: 4,
+                        readOnly:
+                        !isPremiumUser && _insertCount >= 1, // 💕 bloqueia input
+                        onTap: () {
+                          if (!isPremiumUser && _insertCount >= 1) {
+                            showPremiumPrompt(context);
+                          }
+                        },
                         decoration: InputDecoration(
                           hintText: 'Escreva sua reflexão aqui...',
                           hintStyle: const TextStyle(
@@ -301,7 +309,7 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
                             borderSide: BorderSide(color: Color(0xFFC03B66)),
                           ),
                           filled: true,
-                          fillColor: Color(0xFFFFF7FA),
+                          fillColor: const Color(0xFFFFF7FA),
                           contentPadding: const EdgeInsets.symmetric(
                             vertical: 14,
                             horizontal: 12,
@@ -318,7 +326,7 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
 
             const SizedBox(height: 24),
 
-            // 💾 Botão com animação de toque
+            // 💾 Botão salvar
             Center(
               child: GestureDetector(
                 onTapDown: (_) => setState(() => _isSaving = true),

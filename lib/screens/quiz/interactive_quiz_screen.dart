@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:my_year_my_story/widgets/monthly/interactive_quiz_widget.dart';
 
+
+
 extension StringCasingExtension on String {
   String capitalize() =>
       isNotEmpty ? '${this[0].toUpperCase()}${substring(1)}' : this;

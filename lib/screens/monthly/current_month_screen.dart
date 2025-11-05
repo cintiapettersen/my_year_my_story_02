@@ -45,30 +45,8 @@ class _CurrentMonthScreenState extends State<CurrentMonthScreen> {
     year = widget.year ?? now.year;
   }
 
-  List<Widget> get _pages => [
-  MonthMenu(
-  month: month,
-  year: year,
-  onNavigateToPage: (index) {
-  _pageController.jumpToPage(index); // 👈 troca a página direto no PageView
-  setState(() => _currentPage = index);
-  },
-  ),
-    MonthlyGoalsWidget(month: month, year: year),
-    CuriositiesWidget(month: month, year: year),
-    InteractiveQuizWidget(month: month, year: year),
-    ZodiacWidget(month: month, year: year),
-    SkillsDevelopmentWidget(month: month, year: year),
-    DidYouKnowWidget(month: month, year: year),
-    InterviewWidget(month: month, year: year),
-    MonthlyListsWidget(month: month, year: year),
-    GratitudeWidget(month: month, year: year),
-    ReflectionsWidget(month: month, year: year),
-    MonthlyPhotoGallery(month: month, year: year),
-  ];
-
   void _nextPage() {
-    if (_currentPage < _pages.length - 1) {
+    if (_currentPage < 11) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOutCubic,
@@ -89,6 +67,32 @@ class _CurrentMonthScreenState extends State<CurrentMonthScreen> {
   Widget build(BuildContext context) {
     final monthName = DateFormat.MMMM('pt_BR').format(DateTime(year, month));
 
+    final List<Widget> pages = [
+      MonthMenu(
+        month: month,
+        year: year,
+        onNavigateToPage: (index) {
+          _pageController.jumpToPage(index);
+          setState(() => _currentPage = index);
+        },
+      ),
+      MonthlyGoalsWidget(month: month, year: year),
+      CuriositiesWidget(month: month, year: year),
+      InteractiveQuizWidget(
+        month: month,
+        year: year,
+        monthName: monthName,
+      ),
+      ZodiacWidget(month: month, year: year),
+      SkillsDevelopmentWidget(month: month, year: year),
+      DidYouKnowWidget(month: month, year: year),
+      InterviewScreen(month: month, year: year),
+      MonthlyListsWidget(month: month, year: year),
+      GratitudeWidget(month: month, year: year),
+      ReflectionsWidget(month: month, year: year),
+      MonthlyPhotoGallery(month: month, year: year),
+    ];
+
     return MainScaffold(
       currentIndex: 1,
       body: SafeArea(
@@ -96,7 +100,7 @@ class _CurrentMonthScreenState extends State<CurrentMonthScreen> {
           color: const Color(0xFFFFF7FA), // 🌸 fundo rosinha geral
           child: Column(
             children: [
-              // 🔹 Cabeçalho com paginação (sem o nome do mês)
+              // 🔹 Cabeçalho com paginação
               Padding(
                 padding:
                 const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -104,7 +108,7 @@ class _CurrentMonthScreenState extends State<CurrentMonthScreen> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
-                      '${_currentPage + 1} / ${_pages.length}',
+                      '${_currentPage + 1} / ${pages.length}',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.grey[700],
@@ -118,7 +122,7 @@ class _CurrentMonthScreenState extends State<CurrentMonthScreen> {
               Expanded(
                 child: PageView.builder(
                   controller: _pageController,
-                  itemCount: _pages.length,
+                  itemCount: pages.length,
                   onPageChanged: (index) =>
                       setState(() => _currentPage = index),
                   itemBuilder: (context, index) {
@@ -135,8 +139,8 @@ class _CurrentMonthScreenState extends State<CurrentMonthScreen> {
                           child: Card(
                             elevation: isActive ? 6 : 2,
                             margin: EdgeInsets.zero,
-                            color: Colors.white, // fundo branco do conteúdo
-                            child: _pages[index],
+                            color: Colors.white,
+                            child: pages[index],
                           ),
                         ),
                       ),
@@ -145,7 +149,7 @@ class _CurrentMonthScreenState extends State<CurrentMonthScreen> {
                 ),
               ),
 
-              // 🔹 Indicador + botões na mesma linha
+              // 🔹 Indicador + botões de navegação
               Padding(
                 padding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -158,15 +162,15 @@ class _CurrentMonthScreenState extends State<CurrentMonthScreen> {
                       onPressed: _currentPage > 0 ? _previousPage : null,
                       backgroundColor: Colors.grey[200],
                       foregroundColor: Colors.black54,
-                      child:
-                      const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+                      child: const Icon(Icons.arrow_back_ios_new_rounded,
+                          size: 18),
                     ),
 
                     Expanded(
                       child: Center(
                         child: SmoothPageIndicator(
                           controller: _pageController,
-                          count: _pages.length,
+                          count: pages.length,
                           effect: WormEffect(
                             dotHeight: 8,
                             dotWidth: 8,
@@ -181,12 +185,12 @@ class _CurrentMonthScreenState extends State<CurrentMonthScreen> {
 
                     FloatingActionButton.small(
                       heroTag: 'nextBtn',
-                      onPressed: _currentPage < _pages.length - 1
-                          ? _nextPage
-                          : null,
+                      onPressed:
+                      _currentPage < pages.length - 1 ? _nextPage : null,
                       backgroundColor: const Color(0xFFC03B66),
                       foregroundColor: Colors.white,
-                      child: const Icon(Icons.arrow_forward_ios_rounded, size: 18),
+                      child: const Icon(Icons.arrow_forward_ios_rounded,
+                          size: 18),
                     ),
                   ],
                 ),

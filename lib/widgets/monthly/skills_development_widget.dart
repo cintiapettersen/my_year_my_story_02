@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
 import 'package:my_year_my_story/widgets/monthly/monthly_page_template.dart';
 import 'package:my_year_my_story/utils/month_colors.dart';
+import 'package:my_year_my_story/screens/premium/premium_popup.dart'; // 👈 import do popup premium
 
 class SkillsDevelopmentWidget extends StatefulWidget {
   final int month;
@@ -26,15 +27,13 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
   bool get wantKeepAlive => true;
 
   final supabase = Supabase.instance.client;
-  //final player = AudioPlayer();
-
   List<Map<String, dynamic>> skills = [];
   bool isLoading = true;
   int refreshCount = 0;
   Color currentButtonColor = const Color(0xFFE2377D);
   bool isPressed = false;
+  bool isPremiumUser = false; // 💎 controla o acesso premium
 
-  // 🌈 Paleta vibrante
   final Map<String, Color> categoryColors = {
     'inspiração': const Color(0xFF679BD3),
     'astronomia': const Color(0xFFDDBFEF),
@@ -54,14 +53,37 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
     'esperança': const Color(0xFFFFE082),
   };
 
-
   @override
   void initState() {
     super.initState();
+    _checkPremiumStatus();
     _loadData();
   }
 
-  // ✨ Carrega dados com mix de categorias
+  // 💎 Verifica se o usuário é premium ou convidado
+  Future<void> _checkPremiumStatus() async {
+    final user = supabase.auth.currentUser;
+
+    if (user == null) {
+      // 🩶 convidado
+      setState(() => isPremiumUser = false);
+      return;
+    }
+
+    // Aqui você pode verificar a tabela de assinaturas no Supabase
+    // Exemplo simples (ajuste conforme o seu banco):
+    final response = await supabase
+        .from('users')
+        .select('is_premium')
+        .eq('id', user.id)
+        .maybeSingle();
+
+    setState(() {
+      isPremiumUser = response != null && response['is_premium'] == true;
+    });
+  }
+
+  // ✨ Carrega dados
   Future<void> _loadData({bool shuffle = false}) async {
     setState(() => isLoading = true);
 
@@ -97,8 +119,13 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
     setState(() => isLoading = false);
   }
 
-  // 🔁 Controle de atualização (até 3 vezes por dia)
+  // 🔁 Atualização das dicas (restrita a premium)
   Future<void> _handleRefresh() async {
+    if (!isPremiumUser) {
+      showPremiumPrompt(context);
+      return;
+    }
+
     final prefs = await SharedPreferences.getInstance();
     final todayKey =
         "refresh_${DateTime.now().year}_${DateTime.now().month}_${DateTime.now().day}";
@@ -109,8 +136,6 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
       return;
     }
 
-    // ✨ som suave e cor aleatória
-    //await player.play(AssetSource('sounds/pop.mp3'));
     final random = Random();
     final colors = categoryColors.values.toList();
     setState(() {
@@ -141,6 +166,22 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
           : Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // 🩷 Descrição padrão de 3 linhas
+          const Padding(
+            padding: EdgeInsets.only(bottom: 16),
+            child: Text(
+              'Todo mês é uma nova oportunidade para desenvolver '
+                  'habilidades que nos ajudam a crescer. '
+                  'Explore as dicas abaixo e veja o que desperta o seu melhor!',
+              style: TextStyle(
+                fontSize: 16,
+                height: 1.6,
+                color: Colors.black87,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+
           // 🌼 Lista de dicas
           ...skills.asMap().entries.map((entry) {
             final index = entry.key;
@@ -152,7 +193,6 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
             final bgColor = categoryColors.values.elementAt(
               Random().nextInt(categoryColors.length),
             );
-
 
             return TweenAnimationBuilder<double>(
               tween: Tween(begin: 0, end: 1),
@@ -217,22 +257,21 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
 
           const SizedBox(height: 20),
 
-          // 🌟 Botão mágico
+          // 🌟 Botão mágico com restrição Premium
           Center(
             child: GestureDetector(
               onTapDown: (_) => setState(() => isPressed = true),
               onTapUp: (_) async {
                 setState(() => isPressed = false);
-                await Future.delayed(
-                    const Duration(milliseconds: 120));
+                await Future.delayed(const Duration(milliseconds: 120));
                 _handleRefresh();
               },
               onTapCancel: () => setState(() => isPressed = false),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeOutBack,
-                transform: Matrix4.identity()
-                  ..scale(isPressed ? 0.93 : 1.0),
+                transform:
+                Matrix4.identity()..scale(isPressed ? 0.93 : 1.0),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
@@ -256,9 +295,11 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
                   padding: const EdgeInsets.symmetric(
                       horizontal: 28, vertical: 14),
                   child: Text(
-                    refreshCount >= 3
+                    isPremiumUser
+                        ? (refreshCount >= 3
                         ? "Volte amanhã 🌙"
-                        : "Ver mais dicas (${3 - refreshCount} restantes)",
+                        : "Ver mais dicas (${3 - refreshCount} restantes)")
+                        : "Ver mais dicas 🌟 (Premium)",
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,

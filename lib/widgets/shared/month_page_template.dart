@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:my_year_my_story/widgets/shared/app_bottom_menu.dart';
 import 'package:my_year_my_story/widgets/shared/month_header.dart';
 
@@ -8,7 +7,7 @@ class MonthPageTemplate extends StatefulWidget {
   final int month;
   final int year;
   final String title;
-  final String? description; // 👈 agora o parâmetro existe
+  final String? description; // 👈 descrição opcional
   final Widget child;
 
   const MonthPageTemplate({
@@ -16,7 +15,7 @@ class MonthPageTemplate extends StatefulWidget {
     required this.month,
     required this.year,
     required this.title,
-    this.description, // 👈 adicionado corretamente
+    this.description,
     required this.child,
   });
 
@@ -25,8 +24,6 @@ class MonthPageTemplate extends StatefulWidget {
 }
 
 class _MonthPageTemplateState extends State<MonthPageTemplate> {
-
-
   Future<void> _playClick() async {
     try {
       //await _player.play(AssetSource('sounds/click.mp3'));
@@ -39,55 +36,42 @@ class _MonthPageTemplateState extends State<MonthPageTemplate> {
   Widget build(BuildContext context) {
     final hasScaffold = Scaffold.maybeOf(context) != null;
 
-    final content = SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 6,
-                offset: const Offset(0, 3),
+    final content = Column(
+      children: [
+        // Cabeçalho do mês
+        MonthHeader(
+          month: widget.month,
+          year: widget.year,
+          title: widget.title,
+        ),
+
+        // Descrição (fica fora do scroll do conteúdo principal)
+        if (widget.description != null && widget.description!.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 12),
+            child: Text(
+              widget.description!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 15,
+                color: Colors.black54,
+                fontStyle: FontStyle.italic,
               ),
-            ],
+            ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              MonthHeader(
-                month: widget.month,
-                year: widget.year,
-                title: widget.title,
-              ),
-              if (widget.description != null) // 👈 exibe só se tiver texto
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 8),
-                  child: Text(
-                    widget.description!,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      color: Colors.black54,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: GestureDetector(
-                  onTapDown: (_) => _playClick(),
-                  behavior: HitTestBehavior.translucent,
-                  child: widget.child,
-                ),
-              ),
-            ],
+
+        // Conteúdo rolável (para evitar conflitos com ListView ou Column interno)
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: GestureDetector(
+              onTapDown: (_) => _playClick(),
+              behavior: HitTestBehavior.translucent,
+              child: widget.child,
+            ),
           ),
         ),
-      ),
+      ],
     );
 
     if (hasScaffold) return content;
@@ -109,7 +93,23 @@ class _MonthPageTemplateState extends State<MonthPageTemplate> {
           ),
         ),
       ),
-      body: content,
+      body: SafeArea(
+        child: Container(
+          margin: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 6,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
+          child: content,
+        ),
+      ),
       bottomNavigationBar: const AppBottomMenu(currentIndex: 1),
     );
   }

@@ -1,4 +1,271 @@
 {
-"app_name": "My Year, My Story",
-"welcome": "Bem-vindo!"
-}
+  "splash": {
+    "new_chapter": "Um novo capítulo começa…",
+    "subtitle": "Seu diário digital de memórias 💕",
+    "login_button": "Entrar / Criar conta",
+    "guest_button": "Explorar sem login"
+  },
+  "auth": {
+    "welcome_title": "Bem-vindo(a) ao My Year, My Story!",
+    "choose_start": "Escolha como deseja começar:",
+    "login_google_email": "Entrar com Google ou Email",
+    "login_guest": "Continuar como convidado",
+    "signup_button": "Criar conta",
+    "login": {
+      "description": "Registre suas memórias, acompanhe seus humores e conte sua história única ao longo dos meses.",
+      "sign_in": "Entrar",
+      "create_account": "Criar conta",
+      "email": "Email",
+      "password": "Senha",
+      "remember_me": "Lembrar de mim",
+      "forgot_password": "Esqueceu a senha?",
+      "button": "Entrar",
+      "or": "OU",
+      "google_button": "Entrar com Google",
+      "error_email_empty": "Por favor, insira seu email",
+      "error_email_invalid": "Por favor, insira um email válido",
+      "error_password_empty": "Por favor, insira sua senha",
+      "error_password_short": "A senha deve ter pelo menos 6 caracteres",
+      "success": "Login realizado com sucesso!",
+      "error_general": "Erro ao fazer login",
+      "signup_title": "Criar Conta",
+      "welcome_subtitle": "Escolha como deseja começar:",
+      "login_google_email": "Entrar com Google ou Email",
+      "enter_guest": "Entrar como convidado"
+    }
+  },
+  "drawer": {
+    "hello": "Olá,",
+    "guest": "Convidado",
+    "profile": "Perfil",
+    "help": "Ajuda / Suporte",
+    "language": "Idioma",
+    "login": "Entrar",
+    "logout": "Sair",
+    "logout_title": "Encerrar sessão",
+    "logout_message": "Tem certeza que deseja sair?",
+    "cancel": "Cancelar",
+    "go_premium": "🌸 Ir para o Premium",
+    "premium_active": "🌷 Conta Premium Ativa",
+    "select_language": "Selecionar idioma"
+  },
+  "profile": {
+    "title": "Meu Perfil",
+    "no_name": "Usuário sem nome",
+    "sign": "Seu signo é {0} ✨",
+    "add_birthdate": "Adicione sua data de nascimento para descobrir seu signo ✨",
+    "full_name": "Nome completo",
+    "birth_date": "Data de nascimento",
+    "email": "Email",
+    "save_changes": "Salvar alterações",
+    "updated": "Perfil atualizado com sucesso! 🎉",
+    "error_update": "Erro ao atualizar perfil: {0}"
+  },
+  "premium": {
+    "title_guest": "Acesso Exclusivo 🌟",
+    "title_user": "Plano Premium ✨",
+    "message_guest": "Brilhe e desbloqueie todos os recursos Premium ✨\n\nFaça login para continuar e saber mais!",
+    "message_user": "Continue brilhando! 🌈\nDesbloqueie todos os recursos Premium e aproveite tudo o que o app oferece.",
+    "button_login": "Fazer login",
+    "button_view_plans": "Ver planos",
+    "button_later": "Talvez depois",
+    "title": "Plano Premium",
+    "subtitle": "Transforme seu ano em memórias eternas ✨",
+    "monthly_title": "🌷 Plano Mensal",
+    "monthly_price": "R$12,90 / mês",
+    "monthly_detail1": "Acesso completo por 30 dias",
+    "monthly_detail2": "Renovação automática ativada",
+    "monthly_detail3": "Cancele quando quiser",
+    "annual_title": "🌸 Plano Anual (Mais Popular)",
+    "annual_price": "R$120 / ano",
+    "annual_detail1": "Acesso completo por 12 meses",
+    "annual_detail2": "Economize 25%",
+    "annual_detail3": "Bônus: páginas e recursos exclusivos 💫",
+    "subscribe_button": "Assinar agora",
+    "dialog_title": "💖 Em breve!",
+    "dialog_message": "O sistema de pagamento estará disponível em breve.\n\nLogo você poderá assinar e aproveitar todos os recursos Premium do My Year, My Story!",
+    "dialog_button": "Amei ✨",
+    "back_button": "Voltar"
+  },
+  "signup": {
+    "subtitle": "Crie sua conta e comece sua jornada de autodescoberta e memórias.",
+    "full_name": "Nome completo",
+    "birth_date": "Data de nascimento",
+    "email": "Email",
+    "password": "Senha",
+    "confirm_password": "Confirmar senha",
+    "button_create": "Criar conta",
+    "google_button": "Criar conta com Google",
+    "or": "OU",
+    "have_account": "Já tem uma conta",
+    "success": "Conta criada com sucesso!",
+    "error": "Erro ao criar conta: {0}",
+    "google_error": "Erro ao conectar com o Google: {0}",
+    "error_name": "Por favor, insira seu nome",
+    "error_birth": "Por favor, selecione sua data de nascimento",
+    "error_email_empty": "Por favor, insira seu email",
+    "error_email_invalid": "Email inválido",
+    "error_password": "A senha deve ter pelo menos 6 caracteres",
+    "error_confirm": "As senhas não coincidem"
+  },
+  "bottom": {
+    "home": "Início",
+    "current_month": "Mês Atual",
+    "photos": "Fotos",
+    "diary": "Diário",
+    "mood": "Humor",
+    "luck": "Sorte do Dia"
+  },
+  "photos": {
+    "title": "Fotos do Mês",
+    "description": "Capture os momentos mais preciosos do mês em 'Fotos' e guarde lembranças que farão seu coração sorrir depois 💕",
+    "empty": "Ainda não há fotos 💕\nEscolha até 4 fotos especiais deste mês!",
+    "popup_title": "Em breve 💫",
+    "popup_content": "A galeria de fotos estará disponível nas próximas atualizações.\nPor enquanto, aproveite as outras seções do app!",
+    "ok_button": "Ok"
+  },
+  "album": {
+    "title": "Seu Álbum de Fotos {0}",
+    "description": "Suas memórias do ano registradas com amor. Continue construindo sua história!",
+    "empty_title": "Suas fotos mensais vão aparecer aqui 📷✨",
+    "empty_description": "Adicione fotos em cada mês para construir seu álbum anual automaticamente!",
+    "popup_title": "Disponível em breve 💫",
+    "popup_content": "O álbum anual estará disponível nas próximas atualizações.\nPor enquanto, aproveite as outras seções do app!",
+    "ok_button": "Ok"
+  },
+  "interview": {
+    "title": "Entrevista do Mês",
+    "featured_title": "MINHA ENTREVISTA DO MÊS",
+    "intro_text": "De quem você vai guardar as memórias este mês?",
+    "interviewee": "Entrevistado(a)",
+    "name_label": "Qual é o nome do entrevistado?",
+    "relation_label": "Quem é essa pessoa pra você?",
+    "age_label": "Idade",
+    "questions_intro": "PERGUNTE...",
+    "answer_hint": "Escreva sua resposta aqui...",
+    "write_answer": "Escreva sua resposta...",
+    "record_voice": "Gravar memória de voz",
+    "view_more_premium": "Ver mais perguntas (Premium)",
+    "record_memory": "Gravar memória de voz",
+    "save_memory": "Salvar memória",
+    "saving": "Salvando...",
+    "saved_success": "Entrevista salva com sucesso! 💖",
+    "save_error": "Ocorreu um erro ao salvar sua memória.",
+    "default_q1": "Compartilhe uma lembrança especial que te faz sorrir.",
+    "default_q2": "Qual foi o conselho mais valioso que você já recebeu?",
+    "default_q3": "O que tem te deixado mais feliz ultimamente?",
+    "default_q4": "Tem algo novo que você aprendeu recentemente e te surpreendeu?",
+    "default_q5": "Se pudesse mandar uma mensagem para você mesmo há um ano, o que diria?",
+    "see_more": "Ver mais perguntas",
+    "save": "Salvar respostas",
+    "record_audio": "Gravar áudio",
+    "coming_soon": "Em breve!"
+  },
+  "premium_popup": {
+    "title": "Recurso Premium",
+    "message": "Seja Premium, desbloqueie todas as funções e registre suas memórias sem limites! 🌟",
+    "cancel": "Agora não",
+    "upgrade_button": "Assinar agora",
+    "voice_feature": "A gravação de voz estará disponível em breve para assinantes Premium. 🌟"
+  },
+  "popup_login": {
+    "required_title": "Login necessário",
+    "required_description": "Crie uma conta gratuita para salvar suas respostas 💖",
+    "cancel": "Mais tarde",
+    "login_button": "Entrar"
+  },
+  "actions": {
+    "ok": "OK",
+    "close": "Fechar",
+    "login": "Fazer login"
+  },
+  "coming_soon_popup": {
+    "title": "Função em breve",
+    "message": "Essa função estará disponível em breve! Fique de olho 💕",
+    "button": "Entendi"
+  },
+  "monthly_goals": {
+    "title": "Metas do Mês",
+    "description": "Planeje, cocrie e organize suas metas do mês. Toda vez que você decide, você já está um passo mais perto de transformar seus sonhos em realidade.",
+    "add_goal_hint": "Digite sua nova meta...",
+    "no_goals_yet": "Nenhuma meta adicionada ainda.\nComece definindo suas metas para este mês!",
+    "goal_added": "Meta adicionada com sucesso!",
+    "goal_removed": "Meta removida com sucesso!",
+    "error_load_goals": "Erro ao carregar metas.",
+    "error_add_goal": "Erro ao adicionar meta.",
+    "error_update_goal": "Erro ao atualizar meta.",
+    "error_remove_goal": "Erro ao remover meta."
+  },
+  "month_menu": {
+    "goals": "Metas do Mês",
+    "about_me": "Sobre Mim",
+    "quiz": "Quiz Interativo",
+    "signs": "Signos do Mês",
+    "tips": "Dicas do Mês",
+    "facts": "Você Sabia?",
+    "interview": "Entrevista do Mês",
+    "lists": "Minhas Listas",
+    "gratitude": "Página da Gratidão",
+    "reflections": "Reflexões Mensais",
+    "photos": "Fotos do Mês",
+    "fortune": "Sorte do Dia",
+    "choose_section": "Por qual sessão do mês você quer passar hoje?"
+  },
+    "dailyLuck": {
+      "consultingUniverse": "Consultando o universo...",
+      "alreadyReceived": "✨ Você já tirou sua sorte de hoje!",
+      "comeBackTomorrow": "Todos os dias o universo tem algo pra te dizer",
+      "discoverLuck": "Mensagem do dia de hoje",
+      "premiumOnly": "Função disponível apenas para usuárias Premium 🔒",
+      "becomePremium": "Seja Premium",
+      "drawAnother": "Tirar outra sorte"
+
+    },
+
+      "dashboard": {
+        "hello_user": "Olá, {user}!",
+        "track_your_activities": "Acompanhe suas atividades 💫",
+        "search_previous_dates": "Pesquisar datas anteriores",
+        "daily_inspiration": "🌙 Buscando uma inspiração para hoje...",
+        "select_date": "Selecione uma data",
+
+        "goals": "Metas",
+        "mood": "Humor",
+        "diary": "Diário",
+        "monthly_quiz": "Quiz do Mês",
+        "gratitude": "Gratidão",
+        "about_me": "Sobre Mim",
+
+        "month_short": {
+          "jan": "Jan",
+          "feb": "Fev",
+          "mar": "Mar",
+          "apr": "Abr",
+          "may": "Mai",
+          "jun": "Jun",
+          "jul": "Jul",
+          "aug": "Ago",
+          "sep": "Set",
+          "oct": "Out",
+          "nov": "Nov",
+          "dec": "Dez"
+        },
+
+        "month": {
+          "january": "Janeiro",
+          "february": "Fevereiro",
+          "march": "Março",
+          "april": "Abril",
+          "may": "Maio",
+          "june": "Junho",
+          "july": "Julho",
+          "august": "Agosto",
+          "september": "Setembro",
+          "october": "Outubro",
+          "november": "Novembro",
+          "december": "Dezembro"
+        }
+      }
+
+    }
+

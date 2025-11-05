@@ -1,4 +1,262 @@
 {
-"app_name": "My Year, My Story",
-"welcome": "Welcome!"
-}
+  "splash": {
+    "new_chapter": "A new chapter begins…",
+    "subtitle": "Your digital memory journal 💕",
+    "login_button": "Login / Create account",
+    "guest_button": "Explore without login"
+  },
+  "auth": {
+    "welcome_title": "Welcome to My Year, My Story!",
+    "choose_start": "Choose how you’d like to start:",
+    "login_google_email": "Sign in with Google or Email",
+    "login_guest": "Continue as Guest",
+    "signup_button": "Create an account",
+    "login": {
+      "description": "Capture your memories, track your moods, and tell your unique story through the months.",
+      "sign_in": "Sign in",
+      "create_account": "Create Account",
+      "email": "Email",
+      "password": "Password",
+      "remember_me": "Remember me",
+      "forgot_password": "Forgot password?",
+      "button": "Sign in",
+      "or": "OR",
+      "google_button": "Sign in with Google",
+      "error_email_empty": "Please enter your email",
+      "error_email_invalid": "Please enter a valid email",
+      "error_password_empty": "Please enter your password",
+      "error_password_short": "Password must be at least 6 characters long",
+      "success": "Login successful!",
+      "error_general": "Error logging in",
+      "signup_title": "Sign Up",
+      "welcome_subtitle": "Choose how you’d like to begin:",
+      "login_google_email": "Sign in with Google or Email",
+      "enter_guest": "Enter as guest"
+    }
+  },
+  "drawer": {
+    "hello": "Hello,",
+    "guest": "Guest",
+    "profile": "Profile",
+    "help": "Help / Support",
+    "language": "Language",
+    "login": "Login",
+    "logout": "Logout",
+    "logout_title": "Sign out",
+    "logout_message": "Are you sure you want to log out?",
+    "cancel": "Cancel",
+    "go_premium": "🌸 Go Premium",
+    "premium_active": "🌷 Premium Account Active",
+    "select_language": "Select language"
+  },
+  "profile": {
+    "title": "My Profile",
+    "no_name": "User without name",
+    "sign": "Your zodiac sign is {0} ✨",
+    "add_birthdate": "Add your birth date to discover your sign ✨",
+    "full_name": "Full name",
+    "birth_date": "Date of birth",
+    "email": "Email",
+    "save_changes": "Save changes",
+    "updated": "Profile updated successfully! 🎉",
+    "error_update": "Error updating profile: {0}"
+  },
+  "premium": {
+    "title_guest": "Exclusive Access 🌟",
+    "title_user": "Premium Plan ✨",
+    "message_guest": "Shine bright and unlock all Premium features ✨\n\nLog in to continue and learn more!",
+    "message_user": "Keep shining! 🌈\nUnlock all Premium features and enjoy everything the app has to offer.",
+    "button_login": "Log in",
+    "button_view_plans": "View plans",
+    "button_later": "Maybe later",
+    "title": "Premium Plan",
+    "subtitle": "Turn your year into eternal memories ✨",
+    "monthly_title": "🌷 Monthly Plan",
+    "monthly_price": "$2.49 / month",
+    "monthly_detail1": "Full access for 30 days",
+    "monthly_detail2": "Auto-renewal enabled",
+    "monthly_detail3": "Cancel anytime",
+    "annual_title": "🌸 Annual Plan (Most Popular)",
+    "annual_price": "$24 / year",
+    "annual_detail1": "Full access for 12 months",
+    "annual_detail2": "Save 25%",
+    "annual_detail3": "Bonus: exclusive pages and features 💫",
+    "subscribe_button": "Subscribe now",
+    "dialog_title": "💖 Coming soon!",
+    "dialog_message": "The payment system will be available soon.\n\nSoon you’ll be able to subscribe and enjoy all the Premium features of My Year, My Story!",
+    "dialog_button": "Love it ✨",
+    "back_button": "Back"
+  },
+  "signup": {
+    "subtitle": "Create your account and start your journey of self-discovery and memory keeping.",
+    "full_name": "Full name",
+    "birth_date": "Date of birth",
+    "email": "Email",
+    "password": "Password",
+    "confirm_password": "Confirm password",
+    "button_create": "Create Account",
+    "google_button": "Sign up with Google",
+    "or": "OR",
+    "have_account": "Already have an account",
+    "success": "Account created successfully!",
+    "error": "Error creating account: {0}",
+    "google_error": "Error connecting with Google: {0}",
+    "error_name": "Please enter your name",
+    "error_birth": "Please select your date of birth",
+    "error_email_empty": "Please enter your email",
+    "error_email_invalid": "Invalid email",
+    "error_password": "Password must be at least 6 characters long",
+    "error_confirm": "Passwords do not match"
+  },
+  "bottom": {
+    "home": "Home",
+    "current_month": "Current Month",
+    "photos": "Photos",
+    "diary": "Diary",
+    "mood": "Mood",
+    "luck": "Daily Luck"
+  },
+  "photos": {
+    "title": "Photos of the Month",
+    "description": "Capture the most precious moments of the month in 'Photos' and keep memories that will make your heart smile later 💕",
+    "empty": "No photos yet 💕\nChoose up to 4 special photos for this month!",
+    "popup_title": "Coming Soon 💫",
+    "popup_content": "The photo gallery will be available in future updates.\nFor now, enjoy the other sections of the app!",
+    "ok_button": "Ok"
+  },
+  "interview": {
+    "title": "Interview of the Month",
+    "featured_title": "MY INTERVIEW OF THE MONTH",
+    "intro_text": "Whose memories are you going to keep this month?",
+    "interviewee": "Interviewee",
+    "name_label": "What’s the interviewee’s name?",
+    "relation_label": "Who is this person to you?",
+    "age_label": "Age",
+    "questions_intro": "ASK...",
+    "answer_hint": "Write your answer here...",
+    "write_answer": "Write your answer...",
+    "record_voice": "Record voice memory",
+    "view_more_premium": "See more questions (Premium)",
+    "record_memory": "Record voice memory",
+    "save_memory": "Save memory",
+    "saving": "Saving...",
+    "saved_success": "Interview saved successfully! 💖",
+    "save_error": "An error occurred while saving your memory.",
+    "default_q1": "Share a special memory that makes you smile.",
+    "default_q2": "What’s the most valuable advice you’ve ever received?",
+    "default_q3": "What has made you happiest lately?",
+    "default_q4": "Is there something you learned recently that surprised you?",
+    "default_q5": "If you could send a message to your past self one year ago, what would you say?",
+    "see_more": "View more questions",
+    "save": "Save answers",
+    "record_audio": "Record audio",
+    "coming_soon": "Coming soon!"
+  },
+  "premium_popup": {
+    "title": "Premium Feature",
+    "message": "With the Premium plan, you unlock all interview questions and can record as many memories as you want 🌟",
+    "cancel": "Not now",
+    "upgrade_button": "Subscribe now"
+  },
+  "coming_soon_popup": {
+    "title": "Feature coming soon",
+    "message": "This feature will be available soon! Stay tuned 💕",
+    "button": "Got it"
+  },
+  "actions": {
+    "ok": "OK",
+    "close": "Close",
+    "login": "Login"
+  },
+  "popup_login": {
+    "required_title": "Login required",
+    "required_description": "Create a free account to save your answers 💖",
+    "cancel": "Later",
+    "login_button": "Login"
+  },
+  "monthly_goals": {
+    "title": "Monthly Goals",
+    "description": "Plan, co-create, and organize your monthly goals. Every decision you make brings you one step closer to achieving your dreams.",
+    "add_goal_hint": "Type your new goal...",
+    "no_goals_yet": "No goals added yet.\nStart defining your goals for this month!",
+    "goal_added": "Goal added successfully!",
+    "goal_removed": "Goal removed successfully!",
+    "error_load_goals": "Error loading goals.",
+    "error_add_goal": "Error adding goal.",
+    "error_update_goal": "Error updating goal.",
+    "error_remove_goal": "Error removing goal."
+  },
+  "month_menu": {
+    "goals": "Monthly Goals",
+    "about_me": "About Me",
+    "quiz": "Interactive Quiz",
+    "signs": "Monthly Zodiac",
+    "tips": "Monthly Tips",
+    "facts": "Did You Know?",
+    "interview": "Monthly Interview",
+    "lists": "My Lists",
+    "gratitude": "Gratitude Page",
+    "reflections": "Monthly Reflections",
+    "photos": "Photos of the Month",
+    "fortune": "Daily Fortune",
+    "choose_section": "Which section of the month would you like to visit today?"
+  },
+    "dailyLuck": {
+      "consultingUniverse": "Consulting the universe...",
+      "alreadyReceived": "✨ You've already received your luck for today!",
+      "comeBackTomorrow": "Every day the universe has something to tell you",
+      "discoverLuck": "Today’s Message",
+      "premiumOnly": "Feature available for Premium users only 🔒",
+      "becomePremium": "Become Premium",
+      "drawAnother": "Draw another fortune"
+
+    },
+
+      "dashboard": {
+        "hello_user": "Hi, {user}!",
+        "track_your_activities": "Track your activities 💫",
+        "search_previous_dates": "Search previous dates",
+        "daily_inspiration": "🌙 Looking for today’s inspiration...",
+        "select_date": "Select a date",
+
+        "goals": "Goals",
+        "mood": "Mood",
+        "diary": "Diary",
+        "monthly_quiz": "Monthly Quiz",
+        "gratitude": "Gratitude",
+        "about_me": "About Me",
+
+        "month_short": {
+          "jan": "Jan",
+          "feb": "Feb",
+          "mar": "Mar",
+          "apr": "Apr",
+          "may": "May",
+          "jun": "Jun",
+          "jul": "Jul",
+          "aug": "Aug",
+          "sep": "Sep",
+          "oct": "Oct",
+          "nov": "Nov",
+          "dec": "Dec"
+        },
+
+        "month": {
+          "january": "January",
+          "february": "February",
+          "march": "March",
+          "april": "April",
+          "may": "May",
+          "june": "June",
+          "july": "July",
+          "august": "August",
+          "september": "September",
+          "october": "October",
+          "november": "November",
+          "december": "December"
+        }
+      }
+
+
+    }
+

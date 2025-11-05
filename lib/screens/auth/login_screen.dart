@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:my_year_my_story/theme.dart';
 import 'package:my_year_my_story/widgets/auth/custom_text_field.dart';
 import 'package:my_year_my_story/widgets/auth/auth_button.dart';
@@ -62,11 +63,15 @@ class _LoginScreenState extends State<LoginScreen> {
           rememberedPassword != null &&
           rememberedPassword.isNotEmpty) {
         _passwordController.text = rememberedPassword;
-        await Future.delayed(const Duration(milliseconds: 300));
-        _performAutoLogin();
+
+        // ✅ Garante que o auto login só rode após o primeiro frame
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _performAutoLogin();
+        });
       }
     }
   }
+
 
   Future<void> _saveRememberedCredentials() async {
     final prefs = await SharedPreferences.getInstance();
@@ -81,6 +86,34 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // 🔄 Sincroniza o idioma atual do app com o Supabase
+  Future<void> syncUserLanguage() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+
+    final currentLang = context.locale.languageCode; // 'pt' ou 'en'
+
+    try {
+      final profile = await Supabase.instance.client
+          .from('profiles')
+          .select('language')
+          .eq('id', user.id)
+          .maybeSingle();
+
+      final dbLang = profile?['language'];
+
+      if (dbLang != currentLang) {
+        await Supabase.instance.client
+            .from('profiles')
+            .update({'language': currentLang})
+            .eq('id', user.id);
+      }
+    } catch (e) {
+      debugPrint('Erro ao sincronizar idioma: $e');
+    }
+  }
+
+  // ✅ Mantive apenas esta versão — a duplicata foi removida
   Future<void> _signIn() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
@@ -96,15 +129,18 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (response['success']) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Login realizado com sucesso!'),
+            SnackBar(
+              content: Text('auth.login.success'.tr()),
               backgroundColor: Colors.green,
-              duration: Duration(seconds: 1),
+              duration: const Duration(seconds: 1),
             ),
           );
-          await _saveRememberedCredentials();
 
+          await _saveRememberedCredentials();
           await Future.delayed(const Duration(milliseconds: 500));
+
+          await syncUserLanguage(); // ✅ Atualiza idioma do perfil no Supabase
+
           Navigator.of(context).pushReplacement(
             fadePageTransition(
               DashboardScreen(
@@ -124,7 +160,10 @@ class _LoginScreenState extends State<LoginScreen> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Erro ao fazer login: $e')),
+            SnackBar(
+              content: Text('${'auth.login.error_general'.tr()}: $e'),
+              backgroundColor: Colors.red,
+            ),
           );
         }
       } finally {
@@ -132,6 +171,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     }
   }
+
 
   Future<void> _performAutoLogin() async {
     if (!mounted) return;
@@ -168,10 +208,8 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  /// 🌸 Novo fluxo de login com Google — corrigido
   Future<void> _signInWithGoogle() async {
     setState(() => _isGoogleLoading = true);
-
     try {
       await GoogleSignInService.signInWithGoogle(context);
     } catch (e) {
@@ -236,7 +274,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
-                        'Capture suas memórias, acompanhe seus humores e conte sua história única através dos meses.',
+                        'auth.login.description'.tr(),
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                           color: Colors.black87,
                           height: 1.4,
@@ -288,7 +326,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   },
                                   child: Center(
                                     child: Text(
-                                      'Entrar',
+                                      'auth.login.sign_in'.tr(),
                                       style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w600,
@@ -313,7 +351,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   },
                                   child: Center(
                                     child: Text(
-                                      'Criar Conta',
+                                      'auth.login.create_account'.tr(),
                                       style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w600,
@@ -336,16 +374,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Campos de login
                     CustomTextField(
                       controller: _emailController,
-                      labelText: 'Email',
+                      labelText: 'auth.login.email'.tr(),
                       prefixIcon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Por favor, insira seu email';
+                          return 'auth.login.error_email_empty'.tr();
                         }
                         if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
                             .hasMatch(value)) {
-                          return 'Por favor, insira um email válido';
+                          return 'auth.login.error_email_invalid'.tr();
                         }
                         return null;
                       },
@@ -355,15 +393,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     CustomTextField(
                       controller: _passwordController,
-                      labelText: 'Senha',
+                      labelText: 'auth.login.password'.tr(),
                       prefixIcon: Icons.lock_outline,
                       obscureText: true,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Por favor, insira sua senha';
+                          return 'auth.login.error_password_empty'.tr();
                         }
                         if (value.length < 6) {
-                          return 'A senha deve ter pelo menos 6 caracteres';
+                          return 'auth.login.error_password_short'.tr();
                         }
                         return null;
                       },
@@ -381,7 +419,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           visualDensity: VisualDensity.compact,
                         ),
                         Text(
-                          'Lembrar de mim',
+                          'auth.login.remember_me'.tr(),
                           style: Theme.of(context)
                               .textTheme
                               .bodyMedium!
@@ -400,7 +438,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           child: Text(
-                            'Esqueci a senha?',
+                            'auth.login.forgot_password'.tr(),
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyMedium!
@@ -417,7 +455,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 24),
 
                     AuthButton(
-                      text: 'Entrar',
+                      text: 'auth.login.button'.tr(),
                       isLoading: _isLoading,
                       onPressed: _signIn,
                       backgroundColor: LightModeColors.lightSecondary,
@@ -425,12 +463,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 24),
 
-                    const DividerWithText(text: 'OU'),
+                    DividerWithText(text: 'auth.login.or'.tr()),
 
                     const SizedBox(height: 24),
 
                     AuthButton(
-                      text: 'Entrar com Google',
+                      text: 'auth.login.google_button'.tr(),
                       icon: Icons.account_circle,
                       isOutlined: true,
                       isLoading: _isGoogleLoading,

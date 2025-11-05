@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'dart:ui' as ui;
 
 // Telas principais
 import 'package:my_year_my_story/screens/diary/diary_screen.dart';
@@ -11,12 +13,13 @@ import 'package:my_year_my_story/widgets/monthly/monthly_goals_widget.dart';
 import 'package:my_year_my_story/widgets/monthly/gratitude_widget.dart';
 import 'package:my_year_my_story/screens/quiz/interactive_quiz_screen.dart';
 import 'package:my_year_my_story/screens/monthly/current_month_screen.dart';
-import 'package:my_year_my_story/widgets/monthly/curiosities_widget.dart';
+import '../../widgets/monthly/curiosities_widget.dart';
 
-// 🌸 Menu inferior
+// Menu inferior
 import 'package:my_year_my_story/widgets/shared/app_bottom_menu.dart';
-
-// ✨ Transição personalizada
+// Menu superior
+import '../../widgets/shared/custom_drawer.dart';
+// Transição personalizada
 import 'package:my_year_my_story/screens/splash/fade_page_transition.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -24,10 +27,10 @@ class DashboardScreen extends StatefulWidget {
   final int year;
 
   const DashboardScreen({
-    Key? key,
+    super.key,
     required this.month,
     required this.year,
-  }) : super(key: key);
+  });
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -42,7 +45,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String? humorMaisComum;
   String? quizResultado;
   String? curiosidadeAleatoria;
-  String? dailyQuote; // 🌷 Nova frase do dia
+  String? dailyQuote;
 
   late int selectedMonth;
   late int selectedYear;
@@ -53,7 +56,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.initState();
     selectedMonth = widget.month;
     selectedYear = widget.year;
+
+    _syncUserLanguage();
     _loadDashboardData();
+  }
+
+  // 🔄 Sincroniza o idioma do app com o Supabase
+  Future<void> _syncUserLanguage() async {
+    final user = supabase.auth.currentUser;
+    if (user == null) return;
+
+    final currentLang = ui.PlatformDispatcher.instance.locale.languageCode;
+
+    try {
+      final profile = await supabase
+          .from('profiles')
+          .select('language')
+          .eq('id', user.id)
+          .maybeSingle();
+
+      final dbLang = profile?['language'];
+
+      if (dbLang != currentLang) {
+        await supabase
+            .from('profiles')
+            .update({'language': currentLang})
+            .eq('id', user.id);
+      }
+    } catch (e) {
+      debugPrint('Erro ao sincronizar idioma no Dashboard: $e');
+    }
   }
 
   Future<void> _loadDashboardData() async {
@@ -62,7 +94,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     try {
       if (user == null) {
-        debugPrint('Modo convidado detectado — pulando chamadas Supabase');
         metasConcluidas = 0;
         gratidaoCount = 0;
         diarioCount = 0;
@@ -146,10 +177,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  String getNomeMes(int mes) {
-    const meses = [
-      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+  // 🔠 Mês abreviado traduzido
+  String getNomeMesAbreviado(int mes) {
+    final mesesAbrev = [
+      'dashboard.month_short.jan'.tr(),
+      'dashboard.month_short.feb'.tr(),
+      'dashboard.month_short.mar'.tr(),
+      'dashboard.month_short.apr'.tr(),
+      'dashboard.month_short.may'.tr(),
+      'dashboard.month_short.jun'.tr(),
+      'dashboard.month_short.jul'.tr(),
+      'dashboard.month_short.aug'.tr(),
+      'dashboard.month_short.sep'.tr(),
+      'dashboard.month_short.oct'.tr(),
+      'dashboard.month_short.nov'.tr(),
+      'dashboard.month_short.dec'.tr(),
+    ];
+    return mesesAbrev[mes - 1];
+  }
+
+  // 🔠 Mês completo traduzido
+  String getNomeMesCompleto(int mes) {
+    final meses = [
+      'dashboard.month.january'.tr(),
+      'dashboard.month.february'.tr(),
+      'dashboard.month.march'.tr(),
+      'dashboard.month.april'.tr(),
+      'dashboard.month.may'.tr(),
+      'dashboard.month.june'.tr(),
+      'dashboard.month.july'.tr(),
+      'dashboard.month.august'.tr(),
+      'dashboard.month.september'.tr(),
+      'dashboard.month.october'.tr(),
+      'dashboard.month.november'.tr(),
+      'dashboard.month.december'.tr(),
     ];
     return meses[mes - 1];
   }
@@ -157,15 +218,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final user = supabase.auth.currentUser;
-    final userName = user?.userMetadata?['name'] ?? 'Convidado';
+    final userName = user?.userMetadata?['name'] ?? 'Guest';
     final now = DateTime.now();
-    final diaSemana = DateFormat.EEEE('pt_BR').format(now);
+    final diaSemana = DateFormat.EEEE(context.locale.languageCode).format(now);
     final dataCompleta =
-        '$diaSemana, ${now.day} de ${getNomeMes(now.month)} de ${now.year}';
+        '$diaSemana, ${now.day} de ${getNomeMesCompleto(now.month)} de ${now.year}';
 
     return Scaffold(
       backgroundColor: const Color(0xFFFDFDFD),
-      drawer: _buildDrawer(userName),
+      drawer: const CustomDrawer(),
       appBar: AppBar(
         backgroundColor: const Color(0xFFe2377d),
         elevation: 0,
@@ -179,19 +240,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         centerTitle: true,
       ),
-
-      // 🌸 BODY
       body: RefreshIndicator(
         onRefresh: _loadDashboardData,
-        child: SingleChildScrollView( // ✅ resolve overflow e permite rolagem
+        child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 36), // 🔧 respiro maior no topo
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 36),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  'Olá, $userName!',
+                  tr('dashboard.hello_user', args: [userName]),
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -203,7 +262,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   dataCompleta,
                   style: const TextStyle(color: Colors.black54),
                 ),
-                const SizedBox(height: 32), // 🔧 respiro antes do calendário
+                const SizedBox(height: 32),
 
                 // 📅 Seleção de mês
                 GridView.builder(
@@ -243,7 +302,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                         child: Center(
                           child: Text(
-                            getNomeMes(index + 1).substring(0, 3),
+                            getNomeMesAbreviado(index + 1),
                             style: TextStyle(
                               color: ativo ? Colors.white : Colors.black87,
                               fontWeight: FontWeight.w600,
@@ -255,16 +314,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   },
                 ),
 
-                const SizedBox(height: 40), // 🔧 respiro antes da pesquisa
+                const SizedBox(height: 40),
 
-                // 🔍 Pesquisa
                 _buildDateSearch(context),
 
-                const SizedBox(height: 36), // 🔧 respiro antes do título de atividades
+                const SizedBox(height: 36),
 
-                const Text(
-                  'Acompanhe suas atividades 💫',
-                  style: TextStyle(
+                Text(
+                  'dashboard.track_your_activities'.tr(),
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF665C8E),
@@ -282,37 +340,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   mainAxisSpacing: 14,
                   children: [
                     _buildCard(
-                      title: 'Metas',
+                      title: tr('dashboard.goals'),
                       icon: PhosphorIconsRegular.target,
-                      color: const Color(0xFFF679BD3),
+                      color: const Color(0xFF679BD3),
                       route: '/monthly_goals',
                     ),
                     _buildCard(
-                      title: 'Humor',
+                      title: tr('dashboard.mood'),
                       icon: PhosphorIconsRegular.smiley,
                       color: const Color(0xFFF6B8C6),
                       route: '/mood_summary',
                     ),
                     _buildCard(
-                      title: 'Diário',
+                      title: tr('dashboard.diary'),
                       icon: PhosphorIconsRegular.notebook,
                       color: const Color(0xFFe2377d),
                       route: '/diary_entries',
                     ),
                     _buildCard(
-                      title: 'Quiz do Mês',
+                      title: tr('dashboard.monthly_quiz'),
                       icon: PhosphorIconsRegular.star,
                       color: const Color(0xFFDBAF35),
                       route: '/interactive_quiz',
                     ),
                     _buildCard(
-                      title: 'Gratidão',
+                      title: tr('dashboard.gratitude'),
                       icon: PhosphorIconsRegular.heart,
                       color: const Color(0xFFCF8EE8),
                       route: '/gratitude',
                     ),
                     _buildCard(
-                      title: 'Sobre Mim',
+                      title: tr('dashboard.about_me'),
                       icon: PhosphorIconsRegular.flower,
                       color: const Color(0xFFddbfef),
                       route: '/curiosities',
@@ -333,10 +391,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   )
                 else
-                  const Text(
-                    '🌙 Buscando uma inspiração para hoje...',
+                  Text(
+                    'dashboard.daily_inspiration'.tr(),
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.black45,
                       fontSize: 13,
                     ),
@@ -347,22 +405,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
       ),
-
       bottomNavigationBar: const AppBottomMenu(currentIndex: 0),
     );
   }
 
-  // 🔎 Pesquisa de data
+  // 🔎 Pesquisa de data — bloqueando anos anteriores ao atual
   Widget _buildDateSearch(BuildContext context) {
     return GestureDetector(
       onTap: () async {
+        final currentYear = DateTime.now().year;
         final DateTime? picked = await showDatePicker(
           context: context,
           initialDate: DateTime.now(),
-          firstDate: DateTime(2020),
-          lastDate: DateTime(2026),
-          locale: const Locale('pt', 'BR'),
-          helpText: 'Selecione uma data',
+          firstDate: DateTime(currentYear), // bloqueia anos anteriores
+          lastDate: DateTime(currentYear + 2),
+          locale: context.locale,
+          helpText: tr('dashboard.select_date'),
         );
 
         if (picked != null) {
@@ -379,14 +437,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           border: Border.all(color: Colors.black26),
           borderRadius: BorderRadius.circular(30),
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.search, color: Colors.black54, size: 20),
-            SizedBox(width: 8),
+            const Icon(Icons.search, color: Colors.black54, size: 20),
+            const SizedBox(width: 8),
             Text(
-              'Pesquisar datas anteriores',
-              style: TextStyle(
+              'dashboard.search_previous_dates'.tr(),
+              style: const TextStyle(
                 color: Colors.black54,
                 fontSize: 15,
               ),
@@ -397,7 +455,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // 💠 Cards do dashboard
+  // 💠 Cards
   Widget _buildCard({
     required String title,
     required IconData icon,
@@ -415,11 +473,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             target = MoodScreen(month: selectedMonth, year: selectedYear);
             break;
           case '/diary_entries':
-            target = DiaryScreen(month: selectedMonth, year: selectedYear);
+            target = const DiaryScreen();
             break;
           case '/interactive_quiz':
-            target =
-                InteractiveQuizScreen(month: selectedMonth, year: selectedYear);
+            target = InteractiveQuizScreen(
+                month: selectedMonth, year: selectedYear);
             break;
           case '/gratitude':
             target = GratitudeWidget(month: selectedMonth, year: selectedYear);
@@ -462,53 +520,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  // 🌷 Drawer
-  Drawer _buildDrawer(String userName) {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          DrawerHeader(
-            decoration: const BoxDecoration(color: Color(0xFFddbfef)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const CircleAvatar(
-                  radius: 28,
-                  backgroundColor: Colors.white,
-                  child: Icon(Icons.person, size: 40, color: Colors.grey),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'Olá, $userName!',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
-                ),
-                const Text(
-                  'My Year, My Story',
-                  style: TextStyle(color: Colors.white70),
-                ),
-              ],
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.logout),
-            title: const Text('Sair'),
-            onTap: () async {
-              await supabase.auth.signOut();
-              if (context.mounted) {
-                Navigator.pushReplacementNamed(context, '/login');
-              }
-            },
-          ),
-        ],
       ),
     );
   }

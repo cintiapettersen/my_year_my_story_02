@@ -30,22 +30,25 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- Deep Link do Supabase -->
+            <!-- Deep Link do Supabase (chamadas HTTPS que voltam pro app) -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:scheme="https"
-                    android:host="abrctowsfsgfxdoszmdq.supabase.co" />
+                    android:host="abrctowsfsgfxdoszmdq.supabase.co"
+                    android:pathPrefix="/auth/v1/callback" />
             </intent-filter>
 
-            <!-- Custom URL Scheme -->
+            <!-- Custom URL Scheme usado no redirect da autenticação -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="com.myyearstory" />
+                <data
+                    android:scheme="com.myyear.my_year_my_story"
+                    android:host="login-callback" />
             </intent-filter>
         </activity>
 
@@ -55,7 +58,7 @@
             android:value="2" />
     </application>
 
-    <!-- Optional: Process Text (exemplo de permissão útil para apps que manipulam texto) -->
+    <!-- Optional: Permissão para apps que manipulam texto -->
     <queries>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT" />

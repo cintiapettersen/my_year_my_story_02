@@ -9,11 +9,11 @@ Color getMonthColor(int month) {
     Color(0xFFcf8ee8), // Maio
     Color(0xFFbeb6f2), // Junho
     Color(0xFF776fb5), // Julho
-    Color(0xFF892e4e), // Agosto
+    Color(0xFFd83d78), // Agosto
     Color(0xFFb71691), // Setembro
     Color(0xFFc48c00), // Outubro
     Color(0xFF3983c6), // Novembro
-    Color(0xFF9845bf), // Dezembro
+    Color(0xFF9a5dba), // Dezembro
   ];
   return monthColors[month - 1];
 }
