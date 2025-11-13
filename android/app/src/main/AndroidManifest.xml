@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.myyear.my_year_my_story">
 
-    <!-- Internet permission for Supabase and other APIs -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -19,50 +18,36 @@
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize">
 
-            <!-- Tema de inicialização -->
+            <!-- Tema usado antes do Flutter ser carregado -->
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme" />
 
-            <!-- Activity principal -->
+            <!-- Tela inicial -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- Deep Link do Supabase (chamadas HTTPS que voltam pro app) -->
+            <!-- ✅ Deep Link para o Magic Link Supabase -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
+                <!-- MESMO formato da URL configurada no Supabase e no appRedirectUrl -->
                 <data
-                    android:scheme="https"
-                    android:host="abrctowsfsgfxdoszmdq.supabase.co"
-                    android:pathPrefix="/auth/v1/callback" />
+                    android:scheme="com.myyear.myyearmystory"
+                    android:host="auth"
+                    android:pathPrefix="/callback" />
             </intent-filter>
 
-            <!-- Custom URL Scheme usado no redirect da autenticação -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:scheme="com.myyear.my_year_my_story"
-                    android:host="login-callback" />
-            </intent-filter>
         </activity>
 
-        <!-- Flutter Embedding V2 -->
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
     </application>
 
-    <!-- Optional: Permissão para apps que manipulam texto -->
-    <queries>
-        <intent>
-            <action android:name="android.intent.action.PROCESS_TEXT" />
-            <data android:mimeType="text/plain" />
-        </intent>
-    </queries>
 </manifest>

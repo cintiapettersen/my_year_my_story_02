@@ -109,23 +109,25 @@ class UserService {
 
       await SupabaseConfig.client.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: 'com.myyear.mystory://login-callback',
+        redirectTo: 'com.myyear.my_year_my_story://login-callback',
+        authScreenLaunchMode: LaunchMode.externalApplication, // força abrir fora do app
       );
 
-      print('🔁 [GOOGLE] Redirecionado para autenticação.');
+      print('🌐 [GOOGLE] Fluxo OAuth iniciado com sucesso. Aguardando retorno do navegador...');
 
       return {
         'success': true,
         'message': 'Login com Google iniciado. Aguarde o retorno.',
       };
     } catch (e) {
-      print('❌ [GOOGLE] Erro: $e');
+      print('❌ [GOOGLE] Erro ao iniciar login com Google: $e');
       return {
         'success': false,
         'message': 'Erro ao iniciar login com Google: $e',
       };
     }
   }
+
 
   // ✅ OBTER PERFIL PELO ID
   static Future<Map<String, dynamic>?> getUserProfile(String userId) async {

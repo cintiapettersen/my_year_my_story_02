@@ -21,7 +21,12 @@
       "forgot_password": "Esqueceu a senha?",
       "button": "Entrar",
       "or": "OU",
-      "google_button": "Entrar com Google",
+      "magic_link_button": "Entrar com link mágico ",
+      "magic_link_title": " Entrar com link mágico?",
+      "magic_link_description": "Digite seu email e enviaremos um link seguro para acessar.",
+      "magic_link_confirm": "Enviar link mágico",
+      "magic_link_sent": "Link mágico enviado para {{0}}! Verifique seu e-mail ✨",
+      "magic_link_error": "Erro ao enviar link mágico: {{0}}",
       "error_email_empty": "Por favor, insira seu email",
       "error_email_invalid": "Por favor, insira um email válido",
       "error_password_empty": "Por favor, insira sua senha",
@@ -47,7 +52,10 @@
     "cancel": "Cancelar",
     "go_premium": "🌸 Ir para o Premium",
     "premium_active": "🌷 Conta Premium Ativa",
-    "select_language": "Selecionar idioma"
+    "select_language": "Selecionar idioma",
+    "logout_success": "Você saiu da sua conta com sucesso!",
+    "logout_error": "Não foi possível sair. Tente novamente."
+
   },
   "profile": {
     "title": "Meu Perfil",
@@ -95,12 +103,14 @@
     "password": "Senha",
     "confirm_password": "Confirmar senha",
     "button_create": "Criar conta",
-    "google_button": "Criar conta com Google",
+    "magic_link_button": "Acessar com link mágico ✉️",
+    "magic_link_title": "Já tem uma conta?",
+    "magic_link_description": "Informe seu email e enviaremos um link para você entrar rapidamente.",
+    "magic_link_confirm": "Enviar link mágico",
     "or": "OU",
     "have_account": "Já tem uma conta",
     "success": "Conta criada com sucesso!",
     "error": "Erro ao criar conta: {0}",
-    "google_error": "Erro ao conectar com o Google: {0}",
     "error_name": "Por favor, insira seu nome",
     "error_birth": "Por favor, selecione sua data de nascimento",
     "error_email_empty": "Por favor, insira seu email",
@@ -228,6 +238,8 @@
         "search_previous_dates": "Pesquisar datas anteriores",
         "daily_inspiration": "🌙 Buscando uma inspiração para hoje...",
         "select_date": "Selecione uma data",
+        "guest_user": "convidado",
+
 
         "goals": "Metas",
         "mood": "Humor",
@@ -264,8 +276,16 @@
           "october": "Outubro",
           "november": "Novembro",
           "december": "Dezembro"
+        },
+          "auth": {
+            "login": {
+              "magic_link_button": "Entrar com link mágico",
+              "magic_link_sent": "Link mágico enviado para {{0}}! Verifique seu e-mail ✨",
+              "magic_link_error": "Erro ao enviar link mágico: {{0}}"
+            }
+          }
+
         }
       }
 
-    }
 

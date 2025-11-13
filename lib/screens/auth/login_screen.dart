@@ -1,3 +1,4 @@
+// lib/screens/auth/login_screen.dart
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,7 +14,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:my_year_my_story/screens/splash/fade_page_transition.dart';
 import 'package:my_year_my_story/screens/auth/signup_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:my_year_my_story/services/google_sign_in_service.dart';
+import 'package:my_year_my_story/supabase/supabase_config.dart';
+import 'package:my_year_my_story/widgets/auth/magic_link_email_sheet.dart';
+
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -28,7 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   bool _rememberMe = false;
-  bool _isGoogleLoading = false;
+  bool _isMagicLoading = false;
   bool _isLoginSelected = true;
 
   @override
@@ -37,7 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
     _loadRememberedEmail();
 
     if (!kReleaseMode) {
-      _emailController.text = 'teste@myyear.com';
+      _emailController.text = 'email@myyear.com';
       _passwordController.text = '123456';
     }
   }
@@ -208,19 +212,70 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> _signInWithGoogle() async {
-    setState(() => _isGoogleLoading = true);
+  /// Abre o modal para captura de email e dispara o envio do Magic Link.
+  Future<void> _handleMagicLinkTap() async {
+    if (_isMagicLoading || !mounted) return;
+
+    final email = await showMagicLinkEmailSheet(
+      context: context,
+      title: 'auth.login.magic_link_title'.tr(),
+      description: 'auth.login.magic_link_description'.tr(),
+      emailLabel: 'auth.login.email'.tr(),
+      emailEmptyError: 'auth.login.error_email_empty'.tr(),
+      emailInvalidError: 'auth.login.error_email_invalid'.tr(),
+      confirmLabel: 'auth.login.magic_link_confirm'.tr(),
+      initialEmail: _emailController.text.trim(),
+    );
+
+    if (!mounted || email == null) return;
+
+    await _sendMagicLink(email);
+  }
+
+  /// Encapsula o envio do Magic Link + feedback visual.
+  Future<void> _sendMagicLink(String email) async {
+    if (!mounted) return;
+    setState(() => _isMagicLoading = true);
+
+    final normalizedEmail = email.trim();
+
     try {
-      await GoogleSignInService.signInWithGoogle(context);
-    } catch (e) {
+      await SupabaseConfig.sendMagicLink(normalizedEmail);
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Erro ao fazer login com Google: $e'),
+          content: Text(
+            'auth.login.magic_link_sent'.tr(args: [normalizedEmail]),
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } on MagicLinkException catch (e) {
+  if (!mounted) return;
+
+  final snackText = e.type == MagicLinkExceptionType.userNotFound
+      ? 'Usuário não cadastrado.'
+      : 'Erro ao enviar o link mágico. Tente novamente.';
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(snackText),
+      backgroundColor: Colors.red,
+    ),
+  );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'auth.login.magic_link_error'.tr(args: [e.toString()]),
+          ),
           backgroundColor: Colors.red,
         ),
       );
     } finally {
-      if (mounted) setState(() => _isGoogleLoading = false);
+      if (mounted) setState(() => _isMagicLoading = false);
     }
   }
 
@@ -467,13 +522,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 24),
 
+                    // 🌟 Botão de login por Magic Link (tradução ativada)
                     AuthButton(
-                      text: 'auth.login.google_button'.tr(),
-                      icon: Icons.account_circle,
+                      text: 'auth.login.magic_link_button'.tr(),
+                      icon: Icons.mail_outline,
                       isOutlined: true,
-                      isLoading: _isGoogleLoading,
-                      onPressed: _signInWithGoogle,
+                      isLoading: _isMagicLoading,
+                      onPressed: _handleMagicLinkTap,
                     ),
+
 
                     const SizedBox(height: 32),
                   ],

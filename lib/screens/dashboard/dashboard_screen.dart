@@ -218,7 +218,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final user = supabase.auth.currentUser;
-    final userName = user?.userMetadata?['name'] ?? 'Guest';
+    final userName = user?.userMetadata?['name'] ?? tr('dashboard.guest_user');
     final now = DateTime.now();
     final diaSemana = DateFormat.EEEE(context.locale.languageCode).format(now);
     final dataCompleta =
@@ -250,7 +250,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  tr('dashboard.hello_user', args: [userName]),
+                  tr('dashboard.hello_user', namedArgs: {'user': userName}),
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -263,6 +263,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   style: const TextStyle(color: Colors.black54),
                 ),
                 const SizedBox(height: 32),
+
 
                 // 📅 Seleção de mês
                 GridView.builder(

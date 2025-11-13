@@ -4,54 +4,52 @@ import 'package:my_year_my_story/models/story_model.dart';
 class StoryService {
   // Get all public stories
   static Future<List<StoryModel>> getPublicStories({int? limit}) async {
-    final data = await SupabaseService.select(
-      'stories',
-      where: 'is_public',
-      equals: true,
-      orderBy: 'created_at',
-      ascending: false,
-      limit: limit,
-    );
-    return data.map((json) => StoryModel.fromJson(json)).toList();
+    final client = SupabaseConfig.client;
+    final data = await client
+        .from('stories')
+        .select()
+        .eq('is_public', true)
+        .order('created_at', ascending: false)
+        .limit(limit ?? 100);
+
+    return data.map<StoryModel>((json) => StoryModel.fromJson(json)).toList();
   }
 
   // Get user's stories
   static Future<List<StoryModel>> getUserStories(String userId) async {
-    final data = await SupabaseService.select(
-      'stories',
-      where: 'user_id',
-      equals: userId,
-      orderBy: 'year',
-      ascending: false,
-    );
-    return data.map((json) => StoryModel.fromJson(json)).toList();
+    final client = SupabaseConfig.client;
+    final data = await client
+        .from('stories')
+        .select()
+        .eq('user_id', userId)
+        .order('year', ascending: false);
+
+    return data.map<StoryModel>((json) => StoryModel.fromJson(json)).toList();
   }
 
   // Get story by ID
   static Future<StoryModel?> getStoryById(String storyId) async {
-    final data = await SupabaseService.selectOne(
-      'stories',
-      where: 'id',
-      equals: storyId,
-    );
+    final client = SupabaseConfig.client;
+    final data = await client
+        .from('stories')
+        .select()
+        .eq('id', storyId)
+        .maybeSingle();
+
     return data != null ? StoryModel.fromJson(data) : null;
   }
 
   // Get story by year for user
   static Future<StoryModel?> getStoryByYear(String userId, int year) async {
-    final data = await SupabaseService.selectOne(
-      'stories',
-      where: 'user_id',
-      equals: userId,
-    );
-    
-    if (data != null) {
-      final story = StoryModel.fromJson(data);
-      if (story.year == year) {
-        return story;
-      }
-    }
-    return null;
+    final client = SupabaseConfig.client;
+    final data = await client
+        .from('stories')
+        .select()
+        .eq('user_id', userId)
+        .eq('year', year)
+        .maybeSingle();
+
+    return data != null ? StoryModel.fromJson(data) : null;
   }
 
   // Create new story
@@ -63,35 +61,35 @@ class StoryService {
     String? coverImageUrl,
     bool isPublic = false,
   }) async {
-    final data = await SupabaseService.insert('stories', {
+    final client = SupabaseConfig.client;
+    final data = await client.from('stories').insert({
       'user_id': userId,
       'year': year,
       'title': title,
       'content': content,
       'cover_image_url': coverImageUrl,
       'is_public': isPublic,
-    });
+    }).select();
+
     return StoryModel.fromJson(data.first);
   }
 
   // Update story
   static Future<StoryModel> updateStory(String storyId, Map<String, dynamic> updates) async {
-    final data = await SupabaseService.update(
-      'stories',
-      updates,
-      where: 'id',
-      equals: storyId,
-    );
+    final client = SupabaseConfig.client;
+    final data = await client
+        .from('stories')
+        .update(updates)
+        .eq('id', storyId)
+        .select();
+
     return StoryModel.fromJson(data.first);
   }
 
   // Delete story
   static Future<void> deleteStory(String storyId) async {
-    await SupabaseService.delete(
-      'stories',
-      where: 'id',
-      equals: storyId,
-    );
+    final client = SupabaseConfig.client;
+    await client.from('stories').delete().eq('id', storyId);
   }
 
   // Get stories by year range
@@ -104,6 +102,7 @@ class StoryService {
         .lte('year', endYear)
         .eq('is_public', true)
         .order('year', ascending: false);
+
     return data.map<StoryModel>((json) => StoryModel.fromJson(json)).toList();
   }
 
@@ -116,6 +115,7 @@ class StoryService {
         .eq('is_public', true)
         .or('title.ilike.%$query%,content.ilike.%$query%')
         .order('created_at', ascending: false);
+
     return data.map<StoryModel>((json) => StoryModel.fromJson(json)).toList();
   }
 }

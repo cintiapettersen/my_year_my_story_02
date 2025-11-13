@@ -13,7 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>my_year_my_story</string>
+	<string>myyearmystory</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -46,26 +46,18 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	
-	<!-- URL Schemes para Deep Links -->
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLName</key>
-			<string>supabase-auth</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>https</string>
-			</array>
-		</dict>
-		<dict>
-			<key>CFBundleURLName</key>
-			<string>com.myyear.mystory</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>com.myyear.mystory</string>
-			</array>
-		</dict>
-	</array>
+	<!-- URL Schemes para Deep Links (Supabase Magic Link) -->
+<key>CFBundleURLTypes</key>
+<array>
+	<dict>
+		<key>CFBundleURLName</key>
+		<string>supabase-auth</string>
+		<key>CFBundleURLSchemes</key>
+		<array>
+			<string>com.myyear.myyearmystory</string>
+		</array>
+	</dict>
+</array>
 	
 	<!-- Queries para permitir apps externos -->
 	<key>LSApplicationQueriesSchemes</key>

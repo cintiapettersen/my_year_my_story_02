@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:my_year_my_story/widgets/monthly/dailyluckpage.dart';
+import 'package:my_year_my_story/services/auth_listener.dart';
 
 
 
@@ -60,8 +61,13 @@ Future<void> main() async {
     Intl.defaultLocale = 'pt_BR';
   }
 
+
   // 🚀 Inicializa Supabase
-  await SupabaseConfig.initialize();
+await SupabaseConfig.initialize();
+
+// 🔐 Inicia listener global de autenticação
+AuthListener.initialize(navigatorKey);
+
 
   // 🌎 Define locale inicial do app
   Locale initialLocale;
@@ -70,6 +76,8 @@ Future<void> main() async {
   } else {
     initialLocale = const Locale('en');
   }
+
+
 
   runApp(
     EasyLocalization(

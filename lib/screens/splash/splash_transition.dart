@@ -51,7 +51,7 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
     try {
       print('🔎 Verificando sessão existente...');
 
-      await SupabaseConfig.ensureInitialized();
+      await SupabaseConfig.initialize();
       final client = SupabaseConfig.client;
 
       final session = client.auth.currentSession;

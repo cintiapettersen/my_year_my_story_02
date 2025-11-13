@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../main.dart';
 
 class CustomDrawer extends StatefulWidget {
@@ -54,6 +53,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
     final shouldLogout = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text('drawer.logout_title'.tr()),
         content: Text('drawer.logout_message'.tr()),
         actions: [
@@ -63,22 +63,45 @@ class _CustomDrawerState extends State<CustomDrawer> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text('drawer.logout'.tr()),
+            child: Text(
+              'drawer.logout'.tr(),
+              style: const TextStyle(color: Colors.pinkAccent),
+            ),
           ),
         ],
       ),
     );
 
     if (shouldLogout == true) {
-      await supabase.auth.signOut();
+      try {
+        await supabase.auth.signOut();
 
-      if (mounted) {
-        setState(() {
-          profileData = null;
-        });
+        if (!mounted) return;
+
+        // 🔄 Redireciona sem apagar preferências ou idioma
+        navigatorKey.currentState?.pushNamedAndRemoveUntil(
+          '/login',
+              (route) => false,
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('drawer.logout_success'.tr()),
+            backgroundColor: Colors.pinkAccent,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } catch (e) {
+        debugPrint('Erro ao sair: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('drawer.logout_error'.tr()),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       }
-
-      navigatorKey.currentState?.pushReplacementNamed('/login');
     }
   }
 
@@ -125,26 +148,52 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 const SizedBox(height: 6),
                 const Text('My Year, My Story'),
                 const SizedBox(height: 16),
+
+                // 🌸 Botão Premium com gradiente suave
                 GestureDetector(
                   onTap: () {
                     Navigator.pop(context);
                     navigatorKey.currentState?.pushNamed('/premium');
                   },
                   child: Container(
+                    width: double.infinity,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 15, vertical: 10),
+                        horizontal: 24, vertical: 12),
                     decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFFFBE4ED), // rosado suave
+                          Color(0xFFFFFFFF), // brilho natural
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                       border: Border.all(color: Colors.pinkAccent, width: 2),
                       borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.pinkAccent.withOpacity(0.07),
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
-                    child: Text(
-                      isPremium
-                          ? 'drawer.premium_active'.tr()
-                          : 'drawer.go_premium'.tr(),
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: isPremium ? Colors.green[800] : Colors.pink[800],
+                    child: Center(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          isPremium
+                              ? 'drawer.premium_active'.tr()
+                              : 'drawer.go_premium'.tr(),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color:
+                            isPremium ? Colors.green[800] : Colors.pink[800],
+                            letterSpacing: 0.3,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -152,6 +201,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
               ],
             ),
           ),
+
           const SizedBox(height: 24),
 
           // 🌸 Itens do menu
@@ -206,7 +256,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
   }
 
   void _showLanguageSelector(BuildContext context) {
-    final currentLocale = context.locale; // pega o idioma atual
+    final currentLocale = context.locale;
 
     showModalBottomSheet(
       context: context,
@@ -235,7 +285,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 borderRadius: BorderRadius.circular(12),
                 onTap: () async {
                   await EasyLocalization.of(navigatorKey.currentContext!)
-                      ?.setLocale(const Locale('pt',));
+                      ?.setLocale(const Locale('pt'));
 
                   if (navigatorKey.currentContext != null) {
                     ScaffoldMessenger.of(navigatorKey.currentContext!)
@@ -253,7 +303,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 child: Container(
                   decoration: BoxDecoration(
                     color: currentLocale.languageCode == 'pt'
-                        ? const Color(0xFFF8DDE7) // rosado suave quando selecionado
+                        ? const Color(0xFFF8DDE7)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -268,8 +318,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                           SizedBox(width: 12),
                           Text(
                             'Português',
-                            style:
-                            TextStyle(fontSize: 18, color: Colors.black87),
+                            style: TextStyle(
+                                fontSize: 18, color: Colors.black87),
                           ),
                         ],
                       ),
@@ -287,7 +337,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 borderRadius: BorderRadius.circular(12),
                 onTap: () async {
                   await EasyLocalization.of(navigatorKey.currentContext!)
-                      ?.setLocale(const Locale('en',));
+                      ?.setLocale(const Locale('en'));
 
                   if (navigatorKey.currentContext != null) {
                     ScaffoldMessenger.of(navigatorKey.currentContext!)
@@ -320,8 +370,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                           SizedBox(width: 12),
                           Text(
                             'English',
-                            style:
-                            TextStyle(fontSize: 18, color: Colors.black87),
+                            style: TextStyle(
+                                fontSize: 18, color: Colors.black87),
                           ),
                         ],
                       ),
@@ -337,5 +387,4 @@ class _CustomDrawerState extends State<CustomDrawer> {
       },
     );
   }
-
 }

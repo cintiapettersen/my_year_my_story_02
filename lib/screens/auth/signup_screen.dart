@@ -9,6 +9,8 @@ import 'package:my_year_my_story/widgets/auth/divider_with_text.dart';
 import 'package:my_year_my_story/services/user_service.dart';
 import 'package:my_year_my_story/screens/auth/auth_page_view.dart';
 import 'package:my_year_my_story/screens/splash/fade_page_transition.dart';
+import 'package:my_year_my_story/supabase/supabase_config.dart';
+import 'package:my_year_my_story/widgets/auth/magic_link_email_sheet.dart';
 
 class SignupScreen extends StatefulWidget {
   final VoidCallback? onLoginTap;
@@ -29,7 +31,7 @@ class _SignupScreenState extends State<SignupScreen> {
   DateTime? _selectedDate;
 
   bool _isLoading = false;
-  bool _isGoogleLoading = false;
+  bool _isMagicLoading = false;
 
   @override
   void dispose() {
@@ -115,28 +117,53 @@ class _SignupScreenState extends State<SignupScreen> {
     }
   }
 
-  Future<void> _signUpWithGoogle() async {
-    setState(() => _isGoogleLoading = true);
+  Future<void> _handleMagicLinkTap() async {
+    if (_isMagicLoading) return;
+
+    final email = await showMagicLinkEmailSheet(
+      context: context,
+      title: 'signup.magic_link_title'.tr(),
+      description: 'signup.magic_link_description'.tr(),
+      emailLabel: 'signup.email'.tr(),
+      emailEmptyError: 'signup.error_email_empty'.tr(),
+      emailInvalidError: 'signup.error_email_invalid'.tr(),
+      confirmLabel: 'signup.magic_link_confirm'.tr(),
+      initialEmail: _emailController.text.trim(),
+    );
+
+    if (email != null) {
+      await _sendMagicLink(email);
+    }
+  }
+
+  Future<void> _sendMagicLink(String email) async {
+    if (!mounted) return;
+    setState(() => _isMagicLoading = true);
 
     try {
-      final response = await UserService.signInWithGoogle();
-
+      await SupabaseConfig.sendMagicLink(email);
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(response['message']),
-          backgroundColor: response['success'] ? Colors.green : Colors.red,
+          content: Text('auth.login.magic_link_sent'.tr(args: [email])),
+          backgroundColor: Colors.green,
         ),
       );
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('signup.google_error'.tr(args: [e.toString()]))),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'auth.login.magic_link_error'.tr(
+              args: [e.toString()],
+            ),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
     } finally {
-      if (mounted) setState(() => _isGoogleLoading = false);
+      if (mounted) setState(() => _isMagicLoading = false);
     }
   }
 
@@ -313,11 +340,11 @@ class _SignupScreenState extends State<SignupScreen> {
                     const SizedBox(height: 24),
 
                     AuthButton(
-                      text: 'signup.google_button'.tr(),
-                      icon: Icons.account_circle,
+                      text: 'signup.magic_link_button'.tr(),
+                      icon: Icons.mail_outline,
                       isOutlined: true,
-                      isLoading: _isGoogleLoading,
-                      onPressed: _signUpWithGoogle,
+                      isLoading: _isMagicLoading,
+                      onPressed: _handleMagicLinkTap,
                     ),
 
                     const SizedBox(height: 24),

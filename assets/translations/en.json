@@ -21,7 +21,12 @@
       "forgot_password": "Forgot password?",
       "button": "Sign in",
       "or": "OR",
-      "google_button": "Sign in with Google",
+      "magic_link_button": "Sign in with a Magic Link ",
+      "magic_link_title": "Prefer a magic link?",
+      "magic_link_description": "Type your email and we'll send you a secure login link.",
+      "magic_link_confirm": "Send magic link",
+      "magic_link_sent": "Magic link sent to {{0}}! Check your inbox ✨",
+      "magic_link_error": "Error sending magic link: {{0}}",
       "error_email_empty": "Please enter your email",
       "error_email_invalid": "Please enter a valid email",
       "error_password_empty": "Please enter your password",
@@ -47,7 +52,10 @@
     "cancel": "Cancel",
     "go_premium": "🌸 Go Premium",
     "premium_active": "🌷 Premium Account Active",
-    "select_language": "Select language"
+    "select_language": "Select language",
+    "logout_success": "You have successfully logged out!",
+    "logout_error": "Could not log out. Please try again."
+
   },
   "profile": {
     "title": "My Profile",
@@ -95,12 +103,14 @@
     "password": "Password",
     "confirm_password": "Confirm password",
     "button_create": "Create Account",
-    "google_button": "Sign up with Google",
+    "magic_link_button": "Access with a Magic Link ✉️",
+    "magic_link_title": "Already have an account?",
+    "magic_link_description": "Enter your email and we'll send you a login link so you can jump right in.",
+    "magic_link_confirm": "Send magic link",
     "or": "OR",
     "have_account": "Already have an account",
     "success": "Account created successfully!",
     "error": "Error creating account: {0}",
-    "google_error": "Error connecting with Google: {0}",
     "error_name": "Please enter your name",
     "error_birth": "Please select your date of birth",
     "error_email_empty": "Please enter your email",
@@ -218,6 +228,8 @@
         "search_previous_dates": "Search previous dates",
         "daily_inspiration": "🌙 Looking for today’s inspiration...",
         "select_date": "Select a date",
+        "guest_user": "guest",
+
 
         "goals": "Goals",
         "mood": "Mood",
@@ -254,9 +266,15 @@
           "october": "October",
           "november": "November",
           "december": "December"
+        },
+          "auth": {
+            "login": {
+              "magic_link_button": "Sign in with Magic Link",
+              "magic_link_sent": "Magic link sent to {{0}}! Check your inbox ✨",
+              "magic_link_error": "Error sending magic link: {{0}}"
+            }
+          }
+
         }
       }
-
-
-    }
 
