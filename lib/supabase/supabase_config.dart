@@ -3,43 +3,21 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:app_links/app_links.dart';
-import 'package:my_year_my_story/main.dart' show navigatorKey;
 
 // Import condicional: web usa web_storage_web.dart, mobile usa stub
 import 'web_storage_stub.dart'
     if (dart.library.html) 'web_storage_web.dart';
 
-// 🌎 Instância global do cliente Supabase (lazy getter)
+// 🌎 Instância global do cliente Supabase
 SupabaseClient get supabase => Supabase.instance.client;
-
-/// Tipos de erro usados no fluxo de Magic Link.
-enum MagicLinkExceptionType { userNotFound, generic }
-
-/// Exceção específica do fluxo de Magic Link para facilitar tratamento na UI.
-class MagicLinkException implements Exception {
-  MagicLinkException(this.type, this.message, [this.originalError]);
-
-  final MagicLinkExceptionType type;
-  final String message;
-  final Object? originalError;
-
-  @override
-  String toString() => message;
-}
 
 class SupabaseConfig {
   static bool _initialized = false;
-  static StreamSubscription<Uri>? _linkSub;
 
   // 🔗 Chaves e URLs do seu projeto Supabase
   static const String supabaseUrl = 'https://abrctowsfsgfxdoszmdq.supabase.co';
   static const String supabaseAnonKey =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFicmN0b3dzZnNnZnhkb3N6bWRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1Nzc5MTksImV4cCI6MjA3MDE1MzkxOX0.ptaOeholjF8dBsXocOsBrSdtYidWVm2BtixsIhE2WF8';
-
-  // 🌎 URLs de redirecionamento
-  static const String appRedirectUrl =
-      'com.myyear.myyearmystory://auth/callback';
 
   static SupabaseClient get client => Supabase.instance.client;
 
@@ -51,7 +29,6 @@ class SupabaseConfig {
     }
 
     print('🚀 Inicializando Supabase...');
-
     try {
       await Supabase.initialize(
         url: supabaseUrl,
@@ -59,38 +36,9 @@ class SupabaseConfig {
         debug: true,
         authOptions: const FlutterAuthClientOptions(
           autoRefreshToken: true,
-          
-          detectSessionInUri: true, // 👈 ESSENCIAL pro Magic Link
-          authFlowType: AuthFlowType.pkce,
+          detectSessionInUri: false, // ❌ Não precisamos mais de Magic Link
         ),
       );
-
-      // 🔁 Escuta mudanças no estado de autenticação
-      Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
-        final event = data.event;
-        final session = data.session;
-
-        print('🌀 Auth event: $event');
-
-        if (event == AuthChangeEvent.signedIn && session != null) {
-          print('✅ Usuário autenticado: ${session.user.email}');
-          final context = navigatorKey.currentContext;
-          if (context != null && context.mounted) {
-            Navigator.pushNamedAndRemoveUntil(
-                context, '/dashboard', (route) => false);
-          }
-        } else if (event == AuthChangeEvent.signedOut) {
-          print('🚪 Sessão encerrada.');
-          final context = navigatorKey.currentContext;
-          if (context != null && context.mounted) {
-            Navigator.pushNamedAndRemoveUntil(
-                context, '/login', (route) => false);
-          }
-        }
-      });
-
-      // 🧩 Inicializa listener de deep links (opcional, pra redundância)
-      await _initDeepLinkListener();
 
       _initialized = true;
       print('✅ Supabase inicializado com sucesso!');
@@ -100,111 +48,39 @@ class SupabaseConfig {
     }
   }
 
-  /// 🧭 Listener para deep links (iOS / Android)
-  static Future<void> _initDeepLinkListener() async {
-    final appLinks = AppLinks();
-
+  /// 🔑 Login com e-mail e senha
+  static Future<AuthResponse> signIn(String email, String password) async {
     try {
-      final Uri? initialLink = await appLinks.getInitialLink();
-      if (initialLink != null) {
-        await handleAuthLink(initialLink);
-      }
-    } catch (e) {
-      print('⚠️ Erro ao obter link inicial: $e');
-    }
-
-    _linkSub = appLinks.uriLinkStream.listen((uri) async {
-      await handleAuthLink(uri);
-    });
-  }
-
-  /// ✨ Envia Magic Link (passwordless)
-  static Future<void> sendMagicLink(String email) async {
-    final normalizedEmail = email.trim().toLowerCase();
-
-    if (normalizedEmail.isEmpty) {
-      throw MagicLinkException(
-        MagicLinkExceptionType.generic,
-        'Email vazio não pode receber link mágico.',
+      final response = await client.auth.signInWithPassword(
+        email: email.trim(),
+        password: password.trim(),
       );
-    }
-
-    try {
-      print('📨 Enviando Magic Link para $normalizedEmail...');
-
-      await client.auth.signInWithOtp(
-        email: normalizedEmail,
-        emailRedirectTo: appRedirectUrl,
-        shouldCreateUser: false,
-      );
-
-      print('✅ Magic Link enviado com sucesso para $normalizedEmail');
-    } on AuthException catch (e) {
-      final lowerMessage = e.message.toLowerCase();
-      final isUnknownUser = lowerMessage.contains('user not found') ||
-          lowerMessage.contains('security reasons');
-
-      if (isUnknownUser) {
-        throw MagicLinkException(
-          MagicLinkExceptionType.userNotFound,
-          'Email não cadastrado.',
-          e,
-        );
-      }
-
-      throw MagicLinkException(
-        MagicLinkExceptionType.generic,
-        e.message,
-        e,
-      );
-    } catch (e, stack) {
-      print('❌ Erro inesperado ao enviar Magic Link: $e');
-      print(stack);
-      throw MagicLinkException(
-        MagicLinkExceptionType.generic,
-        'Erro inesperado ao enviar link mágico.',
-        e,
-      );
-    }
-  }
-
-    /// 📩 Trata links mágicos (deep links) vindos do e-mail
-  static Future<void> handleAuthLink(Uri uri) async {
-    try {
-      print('📩 Link recebido: $uri');
-
-      // Verifica se o link pertence ao app
-      if (uri.scheme != 'com.myyear.myyearmystory' ||
-          !uri.path.contains('/auth/callback')) {
-        print('⚠️ Link ignorado: não pertence ao app.');
-        return;
-      }
-
-      // 🔑 Faz a troca do código do link mágico por uma sessão válida
-      final res = await Supabase.instance.client.auth.exchangeCodeForSession(uri.toString());
-
-      final session = res.session;
-      final user = session?.user;
-
-      if (session != null && user != null) {
-        print('✅ Sessão autenticada com sucesso: ${user.email}');
-
-        // 🔁 Força atualização do token (caso necessário)
-        await Supabase.instance.client.auth.refreshSession();
-
-        // 🔀 Redireciona para o dashboard
-        final context = navigatorKey.currentContext;
-        if (context != null && context.mounted) {
-          Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
-        }
-      } else {
-        print('⚠️ Nenhuma sessão retornada. Verifique o link mágico.');
-      }
+      print('✅ Login realizado com sucesso para $email');
+      return response;
     } on AuthException catch (e) {
       print('❌ Erro de autenticação: ${e.message}');
-    } catch (e, stack) {
-      print('❌ Erro ao processar deep link mágico: $e');
-      print(stack);
+      rethrow;
+    } catch (e) {
+      print('⚠️ Erro inesperado: $e');
+      rethrow;
+    }
+  }
+
+  /// ✨ Registra novo usuário
+  static Future<AuthResponse> signUp(String email, String password) async {
+    try {
+      final response = await client.auth.signUp(
+        email: email.trim(),
+        password: password.trim(),
+      );
+      print('✅ Usuário criado com sucesso: $email');
+      return response;
+    } on AuthException catch (e) {
+      print('❌ Erro no cadastro: ${e.message}');
+      rethrow;
+    } catch (e) {
+      print('⚠️ Erro inesperado no cadastro: $e');
+      rethrow;
     }
   }
 

@@ -1,5 +1,5 @@
-import 'package:my_year_my_story/supabase/supabase_config.dart';
-import 'package:my_year_my_story/models/memory_model.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
+import 'package:myyearmystory/models/memory_model.dart';
 
 class MemoryService {
   // Get memories for a story

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:my_year_my_story/widgets/shared/month_header.dart';
-import 'package:my_year_my_story/widgets/monthly/zodiac_content.dart';
+import 'package:myyearmystory/widgets/shared/month_header.dart';
+import 'package:myyearmystory/widgets/monthly/zodiac_content.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ZodiacWidget extends StatefulWidget {

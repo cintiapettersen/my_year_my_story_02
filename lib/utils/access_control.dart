@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:my_year_my_story/supabase/supabase_config.dart';
-import 'package:my_year_my_story/screens/premium/premium_popup.dart';
-import 'package:my_year_my_story/screens/premium/premium_page.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
+import 'package:myyearmystory/screens/premium/premium_popup.dart';
+import 'package:myyearmystory/screens/premium/premium_page.dart';
 
 class AccessControl {
   static final _client = SupabaseConfig.client;
@@ -153,12 +153,7 @@ class AccessControl {
                         MaterialPageRoute(
                           builder: (context) =>
                               PremiumPage(
-                                month: month ?? DateTime
-                                    .now()
-                                    .month,
-                                year: year ?? DateTime
-                                    .now()
-                                    .year,
+                                
                               ),
                         ),
                       );

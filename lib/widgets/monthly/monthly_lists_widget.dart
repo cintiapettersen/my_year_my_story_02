@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:my_year_my_story/services/monthly_lists_service.dart';
-import 'package:my_year_my_story/supabase/supabase_config.dart';
-import 'package:my_year_my_story/widgets/shared/month_page_template.dart';
-import 'package:my_year_my_story/screens/premium/premium_page.dart';
+import 'package:myyearmystory/services/monthly_lists_service.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
+import 'package:myyearmystory/widgets/shared/month_page_template.dart';
+import 'package:myyearmystory/screens/premium/premium_page.dart';
 
 class MonthlyListsWidget extends StatefulWidget {
   final int? month;
@@ -143,8 +143,7 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
         context,
         MaterialPageRoute(
           builder: (context) => PremiumPage(
-            month: widget.month ?? DateTime.now().month,
-            year: widget.year ?? DateTime.now().year,
+            
           ),
         ),
       );
@@ -156,8 +155,7 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
           context,
           MaterialPageRoute(
             builder: (context) => PremiumPage(
-              month: widget.month ?? DateTime.now().month,
-              year: widget.year ?? DateTime.now().year,
+              
             ),
           ),
         );
@@ -214,8 +212,7 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
         context,
         MaterialPageRoute(
           builder: (context) => PremiumPage(
-            month: widget.month ?? DateTime.now().month,
-            year: widget.year ?? DateTime.now().year,
+            
           ),
         ),
       );

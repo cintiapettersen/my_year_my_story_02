@@ -5,11 +5,14 @@ publish_to: "none"
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.3.0 <4.0.0'
+  sdk: ">=3.7.0 <4.0.0"
+
 
 dependencies:
   flutter:
     sdk: flutter
+
+  webview_flutter: ^4.7.0
 
   # 📊 Gráficos e UI
   fl_chart: 1.1.1
@@ -38,7 +41,7 @@ dependencies:
   shared_preferences: 2.3.2
   google_sign_in: 6.2.1
   local_auth: ^2.3.0
-  flutter_secure_storage: ^9.0.0
+  flutter_secure_storage: ^9.2.2
 
   # 🔗 Navegação e links
   url_launcher: 6.2.5
@@ -58,3 +61,14 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: 6.0.0
   flutter_launcher_icons: 0.13.1
+
+dependency_overrides:
+  record_linux:
+    path: ./fake_plugins/record_linux
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/translations/
+    - assets/imagens/logo.png
+    - assets/imagens/logo_512px.png

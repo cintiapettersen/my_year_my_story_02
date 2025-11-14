@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:my_year_my_story/models/diary_entry.dart';
-import 'package:my_year_my_story/services/diary_service.dart';
-import 'package:my_year_my_story/supabase/supabase_config.dart';
-import 'package:my_year_my_story/screens/premium/premium_popup.dart';
-import 'package:my_year_my_story/widgets/shared/show_login_prompt.dart';
-import 'package:my_year_my_story/widgets/shared/main_scaffold.dart';
+import 'package:myyearmystory/models/diary_entry.dart';
+import 'package:myyearmystory/services/diary_service.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
+import 'package:myyearmystory/screens/premium/premium_popup.dart';
+import 'package:myyearmystory/widgets/shared/show_login_prompt.dart';
+import 'package:myyearmystory/widgets/shared/main_scaffold.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 

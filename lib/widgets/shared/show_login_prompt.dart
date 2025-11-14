@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:my_year_my_story/screens/auth/login_screen.dart';
-import 'package:my_year_my_story/screens/splash/fade_page_transition.dart';
+import 'package:myyearmystory/screens/auth/login_screen.dart';
+import 'package:myyearmystory/screens/splash/fade_page_transition.dart';
 
 /// 🌸 Mostra um aviso gentil pedindo login ao tentar usar recursos do banco.
 /// Pode ser chamado em qualquer lugar:

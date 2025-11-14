@@ -1,5 +1,5 @@
-import 'package:my_year_my_story/models/monthly_goal_model.dart';
-import 'package:my_year_my_story/supabase/supabase_config.dart';
+import 'package:myyearmystory/models/monthly_goal_model.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
 
 class MonthlyGoalService {
   static final _supabase = SupabaseConfig.client;

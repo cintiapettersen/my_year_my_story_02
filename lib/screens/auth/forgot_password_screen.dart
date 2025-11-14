@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:my_year_my_story/theme.dart';
-import 'package:my_year_my_story/widgets/auth/custom_text_field.dart';
-import 'package:my_year_my_story/widgets/auth/auth_button.dart';
-import 'package:my_year_my_story/services/user_service.dart';
+import 'package:myyearmystory/theme.dart';
+import 'package:myyearmystory/widgets/auth/custom_text_field.dart';
+import 'package:myyearmystory/widgets/auth/auth_button.dart';
+import 'package:myyearmystory/services/user_service.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});

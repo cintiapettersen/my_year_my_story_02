@@ -1,16 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../utils/month_colors.dart';
 
 class PremiumPage extends StatefulWidget {
-  final int month;
-  final int year;
-
-  const PremiumPage({
-    super.key,
-    required this.month,
-    required this.year,
-  });
+  const PremiumPage({super.key});
 
   @override
   State<PremiumPage> createState() => _PremiumPageState();
@@ -30,18 +22,22 @@ class _PremiumPageState extends State<PremiumPage>
   @override
   void initState() {
     super.initState();
+
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
+
     _fadeAnimation = CurvedAnimation(
       parent: _controller,
       curve: Curves.easeIn,
     );
+
     _scaleAnimation = CurvedAnimation(
       parent: _controller,
       curve: Curves.elasticOut,
     );
+
     _controller.forward();
   }
 
@@ -60,7 +56,7 @@ class _PremiumPageState extends State<PremiumPage>
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // 🌸 Header com degradê
+              // 🌸 Header
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.only(top: 80, bottom: 40),
@@ -77,7 +73,8 @@ class _PremiumPageState extends State<PremiumPage>
                 ),
                 child: Column(
                   children: [
-                    const Icon(Icons.star_rounded, color: Colors.white, size: 60),
+                    const Icon(Icons.star_rounded,
+                        color: Colors.white, size: 60),
                     const SizedBox(height: 10),
                     Text(
                       'premium.title'.tr(),
@@ -104,7 +101,7 @@ class _PremiumPageState extends State<PremiumPage>
 
               const SizedBox(height: 30),
 
-              // 🌸 Cards dos planos
+              // 🌸 Cards
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: Column(
@@ -135,7 +132,7 @@ class _PremiumPageState extends State<PremiumPage>
 
               const SizedBox(height: 30),
 
-              // 🌟 Botão Assinar
+              // 🌟 Botão assinar
               ScaleTransition(
                 scale: _scaleAnimation,
                 child: Padding(
@@ -143,7 +140,8 @@ class _PremiumPageState extends State<PremiumPage>
                   child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      icon: const Icon(Icons.lock_open_rounded, color: Colors.white),
+                      icon: const Icon(Icons.lock_open_rounded,
+                          color: Colors.white),
                       label: Text(
                         'premium.subscribe_button'.tr(),
                         style: const TextStyle(
@@ -189,14 +187,18 @@ class _PremiumPageState extends State<PremiumPage>
 
               const SizedBox(height: 20),
 
-              // 🌸 Botão Voltar
+              // Voltar
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text(
                   'premium.back_button'.tr(),
-                  style: const TextStyle(color: Colors.black54, fontSize: 16),
+                  style: const TextStyle(
+                    color: Colors.black54,
+                    fontSize: 16,
+                  ),
                 ),
               ),
+
               const SizedBox(height: 40),
             ],
           ),
@@ -205,6 +207,7 @@ class _PremiumPageState extends State<PremiumPage>
     );
   }
 
+  // 🌸 Card de plano
   Widget _buildPlanCard({
     required String title,
     required String price,
@@ -224,36 +227,48 @@ class _PremiumPageState extends State<PremiumPage>
             offset: const Offset(0, 6),
           ),
         ],
-        border: Border.all(color: accentColor.withOpacity(0.3), width: 1),
+        border: Border.all(
+          color: accentColor.withOpacity(0.3),
+          width: 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: accentColor,
-              )),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: accentColor,
+            ),
+          ),
           const SizedBox(height: 10),
+
           ...details.map(
-                (d) => Padding(
+            (d) => Padding(
               padding: const EdgeInsets.only(bottom: 6),
               child: Row(
                 children: [
-                  Icon(Icons.favorite_rounded, color: accentColor, size: 18),
+                  Icon(Icons.favorite_rounded,
+                      color: accentColor, size: 18),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       d,
-                      style: const TextStyle(fontSize: 15, color: Colors.black87),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        color: Colors.black87,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
           ),
+
           const SizedBox(height: 12),
+
           Center(
             child: Text(
               price,

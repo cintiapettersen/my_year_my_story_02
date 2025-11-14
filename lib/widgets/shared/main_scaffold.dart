@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:my_year_my_story/widgets/shared/app_bottom_menu.dart';
+import 'package:myyearmystory/widgets/shared/app_bottom_menu.dart';
 
 class MainScaffold extends StatelessWidget {
   final int currentIndex;

@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
-import 'package:my_year_my_story/widgets/monthly/monthly_page_template.dart';
-import 'package:my_year_my_story/utils/month_colors.dart';
-import 'package:my_year_my_story/screens/premium/premium_popup.dart';
 
-import '../../services/did_you_know_service.dart';
+import 'package:myyearmystory/widgets/shared/month_page_template.dart';
+import 'package:myyearmystory/screens/premium/premium_popup.dart';
+import 'package:myyearmystory/services/did_you_know_service.dart';
 
 class DidYouKnowWidget extends StatefulWidget {
   final int month;
@@ -70,7 +69,6 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
     _loadCuriosities();
   }
 
-  // 💎 Verifica status Premium ou convidado
   Future<void> _checkPremiumStatus() async {
     final user = supabase.auth.currentUser;
     if (user == null) {
@@ -89,7 +87,6 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
     });
   }
 
-  // ✨ Carrega curiosidades
   Future<void> _loadCuriosities({bool shuffle = false}) async {
     setState(() => isLoading = true);
 
@@ -110,7 +107,6 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
     }
   }
 
-  // 🔄 Atualizar curiosidades (restrito)
   Future<void> _handleRefresh() async {
     if (!isPremiumUser) {
       showPremiumPrompt(context);
@@ -128,9 +124,8 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
     }
 
     final random = Random();
-    final colors = categoryColors;
     setState(() {
-      currentButtonColor = colors[random.nextInt(colors.length)];
+      currentButtonColor = categoryColors[random.nextInt(categoryColors.length)];
     });
 
     await _loadCuriosities(shuffle: true);
@@ -141,161 +136,132 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+
     final message = monthMessages[widget.month] ??
         "✨ Curiosidades que inspiram e surpreendem!";
 
-    return MonthlyPageTemplate(
+    return MonthPageTemplate(
       month: widget.month,
       year: widget.year,
       title: "Você Sabia?",
+
+      // 🌸 PADRONIZADO
+      description: message,
+
       child: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding:
-            const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            child: Text(
-              message,
-              style: const TextStyle(
-                fontSize: 16,
-                fontStyle: FontStyle.italic,
-                color: Colors.black87,
-                height: 1.5,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 16),
 
-          ...curiosities.asMap().entries.map((entry) {
-            final index = entry.key;
-            final item = entry.value;
-            final color =
-            categoryColors[index % categoryColors.length];
+                ...curiosities.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final item = entry.value;
+                  final color = categoryColors[index % categoryColors.length];
 
-            final category = (item['category'] != null &&
-                (item['category'] as String).isNotEmpty)
-                ? '${item['category'][0].toUpperCase()}${item['category'].substring(1)}'
-                : null;
+                  final category = (item['category'] != null &&
+                          (item['category'] as String).isNotEmpty)
+                      ? '${item['category'][0].toUpperCase()}${item['category'].substring(1)}'
+                      : null;
 
-            return TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0, end: 1),
-              duration: Duration(milliseconds: 600 + (index * 150)),
-              builder: (context, value, child) {
-                return Opacity(
-                  opacity: value,
-                  child: Transform.translate(
-                    offset: Offset(0, (1 - value) * 20),
-                    child: child,
-                  ),
-                );
-              },
-              child: Card(
-                color: Colors.white,
-                margin: const EdgeInsets.symmetric(
-                    vertical: 8, horizontal: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 2,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (category != null)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 4, horizontal: 8),
-                          decoration: BoxDecoration(
-                            color: color,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            category,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
+                  return TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0, end: 1),
+                    duration:
+                        Duration(milliseconds: 600 + (index * 140)),
+                    builder: (context, value, child) {
+                      return Opacity(
+                        opacity: value,
+                        child: Transform.translate(
+                          offset: Offset(0, (1 - value) * 16),
+                          child: child,
                         ),
-                      const SizedBox(height: 8),
-                      Text(
-                        item['content'] ?? '',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.black87,
-                          height: 1.5,
-                        ),
-                        textAlign: TextAlign.justify,
+                      );
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                            color: const Color(0xFFF2D7E0), width: 1),
                       ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-
-          const SizedBox(height: 20),
-
-          // 🌟 Botão com padrão premium
-          Center(
-            child: GestureDetector(
-              onTapDown: (_) => setState(() => isPressed = true),
-              onTapUp: (_) async {
-                setState(() => isPressed = false);
-                await Future.delayed(
-                    const Duration(milliseconds: 120));
-                _handleRefresh();
-              },
-              onTapCancel: () => setState(() => isPressed = false),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutBack,
-                transform:
-                Matrix4.identity()..scale(isPressed ? 0.93 : 1.0),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      currentButtonColor.withOpacity(0.9),
-                      currentButtonColor.withOpacity(0.7),
-                      Colors.white.withOpacity(0.1),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                      color: currentButtonColor.withOpacity(0.4),
-                      blurRadius: 15,
-                      offset: const Offset(0, 4),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (category != null)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 4, horizontal: 8),
+                              decoration: BoxDecoration(
+                                color: color,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                category,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          const SizedBox(height: 8),
+                          Text(
+                            item['content'] ?? '',
+                            style: const TextStyle(
+                              fontSize: 15,
+                              color: Colors.black87,
+                              height: 1.5,
+                            ),
+                            textAlign: TextAlign.left, // 🌸 tirado do justify
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 28, vertical: 14),
-                  child: Text(
-                    isPremiumUser
-                        ? (refreshCount >= maxRefresh
-                        ? "Volte amanhã 🌙"
-                        : "Ver mais curiosidades (${maxRefresh - refreshCount} restantes)")
-                        : "Ver mais curiosidades 🌟 (Premium)",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                  );
+                }).toList(),
+
+                const SizedBox(height: 20),
+
+                Center(
+                  child: GestureDetector(
+                    onTapDown: (_) => setState(() => isPressed = true),
+                    onTapUp: (_) async {
+                      setState(() => isPressed = false);
+                      await Future.delayed(const Duration(milliseconds: 120));
+                      _handleRefresh();
+                    },
+                    onTapCancel: () => setState(() => isPressed = false),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOutBack,
+                      transform: Matrix4.identity()
+                        ..scale(isPressed ? 0.93 : 1.0),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFC03B66),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 28, vertical: 14),
+                      child: Text(
+                        isPremiumUser
+                            ? (refreshCount >= maxRefresh
+                                ? "Volte amanhã 🌙"
+                                : "Ver mais curiosidades (${maxRefresh - refreshCount} restantes)")
+                            : "Ver mais curiosidades 🌟 (Premium)",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 }

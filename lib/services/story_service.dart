@@ -1,5 +1,5 @@
-import 'package:my_year_my_story/supabase/supabase_config.dart';
-import 'package:my_year_my_story/models/story_model.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
+import 'package:myyearmystory/models/story_model.dart';
 
 class StoryService {
   // Get all public stories

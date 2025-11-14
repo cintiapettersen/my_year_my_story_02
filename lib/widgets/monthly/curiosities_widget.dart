@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:my_year_my_story/widgets/shared/month_page_template.dart';
-import 'package:my_year_my_story/supabase/supabase_config.dart';
-import 'package:my_year_my_story/screens/premium/premium_popup.dart';
+import 'package:myyearmystory/widgets/shared/month_page_template.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
+import 'package:myyearmystory/screens/premium/premium_popup.dart';
 
 class CuriositiesWidget extends StatefulWidget {
   final int month;

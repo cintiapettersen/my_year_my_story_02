@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:easy_localization/easy_localization.dart'; // 👈 Import necessário para usar .tr()
-import 'package:my_year_my_story/screens/dashboard/dashboard_screen.dart';
-import 'package:my_year_my_story/screens/auth/auth_page_view.dart';
-import 'package:my_year_my_story/screens/splash/fade_page_transition.dart';
-import 'package:my_year_my_story/supabase/supabase_config.dart';
+import 'package:myyearmystory/screens/dashboard/dashboard_screen.dart';
+import 'package:myyearmystory/screens/auth/auth_page_view.dart';
+import 'package:myyearmystory/screens/splash/fade_page_transition.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 
 class SplashTransitionScreen extends StatefulWidget {
   const SplashTransitionScreen({super.key});
@@ -51,9 +53,8 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
     try {
       print('🔎 Verificando sessão existente...');
 
-      await SupabaseConfig.initialize();
+      
       final client = SupabaseConfig.client;
-
       final session = client.auth.currentSession;
       final user = client.auth.currentUser;
 
@@ -62,10 +63,12 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
         _goToDashboard();
       } else {
         print('🚫 Nenhum usuário ativo. Mostrando botões.');
+        if (!mounted) return;
         setState(() => _showButtons = true);
       }
     } catch (e) {
       print('⚠️ Erro ao verificar sessão: $e');
+      if (!mounted) return;
       setState(() => _showButtons = true);
     }
   }
@@ -127,14 +130,13 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
 
                   // 🔹 Frase principal traduzida
                   Text(
-                    'splash.new_chapter'.tr(),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xFFC03B66),
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
+  'splash.new_chapter'.tr(),
+  style: GoogleFonts.montserrat(
+    fontSize: 20,
+    fontWeight: FontWeight.w400,
+    color: const Color(0xFFC03B66),
+  ),
+),
 
                   const SizedBox(height: 20),
                   const CircularProgressIndicator(
@@ -167,15 +169,14 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
 
             // 🔹 Subtítulo traduzido
             Text(
-              'splash.subtitle'.tr(),
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w500,
-                color: Colors.black87,
-                fontFamily: 'Poppins',
-              ),
-            ),
+  'splash.subtitle'.tr(),
+  textAlign: TextAlign.center,
+  style: GoogleFonts.montserrat(
+    fontSize: 20,
+    fontWeight: FontWeight.w500,
+    color: Colors.black87,
+  ),
+),
 
             const SizedBox(height: 60),
 

@@ -1,7 +1,7 @@
 // lib/widgets/auth/magic_link_email_sheet.dart
 import 'package:flutter/material.dart';
-import 'package:my_year_my_story/theme.dart';
-import 'package:my_year_my_story/widgets/auth/auth_button.dart';
+import 'package:myyearmystory/theme.dart';
+import 'package:myyearmystory/widgets/auth/auth_button.dart';
 
 /// Exibe um bottom sheet para solicitar o email usado no login por Magic Link.
 /// Retorna o email validado ou `null` se o usuário fechar o modal.

@@ -1,16 +1,15 @@
+// lib/screens/auth/signup_screen.dart
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:my_year_my_story/theme.dart';
-import 'package:my_year_my_story/widgets/auth/custom_text_field.dart';
-import 'package:my_year_my_story/widgets/auth/auth_button.dart';
-import 'package:my_year_my_story/widgets/auth/divider_with_text.dart';
-import 'package:my_year_my_story/services/user_service.dart';
-import 'package:my_year_my_story/screens/auth/auth_page_view.dart';
-import 'package:my_year_my_story/screens/splash/fade_page_transition.dart';
-import 'package:my_year_my_story/supabase/supabase_config.dart';
-import 'package:my_year_my_story/widgets/auth/magic_link_email_sheet.dart';
+import 'package:myyearmystory/theme.dart';
+import 'package:myyearmystory/widgets/auth/custom_text_field.dart';
+import 'package:myyearmystory/widgets/auth/auth_button.dart';
+import 'package:myyearmystory/widgets/auth/divider_with_text.dart';
+import 'package:myyearmystory/services/user_service.dart';
+import 'package:myyearmystory/screens/auth/auth_page_view.dart';
+import 'package:myyearmystory/screens/splash/fade_page_transition.dart';
 
 class SignupScreen extends StatefulWidget {
   final VoidCallback? onLoginTap;
@@ -31,7 +30,6 @@ class _SignupScreenState extends State<SignupScreen> {
   DateTime? _selectedDate;
 
   bool _isLoading = false;
-  bool _isMagicLoading = false;
 
   @override
   void dispose() {
@@ -114,56 +112,6 @@ class _SignupScreenState extends State<SignupScreen> {
       } finally {
         if (mounted) setState(() => _isLoading = false);
       }
-    }
-  }
-
-  Future<void> _handleMagicLinkTap() async {
-    if (_isMagicLoading) return;
-
-    final email = await showMagicLinkEmailSheet(
-      context: context,
-      title: 'signup.magic_link_title'.tr(),
-      description: 'signup.magic_link_description'.tr(),
-      emailLabel: 'signup.email'.tr(),
-      emailEmptyError: 'signup.error_email_empty'.tr(),
-      emailInvalidError: 'signup.error_email_invalid'.tr(),
-      confirmLabel: 'signup.magic_link_confirm'.tr(),
-      initialEmail: _emailController.text.trim(),
-    );
-
-    if (email != null) {
-      await _sendMagicLink(email);
-    }
-  }
-
-  Future<void> _sendMagicLink(String email) async {
-    if (!mounted) return;
-    setState(() => _isMagicLoading = true);
-
-    try {
-      await SupabaseConfig.sendMagicLink(email);
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('auth.login.magic_link_sent'.tr(args: [email])),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'auth.login.magic_link_error'.tr(
-              args: [e.toString()],
-            ),
-          ),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _isMagicLoading = false);
     }
   }
 
@@ -251,7 +199,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       labelText: 'signup.full_name'.tr(),
                       prefixIcon: Icons.person_outline,
                       validator: (value) =>
-                      value == null || value.isEmpty ? 'signup.error_name'.tr() : null,
+                          value == null || value.isEmpty ? 'signup.error_name'.tr() : null,
                     ),
 
                     const SizedBox(height: 16),
@@ -339,15 +287,20 @@ class _SignupScreenState extends State<SignupScreen> {
                     DividerWithText(text: 'signup.or'.tr()),
                     const SizedBox(height: 24),
 
-                    AuthButton(
-                      text: 'signup.magic_link_button'.tr(),
-                      icon: Icons.mail_outline,
-                      isOutlined: true,
-                      isLoading: _isMagicLoading,
-                      onPressed: _handleMagicLinkTap,
+                    // 🩵 Texto substituindo o antigo botão de Magic Link
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        '🔒 Após criar sua conta, você poderá ativar o login por biometria para acessar de forma rápida e segura.',
+                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                              color: Colors.black54,
+                              height: 1.5,
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 32),
 
                     TextButton(
                       onPressed: widget.onLoginTap,

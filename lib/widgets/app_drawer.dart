@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:my_year_my_story/supabase/supabase_config.dart';
-import 'package:my_year_my_story/screens/profile/profile_screen.dart';
-import 'package:my_year_my_story/screens/premium/premium_page.dart';
-import 'package:my_year_my_story/screens/help/help_screen.dart';
-
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
+import 'package:myyearmystory/screens/profile/profile_screen.dart';
+import 'package:myyearmystory/screens/premium/premium_page.dart';
+import 'package:myyearmystory/screens/help/help_screen.dart';
 
 class AppDrawer extends StatefulWidget {
   const AppDrawer({super.key});
@@ -25,7 +25,7 @@ class _AppDrawerState extends State<AppDrawer> {
 
   Future<void> _loadUserData() async {
     try {
-      final user = SupabaseConfig.getCurrentUser();
+      final user = SupabaseConfig.client.auth.currentUser;
       if (user == null) return;
 
       final response = await SupabaseConfig.client
@@ -46,8 +46,6 @@ class _AppDrawerState extends State<AppDrawer> {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now(); // 👈 para usar em todas as telas
-
     return Drawer(
       child: Column(
         children: [
@@ -83,8 +81,7 @@ class _AppDrawerState extends State<AppDrawer> {
             icon: Icons.star_outline,
             title: 'Plano Premium',
             screen: PremiumPage(
-              month: DateTime.now().month,
-              year: DateTime.now().year,
+              
             ),
           ),
           _buildDrawerItem(
@@ -103,25 +100,67 @@ class _AppDrawerState extends State<AppDrawer> {
 
           const Spacer(),
           const Divider(),
+
+          // 🔻 Botão de sair atualizado
           ListTile(
-            leading: const Icon(Icons.logout, color: Colors.redAccent),
-            title: const Text('Sair'),
-            onTap: () async {
-              await SupabaseConfig.client.auth.signOut();
-              if (context.mounted) {
-                Navigator.pushReplacementNamed(context, '/login');
-              }
-            },
+  leading: const Icon(Icons.logout, color: Colors.redAccent),
+  title: const Text('Sair'),
+  onTap: () async {
+    try {
+      final storage = const FlutterSecureStorage();
+
+      // Faz logout do Supabase
+      await SupabaseConfig.client.auth.signOut();
+
+      // Limpa tudo o que o app salvou (inclusive a sessão biométrica)
+      await storage.deleteAll();
+
+      // Pequeno delay pra garantir que a limpeza finalize antes da navegação
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Sessão encerrada com sucesso 👋'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
           ),
+        );
+
+        // Redireciona pro login e remove histórico
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/login',
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ Erro ao sair: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erro ao sair. Tente novamente.'),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  },
+),
+
+
         ],
       ),
     );
   }
 
-  Widget _buildDrawerItem(BuildContext context,
-      {required IconData icon,
-        required String title,
-        required Widget screen}) {
+  Widget _buildDrawerItem(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required Widget screen,
+  }) {
     return ListTile(
       leading: Icon(icon),
       title: Text(title),
@@ -163,7 +202,9 @@ class _AppDrawerState extends State<AppDrawer> {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Link de recuperação enviado por e-mail!'),
+                      content: Text(
+                        'Link de recuperação enviado por e-mail!',
+                      ),
                       backgroundColor: Colors.green,
                       behavior: SnackBarBehavior.floating,
                     ),
@@ -174,8 +215,9 @@ class _AppDrawerState extends State<AppDrawer> {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content:
-                      Text('Não foi possível enviar o e-mail de recuperação.'),
+                      content: Text(
+                        'Não foi possível enviar o e-mail de recuperação.',
+                      ),
                       backgroundColor: Colors.redAccent,
                       behavior: SnackBarBehavior.floating,
                     ),

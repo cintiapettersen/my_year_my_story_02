@@ -3,11 +3,11 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 // 🌸 Import das telas principais
-import 'package:my_year_my_story/screens/dashboard/dashboard_screen.dart';
-import 'package:my_year_my_story/screens/monthly/current_month_screen.dart';
-import 'package:my_year_my_story/screens/diary/diary_screen.dart';
-import 'package:my_year_my_story/screens/mood/mood_screen.dart';
-import 'package:my_year_my_story/widgets/monthly/dailyluckpage.dart';
+import 'package:myyearmystory/screens/dashboard/dashboard_screen.dart';
+import 'package:myyearmystory/screens/monthly/current_month_screen.dart';
+import 'package:myyearmystory/screens/diary/diary_screen.dart';
+import 'package:myyearmystory/screens/mood/mood_screen.dart';
+import 'package:myyearmystory/widgets/monthly/dailyluckpage.dart';
  // 🍀 nova tela da sorte
 
 class AppBottomMenu extends StatelessWidget {

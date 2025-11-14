@@ -1,4 +1,4 @@
-import 'package:my_year_my_story/supabase/supabase_config.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
 
 class GratitudeService {
   static final _supabase = SupabaseConfig.client;

@@ -1,5 +1,5 @@
-import 'package:my_year_my_story/supabase/supabase_config.dart';
-import 'package:my_year_my_story/models/memory_media_model.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
+import 'package:myyearmystory/models/memory_media_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MemoryMediaService {

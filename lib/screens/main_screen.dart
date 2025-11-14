@@ -4,12 +4,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 
 
-import 'package:my_year_my_story/widgets/monthly/monthly_goals_widget.dart';
-import 'package:my_year_my_story/widgets/monthly/gratitude_widget.dart';
-import 'package:my_year_my_story/widgets/monthly/interactive_quiz_widget.dart';
-import 'package:my_year_my_story/screens/diary/diary_screen.dart';
-import 'package:my_year_my_story/screens/mood/mood_screen.dart';
-import 'package:my_year_my_story/widgets/monthly/curiosities_widget.dart';
+import 'package:myyearmystory/widgets/monthly/monthly_goals_widget.dart';
+import 'package:myyearmystory/widgets/monthly/gratitude_widget.dart';
+import 'package:myyearmystory/widgets/monthly/interactive_quiz_widget.dart';
+import 'package:myyearmystory/screens/diary/diary_screen.dart';
+import 'package:myyearmystory/screens/mood/mood_screen.dart';
+import 'package:myyearmystory/widgets/monthly/curiosities_widget.dart';
 
 class DashboardScreen extends StatefulWidget {
   final int month;

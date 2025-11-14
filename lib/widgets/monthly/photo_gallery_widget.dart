@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_year_my_story/widgets/monthly/monthly_page_template.dart';
+import 'package:myyearmystory/widgets/monthly/monthly_page_template.dart';
 
 class MonthlyPhotoGallery extends StatefulWidget {
   final int month;

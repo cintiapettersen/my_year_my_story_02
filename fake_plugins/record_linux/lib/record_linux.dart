@@ -3,12 +3,12 @@ import 'package:record_platform_interface/record_platform_interface.dart';
 /// Fake plugin para ignorar o record_linux em builds não Linux.
 class RecordLinux extends RecordPlatform {
   @override
-  Future<Stream<List<int>>> startStream(String recorderId, RecordConfig config) async {
+  Future<Stream<Uint8List>> startStream(String recorderId, RecordConfig config) async {
     return const Stream.empty();
   }
 
   @override
-  Future<void> cancel() async {}
+  Future<void> cancel(String recorderId) async {}
 
   @override
   Future<void> create(RecordConfig config) async {}
@@ -17,13 +17,13 @@ class RecordLinux extends RecordPlatform {
   Future<void> dispose(String recorderId) async {}
 
   @override
-  Stream<RecordState> onStateChanged() => const Stream.empty();
+  Stream<RecordState> onStateChanged(String recorderId) => const Stream.empty();
 
   @override
-  Future<void> pause() async {}
+  Future<void> pause(String recorderId) async {}
 
   @override
-  Future<void> resume() async {}
+  Future<void> resume(String recorderId) async {}
 
   @override
   Future<void> start(String recorderId, RecordConfig config, {required String path}) async {}

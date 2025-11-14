@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:my_year_my_story/screens/profile/profile_screen.dart';
-import 'package:my_year_my_story/supabase/supabase_config.dart';
+import 'package:myyearmystory/screens/profile/profile_screen.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
 
 class ProfileCompletionDialog {
   static bool _hasShownDialog = false;
@@ -9,7 +9,7 @@ class ProfileCompletionDialog {
     if (_hasShownDialog) return;
 
     try {
-      final user = SupabaseConfig.getCurrentUser();
+      final user = SupabaseConfig.client.auth.currentUser;
       if (user == null) return;
 
       final fullName = user.userMetadata?['full_name'] ?? '';

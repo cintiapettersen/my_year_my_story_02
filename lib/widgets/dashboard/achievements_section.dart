@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_year_my_story/supabase/supabase_config.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
 
 class AchievementsSection extends StatefulWidget {
   const AchievementsSection({super.key});
@@ -19,7 +19,7 @@ class _AchievementsSectionState extends State<AchievementsSection> {
 
   void _loadAchievements() async {
     try {
-      final user = SupabaseConfig.getCurrentUser();
+      final user = SupabaseConfig.client.auth.currentUser;
       if (user == null) return;
 
       // Simular dados baseados no progresso do usuário

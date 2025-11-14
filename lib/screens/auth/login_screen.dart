@@ -3,21 +3,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:my_year_my_story/theme.dart';
-import 'package:my_year_my_story/widgets/auth/custom_text_field.dart';
-import 'package:my_year_my_story/widgets/auth/auth_button.dart';
-import 'package:my_year_my_story/widgets/auth/divider_with_text.dart';
-import 'package:my_year_my_story/services/user_service.dart';
-import 'package:my_year_my_story/screens/auth/forgot_password_screen.dart';
-import 'package:my_year_my_story/screens/dashboard/dashboard_screen.dart';
+import 'package:myyearmystory/theme.dart';
+import 'package:myyearmystory/widgets/auth/custom_text_field.dart';
+import 'package:myyearmystory/widgets/auth/auth_button.dart';
+import 'package:myyearmystory/widgets/auth/divider_with_text.dart';
+import 'package:myyearmystory/services/user_service.dart';
+import 'package:myyearmystory/screens/auth/forgot_password_screen.dart';
+import 'package:myyearmystory/screens/dashboard/dashboard_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:my_year_my_story/screens/splash/fade_page_transition.dart';
-import 'package:my_year_my_story/screens/auth/signup_screen.dart';
+import 'package:myyearmystory/screens/splash/fade_page_transition.dart';
+import 'package:myyearmystory/screens/auth/signup_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:my_year_my_story/supabase/supabase_config.dart';
-import 'package:my_year_my_story/widgets/auth/magic_link_email_sheet.dart';
-
-
+import 'package:myyearmystory/widgets/auth/biometric_login_page.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -32,7 +29,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   bool _rememberMe = false;
-  bool _isMagicLoading = false;
   bool _isLoginSelected = true;
 
   @override
@@ -67,15 +63,9 @@ class _LoginScreenState extends State<LoginScreen> {
           rememberedPassword != null &&
           rememberedPassword.isNotEmpty) {
         _passwordController.text = rememberedPassword;
-
-        // ✅ Garante que o auto login só rode após o primeiro frame
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _performAutoLogin();
-        });
       }
     }
   }
-
 
   Future<void> _saveRememberedCredentials() async {
     final prefs = await SharedPreferences.getInstance();
@@ -95,7 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) return;
 
-    final currentLang = context.locale.languageCode; // 'pt' ou 'en'
+    final currentLang = context.locale.languageCode;
 
     try {
       final profile = await Supabase.instance.client
@@ -117,13 +107,16 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // ✅ Mantive apenas esta versão — a duplicata foi removida
+  // ✅ Login normal
   Future<void> _signIn() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       FocusScope.of(context).unfocus();
 
       try {
+        await Supabase.instance.client.auth
+            .signOut(scope: SignOutScope.local);
+
         final response = await UserService.signIn(
           _emailController.text.trim(),
           _passwordController.text,
@@ -143,7 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
           await _saveRememberedCredentials();
           await Future.delayed(const Duration(milliseconds: 500));
 
-          await syncUserLanguage(); // ✅ Atualiza idioma do perfil no Supabase
+          await syncUserLanguage();
 
           Navigator.of(context).pushReplacement(
             fadePageTransition(
@@ -175,110 +168,6 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     }
   }
-
-
-  Future<void> _performAutoLogin() async {
-    if (!mounted) return;
-    setState(() => _isLoading = true);
-
-    try {
-      final response = await UserService.signIn(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
-
-      if (mounted && response['success']) {
-        await Future.delayed(const Duration(milliseconds: 500));
-        Navigator.of(context).pushReplacement(
-          fadePageTransition(
-            DashboardScreen(
-              month: DateTime.now().month,
-              year: DateTime.now().year,
-            ),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.remove('remembered_password');
-        await prefs.setBool('remember_me', false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro no auto-login: $e')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  /// Abre o modal para captura de email e dispara o envio do Magic Link.
-  Future<void> _handleMagicLinkTap() async {
-    if (_isMagicLoading || !mounted) return;
-
-    final email = await showMagicLinkEmailSheet(
-      context: context,
-      title: 'auth.login.magic_link_title'.tr(),
-      description: 'auth.login.magic_link_description'.tr(),
-      emailLabel: 'auth.login.email'.tr(),
-      emailEmptyError: 'auth.login.error_email_empty'.tr(),
-      emailInvalidError: 'auth.login.error_email_invalid'.tr(),
-      confirmLabel: 'auth.login.magic_link_confirm'.tr(),
-      initialEmail: _emailController.text.trim(),
-    );
-
-    if (!mounted || email == null) return;
-
-    await _sendMagicLink(email);
-  }
-
-  /// Encapsula o envio do Magic Link + feedback visual.
-  Future<void> _sendMagicLink(String email) async {
-    if (!mounted) return;
-    setState(() => _isMagicLoading = true);
-
-    final normalizedEmail = email.trim();
-
-    try {
-      await SupabaseConfig.sendMagicLink(normalizedEmail);
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'auth.login.magic_link_sent'.tr(args: [normalizedEmail]),
-          ),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } on MagicLinkException catch (e) {
-  if (!mounted) return;
-
-  final snackText = e.type == MagicLinkExceptionType.userNotFound
-      ? 'Usuário não cadastrado.'
-      : 'Erro ao enviar o link mágico. Tente novamente.';
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text(snackText),
-      backgroundColor: Colors.red,
-    ),
-  );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'auth.login.magic_link_error'.tr(args: [e.toString()]),
-          ),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _isMagicLoading = false);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -331,9 +220,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Text(
                         'auth.login.description'.tr(),
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                          color: Colors.black87,
-                          height: 1.4,
-                        ),
+                              color: Colors.black87,
+                              height: 1.4,
+                            ),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -358,7 +247,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: Container(
                               width: MediaQuery.of(context).size.width * 0.4,
                               margin:
-                              const EdgeInsets.symmetric(horizontal: 4),
+                                  const EdgeInsets.symmetric(horizontal: 4),
                               decoration: BoxDecoration(
                                 color: LightModeColors.lightSecondary,
                                 borderRadius: BorderRadius.circular(40),
@@ -400,7 +289,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
                                         builder: (context) =>
-                                        const SignupScreen(),
+                                            const SignupScreen(),
                                       ),
                                     );
                                   },
@@ -479,9 +368,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               .textTheme
                               .bodyMedium!
                               .copyWith(
-                            color: LightModeColors.lightOnSurface
-                                .withValues(alpha: 0.7),
-                          ),
+                                color: LightModeColors.lightOnSurface
+                                    .withValues(alpha: 0.7),
+                              ),
                         ),
                         const Spacer(),
                         GestureDetector(
@@ -489,7 +378,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             context,
                             MaterialPageRoute(
                               builder: (context) =>
-                              const ForgotPasswordScreen(),
+                                  const ForgotPasswordScreen(),
                             ),
                           ),
                           child: Text(
@@ -498,10 +387,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                 .textTheme
                                 .bodyMedium!
                                 .copyWith(
-                              color: LightModeColors.lightSecondary,
-                              fontWeight: FontWeight.w600,
-                              decoration: TextDecoration.underline,
-                            ),
+                                  color: LightModeColors.lightSecondary,
+                                  fontWeight: FontWeight.w600,
+                                  decoration: TextDecoration.underline,
+                                ),
                           ),
                         ),
                       ],
@@ -518,19 +407,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 24),
 
-                    DividerWithText(text: 'auth.login.or'.tr()),
+                    DividerWithText(text: 'auth.login.or_biometric'.tr()),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
 
-                    // 🌟 Botão de login por Magic Link (tradução ativada)
-                    AuthButton(
-                      text: 'auth.login.magic_link_button'.tr(),
-                      icon: Icons.mail_outline,
-                      isOutlined: true,
-                      isLoading: _isMagicLoading,
-                      onPressed: _handleMagicLinkTap,
-                    ),
-
+                    // 🔐 Botão de login com biometria/PIN
+                    const BiometricLoginPage(),
 
                     const SizedBox(height: 32),
                   ],

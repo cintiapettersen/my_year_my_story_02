@@ -21,6 +21,7 @@
       "forgot_password": "Esqueceu a senha?",
       "button": "Entrar",
       "or": "OU",
+      "or_biometric": "ou com biometria",
       "magic_link_button": "Entrar com link mágico ",
       "magic_link_title": " Entrar com link mágico?",
       "magic_link_description": "Digite seu email e enviaremos um link seguro para acessar.",
@@ -116,7 +117,8 @@
     "error_email_empty": "Por favor, insira seu email",
     "error_email_invalid": "Email inválido",
     "error_password": "A senha deve ter pelo menos 6 caracteres",
-    "error_confirm": "As senhas não coincidem"
+    "error_confirm": "As senhas não coincidem",
+    "biometric_hint": "🔒 Após criar sua conta, você poderá ativar o login por biometria para acessar de forma rápida e segura."
   },
   "bottom": {
     "home": "Início",

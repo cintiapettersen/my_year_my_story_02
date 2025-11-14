@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:my_year_my_story/widgets/shared/main_scaffold.dart';
-import 'package:my_year_my_story/supabase/supabase_config.dart';
+import 'package:myyearmystory/widgets/shared/main_scaffold.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
 
 class DailyLuckPage extends StatefulWidget {
   const DailyLuckPage({Key? key}) : super(key: key);

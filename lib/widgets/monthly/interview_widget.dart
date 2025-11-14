@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:my_year_my_story/widgets/shared/month_page_template.dart';
-import 'package:my_year_my_story/services/interview_service.dart';
-import 'package:my_year_my_story/utils/access_control.dart';
-import 'package:my_year_my_story/supabase/supabase_config.dart';
-import 'package:my_year_my_story/screens/popups/coming_soon.dart';
+import 'package:myyearmystory/widgets/shared/month_page_template.dart';
+import 'package:myyearmystory/services/interview_service.dart';
+import 'package:myyearmystory/utils/access_control.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
+import 'package:myyearmystory/screens/popups/coming_soon.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 class InterviewScreen extends StatefulWidget {

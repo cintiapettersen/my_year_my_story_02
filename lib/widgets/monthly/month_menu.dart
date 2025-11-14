@@ -3,8 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'dart:ui' as ui;
-import 'package:my_year_my_story/utils/month_colors.dart'; // 🌈 cores mensais
-import 'package:my_year_my_story/widgets/monthly/dailyluckpage.dart';
+import 'package:myyearmystory/utils/month_colors.dart'; // 🌈 cores mensais
+import 'package:myyearmystory/widgets/monthly/dailyluckpage.dart';
 
 class MonthMenu extends StatelessWidget {
   final int month;

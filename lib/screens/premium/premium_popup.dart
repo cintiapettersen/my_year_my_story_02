@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:my_year_my_story/screens/auth/login_screen.dart';
-import 'package:my_year_my_story/screens/premium/premium_page.dart';
+import 'package:myyearmystory/screens/auth/login_screen.dart';
+import 'package:myyearmystory/screens/premium/premium_page.dart';
 
 void showPremiumPrompt(BuildContext context, {int? month, int? year}) {
   final user = Supabase.instance.client.auth.currentUser;
@@ -27,8 +27,7 @@ void showPremiumPrompt(BuildContext context, {int? month, int? year}) {
         context,
         MaterialPageRoute(
           builder: (context) => PremiumPage(
-            month: month ?? DateTime.now().month,
-            year: year ?? DateTime.now().year,
+            
           ),
         ),
       );

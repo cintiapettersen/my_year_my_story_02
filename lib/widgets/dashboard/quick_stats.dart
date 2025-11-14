@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_year_my_story/supabase/supabase_config.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
 
 class QuickStats extends StatefulWidget {
   const QuickStats({super.key});
@@ -24,7 +24,7 @@ class _QuickStatsState extends State<QuickStats> {
     try {
       // TODO: Implementar consultas reais ao Supabase
       // Por enquanto, usando dados simulados baseados no usuário
-      final user = SupabaseConfig.getCurrentUser();
+      final user = SupabaseConfig.client.auth.currentUser;
       if (user != null) {
         // Simular dados baseados no tempo de conta criada
         final createdAt = DateTime.tryParse(user.createdAt) ?? DateTime.now();

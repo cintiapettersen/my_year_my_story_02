@@ -1,5 +1,5 @@
-import 'package:my_year_my_story/models/diary_entry.dart';
-import 'package:my_year_my_story/supabase/supabase_config.dart';
+import 'package:myyearmystory/models/diary_entry.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
 
 class DiaryService {
   static final _supabase = SupabaseConfig.client;

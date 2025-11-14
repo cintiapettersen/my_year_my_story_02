@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:my_year_my_story/widgets/shared/main_scaffold.dart';
+import 'package:myyearmystory/widgets/shared/main_scaffold.dart';
 
 // Imports dos widgets mensais
-import 'package:my_year_my_story/widgets/monthly/month_menu.dart';
-import 'package:my_year_my_story/widgets/monthly/monthly_goals_widget.dart';
-import 'package:my_year_my_story/widgets/monthly/curiosities_widget.dart';
-import 'package:my_year_my_story/widgets/monthly/interactive_quiz_widget.dart';
-import 'package:my_year_my_story/widgets/monthly/zodiac_widget.dart';
-import 'package:my_year_my_story/widgets/monthly/skills_development_widget.dart';
-import 'package:my_year_my_story/widgets/monthly/did_you_know_widget.dart';
-import 'package:my_year_my_story/widgets/monthly/interview_widget.dart';
-import 'package:my_year_my_story/widgets/monthly/monthly_lists_widget.dart';
-import 'package:my_year_my_story/widgets/monthly/gratitude_widget.dart';
-import 'package:my_year_my_story/widgets/monthly/reflections_widget.dart';
-import 'package:my_year_my_story/widgets/monthly/monthly_photo_gallery.dart';
+import 'package:myyearmystory/widgets/monthly/month_menu.dart';
+import 'package:myyearmystory/widgets/monthly/monthly_goals_widget.dart';
+import 'package:myyearmystory/widgets/monthly/curiosities_widget.dart';
+import 'package:myyearmystory/widgets/monthly/interactive_quiz_widget.dart';
+import 'package:myyearmystory/widgets/monthly/zodiac_widget.dart';
+import 'package:myyearmystory/widgets/monthly/skills_development_widget.dart';
+import 'package:myyearmystory/widgets/monthly/did_you_know_widget.dart';
+import 'package:myyearmystory/widgets/monthly/interview_widget.dart';
+import 'package:myyearmystory/widgets/monthly/monthly_lists_widget.dart';
+import 'package:myyearmystory/widgets/monthly/gratitude_widget.dart';
+import 'package:myyearmystory/widgets/monthly/reflections_widget.dart';
+import 'package:myyearmystory/widgets/monthly/monthly_photo_gallery.dart';
 
 class CurrentMonthScreen extends StatefulWidget {
   final int? month;

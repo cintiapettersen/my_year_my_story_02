@@ -7,20 +7,20 @@ import 'package:easy_localization/easy_localization.dart';
 import 'dart:ui' as ui;
 
 // Telas principais
-import 'package:my_year_my_story/screens/diary/diary_screen.dart';
-import 'package:my_year_my_story/screens/mood/mood_screen.dart';
-import 'package:my_year_my_story/widgets/monthly/monthly_goals_widget.dart';
-import 'package:my_year_my_story/widgets/monthly/gratitude_widget.dart';
-import 'package:my_year_my_story/screens/quiz/interactive_quiz_screen.dart';
-import 'package:my_year_my_story/screens/monthly/current_month_screen.dart';
+import 'package:myyearmystory/screens/diary/diary_screen.dart';
+import 'package:myyearmystory/screens/mood/mood_screen.dart';
+import 'package:myyearmystory/widgets/monthly/monthly_goals_widget.dart';
+import 'package:myyearmystory/widgets/monthly/gratitude_widget.dart';
+import 'package:myyearmystory/screens/quiz/interactive_quiz_screen.dart';
+import 'package:myyearmystory/screens/monthly/current_month_screen.dart';
 import '../../widgets/monthly/curiosities_widget.dart';
 
 // Menu inferior
-import 'package:my_year_my_story/widgets/shared/app_bottom_menu.dart';
+import 'package:myyearmystory/widgets/shared/app_bottom_menu.dart';
 // Menu superior
 import '../../widgets/shared/custom_drawer.dart';
 // Transição personalizada
-import 'package:my_year_my_story/screens/splash/fade_page_transition.dart';
+import 'package:myyearmystory/screens/splash/fade_page_transition.dart';
 
 class DashboardScreen extends StatefulWidget {
   final int month;
@@ -89,6 +89,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _loadDashboardData() async {
+    if (!mounted) return;
     setState(() => isLoading = true);
     final user = supabase.auth.currentUser;
 
@@ -101,6 +102,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         quizResultado = null;
         curiosidadeAleatoria = null;
         dailyQuote = 'Cada dia é uma nova página na sua história ✨';
+        if (!mounted) return;
         setState(() => isLoading = false);
         return;
       }
@@ -163,6 +165,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       debugPrint('Erro ao carregar dashboard: $e');
     }
 
+    if (!mounted) return;
     setState(() => isLoading = false);
   }
 

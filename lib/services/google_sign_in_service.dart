@@ -2,7 +2,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:my_year_my_story/supabase/supabase_config.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
 
 class GoogleSignInService {
   /// 🚀 Login com Google (Web + Mobile)

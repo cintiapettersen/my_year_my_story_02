@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:my_year_my_story/services/user_service.dart';
-import 'package:my_year_my_story/screens/auth/login_screen.dart';
+import 'package:myyearmystory/services/user_service.dart';
+import 'package:myyearmystory/screens/auth/login_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});

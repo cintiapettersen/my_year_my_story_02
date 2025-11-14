@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_year_my_story/theme.dart';
+import 'package:myyearmystory/theme.dart';
 
 class AuthButton extends StatelessWidget {
   final String text;

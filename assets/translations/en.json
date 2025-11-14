@@ -21,6 +21,7 @@
       "forgot_password": "Forgot password?",
       "button": "Sign in",
       "or": "OR",
+      "or_biometric": "or with biometrics",
       "magic_link_button": "Sign in with a Magic Link ",
       "magic_link_title": "Prefer a magic link?",
       "magic_link_description": "Type your email and we'll send you a secure login link.",
@@ -116,7 +117,9 @@
     "error_email_empty": "Please enter your email",
     "error_email_invalid": "Invalid email",
     "error_password": "Password must be at least 6 characters long",
-    "error_confirm": "Passwords do not match"
+    "error_confirm": "Passwords do not match",
+    "biometric_hint": "🔒 After creating your account, you’ll be able to enable biometric login for quick and secure access."
+
   },
   "bottom": {
     "home": "Home",

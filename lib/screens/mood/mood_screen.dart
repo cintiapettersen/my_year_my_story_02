@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:my_year_my_story/widgets/shared/main_scaffold.dart';
+import 'package:myyearmystory/widgets/shared/main_scaffold.dart';
 
 class MoodScreen extends StatefulWidget {
   final int month;
@@ -69,7 +69,7 @@ class _MoodScreenState extends State<MoodScreen> {
     await supabase.from('mood_entries').insert({
       'user_id': user.id,
       'mood': mood,
-      'date': now.toIso8601String(),
+      'entry_date': now.toIso8601String(),
       'month': now.month,
       'year': now.year,
       'created_at': now.toIso8601String(),
@@ -123,7 +123,7 @@ class _MoodScreenState extends State<MoodScreen> {
             children: [
               Text(
                 'Como você está se sentindo hoje?',
-                style: GoogleFonts.outfit(
+                style: GoogleFonts.montserrat(
                   fontSize: 19
                   ,
                   color: Colors.pink.shade700,

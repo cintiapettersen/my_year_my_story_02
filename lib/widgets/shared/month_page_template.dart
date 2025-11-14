@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:my_year_my_story/widgets/shared/app_bottom_menu.dart';
-import 'package:my_year_my_story/widgets/shared/month_header.dart';
+import 'package:myyearmystory/widgets/shared/app_bottom_menu.dart';
+import 'package:myyearmystory/widgets/shared/month_header.dart';
 
 /// 🌸 Template base para as páginas mensais do app
 class MonthPageTemplate extends StatefulWidget {

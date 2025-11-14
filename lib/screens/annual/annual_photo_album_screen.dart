@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:my_year_my_story/supabase/supabase_config.dart';
-import 'package:my_year_my_story/widgets/shared/main_scaffold.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
+import 'package:myyearmystory/widgets/shared/main_scaffold.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 class AnnualPhotoAlbumScreen extends StatefulWidget {

@@ -5,36 +5,40 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:my_year_my_story/widgets/monthly/dailyluckpage.dart';
-import 'package:my_year_my_story/services/auth_listener.dart';
+import 'package:myyearmystory/widgets/monthly/dailyluckpage.dart';
+import 'package:myyearmystory/services/auth_listener.dart';
+import 'package:myyearmystory/services/profile_service.dart';
+import 'package:myyearmystory/screens/premium/premium_page.dart';
+
+
 
 
 
 // 🌸 Estilo e Configuração
-import 'package:my_year_my_story/theme.dart';
-import 'package:my_year_my_story/supabase/supabase_config.dart';
+import 'package:myyearmystory/theme.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
 
 // 🌸 Telas principais
-import 'package:my_year_my_story/screens/auth/auth_page_view.dart';
-import 'package:my_year_my_story/screens/dashboard/dashboard_screen.dart';
-import 'package:my_year_my_story/screens/splash/splash_transition.dart';
+import 'package:myyearmystory/screens/auth/auth_page_view.dart';
+import 'package:myyearmystory/screens/dashboard/dashboard_screen.dart';
+import 'package:myyearmystory/screens/splash/splash_transition.dart';
 
 // 🌸 Widgets mensais
-import 'package:my_year_my_story/widgets/monthly/monthly_goals_widget.dart';
-import 'package:my_year_my_story/widgets/monthly/gratitude_widget.dart';
-import 'package:my_year_my_story/widgets/monthly/reflections_widget.dart';
-import 'package:my_year_my_story/widgets/monthly/curiosities_widget.dart';
-import 'package:my_year_my_story/widgets/monthly/zodiac_widget.dart';
-import 'package:my_year_my_story/widgets/monthly/skills_development_widget.dart';
-import 'package:my_year_my_story/widgets/monthly/did_you_know_widget.dart';
-import 'package:my_year_my_story/widgets/monthly/interview_widget.dart';
-import 'package:my_year_my_story/widgets/monthly/monthly_lists_widget.dart';
-import 'package:my_year_my_story/widgets/monthly/monthly_photo_gallery.dart';
+import 'package:myyearmystory/widgets/monthly/monthly_goals_widget.dart';
+import 'package:myyearmystory/widgets/monthly/gratitude_widget.dart';
+import 'package:myyearmystory/widgets/monthly/reflections_widget.dart';
+import 'package:myyearmystory/widgets/monthly/curiosities_widget.dart';
+import 'package:myyearmystory/widgets/monthly/zodiac_widget.dart';
+import 'package:myyearmystory/widgets/monthly/skills_development_widget.dart';
+import 'package:myyearmystory/widgets/monthly/did_you_know_widget.dart';
+import 'package:myyearmystory/widgets/monthly/interview_widget.dart';
+import 'package:myyearmystory/widgets/monthly/monthly_lists_widget.dart';
+import 'package:myyearmystory/widgets/monthly/monthly_photo_gallery.dart';
 
 // 🌸 Telas do menu lateral (hambúrguer)
-import 'package:my_year_my_story/screens/profile/profile_screen.dart';
-import 'package:my_year_my_story/screens/help/help_screen.dart';
-import 'package:my_year_my_story/screens/premium/premium_page.dart';
+import 'package:myyearmystory/screens/profile/profile_screen.dart';
+import 'package:myyearmystory/screens/help/help_screen.dart';
+import 'package:myyearmystory/screens/premium/premium_page.dart';
 
 /// 🌎 Chave global de navegação
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -62,12 +66,14 @@ Future<void> main() async {
   }
 
 
-  // 🚀 Inicializa Supabase
-await SupabaseConfig.initialize();
 
-// 🔐 Inicia listener global de autenticação
-AuthListener.initialize(navigatorKey);
+    // 🚀 Inicializa Supabase
+  await SupabaseConfig.initialize();
 
+  // 🔐 Inicia listener global de autenticação (o CORRETO)
+  AuthListener.initialize(navigatorKey);
+
+await profileService.load();
 
   // 🌎 Define locale inicial do app
   Locale initialLocale;
@@ -76,7 +82,6 @@ AuthListener.initialize(navigatorKey);
   } else {
     initialLocale = const Locale('en');
   }
-
 
 
   runApp(
@@ -132,8 +137,6 @@ class MyApp extends StatelessWidget {
         '/premium': (context) => _withArgs(
           context,
               (args) => PremiumPage(
-            month: args['month'] ?? DateTime.now().month,
-            year: args['year'] ?? DateTime.now().year,
           ),
         ),
         '/monthly_goals': (context) => _withArgs(

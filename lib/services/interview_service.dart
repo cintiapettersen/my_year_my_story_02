@@ -1,5 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:my_year_my_story/supabase/supabase_config.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:flutter/material.dart';
 
 class InterviewService {

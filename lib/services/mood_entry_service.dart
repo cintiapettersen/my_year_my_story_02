@@ -1,5 +1,5 @@
-import 'package:my_year_my_story/models/mood_entry_model.dart';
-import 'package:my_year_my_story/supabase/supabase_config.dart';
+import 'package:myyearmystory/models/mood_entry_model.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
 
 final supabase = SupabaseConfig.client;
 

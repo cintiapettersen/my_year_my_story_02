@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:my_year_my_story/services/reflections_service.dart';
-import 'package:my_year_my_story/supabase/supabase_config.dart';
-import 'package:my_year_my_story/widgets/shared/month_page_template.dart';
-import 'package:my_year_my_story/screens/premium/premium_popup.dart';
+import 'package:myyearmystory/services/reflections_service.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
+import 'package:myyearmystory/widgets/shared/month_page_template.dart';
+import 'package:myyearmystory/screens/premium/premium_popup.dart';
 
 class ReflectionsWidget extends StatefulWidget {
   final int? month;
@@ -27,7 +27,7 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
   bool _isOfflineMode = false;
   String? _currentUserId;
   bool isPremiumUser = false;
-  int _insertCount = 0; // 💕 Controle de quantas inserções a usuária fez
+  int _insertCount = 0;
 
   @override
   bool get wantKeepAlive => true;
@@ -96,7 +96,6 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
     await _loadReflectionsData();
   }
 
-  // 💎 Verifica status Premium ou convidado
   Future<void> _checkPremiumStatus() async {
     final user = _supabase.auth.currentUser;
     if (user == null) {
@@ -144,13 +143,11 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
   Future<void> _saveReflectionsData() async {
     final user = _supabase.auth.currentUser;
 
-    // 🩶 Se convidado → popup login/premium
     if (user == null) {
       showPremiumPrompt(context);
       return;
     }
 
-    // 💕 Logada, mas não premium → só 1 inserção antes de bloquear
     if (!isPremiumUser && _insertCount >= 1) {
       showPremiumPrompt(context);
       return;
@@ -173,7 +170,7 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
         user.id,
       );
 
-      if (!isPremiumUser) _insertCount++; // 💕 Conta 1 inserção
+      if (!isPremiumUser) _insertCount++;
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -218,6 +215,12 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
       month: widget.month ?? DateTime.now().month,
       year: widget.year ?? DateTime.now().year,
       title: 'Reflexões do Mês',
+
+      // 🌸 AGORA PADRONIZADO!
+      description:
+          'Tire um momento para refletir sobre seu mês: o que te fez crescer, '
+          'o que te desafiou e o que te trouxe alegria 💭',
+
       child: AnimatedOpacity(
         opacity: _isLoading ? 0 : 1,
         duration: const Duration(milliseconds: 800),
@@ -226,20 +229,8 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
+            const SizedBox(height: 24),
 
-            const Text(
-              'Tire um momento para refletir sobre seu mês: o que te fez crescer, '
-                  'o que te desafiou e o que te trouxe alegria 💭',
-              style: TextStyle(
-                fontSize: 16,
-                height: 1.5,
-                color: Colors.black87,
-              ),
-            ),
-
-            const SizedBox(height: 50),
-
-            // 📝 Lista de reflexões
             ..._reflectionPrompts.asMap().entries.map((entry) {
               final index = entry.key;
               final prompt = entry.value;
@@ -288,7 +279,7 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
                         controller: controller,
                         maxLines: 4,
                         readOnly:
-                        !isPremiumUser && _insertCount >= 1, // 💕 bloqueia input
+                            !isPremiumUser && _insertCount >= 1,
                         onTap: () {
                           if (!isPremiumUser && _insertCount >= 1) {
                             showPremiumPrompt(context);
@@ -302,11 +293,12 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide:
-                            const BorderSide(color: Color(0xFFF2D7E0)),
+                            borderSide: const BorderSide(
+                                color: Color(0xFFF2D7E0)),
                           ),
                           focusedBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Color(0xFFC03B66)),
+                            borderSide:
+                                BorderSide(color: Color(0xFFC03B66)),
                           ),
                           filled: true,
                           fillColor: const Color(0xFFFFF7FA),
@@ -326,44 +318,38 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
 
             const SizedBox(height: 24),
 
-            // 💾 Botão salvar
             Center(
               child: GestureDetector(
                 onTapDown: (_) => setState(() => _isSaving = true),
                 onTapUp: (_) => Future.delayed(
                     const Duration(milliseconds: 200),
-                        () => setState(() => _isSaving = false)),
+                    () => setState(() => _isSaving = false)),
                 onTapCancel: () => setState(() => _isSaving = false),
                 onTap: _saveReflectionsData,
                 child: AnimatedScale(
                   scale: _isSaving ? 0.96 : 1.0,
                   duration: const Duration(milliseconds: 150),
-                  child: AnimatedOpacity(
-                    opacity: 1,
-                    duration: const Duration(milliseconds: 800),
-                    curve: Curves.easeIn,
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFC03B66),
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 6,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'Salvar Reflexões',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFC03B66),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Salvar Reflexões',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
                       ),
                     ),

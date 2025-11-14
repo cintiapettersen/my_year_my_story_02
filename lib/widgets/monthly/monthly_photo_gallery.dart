@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:my_year_my_story/widgets/shared/month_page_template.dart';
+import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 
 class MonthlyPhotoGallery extends StatefulWidget {
   final int month;
@@ -41,7 +41,7 @@ class _MonthlyPhotoGalleryState extends State<MonthlyPhotoGallery>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text('photos_popup_title'.tr()),
         content: Text(
-          'photos_popup_content'.tr(),
+          'photos.popup_content'.tr(),
           textAlign: TextAlign.center,
         ),
         actions: [
@@ -61,8 +61,8 @@ class _MonthlyPhotoGalleryState extends State<MonthlyPhotoGallery>
     return MonthPageTemplate(
       month: widget.month,
       year: widget.year,
-      title: 'photos_title'.tr(),
-      description: 'photos_description'.tr(),
+      title: 'photos.title'.tr(),
+      description: 'photos.description'.tr(),
       child: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -78,7 +78,7 @@ class _MonthlyPhotoGalleryState extends State<MonthlyPhotoGallery>
                         size: 60, color: Colors.grey),
                     const SizedBox(height: 12),
                     Text(
-                      'photos_empty'.tr(),
+                      'photos.empty'.tr(),
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 16,
