@@ -131,8 +131,8 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
                   // 🔹 Frase principal traduzida
                   Text(
   'splash.new_chapter'.tr(),
-  style: GoogleFonts.montserrat(
-    fontSize: 20,
+  style: GoogleFonts.satisfy(
+    fontSize: 22,
     fontWeight: FontWeight.w400,
     color: const Color(0xFFC03B66),
   ),
@@ -171,8 +171,8 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
             Text(
   'splash.subtitle'.tr(),
   textAlign: TextAlign.center,
-  style: GoogleFonts.montserrat(
-    fontSize: 20,
+  style: GoogleFonts.satisfy(
+    fontSize: 17,
     fontWeight: FontWeight.w500,
     color: Colors.black87,
   ),

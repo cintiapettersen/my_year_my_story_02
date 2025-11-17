@@ -44,10 +44,10 @@ class InteractiveQuizScreen extends StatelessWidget {
         ),
       ),
       body: SafeArea(
-        child: InteractiveQuizWidget(
+        child: MonthlyQuizWidget(
           month: month,
           year: year,
-          monthName: monthName, // 🌸 adicionado aqui
+           // 🌸 adicionado aqui
         ),
       ),
     );

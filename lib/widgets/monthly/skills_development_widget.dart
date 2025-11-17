@@ -1,10 +1,56 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:math';
-import 'package:myyearmystory/widgets/monthly/monthly_page_template.dart';
-import 'package:myyearmystory/screens/premium/premium_popup.dart';
+import 'package:easy_localization/easy_localization.dart';
 
+import 'package:myyearmystory/widgets/shared/month_page_template.dart';
+import 'package:myyearmystory/screens/premium/premium_popup.dart';
+import 'package:myyearmystory/utils/month_colors.dart';
+import 'package:myyearmystory/utils/label_colors.dart';
+
+/// ------------------------------------------------------------
+/// 💖 PALETA DE CATEGORIAS (Pinterest vibes, teen, suave)
+/// ------------------------------------------------------------
+final Map<String, Color> skillCategoryColors = {
+  "autocuidado": Color(0xFFFAD4D8),
+  "energia": Color(0xFFE9B9C9),
+  "propósito": Color.fromARGB(255, 228, 201, 184),
+  "leveza": Color(0xFFD7CFF2),
+  "reflexão": Color(0xFFC9D8E2),
+  "gratidão": Color(0xFFF2C3D9),
+  "rotina": Color.fromARGB(255, 206, 223, 193),
+  "crescimento": Color.fromARGB(255, 212, 178, 173),
+  "confiança": Color(0xFFF7E2B5),
+  "presença": Color.fromARGB(255, 238, 208, 241),
+  "encerramento": Color.fromARGB(255, 198, 176, 193),
+  "intuição": Color.fromARGB(255, 229, 208, 194),
+};
+
+/// ------------------------------------------------------------
+/// ✨ Mapeia o texto → categoria
+/// ------------------------------------------------------------
+String mapTitleToCategory(String title) {
+  title = title.toLowerCase();
+
+  if (title.contains("pausa") || title.contains("calma")) return "leveza";
+  if (title.contains("energia") || title.contains("proteja")) return "energia";
+  if (title.contains("porquê") || title.contains("propósito")) return "propósito";
+  if (title.contains("celebre") || title.contains("presença")) return "presença";
+  if (title.contains("intuição") || title.contains("intuit")) return "intuição";
+  if (title.contains("gratid")) return "gratidão";
+  if (title.contains("ritmo") || title.contains("rotina")) return "rotina";
+  if (title.contains("cres") || title.contains("mudou")) return "crescimento";
+  if (title.contains("confiança") || title.contains("confie")) return "confiança";
+  if (title.contains("reflet") || title.contains("entender")) return "reflexão";
+  if (title.contains("encerr") || title.contains("ritual")) return "encerramento";
+
+  return "autocuidado";
+}
+
+/// ------------------------------------------------------------
+/// 🌈 WIDGET PRINCIPAL
+/// ------------------------------------------------------------
 class SkillsDevelopmentWidget extends StatefulWidget {
   final int month;
   final int year;
@@ -26,41 +72,27 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
   bool get wantKeepAlive => true;
 
   final supabase = Supabase.instance.client;
-  List<Map<String, dynamic>> skills = [];
-  bool isLoading = true;
-  int refreshCount = 0;
-  bool isPremiumUser = false;
-  bool isPressed = false;
-  Color currentButtonColor = const Color(0xFFE2377D);
 
-  final Map<String, Color> categoryColors = {
-    'inspiração': Color(0xFF679BD3),
-    'astronomia': Color(0xFFDDBFEF),
-    'ciência': Color(0xFFE2377D),
-    'universo': Color(0xFFEA7ACD),
-    'organização': Color(0xFFCF8EE8),
-    'autoconhecimento': Color(0xFFD1C269),
-    'saúde': Color(0xFF9CBC68),
-    'espiritualidade': Color(0xFFF0D4B8),
-    'gratidão': Color(0xFFEAD7E5),
-    'propósito': Color(0xFFdbaf35),
-    'equilíbrio emocional': Color(0xFFFFB347),
-    'autocuidado': Color(0xFF8E7CC3),
-    'amizade': Color(0xFFFF9AA2),
-    'motivação': Color(0xFF90CAF9),
-    'coragem': Color(0xFFF48FB1),
-    'esperança': Color(0xFFFFE082),
-  };
+  bool isLoading = true;
+  bool isPressed = false;
+  bool isPremiumUser = false;
+  int refreshCount = 0;
+
+  List<Map<String, dynamic>> skills = [];
+  Color currentButtonColor = Colors.pinkAccent;
 
   @override
   void initState() {
     super.initState();
+    currentButtonColor = getMonthColor(widget.month);
     _checkPremiumStatus();
     _loadData();
   }
 
+  /// 🔐 Verifica usuário premium
   Future<void> _checkPremiumStatus() async {
     final user = supabase.auth.currentUser;
+
     if (user == null) {
       setState(() => isPremiumUser = false);
       return;
@@ -77,97 +109,207 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
     });
   }
 
-  Future<void> _loadData({bool shuffle = false}) async {
-    setState(() => isLoading = true);
+  /// 🌍 PT / EN auto fallback
+  String getLocalizedText(Map<String, dynamic> tip) {
+    final locale = context.locale.languageCode;
 
-    try {
-      final response = await supabase
-          .from('skills_tips')
-          .select()
-          .eq('year', widget.year)
-          .eq('lang', 'pt');
+    if (locale == "en" &&
+        tip["text_en"] != null &&
+        tip["text_en"].toString().trim().isNotEmpty) {
+      return tip["text_en"];
+    }
 
-      final all = List<Map<String, dynamic>>.from(response)..shuffle();
-
-      final grouped = <String, List<Map<String, dynamic>>>{};
-
-      for (final tip in all) {
-        final category = (tip['category'] ?? 'Outros').toString();
-        grouped.putIfAbsent(category, () => []).add(tip);
-      }
-
-      final categories = grouped.keys.toList()..shuffle();
-      final selected = categories.take(5);
-
-      skills = [
-        for (final cat in selected)
-          if (grouped[cat]!.isNotEmpty) grouped[cat]!.first,
-      ];
-
-      if (shuffle) skills.shuffle();
-    } catch (_) {}
-
-    setState(() => isLoading = false);
+    return tip["text"];
   }
 
+  /// 📌 Carrega dicas com agrupamento por categoria
+  /// 📌 Carrega dicas com agrupamento por categoria (nova versão)
+Future<void> _loadData() async {
+  setState(() => isLoading = true);
+
+  try {
+    // 1️⃣ Busca todas as dicas da tabela (já que não há mais mês/ano)
+    final response = await supabase.from('skills_tips').select();
+
+    if (response.isEmpty) {
+      setState(() {
+        skills = [];
+        isLoading = false;
+      });
+      return;
+    }
+
+    // 2️⃣ Converte tudo pra lista tipada
+    final allTips = List<Map<String, dynamic>>.from(response);
+
+    // 3️⃣ Embaralha pra variar a cada carregamento
+    allTips.shuffle();
+
+    // 4️⃣ Agrupa por categoria
+    final Map<String, List<Map<String, dynamic>>> grouped = {};
+
+    for (var tip in allTips) {
+      final localized = getLocalizedText(tip);
+      final category = mapTitleToCategory(localized);
+
+      grouped.putIfAbsent(category, () => []);
+      grouped[category]!.add(tip);
+    }
+
+    // 5️⃣ Pega 1 dica de cada categoria
+    final List<Map<String, dynamic>> onePerCategory = [];
+
+    grouped.forEach((cat, list) {
+      if (list.isNotEmpty) {
+        onePerCategory.add(list.first);
+      }
+    });
+
+    // 6️⃣ Embaralha só as categorias
+    onePerCategory.shuffle();
+
+    // 7️⃣ Pega só 5 categorias diferentes
+    final selected = onePerCategory.take(5).toList();
+
+    // 8️⃣ Se esgotar, mostra a mensagem PT / EN ✨
+    if (selected.isEmpty) {
+      final isEnglish = context.locale.languageCode == "en";
+
+      setState(() {
+        skills = [];
+        isLoading = false;
+
+        final message = isEnglish
+            ? "You've seen all the tips for today. Come back tomorrow 💛"
+            : "Você já viu todas as dicas de hoje. Volte amanhã 💛";
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      });
+
+      return;
+    }
+
+    // 9️⃣ Atualiza a tela
+    setState(() {
+      skills = selected;
+      isLoading = false;
+    });
+  } catch (e) {
+    print("Erro ao carregar dicas: $e");
+    setState(() => isLoading = false);
+  }
+}
+
+
+
+  /// 🔄 Refresh com limite diário
   Future<void> _handleRefresh() async {
+    final prefs = await SharedPreferences.getInstance();
+    final key =
+        "refresh_${widget.year}_${widget.month}_${DateTime.now().day}";
+    final count = prefs.getInt(key) ?? 0;
+
+    final isEnglish = context.locale.languageCode == "en";
+
     if (!isPremiumUser) {
       showPremiumPrompt(context);
       return;
     }
 
-    final prefs = await SharedPreferences.getInstance();
-    final key =
-        "refresh_${DateTime.now().year}_${DateTime.now().month}_${DateTime.now().day}";
-    final count = prefs.getInt(key) ?? 0;
-
     if (count >= 3) {
-      setState(() => refreshCount = 3);
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: Text(
+            isEnglish ? "Come back tomorrow ✨" : "Volte amanhã ✨",
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: Text(
+            isEnglish
+                ? "You've already refreshed your suggestions for today!"
+                : "Você já atualizou suas dicas de hoje!",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(isEnglish ? "OK" : "Entendi"),
+            )
+          ],
+        ),
+      );
       return;
     }
 
+    // 💜 Efeito de cor bonitinho
     final random = Random();
-    currentButtonColor =
-        categoryColors.values.elementAt(random.nextInt(categoryColors.length));
+    final monthColor = getMonthColor(widget.month);
+    final randomBlend = Color.lerp(
+      monthColor,
+      Colors.primaries[random.nextInt(Colors.primaries.length)],
+      0.3,
+    );
 
-    await _loadData(shuffle: true);
+    if (randomBlend != null) {
+      setState(() => currentButtonColor = randomBlend);
+    }
 
+    await _loadData();
     await prefs.setInt(key, count + 1);
+
     setState(() => refreshCount = count + 1);
   }
 
-  String _cap(String t) {
-    if (t.isEmpty) return t;
-    return t[0].toUpperCase() + t.substring(1);
+  Widget _divider() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 18),
+      child: Row(
+        children: [
+          Expanded(child: Container(height: 1, color: Colors.black26)),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8),
+            child: Icon(Icons.circle, size: 6, color: Colors.black38),
+          ),
+          Expanded(child: Container(height: 1, color: Colors.black26)),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
 
-    return MonthlyPageTemplate(
+    final isEnglish = context.locale.languageCode == "en";
+    final labelText = isEnglish ? "Tips" : "Dicas do Mês";
+
+    final fixedPageLabelColor = LabelColors.tips;
+
+    return MonthPageTemplate(
       month: widget.month,
       year: widget.year,
-      title: 'Desenvolvendo Habilidades',
-      description:
-          'Todo mês traz uma chance de aprender algo novo e fortalecer quem você é. Explore com leveza e veja o que mais combina com você!',
+      title: '',
+      pageLabel: labelText,
+      labelColor: fixedPageLabelColor,
       child: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 ...skills.asMap().entries.map((entry) {
                   final index = entry.key;
                   final tip = entry.value;
 
-                  final category = (tip['category'] ?? '').toLowerCase();
-                  final bgColor =
-                      categoryColors[category] ?? Colors.pinkAccent;
+                  final text = getLocalizedText(tip);
+                  final category = mapTitleToCategory(text);
+                  final categoryColor = skillCategoryColors[category]!;
 
                   return TweenAnimationBuilder<double>(
                     tween: Tween(begin: 0, end: 1),
-                    duration:
-                        Duration(milliseconds: 600 + (index * 150)),
+                    duration: Duration(milliseconds: 600 + index * 150),
                     builder: (context, value, child) {
                       return Opacity(
                         opacity: value,
@@ -177,102 +319,90 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
                         ),
                       );
                     },
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 4),
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // categoria colorida
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 4, horizontal: 10),
-                            decoration: BoxDecoration(
-                              color: bgColor,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              _cap(tip['category'] ?? ''),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14,
-                              ),
-                            ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: categoryColor,
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          const SizedBox(height: 10),
-
-                          // texto da dica
-                          Text(
-                            tip['text'] ?? '',
+                          child: Text(
+                            "♡ ${category[0].toUpperCase()}${category.substring(1)} ♡",
                             style: const TextStyle(
-                              fontSize: 16,
-                              height: 1.5,
-                              color: Colors.black87,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                              letterSpacing: .2,
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        Text(
+                          text,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            height: 1.5,
+                            color: Colors.black87,
+                          ),
+                        ),
+
+                        if (index < skills.length - 1) _divider(),
+                      ],
                     ),
                   );
                 }).toList(),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 50),
 
-                // ---- BOTÃO ----
+                /// 🔄 Botão refresh
                 GestureDetector(
                   onTapDown: (_) => setState(() => isPressed = true),
                   onTapUp: (_) async {
                     setState(() => isPressed = false);
                     await Future.delayed(
-                      const Duration(milliseconds: 120),
-                    );
+                        const Duration(milliseconds: 120));
                     _handleRefresh();
                   },
                   onTapCancel: () => setState(() => isPressed = false),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    transform: Matrix4.identity()
-                      ..scale(isPressed ? 0.93 : 1.0),
-                    curve: Curves.easeOutBack,
+                    duration: const Duration(milliseconds: 250),
+                    transform:
+                        Matrix4.identity()..scale(isPressed ? 0.93 : 1.0),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 28, vertical: 14),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          currentButtonColor.withOpacity(0.9),
-                          currentButtonColor.withOpacity(0.7),
-                          Colors.white.withOpacity(0.1),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+                      color: currentButtonColor,
                       borderRadius: BorderRadius.circular(30),
                       boxShadow: [
                         BoxShadow(
                           color: currentButtonColor.withOpacity(0.4),
-                          blurRadius: 15,
+                          blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
                       ],
                     ),
                     child: Text(
-                      isPremiumUser
-                          ? (refreshCount >= 3
-                              ? "Volte amanhã 🌙"
-                              : "Ver mais dicas (${3 - refreshCount} restantes)")
-                          : "Ver mais dicas 🌟 (Premium)",
+                      !isPremiumUser
+                          ? (isEnglish
+                              ? "See more tips (Premium)"
+                              : "Ver mais dicas (Premium)")
+                          : (refreshCount >= 3
+                              ? (isEnglish
+                                  ? "Come back tomorrow 🌙"
+                                  : "Volte amanhã 🌙")
+                              : isEnglish
+                                  ? "See more tips (${3 - refreshCount} left)"
+                                  : "Ver mais dicas (${3 - refreshCount} restantes)"),
+                      textAlign: TextAlign.center,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
-                      textAlign: TextAlign.center,
                     ),
                   ),
                 ),

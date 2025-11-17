@@ -8,13 +8,13 @@ void showPremiumPrompt(BuildContext context, {int? month, int? year}) {
   final user = Supabase.instance.client.auth.currentUser;
   final bool isGuest = user == null;
 
-  // 🔹 Textos traduzidos
-  final String title = tr('premium_popup.title'); // Ex: "Plano Premium"
-  final String message = tr('premium_popup.message'); // Ex: "Seja Premium e desbloqueie todas as funções..."
+  // 🧁 Textos traduzidos
+  final String title = tr('premium_popup.title');
+  final String message = tr('premium_popup.message');
   final String primaryButtonText =
-  isGuest ? tr('actions.login') : tr('premium_popup.upgrade_button');
+      isGuest ? tr('actions.login') : tr('premium_popup.upgrade_button');
 
-  // 🔹 Ação do botão principal (login ou ir para página premium)
+  // 🧁 Ação do botão principal
   void primaryButtonAction() {
     Navigator.pop(context);
     if (isGuest) {
@@ -25,16 +25,12 @@ void showPremiumPrompt(BuildContext context, {int? month, int? year}) {
     } else {
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (context) => PremiumPage(
-            
-          ),
-        ),
+        MaterialPageRoute(builder: (context) => PremiumPage()),
       );
     }
   }
 
-  // 🔹 Exibe o popup animado
+  // ✨ Popup animado
   showGeneralDialog(
     context: context,
     barrierDismissible: true,
@@ -43,6 +39,7 @@ void showPremiumPrompt(BuildContext context, {int? month, int? year}) {
     pageBuilder: (context, animation1, animation2) {
       return const SizedBox.shrink();
     },
+
     transitionBuilder: (context, animation1, animation2, child) {
       final curvedValue = Curves.easeInOut.transform(animation1.value) - 1.0;
 
@@ -50,82 +47,106 @@ void showPremiumPrompt(BuildContext context, {int? month, int? year}) {
         transform: Matrix4.translationValues(0.0, curvedValue * -50, 0.0),
         child: Opacity(
           opacity: animation1.value,
+
           child: AlertDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
             ),
-            backgroundColor: const Color(0xFFFFEEF1), // 🎨 fundo rosinha suave
+            backgroundColor: const Color(0xFFFFEEF1),
+
             contentPadding:
-            const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.favorite,
-                  color: Color(0xFFC03B66),
-                  size: 48,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFC03B66),
-                    letterSpacing: 0.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  message,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF4F4F4F),
-                    height: 1.6,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 28),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+
+            content: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxHeight: 400,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text(
-                        tr('premium_popup.cancel'), // "Agora não"
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+                    const Icon(
+                      Icons.favorite,
+                      color: Color(0xFFC03B66),
+                      size: 48,
                     ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFC03B66),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 30, vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        shadowColor: const Color(0xFFC03B66)
-                            .withValues(alpha: 0.3), // substitui .withOpacity
-                        elevation: 3,
+                    const SizedBox(height: 12),
+
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFC03B66),
+                        letterSpacing: 0.5,
                       ),
-                      onPressed: primaryButtonAction,
-                      child: Text(
-                        primaryButtonText,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                        ),
+                      textAlign: TextAlign.center,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    Text(
+                      message,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF4F4F4F),
+                        height: 1.6,
                       ),
+                      textAlign: TextAlign.center,
+                    ),
+
+                    const SizedBox(height: 26),
+
+                    // ⭐ Botões — SEM OVERFLOW
+                    Column(
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text(
+                              tr('premium_popup.cancel'),
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFC03B66),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              shadowColor:
+                                  const Color(0xFFC03B66).withOpacity(0.3),
+                              elevation: 3,
+                            ),
+                            onPressed: primaryButtonAction,
+                            child: Text(
+                              primaryButtonText,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
         ),

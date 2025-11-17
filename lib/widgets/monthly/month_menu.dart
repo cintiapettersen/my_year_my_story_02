@@ -38,9 +38,9 @@ class MonthMenu extends StatelessWidget {
 
     // 🌸 Itens do menu com chaves de tradução
     final List<Map<String, dynamic>> menuItems = [
-      {'title': 'month_menu.goals', 'icon': PhosphorIconsRegular.sparkle, 'color': const Color(0xFF679BD3)},
+      {'title': 'month_menu.goals', 'icon': PhosphorIconsRegular.sparkle, 'color': const Color.fromARGB(255, 230, 49, 157)},
       {'title': 'month_menu.about_me', 'icon': PhosphorIconsRegular.userCircle, 'color': const Color(0xFFcf8ee8)},
-      {'title': 'month_menu.quiz', 'icon': PhosphorIconsRegular.listChecks, 'color': const Color(0xFFE2377D)},
+      {'title': 'month_menu.quiz', 'icon': PhosphorIconsRegular.listChecks, 'color': const Color.fromARGB(255, 221, 156, 183)},
       {'title': 'month_menu.signs', 'icon': PhosphorIconsRegular.moonStars, 'color': const Color(0xFFe04cb7)},
       {'title': 'month_menu.tips', 'icon': PhosphorIconsRegular.flower, 'color': const Color(0xFFb71691)},
       {'title': 'month_menu.facts', 'icon': PhosphorIconsRegular.lightbulb, 'color': const Color(0xFFdbaf35)},

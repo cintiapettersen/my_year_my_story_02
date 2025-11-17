@@ -22,7 +22,7 @@
       "button": "Sign in",
       "or": "OR",
       "or_biometric": "or with biometrics",
-      "magic_link_button": "Sign in with a Magic Link ",
+      "magic_link_button": "Sign in with a Magic Link",
       "magic_link_title": "Prefer a magic link?",
       "magic_link_description": "Type your email and we'll send you a secure login link.",
       "magic_link_confirm": "Send magic link",
@@ -56,7 +56,6 @@
     "select_language": "Select language",
     "logout_success": "You have successfully logged out!",
     "logout_error": "Could not log out. Please try again."
-
   },
   "profile": {
     "title": "My Profile",
@@ -119,7 +118,6 @@
     "error_password": "Password must be at least 6 characters long",
     "error_confirm": "Passwords do not match",
     "biometric_hint": "🔒 After creating your account, you’ll be able to enable biometric login for quick and secure access."
-
   },
   "bottom": {
     "home": "Home",
@@ -171,113 +169,140 @@
     "cancel": "Not now",
     "upgrade_button": "Subscribe now"
   },
-  "coming_soon_popup": {
-    "title": "Feature coming soon",
-    "message": "This feature will be available soon! Stay tuned 💕",
-    "button": "Got it"
-  },
-  "actions": {
-    "ok": "OK",
-    "close": "Close",
-    "login": "Login"
-  },
   "popup_login": {
     "required_title": "Login required",
     "required_description": "Create a free account to save your answers 💖",
     "cancel": "Later",
     "login_button": "Login"
   },
-  "monthly_goals": {
-    "title": "Monthly Goals",
-    "description": "Plan, co-create, and organize your monthly goals. Every decision you make brings you one step closer to achieving your dreams.",
-    "add_goal_hint": "Type your new goal...",
-    "no_goals_yet": "No goals added yet.\nStart defining your goals for this month!",
-    "goal_added": "Goal added successfully!",
-    "goal_removed": "Goal removed successfully!",
-    "error_load_goals": "Error loading goals.",
-    "error_add_goal": "Error adding goal.",
-    "error_update_goal": "Error updating goal.",
-    "error_remove_goal": "Error removing goal."
+  "actions": {
+    "ok": "OK",
+    "close": "Close",
+    "login": "Login"
   },
-  "month_menu": {
-    "goals": "Monthly Goals",
-    "about_me": "About Me",
-    "quiz": "Interactive Quiz",
-    "signs": "Monthly Zodiac",
-    "tips": "Monthly Tips",
-    "facts": "Did You Know?",
-    "interview": "Monthly Interview",
-    "lists": "My Lists",
-    "gratitude": "Gratitude Page",
-    "reflections": "Monthly Reflections",
-    "photos": "Photos of the Month",
-    "fortune": "Daily Fortune",
-    "choose_section": "Which section of the month would you like to visit today?"
+  "coming_soon_popup": {
+    "title": "Feature coming soon",
+    "message": "This feature will be available soon! Stay tuned 💕",
+    "button": "Got it"
   },
-    "dailyLuck": {
-      "consultingUniverse": "Consulting the universe...",
-      "alreadyReceived": "✨ You've already received your luck for today!",
-      "comeBackTomorrow": "Every day the universe has something to tell you",
-      "discoverLuck": "Today’s Message",
-      "premiumOnly": "Feature available for Premium users only 🔒",
-      "becomePremium": "Become Premium",
-      "drawAnother": "Draw another fortune"
 
+  "month_menu": {
+  "goals": "Monthly Goals",
+  "about_me": "About Me",
+  "quiz": "Interactive Quiz",
+  "signs": "Zodiac Signs",
+  "tips": "My Moment",
+  "facts": "Did You Know?",
+  "interview": "Connections",
+  "lists": "My Lists",
+  "gratitude": "Gratitude",
+  "reflections": "Reflections",
+  "photos": "Monthly Photos",
+  "fortune": "Daily Fortune",
+  "choose_section": "Choose what you want to explore"
+
+
+
+  
+  },
+  "dailyLuck": {
+    "consultingUniverse": "Consulting the universe...",
+    "alreadyReceived": "✨ You've already received your luck for today!",
+    "comeBackTomorrow": "Every day the universe has something to tell you",
+    "discoverLuck": "Today’s Message",
+    "premiumOnly": "Feature available for Premium users only 🔒",
+    "becomePremium": "Become Premium",
+    "drawAnother": "Draw another fortune"
+  },
+  "dashboard": {
+    "hello_user": "Hi, {user}!",
+    "guest_user": "Guest",
+    "track_your_activities": "Track your activities 💫",
+    "goals": "Goals",
+    "mood": "Mood",
+    "diary": "Diary",
+    "monthly_quiz": "Monthly Quiz",
+    "gratitude": "Gratitude",
+    "about_me": "About Me",
+    "daily_inspiration": "🌙 Looking for today’s inspiration...",
+    "search_previous_dates": "Search previous dates",
+    "select_date": "Select a date",
+
+    "month_short": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dec"
     },
 
-      "dashboard": {
-        "hello_user": "Hi, {user}!",
-        "track_your_activities": "Track your activities 💫",
-        "search_previous_dates": "Search previous dates",
-        "daily_inspiration": "🌙 Looking for today’s inspiration...",
-        "select_date": "Select a date",
-        "guest_user": "guest",
+    "month": {
+      "january": "January",
+      "february": "February",
+      "march": "March",
+      "april": "April",
+      "may": "May",
+      "june": "June",
+      "july": "July",
+      "august": "August",
+      "september": "September",
+      "october": "October",
+      "november": "November",
+      "december": "December"
+    }
+  },
+  "quiz": {
+    "page_label": "Interactive Quiz",
+    "button_result": "See my result ✨",
+    "button_retry": "Retry quiz",
+    "missing_title": "Oops!",
+    "missing_message": "You left one or more questions unanswered.",
+    "missing_button": "Got it",
+    "missing_answers_barrier": "Missing answers",
+    "result_close": "Close"
+},
+    "curiosities": {
+  "title": "Random Curiosities About Me",
+  "description": "Answer fun questions and discover more about yourself!",
+  "answer_hint": "Your answer...",
+  "save": "Save Answers"
+
+},
+  "zodiac": {
+  "title": "Zodiac of the Month",
+  "description": "Discover the energy and characteristics influencing this period.",
+  "no_data": "We couldn’t find zodiac information for today.",
+  "today_sign": "Today's Sign",
+  "phrase_title": "Zodiac Energy",
+  "moon_today": "Moon today",
+  
+  "label_color": "Color",
+  "label_regent": "Ruler",
+  "label_number": "Number",
+  "label_element": "Element",
+  "label_stone": "Stone",
+  "label_flower": "Flower"
+},
+  "my_moment": {
+  "title": "My Moment",
+  "description": "Each month brings a new chance to reconnect with yourself. Explore these ideas gently and discover what resonates with your current moment."
+
+},
+  "refresh_limit": {
+  "title": "You've seen everything for today 👀✨",
+  "message": "Come back tomorrow for fresh new tips!",
+  "ok": "OK"
+
+}
+
+}
 
 
-        "goals": "Goals",
-        "mood": "Mood",
-        "diary": "Diary",
-        "monthly_quiz": "Monthly Quiz",
-        "gratitude": "Gratitude",
-        "about_me": "About Me",
-
-        "month_short": {
-          "jan": "Jan",
-          "feb": "Feb",
-          "mar": "Mar",
-          "apr": "Apr",
-          "may": "May",
-          "jun": "Jun",
-          "jul": "Jul",
-          "aug": "Aug",
-          "sep": "Sep",
-          "oct": "Oct",
-          "nov": "Nov",
-          "dec": "Dec"
-        },
-
-        "month": {
-          "january": "January",
-          "february": "February",
-          "march": "March",
-          "april": "April",
-          "may": "May",
-          "june": "June",
-          "july": "July",
-          "august": "August",
-          "september": "September",
-          "october": "October",
-          "november": "November",
-          "december": "December"
-        },
-          "auth": {
-            "login": {
-              "magic_link_button": "Sign in with Magic Link",
-              "magic_link_sent": "Magic link sent to {{0}}! Check your inbox ✨",
-              "magic_link_error": "Error sending magic link: {{0}}"
-            }
-          }
-
-        }
-      }
-
+  

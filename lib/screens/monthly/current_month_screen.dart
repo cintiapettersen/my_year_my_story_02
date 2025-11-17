@@ -9,6 +9,7 @@ import 'package:myyearmystory/widgets/monthly/monthly_goals_widget.dart';
 import 'package:myyearmystory/widgets/monthly/curiosities_widget.dart';
 import 'package:myyearmystory/widgets/monthly/interactive_quiz_widget.dart';
 import 'package:myyearmystory/widgets/monthly/zodiac_widget.dart';
+
 import 'package:myyearmystory/widgets/monthly/skills_development_widget.dart';
 import 'package:myyearmystory/widgets/monthly/did_you_know_widget.dart';
 import 'package:myyearmystory/widgets/monthly/interview_widget.dart';
@@ -78,10 +79,10 @@ class _CurrentMonthScreenState extends State<CurrentMonthScreen> {
       ),
       MonthlyGoalsWidget(month: month, year: year),
       CuriositiesWidget(month: month, year: year),
-      InteractiveQuizWidget(
+      MonthlyQuizWidget(
         month: month,
         year: year,
-        monthName: monthName,
+        
       ),
       ZodiacWidget(month: month, year: year),
       SkillsDevelopmentWidget(month: month, year: year),
