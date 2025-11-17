@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 class LabelColors {
   static const Color goals = Color(0xFFF08BA0);          // Metas do Mês
   static const Color aboutMe = Color(0xFFF2B8A0);        // Sobre Mim
-  static const Color quiz = Color(0xFFF2D06B);           // Quiz Interativo
+  static const Color quiz = Color.fromARGB(255, 237, 242, 107);           // Quiz Interativo
   static const Color zodiac = Color(0xFFB497F2);         // Signos
   static const Color myMoment = Color(0xFFDBAF35);       // Meu Momento
   static const Color tips = Color(0xFFA8D672);           // Dicas do Mês
