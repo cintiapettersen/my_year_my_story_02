@@ -3,6 +3,7 @@ import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:myyearmystory/utils/label_colors.dart';
 
 class CuriositiesWidget extends StatefulWidget {
   final int month;
@@ -118,14 +119,11 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
     }
   }
 
-  // ----------------------------------------------------------
-  // 🔐 Premium: só salva se for premium
-  // ----------------------------------------------------------
   Future<void> _saveAnswers() async {
     final user = SupabaseConfig.client.auth.currentUser;
 
     if (_isGuest || !_isPremiumUser) {
-      showPremiumPrompt(context);
+      showPremiumPopup(context);
       return;
     }
 
@@ -172,7 +170,7 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
       year: widget.year,
       title: '',
       pageLabel: 'curiosities.title'.tr(),
-      labelColor: const Color.fromARGB(255, 188, 118, 214),
+      labelColor: const Color(0xFFc79fe2),
       description: _themeDescription.isNotEmpty
           ? _themeDescription
           : 'curiosities.description'.tr(),
@@ -196,7 +194,7 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
                             style: const TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 15,
-                              color: Color(0xFFD64990),
+                              color: Color.fromARGB(255, 189, 62, 125),
                             ),
                           ),
                           const SizedBox(height: 8),

@@ -1,155 +1,96 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:easy_localization/easy_localization.dart';
-import 'package:myyearmystory/screens/auth/login_screen.dart';
-import 'package:myyearmystory/screens/premium/premium_page.dart';
 
-void showPremiumPrompt(BuildContext context, {int? month, int? year}) {
-  final user = Supabase.instance.client.auth.currentUser;
-  final bool isGuest = user == null;
+import 'package:flutter/material.dart';
 
-  // 🧁 Textos traduzidos
-  final String title = tr('premium_popup.title');
-  final String message = tr('premium_popup.message');
-  final String primaryButtonText =
-      isGuest ? tr('actions.login') : tr('premium_popup.upgrade_button');
-
-  // 🧁 Ação do botão principal
-  void primaryButtonAction() {
-    Navigator.pop(context);
-    if (isGuest) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-      );
-    } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => PremiumPage()),
-      );
-    }
-  }
-
-  // ✨ Popup animado
-  showGeneralDialog(
+Future<void> showPremiumPopup(BuildContext context) async {
+  showDialog(
     context: context,
-    barrierDismissible: true,
-    barrierLabel: 'Premium Prompt',
-    transitionDuration: const Duration(milliseconds: 300),
-    pageBuilder: (context, animation1, animation2) {
-      return const SizedBox.shrink();
-    },
-
-    transitionBuilder: (context, animation1, animation2, child) {
-      final curvedValue = Curves.easeInOut.transform(animation1.value) - 1.0;
-
-      return Transform(
-        transform: Matrix4.translationValues(0.0, curvedValue * -50, 0.0),
-        child: Opacity(
-          opacity: animation1.value,
-
-          child: AlertDialog(
+    builder: (context) {
+      return Stack(
+        children: [
+          AlertDialog(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(22),
             ),
-            backgroundColor: const Color(0xFFFFEEF1),
+            contentPadding: const EdgeInsets.fromLTRB(24, 32, 24, 20),
+            backgroundColor: const Color(0xFFFFF1F6),
 
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-
-            content: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxHeight: 400,
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.favorite,
-                      color: Color(0xFFC03B66),
-                      size: 48,
-                    ),
-                    const SizedBox(height: 12),
-
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFFC03B66),
-                        letterSpacing: 0.5,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    Text(
-                      message,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF4F4F4F),
-                        height: 1.6,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    const SizedBox(height: 26),
-
-                    // ⭐ Botões — SEM OVERFLOW
-                    Column(
-                      children: [
-                        SizedBox(
-                          width: double.infinity,
-                          child: TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: Text(
-                              tr('premium_popup.cancel'),
-                              style: const TextStyle(
-                                color: Colors.grey,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 8),
-
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFC03B66),
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              shadowColor:
-                                  const Color(0xFFC03B66).withOpacity(0.3),
-                              elevation: 3,
-                            ),
-                            onPressed: primaryButtonAction,
-                            child: Text(
-                              primaryButtonText,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.favorite,
+                  size: 42,
+                  color: Color(0xFFB03062),
                 ),
-              ),
+
+                const SizedBox(height: 12),
+
+                const Text(
+                  "Vem ser Premium",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFFB03062),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 14),
+
+                const Text(
+                  "Com o plano Premium, você desbloqueia todas as funções do app e pode salvar quantas memórias quiser! ✨",
+                  style: TextStyle(
+                    fontSize: 15,
+                    height: 1.4,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 26),
+
+                // ⭐ BOTÃO ÚNICO — CENTRALIZADO E LINDO
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      // 👉 Coloque aqui pra onde deve ir a página premium
+                      // Navigator.push(context, MaterialPageRoute(builder: (_) => PremiumPage()));
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFCD4B78),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      "Conhecer Premium",
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
+
+          // ❌ Botão de fechar no canto superior direito
+          Positioned(
+            right: 6,
+            top: 6,
+            child: IconButton(
+              icon: const Icon(Icons.close, color: Colors.grey),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+        ],
       );
     },
   );

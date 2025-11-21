@@ -1,24 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:myyearmystory/widgets/shared/app_bottom_menu.dart';
 import 'package:myyearmystory/widgets/shared/month_header.dart';
-import 'package:myyearmystory/utils/label_colors.dart';
 
-/// 🌸 Template base para as páginas mensais do app
 class MonthPageTemplate extends StatefulWidget {
   final int month;
   final int year;
   final String title;
   final String? description;
 
-  /// ⭐ Etiqueta exibida no banner
   final String? pageLabel;
-
-  /// ❌ REMOVIDO: não precisamos mais receber labelColor manualmente
   final Color? labelColor;
 
-  /// 🌟 Controle: usar ou não o card com sombra ao redor
   final bool useScaffoldContainer;
-
   final Widget child;
 
   const MonthPageTemplate({
@@ -46,45 +39,39 @@ class _MonthPageTemplateState extends State<MonthPageTemplate> {
   Widget build(BuildContext context) {
     final hasScaffold = Scaffold.maybeOf(context) != null;
 
-
-
-
     final Map<String, Color> labelColors = {
-  'Metas do Mês': Color(0xFFE18B50),
-  'Sobre Mim': Color(0xFF9CBC68),
-  'Quiz Interativo': Color(0xFFA07756),
-  'Signos do Mês': Color(0xFFD072CC),
-  'Dicas do Mês': Color(0xFFA8C5DB),
-  'Entrevista': Color(0xFFE9B9C9),
-  'Minhas Listas': Color(0xFFE18B50),
-  'Página da Gratidão': Color(0xFF7BA5D7),
-  'Reflexões': Color(0xFFC03B66),
-  'Fotos do Mês': Color(0xFFA07756),
-  'Sorte do Dia': Color(0xFF9CBC68),
-};
+      'Metas do Mês': Color.fromARGB(255, 227, 62, 123),
+      'Sobre Mim': Color.fromARGB(255, 189, 134, 212),
+      'Quiz Interativo': Color.fromARGB(255, 207, 148, 168),
+      'Signos do Mês': Color.fromARGB(255, 145, 102, 189),
+      'Dicas do Mês': Color(0xFFA8C5DB),
+      'Entrevista': Color(0xFFE9B9C9),
+      'Minhas Listas': Color(0xFFE18B50),
+      'Página da Gratidão': Color.fromARGB(255, 129, 174, 230),
+      'Reflexões': Color(0xFFC03B66),
+      'Fotos do Mês': Color(0xFFA07756),
+      'Sorte do Dia': Color(0xFF9CBC68),
+    };
 
-    /// 🌈 1) Resolve automaticamente a cor da etiqueta
     final Color resolvedLabelColor =
-    labelColors[widget.pageLabel] ?? Colors.black26;
+        widget.labelColor ?? labelColors[widget.pageLabel] ?? Colors.black26;
 
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        /// 🩵 Cabeçalho com banner e etiqueta dinâmica
         MonthHeader(
           month: widget.month,
           year: widget.year,
           title: widget.title,
           pageLabel: widget.pageLabel,
-          labelColor: resolvedLabelColor, // 🌈 AGORA SEMPRE CORRETO
+          labelColor: resolvedLabelColor,
         ),
 
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
 
-        /// ✨ Descrição (opcional)
         if (widget.description != null && widget.description!.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 10),
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
             child: Column(
               children: [
                 Text(
@@ -97,7 +84,7 @@ class _MonthPageTemplateState extends State<MonthPageTemplate> {
                     height: 1.4,
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
                 Container(
                   height: 1,
                   color: Color(0xFFE9B9C9),
@@ -107,10 +94,10 @@ class _MonthPageTemplateState extends State<MonthPageTemplate> {
             ),
           ),
 
-        /// 🌸 Conteúdo principal
+        /// 🌸 ÁREA LIVRE AMPLIADA
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
             child: GestureDetector(
               onTapDown: (_) => _playClick(),
               behavior: HitTestBehavior.translucent,
@@ -121,12 +108,10 @@ class _MonthPageTemplateState extends State<MonthPageTemplate> {
       ],
     );
 
-    /// 🌟 Se já houver Scaffold PAI **ou** se o card não for desejado
     if (hasScaffold || !widget.useScaffoldContainer) {
       return content;
     }
 
-    /// 🌟 Caso contrário, aplica o card com sombra linda
     return Scaffold(
       backgroundColor: const Color(0xFFFFF7FA),
       appBar: AppBar(
@@ -146,7 +131,7 @@ class _MonthPageTemplateState extends State<MonthPageTemplate> {
       ),
       body: SafeArea(
         child: Container(
-          margin: const EdgeInsets.all(16),
+          margin: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),

@@ -8,6 +8,8 @@ import 'package:myyearmystory/widgets/shared/main_scaffold.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 
+
+
 class DiaryScreen extends StatefulWidget {
   const DiaryScreen({super.key});
 
@@ -89,7 +91,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
 
     // 💎 Usuário free → limitar 3 entradas
     if (!_isPremiumUser && _entries.length >= _maxFreeEntries) {
-      showPremiumPrompt(context);
+      showPremiumPopup(context);
       return;
     }
 

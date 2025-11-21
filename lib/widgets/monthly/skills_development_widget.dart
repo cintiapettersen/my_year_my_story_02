@@ -217,7 +217,7 @@ Future<void> _loadData() async {
     final isEnglish = context.locale.languageCode == "en";
 
     if (!isPremiumUser) {
-      showPremiumPrompt(context);
+      showPremiumPopup(context);
       return;
     }
 
@@ -287,7 +287,7 @@ Future<void> _loadData() async {
     final isEnglish = context.locale.languageCode == "en";
     final labelText = isEnglish ? "Tips" : "Dicas do Mês";
 
-    final fixedPageLabelColor = LabelColors.tips;
+    final fixedPageLabelColor = const Color(0xFFb539bc);
 
     return MonthPageTemplate(
       month: widget.month,
@@ -295,6 +295,9 @@ Future<void> _loadData() async {
       title: '',
       pageLabel: labelText,
       labelColor: fixedPageLabelColor,
+
+      description: "tips.description".tr(),
+
       child: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
@@ -376,7 +379,7 @@ Future<void> _loadData() async {
                         horizontal: 28, vertical: 14),
                     decoration: BoxDecoration(
                       color: currentButtonColor,
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: BorderRadius.circular(10),
                       boxShadow: [
                         BoxShadow(
                           color: currentButtonColor.withOpacity(0.4),

@@ -1,6 +1,5 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -9,9 +8,6 @@ import 'package:myyearmystory/widgets/monthly/dailyluckpage.dart';
 import 'package:myyearmystory/services/auth_listener.dart';
 import 'package:myyearmystory/services/profile_service.dart';
 import 'package:myyearmystory/screens/premium/premium_page.dart';
-
-
-
 
 
 // 🌸 Estilo e Configuração
@@ -24,8 +20,7 @@ import 'package:myyearmystory/screens/dashboard/dashboard_screen.dart';
 import 'package:myyearmystory/screens/splash/splash_transition.dart';
 
 // 🌸 Widgets mensais
-import 'package:myyearmystory/widgets/monthly/monthly_goals_widget.dart';
-import 'package:myyearmystory/widgets/monthly/gratitude_widget.dart';
+
 import 'package:myyearmystory/widgets/monthly/reflections_widget.dart';
 import 'package:myyearmystory/widgets/monthly/curiosities_widget.dart';
 import 'package:myyearmystory/widgets/monthly/zodiac_widget.dart';
@@ -33,12 +28,15 @@ import 'package:myyearmystory/widgets/monthly/skills_development_widget.dart';
 import 'package:myyearmystory/widgets/monthly/did_you_know_widget.dart';
 import 'package:myyearmystory/widgets/monthly/interview_widget.dart';
 import 'package:myyearmystory/widgets/monthly/monthly_lists_widget.dart';
-import 'package:myyearmystory/widgets/monthly/monthly_photo_gallery.dart';
+import 'package:myyearmystory/widgets/monthly/photo_gallery_widget.dart';
+import 'package:myyearmystory/widgets/monthly/monthly_goals_widget.dart';
+import 'package:myyearmystory/widgets/monthly/gratitude_widget.dart';
+
 
 // 🌸 Telas do menu lateral (hambúrguer)
 import 'package:myyearmystory/screens/profile/profile_screen.dart';
 import 'package:myyearmystory/screens/help/help_screen.dart';
-import 'package:myyearmystory/screens/premium/premium_page.dart';
+
 
 /// 🌎 Chave global de navegação
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();

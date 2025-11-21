@@ -16,7 +16,9 @@ import 'package:myyearmystory/widgets/monthly/interview_widget.dart';
 import 'package:myyearmystory/widgets/monthly/monthly_lists_widget.dart';
 import 'package:myyearmystory/widgets/monthly/gratitude_widget.dart';
 import 'package:myyearmystory/widgets/monthly/reflections_widget.dart';
-import 'package:myyearmystory/widgets/monthly/monthly_photo_gallery.dart';
+import 'package:myyearmystory/widgets/monthly/photo_gallery_widget.dart';
+import 'package:myyearmystory/widgets/monthly/calendar_page.dart';
+
 
 class CurrentMonthScreen extends StatefulWidget {
   final int? month;
@@ -92,6 +94,7 @@ class _CurrentMonthScreenState extends State<CurrentMonthScreen> {
       GratitudeWidget(month: month, year: year),
       ReflectionsWidget(month: month, year: year),
       MonthlyPhotoGallery(month: month, year: year),
+      CalendarPage(month: month, year: year),
     ];
 
     return MainScaffold(

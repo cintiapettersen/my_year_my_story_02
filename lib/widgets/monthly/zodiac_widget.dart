@@ -144,7 +144,7 @@ class _ZodiacWidgetState extends State<ZodiacWidget> {
       year: widget.year,
       title: '',
       pageLabel: 'zodiac.title'.tr(),
-      labelColor: const Color(0xFFA68CFF),
+      labelColor: const Color.fromARGB(255, 141, 99, 195),
       useScaffoldContainer: false,
       description: _bannerDescription.isNotEmpty
           ? _bannerDescription

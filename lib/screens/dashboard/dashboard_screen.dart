@@ -170,15 +170,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _loadDailyQuote() async {
-    try {
-      final response = await supabase.from('daily_quotes').select('text').limit(1);
-      if (response.isNotEmpty) {
-        dailyQuote = (response..shuffle()).first['text'];
-      }
-    } catch (e) {
-      debugPrint('Erro ao carregar frase do dia: $e');
+  try {
+    final response = await supabase.rpc('random_daily_quote');
+
+    if (response != null) {
+      setState(() {
+        dailyQuote = response;
+      });
     }
+  } catch (e) {
+    debugPrint('Erro ao carregar frase do dia: $e');
   }
+}
+
+
 
   // 🔠 Mês abreviado traduzido
   String getNomeMesAbreviado(int mes) {
@@ -201,25 +206,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // 🔠 Mês completo traduzido
   String getNomeMesCompleto(int mes) {
-    final meses = [
-      'dashboard.month.january'.tr(),
-      'dashboard.month.february'.tr(),
-      'dashboard.month.march'.tr(),
-      'dashboard.month.april'.tr(),
-      'dashboard.month.may'.tr(),
-      'dashboard.month.june'.tr(),
-      'dashboard.month.july'.tr(),
-      'dashboard.month.august'.tr(),
-      'dashboard.month.september'.tr(),
-      'dashboard.month.october'.tr(),
-      'dashboard.month.november'.tr(),
-      'dashboard.month.december'.tr(),
-    ];
-    return meses[mes - 1];
-  }
+  final meses = [
+    'month.january'.tr(),
+    'month.february'.tr(),
+    'month.march'.tr(),
+    'month.april'.tr(),
+    'month.may'.tr(),
+    'month.june'.tr(),
+    'month.july'.tr(),
+    'month.august'.tr(),
+    'month.september'.tr(),
+    'month.october'.tr(),
+    'month.november'.tr(),
+    'month.december'.tr(),
+  ];
+  return meses[mes - 1];
+}
 
   @override
   Widget build(BuildContext context) {
+
+
+
     final user = supabase.auth.currentUser;
     final userName = user?.userMetadata?['name'] ?? tr('dashboard.guest_user');
     final now = DateTime.now();

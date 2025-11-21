@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 
 Color getMonthColor(int month) {
   const monthColors = [
-    Color(0xFFfcdde8), // Janeiro
-    Color(0xFFe04cb7), // Fevereiro
-    Color(0xFFdbaf35), // Março
-    Color(0xFF679bd3), // Abril
-    Color(0xFFcf8ee8), // Maio
+    Color(0xFFe04cb7), // Janeiro
+    Color.fromARGB(255, 175, 133, 203), // Fevereiro
+    Color.fromARGB(255, 207, 135, 167), // Março
+    Color.fromARGB(255, 151, 111, 208), // Abril
+    Color.fromARGB(255, 240, 196, 74), // Maio
     Color(0xFFbeb6f2), // Junho
     Color(0xFF776fb5), // Julho
-    Color(0xFFd83d78), // Agosto
-    Color(0xFFb71691), // Setembro
+    Color.fromARGB(255, 240, 104, 160), // Agosto
+    Color.fromARGB(255, 186, 119, 218), // Setembro
     Color(0xFFc48c00), // Outubro
-    Color(0xFF3983c6), // Novembro
-    Color(0xFF9a5dba), // Dezembro
+    Color.fromARGB(255, 208, 37, 168), // Novembro
+    Color(0xFF636ee6), // Dezembro
   ];
   return monthColors[month - 1];
 }

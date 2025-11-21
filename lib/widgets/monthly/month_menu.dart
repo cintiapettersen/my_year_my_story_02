@@ -38,22 +38,23 @@ class MonthMenu extends StatelessWidget {
 
     // 🌸 Itens do menu com chaves de tradução
     final List<Map<String, dynamic>> menuItems = [
-      {'title': 'month_menu.goals', 'icon': PhosphorIconsRegular.sparkle, 'color': const Color.fromARGB(255, 230, 49, 157)},
-      {'title': 'month_menu.about_me', 'icon': PhosphorIconsRegular.userCircle, 'color': const Color(0xFFcf8ee8)},
+      {'title': 'month_menu.goals', 'icon': PhosphorIconsRegular.sparkle, 'color': const Color(0xFFe04cb7)},
+      {'title': 'month_menu.about_me', 'icon': PhosphorIconsRegular.userCircle, 'color': const Color(0xFFc79fe2)},
       {'title': 'month_menu.quiz', 'icon': PhosphorIconsRegular.listChecks, 'color': const Color.fromARGB(255, 221, 156, 183)},
-      {'title': 'month_menu.signs', 'icon': PhosphorIconsRegular.moonStars, 'color': const Color(0xFFe04cb7)},
-      {'title': 'month_menu.tips', 'icon': PhosphorIconsRegular.flower, 'color': const Color(0xFFb71691)},
+      {'title': 'month_menu.signs', 'icon': PhosphorIconsRegular.moonStars, 'color': const Color(0xFF7654a3)},
+      {'title': 'month_menu.tips', 'icon': PhosphorIconsRegular.flower, 'color': const Color(0xFFb539bc)},
       {'title': 'month_menu.facts', 'icon': PhosphorIconsRegular.lightbulb, 'color': const Color(0xFFdbaf35)},
-      {'title': 'month_menu.interview', 'icon': PhosphorIconsRegular.microphone, 'color': const Color(0xFF3983c6)},
+      {'title': 'month_menu.interview', 'icon': PhosphorIconsRegular.microphone, 'color': const Color(0xFFa1a8f0)},
       {'title': 'month_menu.lists', 'icon': PhosphorIconsRegular.star, 'color': const Color(0xFF776fb5)},
       {'title': 'month_menu.gratitude', 'icon': PhosphorIconsRegular.heart, 'color': const Color(0xFFE2377D)},
-      {'title': 'month_menu.reflections', 'icon': PhosphorIconsRegular.quotes, 'color': const Color(0xFFb71691)},
-      {'title': 'month_menu.photos', 'icon': PhosphorIconsRegular.camera, 'color': const Color(0xFFdbaf35)},
-      {'title': 'month_menu.fortune', 'icon': PhosphorIconsRegular.clover, 'color': const Color(0xFF4DB6AC)},
+      {'title': 'month_menu.reflections', 'icon': PhosphorIconsRegular.quotes, 'color': const Color(0xFFcf78f7)},
+      {'title': 'month_menu.photos', 'icon': PhosphorIconsRegular.camera, 'color': const Color(0xFFb71691)},
+      {'title': 'month_menu.dates', 'icon': PhosphorIconsRegular.calendarDots, 'color': const Color(0xFF636EE6)},
+
     ];
 
     return Container(
-      color: const Color(0xFFFFF7FA),
+      color: const Color(0xFFFFF7FA), 
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,

@@ -5,6 +5,7 @@ import 'package:myyearmystory/utils/access_control.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:myyearmystory/screens/popups/coming_soon.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:myyearmystory/screens/premium/premium_popup.dart';
 
 class InterviewScreen extends StatefulWidget {
   final int? month;
@@ -19,6 +20,7 @@ class InterviewScreen extends StatefulWidget {
 class _InterviewScreenState extends State<InterviewScreen>
     with AutomaticKeepAliveClientMixin {
   final supabase = SupabaseConfig.client;
+
   bool _isLoading = false;
   bool _isSaving = false;
   bool _isPremiumUser = false;
@@ -45,6 +47,7 @@ class _InterviewScreenState extends State<InterviewScreen>
 
   Future<void> _initializeAndLoad() async {
     setState(() => _isLoading = true);
+
     _currentUserId = supabase.auth.currentUser?.id;
 
     if (_currentUserId != null) {
@@ -53,7 +56,7 @@ class _InterviewScreenState extends State<InterviewScreen>
 
     final interviewData = await InterviewService.getInterviewData(
       widget.month ?? DateTime.now().month,
-      'pt',
+      context.locale.languageCode,
     );
 
     _questions = List<String>.from(interviewData['questions'] ?? []);
@@ -92,21 +95,16 @@ class _InterviewScreenState extends State<InterviewScreen>
 
   Future<void> _saveInterview() async {
     final user = supabase.auth.currentUser;
+
     if (user == null) {
       AccessControl.showLoginPopup(context);
       return;
     }
 
     if (!_isPremiumUser) {
-      _saveCount++;
-      if (_saveCount >= 3) {
-        AccessControl.showPremiumPopup(
-          context,
-          widget.month ?? DateTime.now().month,
-          widget.year ?? DateTime.now().year,
-        );
-        return;
-      }
+      showPremiumPopup(context);
+      
+      return;
     }
 
     setState(() => _isSaving = true);
@@ -151,10 +149,14 @@ class _InterviewScreenState extends State<InterviewScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    if (_isLoading) return const Center(child: CircularProgressIndicator());
+
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
     final month = widget.month ?? DateTime.now().month;
     final year = widget.year ?? DateTime.now().year;
+
     final visibleQuestions = _showAllQuestions || _isPremiumUser
         ? _questions
         : _questions.take(5).toList();
@@ -162,68 +164,73 @@ class _InterviewScreenState extends State<InterviewScreen>
     return MonthPageTemplate(
       month: month,
       year: year,
-      title: 'interview.title'.tr(),
+
+      title: "",
+      pageLabel: "Conexões",
+      labelColor: const Color(0xFFa1a8f0),
+
       description: _description.isNotEmpty
           ? _description
-          : 'Um espaço para registrar suas respostas e refletir sobre o que te inspira, motiva e faz crescer ✨',
+          : "interview.default_description".tr(),
+
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🩷 Introdução fixa — centralizada
             Center(
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 14),
                 child: Text(
-                  'De quem você vai guardar as memórias este mês?',
+                  'interview.who_prompt'.tr(),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black87,
+                    color: Color.fromARGB(221, 149, 41, 110),
                     height: 1.5,
                   ),
                 ),
               ),
             ),
 
-            // 🔹 Campos fixos (nome / relação / idade)
+            // 🔹 Campos fixos
             Container(
-              margin: const EdgeInsets.only(bottom: 24),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+              margin: const EdgeInsets.only(bottom: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
               decoration: BoxDecoration(
-                color: const Color(0x8cdfcdcd),
+                color: const Color(0xFFEFE7F5),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Qual é o nome do entrevistado?',
-                    style: TextStyle(
-                      fontSize: 16,
+                  Text(
+                    'interview.name_label'.tr(),
+                    style: const TextStyle(
+                      fontSize: 15,
                       fontWeight: FontWeight.w700,
                       color: Colors.black87,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   TextField(
                     controller: _nameController,
                     decoration: InputDecoration(
-                      hintText: 'Digite o nome completo...',
+                      hintText: 'interview.name_hint'.tr(),
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide(
-                          color: Colors.pink.shade100,
-                          width: 1.2,
+                          color: Colors.purple.shade100,
+                          width: 1.1,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 12),
+
                   Row(
                     children: [
                       Expanded(
@@ -231,33 +238,33 @@ class _InterviewScreenState extends State<InterviewScreen>
                         child: TextField(
                           controller: _relationController,
                           decoration: InputDecoration(
-                            hintText: 'Quem é essa pessoa pra você?',
+                            hintText: 'interview.relation_hint'.tr(),
                             filled: true,
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                               borderSide: BorderSide(
-                                color: Color(0xffedcfcf),
-                                width: 1.2,
+                                color: Colors.purple.shade100,
+                                width: 1.1,
                               ),
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
                       Expanded(
                         flex: 1,
                         child: TextField(
                           controller: _ageController,
                           decoration: InputDecoration(
-                            hintText: 'Idade',
+                            hintText: 'interview.age_hint'.tr(),
                             filled: true,
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                               borderSide: BorderSide(
                                 color: Colors.pink.shade100,
-                                width: 1.2,
+                                width: 1.1,
                               ),
                             ),
                           ),
@@ -269,23 +276,23 @@ class _InterviewScreenState extends State<InterviewScreen>
               ),
             ),
 
-            // 💬 Separador “PERGUNTE...”
+            // 🔹 Título separador
             Center(
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                padding: const EdgeInsets.symmetric(vertical: 6),
                 child: Text(
-                  'PERGUNTE...',
+                  'interview.ask'.tr(),
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFFC03B66),
+                    color: Color.fromARGB(255, 152, 70, 139),
                     letterSpacing: 0.5,
                   ),
                 ),
               ),
             ),
 
-            // 🔹 Perguntas vindas do Supabase
+            // 🔹 Perguntas
             ...visibleQuestions.asMap().entries.map((entry) {
               final index = entry.key;
               final question = entry.value;
@@ -295,11 +302,26 @@ class _InterviewScreenState extends State<InterviewScreen>
               }
 
               return Container(
+                width: double.infinity,
                 margin: const EdgeInsets.only(bottom: 20),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 18,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xfffce4ec),
                   borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: const Color(0xFFF2D7E0),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12.withOpacity(0.03),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    )
+                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -310,9 +332,10 @@ class _InterviewScreenState extends State<InterviewScreen>
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
+                        height: 1.4,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     TextField(
                       controller: _controllers[index],
                       maxLines: null,
@@ -320,11 +343,15 @@ class _InterviewScreenState extends State<InterviewScreen>
                         hintText: 'interview.answer_hint'.tr(),
                         filled: true,
                         fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 22,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide(
                             color: Colors.pink.shade100,
-                            width: 1.2,
+                            width: 1.1,
                           ),
                         ),
                       ),
@@ -334,16 +361,17 @@ class _InterviewScreenState extends State<InterviewScreen>
               );
             }),
 
+            // 🔹 Mostrar mais (não premium)
             if (!_isPremiumUser && !_showAllQuestions)
               Center(
                 child: TextButton(
                   onPressed: () {
-                    AccessControl.showPremiumPopup(context, month, year);
+                    showPremiumPopup(context);
                   },
-                  child: const Text(
-                    'Ver mais perguntas',
-                    style: TextStyle(
-                      color: Color(0xffc50d59),
+                  child: Text(
+                    'interview.show_more'.tr(),
+                    style: const TextStyle(
+                      color: Color.fromARGB(255, 114, 46, 121),
                       fontWeight: FontWeight.w600,
                       fontSize: 15,
                     ),
@@ -351,56 +379,76 @@ class _InterviewScreenState extends State<InterviewScreen>
                 ),
               ),
 
+            const SizedBox(height: 20),
 
-            const SizedBox(height: 10),
-
-            // 💾 Botão Salvar
-            Center(
-              child: ElevatedButton.icon(
-                onPressed: _isSaving ? null : _saveInterview,
-                icon: const Icon(Icons.favorite, color: Colors.white),
-                label: const Text('Salvar memória'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xffd1186c),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 26,
-                    vertical: 16,
-                  ),
-                  textStyle: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  elevation: 0,
-                ),
+            // 🔹 Botões lado a lado — versão final
+            Row(
+  children: [
+    // 🌸 BOTÃO SALVAR
+    Expanded(
+      child: GestureDetector(
+        onTap: () {
+          if (!_isPremiumUser) {
+            showPremiumPopup(context);
+            return;
+          }
+          if (!_isSaving) _saveInterview();
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 15),
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 237, 176, 195),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: const Color.fromARGB(255, 154, 64, 92).withOpacity(0.3),
+                blurRadius: 0,
+                offset: const Offset(0, 1),
               ),
+            ],
+          ),
+          child: Center(
+            child: Text(
+              'interview.save_button'.tr(),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+
+    const SizedBox(width: 12),
+                // ÁUDIO
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => showComingSoonPrompt(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 200, 129, 213),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      'interview.audio_button'.tr(),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
 
             const SizedBox(height: 20),
-
-            // 🎙️ Botão Gravar Áudio (Coming Soon)
-            Center(
-              child: ElevatedButton.icon(
-                onPressed: () => showComingSoonPrompt(context),
-                icon: const Icon(Icons.mic, color: Colors.white),
-                label: const Text('Gravar áudio'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xff3983c6),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 26,
-                    vertical: 16,
-                  ),
-                  elevation: 0,
-                ),
-              ),
-            ),
           ],
         ),
       ),

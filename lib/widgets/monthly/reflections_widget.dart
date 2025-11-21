@@ -3,6 +3,9 @@ import 'package:myyearmystory/services/reflections_service.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
+import 'package:myyearmystory/utils/access_control.dart';
+import 'package:myyearmystory/utils/label_colors.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class ReflectionsWidget extends StatefulWidget {
   final int? month;
@@ -22,51 +25,55 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
     with AutomaticKeepAliveClientMixin {
   final _supabase = SupabaseConfig.client;
   final Map<String, TextEditingController> _controllers = {};
+
   bool _isLoading = false;
   bool _isSaving = false;
-  bool _isOfflineMode = false;
+
   String? _currentUserId;
   bool isPremiumUser = false;
-  int _insertCount = 0;
+
+  /// Free users: só pode salvar 1 reflexão.
+  int _freeSaveCount = 0;
 
   @override
   bool get wantKeepAlive => true;
 
+  /// 🔸 Lista de prompts traduzíveis
   final List<Map<String, String>> _reflectionPrompts = [
     {
       'key': 'biggest_lesson',
-      'title': 'Maior Aprendizado',
-      'prompt': 'Qual foi o maior aprendizado que você teve este mês?'
+      'title': 'reflection.biggest_lesson_title',
+      'prompt': 'reflection.biggest_lesson_prompt',
     },
     {
       'key': 'most_grateful',
-      'title': 'Maior Gratidão',
-      'prompt': 'Pelo que você é mais grata neste mês?'
+      'title': 'reflection.most_grateful_title',
+      'prompt': 'reflection.most_grateful_prompt',
     },
     {
       'key': 'proudest_moment',
-      'title': 'Momento de Orgulho',
-      'prompt': 'Qual foi seu momento de maior orgulho este mês?'
+      'title': 'reflection.proudest_moment_title',
+      'prompt': 'reflection.proudest_moment_prompt',
     },
     {
       'key': 'biggest_challenge',
-      'title': 'Maior Desafio',
-      'prompt': 'Qual foi o maior desafio que você enfrentou e como o superou?'
+      'title': 'reflection.biggest_challenge_title',
+      'prompt': 'reflection.biggest_challenge_prompt',
     },
     {
       'key': 'personal_growth',
-      'title': 'Crescimento Pessoal',
-      'prompt': 'Como você cresceu como pessoa neste mês?'
+      'title': 'reflection.personal_growth_title',
+      'prompt': 'reflection.personal_growth_prompt',
     },
     {
       'key': 'unexpected_joy',
-      'title': 'Alegria Inesperada',
-      'prompt': 'Qual alegria inesperada você descobriu este mês?'
+      'title': 'reflection.unexpected_joy_title',
+      'prompt': 'reflection.unexpected_joy_prompt',
     },
     {
       'key': 'next_month_focus',
-      'title': 'Foco Próximo Mês',
-      'prompt': 'No que você quer focar no próximo mês?'
+      'title': 'reflection.next_month_focus_title',
+      'prompt': 'reflection.next_month_focus_prompt',
     },
   ];
 
@@ -85,37 +92,31 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
 
   Future<void> _initializeAndLoad() async {
     _currentUserId = _supabase.auth.currentUser?.id;
-    _isOfflineMode = _currentUserId == null;
 
-    await _checkPremiumStatus();
-
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted && _isLoading) setState(() => _isLoading = false);
-    });
-
-    await _loadReflectionsData();
+    await _loadPremiumStatus();
+    await _loadReflections();
   }
 
-  Future<void> _checkPremiumStatus() async {
+  Future<void> _loadPremiumStatus() async {
     final user = _supabase.auth.currentUser;
+
     if (user == null) {
-      setState(() => isPremiumUser = false);
+      isPremiumUser = false;
       return;
     }
 
-    final response = await _supabase
-        .from('users')
-        .select('is_premium')
+    final profile = await _supabase
+        .from('profiles')
+        .select()
         .eq('id', user.id)
         .maybeSingle();
 
-    setState(() {
-      isPremiumUser = response != null && response['is_premium'] == true;
-    });
+    isPremiumUser = AccessControl.isPremium(profile);
   }
 
-  Future<void> _loadReflectionsData() async {
+  Future<void> _loadReflections() async {
     setState(() => _isLoading = true);
+
     try {
       if (_currentUserId != null) {
         final reflections = await ReflectionsService.getReflections(
@@ -129,66 +130,58 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
             _controllers[key]!.text = value;
           }
         });
-      } else {
-        _isOfflineMode = true;
       }
     } catch (e) {
       debugPrint('Erro ao carregar reflexões: $e');
-      _isOfflineMode = true;
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  Future<void> _saveReflectionsData() async {
+  Future<void> _saveReflections() async {
     final user = _supabase.auth.currentUser;
 
     if (user == null) {
-      showPremiumPrompt(context);
+      showPremiumPopup(context);
       return;
     }
 
-    if (!isPremiumUser && _insertCount >= 1) {
-      showPremiumPrompt(context);
+    /// Free user tentando salvar mais de 1 reflexão
+    if (!isPremiumUser && _freeSaveCount >= 1) {
+      showPremiumPopup(context);
       return;
     }
 
     setState(() => _isSaving = true);
 
     try {
-      final reflections = <String, String>{};
+      final data = <String, String>{};
+
       for (var entry in _controllers.entries) {
         if (entry.value.text.trim().isNotEmpty) {
-          reflections[entry.key] = entry.value.text.trim();
+          data[entry.key] = entry.value.text.trim();
         }
       }
 
       final success = await ReflectionsService.saveReflections(
-        reflections,
+        data,
         widget.month ?? DateTime.now().month,
         widget.year ?? DateTime.now().year,
         user.id,
       );
 
-      if (!isPremiumUser) _insertCount++;
+      if (!isPremiumUser) _freeSaveCount++;
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(success
-                ? 'Reflexões salvas com sucesso!'
-                : 'Erro ao salvar reflexões'),
-            backgroundColor: success ? Colors.green : Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      debugPrint('Erro ao salvar reflexões: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Erro ao salvar reflexões'),
-          backgroundColor: Colors.red,
+        SnackBar(
+          content: Text(success
+              ? 'reflection.saved'.tr()
+              : 'reflection.save_error'.tr()),
         ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('reflection.save_error'.tr())),
       );
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -196,169 +189,141 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
   }
 
   @override
-  void dispose() {
-    for (final controller in _controllers.values) {
-      controller.dispose();
-    }
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     super.build(context);
 
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    if (_isLoading) return const Center(child: CircularProgressIndicator());
 
     return MonthPageTemplate(
       month: widget.month ?? DateTime.now().month,
       year: widget.year ?? DateTime.now().year,
-      title: 'Reflexões do Mês',
 
-      // 🌸 AGORA PADRONIZADO!
-      description:
-          'Tire um momento para refletir sobre seu mês: o que te fez crescer, '
-          'o que te desafiou e o que te trouxe alegria 💭',
+      /// Etiqueta no topo!
+      pageLabel: 'reflection.page_label'.tr(),
+      labelColor: const Color(0xFFcf78f7),
 
-      child: AnimatedOpacity(
-        opacity: _isLoading ? 0 : 1,
-        duration: const Duration(milliseconds: 800),
-        curve: Curves.easeInOut,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      /// Título oculto
+      title: '',
 
-            const SizedBox(height: 24),
+      description: 'reflection.description'.tr(),
 
-            ..._reflectionPrompts.asMap().entries.map((entry) {
-              final index = entry.key;
-              final prompt = entry.value;
-              final controller = _controllers[prompt['key']!]!;
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 24),
 
-              return AnimatedOpacity(
-                opacity: 1,
-                duration: Duration(milliseconds: 300 + (index * 120)),
-                curve: Curves.easeOut,
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 20),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12.withOpacity(0.05),
-                        blurRadius: 5,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                    border: Border.all(color: const Color(0xFFF2D7E0)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        prompt['title']!,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFFC03B66),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        prompt['prompt']!,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: controller,
-                        maxLines: 4,
-                        readOnly:
-                            !isPremiumUser && _insertCount >= 1,
-                        onTap: () {
-                          if (!isPremiumUser && _insertCount >= 1) {
-                            showPremiumPrompt(context);
-                          }
-                        },
-                        decoration: InputDecoration(
-                          hintText: 'Escreva sua reflexão aqui...',
-                          hintStyle: const TextStyle(
-                            color: Colors.grey,
-                            fontStyle: FontStyle.italic,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(
-                                color: Color(0xFFF2D7E0)),
-                          ),
-                          focusedBorder: const OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Color(0xFFC03B66)),
-                          ),
-                          filled: true,
-                          fillColor: const Color(0xFFFFF7FA),
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 14,
-                            horizontal: 12,
-                          ),
-                        ),
-                        style: const TextStyle(
-                            fontSize: 15, color: Colors.black87),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
+          ..._reflectionPrompts.map((prompt) {
+            final controller = _controllers[prompt['key']!]!;
 
-            const SizedBox(height: 24),
-
-            Center(
-              child: GestureDetector(
-                onTapDown: (_) => setState(() => _isSaving = true),
-                onTapUp: (_) => Future.delayed(
-                    const Duration(milliseconds: 200),
-                    () => setState(() => _isSaving = false)),
-                onTapCancel: () => setState(() => _isSaving = false),
-                onTap: _saveReflectionsData,
-                child: AnimatedScale(
-                  scale: _isSaving ? 0.96 : 1.0,
-                  duration: const Duration(milliseconds: 150),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFC03B66),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: const Center(
-                      child: Text(
-                        'Salvar Reflexões',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+            return Container(
+              margin: const EdgeInsets.only(bottom: 20),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12.withOpacity(0.05),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  )
+                ],
+                border: Border.all(color: const Color(0xFFF2D7E0)),
               ),
-            ),
-          ],
-        ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    prompt['title']!.tr(),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Color.fromARGB(255, 192, 59, 161),
+                      shadows: [
+    Shadow(
+      blurRadius: 2,
+      offset: Offset(0, 1),
+      color: Colors.black12,
+    ),
+  ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  Text(
+                    prompt['prompt']!.tr(),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  TextField(
+  controller: controller,
+  maxLines: 4,
+
+  readOnly: !isPremiumUser && _freeSaveCount >= 1,
+
+  onTap: () {
+    if (!isPremiumUser && _freeSaveCount >= 1) {
+      showPremiumPopup(context);
+    }
+  },
+
+  decoration: InputDecoration(
+    hintText: 'reflection.hint'.tr(),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+    ),
+    filled: true,
+    fillColor: const Color(0xFFFFF7FA),
+  ),
+),
+
+                ],
+              ),
+            );
+          }),
+
+          const SizedBox(height: 20),
+
+          
+          /// Botão SALVAR — padronizado + checagem premium
+SizedBox(
+  width: double.infinity,
+  child: ElevatedButton(
+    onPressed: _isSaving
+        ? null
+        : () {
+            if (!isPremiumUser && _freeSaveCount >= 1) {
+              showPremiumPopup(context);
+              return;
+            }
+            _saveReflections();
+          },
+    style: ElevatedButton.styleFrom(
+      backgroundColor: const Color.fromARGB(255, 183, 54, 159),
+      foregroundColor: Colors.white,
+      elevation: 0,
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    ),
+    child: Text(
+      'reflection.save_button'.tr(),
+      style: const TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+  ),
+),
+
+        ],
       ),
     );
   }

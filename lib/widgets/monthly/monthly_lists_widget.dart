@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:myyearmystory/services/monthly_lists_service.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:myyearmystory/widgets/shared/month_page_template.dart';
-import 'package:myyearmystory/screens/premium/premium_page.dart';
+import 'package:myyearmystory/utils/access_control.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:myyearmystory/utils/label_colors.dart';
+import 'package:myyearmystory/screens/premium/premium_popup.dart';
 
 class MonthlyListsWidget extends StatefulWidget {
   final int? month;
@@ -17,12 +20,11 @@ class MonthlyListsWidget extends StatefulWidget {
 class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
     with AutomaticKeepAliveClientMixin {
   final supabase = SupabaseConfig.client;
+
   bool _isLoading = false;
   bool _isSaving = false;
-  bool _isOfflineMode = false;
-  bool _isPremiumUser = false; // ✅ flag premium real
+  bool _isPremiumUser = false;
   String? _currentUserId;
-  int _saveCount = 0;
 
   @override
   bool get wantKeepAlive => true;
@@ -35,30 +37,50 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
     'pra_guardar': [],
   };
 
+  // 🌸 Stickers minimalistas
+  final Map<String, Map<String, dynamic>> _stickers = {
+    'pra_ler': {
+      'label': 'Leitura do mês'.tr(),
+      'icon': Icons.menu_book_rounded,
+    },
+    'pra_anotar': {
+      'label': 'Pensamentos soltos'.tr(),
+      'icon': Icons.edit_rounded,
+    },
+    'pra_comprar': {
+      'label': 'Coisinhas que quero'.tr(),
+      'icon': Icons.shopping_bag_rounded,
+    },
+    'pra_ouvir': {
+      'label': 'Músicas que amei'.tr(),
+      'icon': Icons.music_note_rounded,
+    },
+    'pra_guardar': {
+      'label': 'Essas eu guardo'.tr(),
+      'icon': Icons.push_pin_rounded,
+    },
+  };
+
+  // Cores e ícones das categorias
   final Map<String, Map<String, dynamic>> _listData = {
     'pra_ler': {
-      'title': 'Pra Ler',
-      'icon': Icons.book_outlined,
+      'title': 'lists.read',
       'color': const Color(0xffe569bf),
     },
     'pra_anotar': {
-      'title': 'Pra Anotar',
-      'icon': Icons.edit_note_outlined,
+      'title': 'lists.write',
       'color': const Color(0xFFdbaf35),
     },
     'pra_comprar': {
-      'title': 'Pra Comprar',
-      'icon': Icons.shopping_bag_outlined,
+      'title': 'lists.buy',
       'color': const Color(0xFF679bd3),
     },
     'pra_ouvir': {
-      'title': 'Pra Ouvir',
-      'icon': Icons.music_note_outlined,
+      'title': 'lists.listen',
       'color': const Color(0xFFfcdde8),
     },
     'pra_guardar': {
-      'title': 'Pra Guardar',
-      'icon': Icons.favorite_border,
+      'title': 'lists.keep',
       'color': const Color(0xFFbeb6f2),
     },
   };
@@ -72,33 +94,23 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
 
   Future<void> _initializeAndLoad() async {
     _currentUserId = supabase.auth.currentUser?.id;
-    _isOfflineMode = _currentUserId == null;
 
     if (_currentUserId != null) {
-      await _checkPremiumStatus(); // ✅ verifica status premium real
+      await _checkPremiumStatus();
+      await _loadSavedData();
     }
 
-    await _loadSavedData();
+    setState(() => _isLoading = false);
   }
 
-  /// 🔎 Checa no Supabase se o usuário é premium
   Future<void> _checkPremiumStatus() async {
-    try {
-      final response = await supabase
-          .from('profiles')
-          .select('is_premium')
-          .eq('id', _currentUserId!)
-          .maybeSingle();
+    final response = await supabase
+        .from('profiles')
+        .select('is_premium')
+        .eq('id', _currentUserId!)
+        .maybeSingle();
 
-      if (response != null && response['is_premium'] == true) {
-        _isPremiumUser = true;
-      } else {
-        _isPremiumUser = false;
-      }
-    } catch (e) {
-      debugPrint('Erro ao verificar status premium: $e');
-      _isPremiumUser = false;
-    }
+    _isPremiumUser = response?['is_premium'] == true;
   }
 
   void _initializeControllers() {
@@ -109,61 +121,40 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
 
   Future<void> _loadSavedData() async {
     setState(() => _isLoading = true);
-    try {
-      if (_currentUserId != null) {
-        final lists = await MonthlyListsService.getMonthlyLists(
-          widget.month ?? DateTime.now().month,
-          widget.year ?? DateTime.now().year,
-          _currentUserId!,
-        );
-        for (String key in _controllers.keys) {
-          final savedList = lists[key] ?? <String>[];
-          _controllers[key] = List.generate(
-            5,
-                (i) => TextEditingController(text: i < savedList.length ? savedList[i] : ''),
-          );
-        }
-      } else {
-        _isOfflineMode = true;
-      }
-    } catch (e) {
-      debugPrint('Erro ao carregar listas: $e');
-      _isOfflineMode = true;
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+
+    final lists = await MonthlyListsService.getMonthlyLists(
+      widget.month ?? DateTime.now().month,
+      widget.year ?? DateTime.now().year,
+      _currentUserId!,
+    );
+
+    for (String key in _controllers.keys) {
+      final savedList = lists[key] ?? <String>[];
+      _controllers[key] = List.generate(
+        savedList.length > 5 ? savedList.length : 5,
+        (i) => TextEditingController(
+            text: i < savedList.length ? savedList[i] : ''),
+      );
     }
+
+    setState(() => _isLoading = false);
   }
 
   Future<void> _saveSingleList(String listKey) async {
     final user = supabase.auth.currentUser;
 
     if (user == null) {
-      // 🔒 Se não estiver logado → leva pra PremiumPage
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => PremiumPage(
-            
-          ),
-        ),
-      );
+      AccessControl.showLoginPopup(context);
       return;
-    } else if (!_isPremiumUser) {
-      _saveCount++;
-      if (_saveCount >= 3) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PremiumPage(
-              
-            ),
-          ),
-        );
-        return;
-      }
+    }
+
+    if (!_isPremiumUser) {
+      showPremiumPopup(context);
+      return;
     }
 
     setState(() => _isSaving = true);
+
     try {
       final listsToSave = <String, List<String>>{};
       for (String key in _controllers.keys) {
@@ -182,19 +173,9 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('💖 Lista salva com sucesso!'),
+          SnackBar(
+            content: Text('lists.saved'.tr()),
             backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      debugPrint('Erro ao salvar lista: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erro ao salvar a lista.'),
-            backgroundColor: Colors.red,
           ),
         );
       }
@@ -204,18 +185,8 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
   }
 
   void _addNewField(String listKey) {
-    final user = supabase.auth.currentUser;
-
-    if (user == null || !_isPremiumUser) {
-      // 🔒 Redireciona pra tela Premium
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => PremiumPage(
-            
-          ),
-        ),
-      );
+    if (!_isPremiumUser) {
+      showPremiumPopup(context);
       return;
     }
 
@@ -225,16 +196,9 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
   }
 
   @override
-  void dispose() {
-    for (var controllers in _controllers.values) {
-      for (var c in controllers) c.dispose();
-    }
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     super.build(context);
+
     if (_isLoading) return const Center(child: CircularProgressIndicator());
 
     final month = widget.month ?? DateTime.now().month;
@@ -243,105 +207,163 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
     return MonthPageTemplate(
       month: month,
       year: year,
-      title: 'Listas do Mês',
+      title: '',
+      pageLabel: 'Minhas Listas',
+      labelColor: const Color.fromARGB(255, 78, 83, 150),
       description:
-      'Um espaço para anotar o que marcou seu mês — livros, músicas, ideias, compras e lembranças especiais. 💖',
+          'Um espaço para anotar o que marcou seu mês — livros, músicas, ideias, compras e lembranças especiais. 💖',
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
         child: Column(
           children: [
-            ..._listData.entries.map((entry) => _buildList(entry.key, entry.value)),
+            ..._listData.entries.map((entry) => _buildList(entry.key)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildList(String key, Map<String, dynamic>? info) {
-    if (info == null) return const SizedBox();
+  Widget _buildList(String key) {
+    final info = _listData[key]!;
+    final bgColor = info['color'] as Color;
 
-    final Color bgColor = (info['color'] ?? Colors.grey[300]) as Color;
-    final IconData icon = (info['icon'] ?? Icons.list_alt) as IconData;
-    final String title = info['title'] ?? 'Lista';
+    final sticker = _stickers[key]!;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 28),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      margin: const EdgeInsets.only(bottom: 32),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12.withOpacity(0.10),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          )
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 🌸 Sticker minimalista acima do título
           Row(
             children: [
-              Icon(icon, color: Colors.white, size: 22),
-              const SizedBox(width: 8),
+              Icon(
+                sticker['icon'],
+                size: 16,
+                color: Colors.black.withOpacity(0.5),
+              ),
+              const SizedBox(width: 4),
               Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                sticker['label'],
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black.withOpacity(0.55),
                 ),
               ),
             ],
           ),
+
           const SizedBox(height: 14),
+
+          // 🔹 Título da categoria
+          Text(
+            info['title'].toString().tr(),
+            style: const TextStyle(
+              fontSize: 19,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              shadows: [
+                Shadow(
+                  blurRadius: 4,
+                  color: Colors.black38,
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // 🔹 Campos de texto com animação
           ..._controllers[key]!.asMap().entries.map((entry) {
             final index = entry.key;
             final controller = entry.value;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: TextField(
-                controller: controller,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  hintText: 'Item ${index + 1}',
-                  contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: bgColor.withOpacity(0.3)),
+
+            return TweenAnimationBuilder<double>(
+              tween: Tween(begin: 1, end: controller.text.isEmpty ? 1 : 1.02),
+              duration: const Duration(milliseconds: 150),
+              builder: (context, scale, child) {
+                return Transform.scale(
+                  scale: scale,
+                  child: child,
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: TextField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
+                    hintText: '${"lists.item".tr()} ${index + 1}',
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide:
+                          BorderSide(color: bgColor.withOpacity(0.18)),
+                    ),
                   ),
                 ),
               ),
             );
           }),
-          const SizedBox(height: 8),
-          Center(
-            child: ElevatedButton.icon(
-              onPressed: _isSaving ? null : () => _saveSingleList(key),
-              icon: const Icon(Icons.favorite_rounded),
-              label: const Text('Salvar lista'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: bgColor,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 22,
-                  vertical: 16,
-                ),
-                textStyle: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-                elevation: 0,
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
+
+          // ➕ Adicionar mais
           Center(
             child: TextButton.icon(
               onPressed: () => _addNewField(key),
-              icon: const Icon(Icons.add_circle_outline, color: Colors.black54),
-              label: const Text(
-                'Adicionar mais itens',
-                style: TextStyle(color: Colors.black87),
+              icon:
+                  const Icon(Icons.add_circle_outline, color: Colors.white),
+              label: Text(
+                'lists.add_more'.tr(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          // 💾 Botão salvar estilizado
+          Center(
+            child: ElevatedButton(
+              onPressed: _isSaving ? null : () => _saveSingleList(key),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: bgColor,
+                side: BorderSide(color: bgColor),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 26,
+                  vertical: 14,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                elevation: 0,
+              ),
+              child: Text(
+                'lists.save'.tr(),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),

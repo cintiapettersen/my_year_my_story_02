@@ -3,9 +3,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/services/did_you_know_service.dart';
+import 'package:myyearmystory/screens/premium/premium_popup.dart';
+
+
 
 class DidYouKnowWidget extends StatefulWidget {
   final int month;
@@ -34,7 +38,6 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
   bool isPressed = false;
   bool isPremiumUser = false;
   int refreshCount = 0;
-  Color currentButtonColor = const Color(0xFFE2377D);
 
   final int maxRefresh = 3;
 
@@ -48,19 +51,20 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
   ];
 
   final Map<int, String> monthMessages = {
-    1: "✨ Janeiro é um recomeço — hora de abrir o coração e se encher de curiosidade pelo novo!",
-    2: "💫 Fevereiro traz leveza, cor e descobertas curiosas que aquecem o coração.",
-    3: "🌿 Março é tempo de crescer, aprender e se encantar com o que o mundo tem pra contar.",
-    4: "🌸 Abril desperta a criatividade — prepare-se para curiosidades cheias de vida!",
-    5: "🌼 Maio é doce e inspirador — perfeito pra descobrir algo que te faça sorrir.",
-    6: "🌞 Junho vem com energia boa e histórias fascinantes esperando por você!",
-    7: "🌻 Julho é o mês das surpresas — mergulhe nessas curiosidades e se inspire.",
-    8: "🌺 Agosto convida à reflexão e à descoberta de coisas novas e inesperadas.",
-    9: "🍂 Setembro é pura inspiração — pequenas curiosidades pra te fazer ver o mundo com outros olhos.",
-    10: "🌕 Outubro vem com mistério e magia — perfeito pra explorar o desconhecido!",
-    11: "🍁 Novembro é um lembrete: nunca é tarde pra aprender algo novo e se surpreender.",
-    12: "🎇 Dezembro fecha o ano com brilho — curiosidades pra encerrar com leveza e encantamento.",
-  };
+  1: "✨ Janeiro é um recomeço — hora de abrir o coração e se encher de curiosidade pelo novo!",
+  2: "💫 Fevereiro traz leveza, cor e descobertas curiosas que aquecem o coração.",
+  3: "🌿 Março é tempo de crescer, aprender e se encantar com o que o mundo tem pra contar.",
+  4: "🌸 Abril desperta a criatividade — prepare-se para curiosidades cheias de vida!",
+  5: "🌼 Maio é doce e inspirador — perfeito pra descobrir algo que te faça sorrir.",
+  6: "🌞 Junho vem com energia boa e histórias fascinantes esperando por você!",
+  7: "🌻 Julho é o mês das surpresas — mergulhe nessas curiosidades e se inspire.",
+  8: "🌺 Agosto convida à reflexão e à descoberta de coisas novas e inesperadas.",
+  9: "🍂 Setembro é pura inspiração — pequenas curiosidades pra te fazer ver o mundo com outros olhos.",
+  10: "🌕 Outubro vem com mistério e magia — perfeito pra explorar o desconhecido!",
+  11: "🍁 Novembro é um lembrete: nunca é tarde pra aprender algo novo e se surpreender.",
+  12: "🎇 Dezembro fecha o ano com brilho — curiosidades pra encerrar com leveza e encantamento.",
+};
+
 
   @override
   void initState() {
@@ -88,28 +92,56 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
   }
 
   Future<void> _loadCuriosities({bool shuffle = false}) async {
-    setState(() => isLoading = true);
+  setState(() => isLoading = true);
 
-    try {
-      final data = await _service.fetchCuriosities(widget.month, widget.year);
-      final shuffled = List<Map<String, dynamic>>.from(data)..shuffle();
-      final limited = shuffled.take(5).toList();
+  try {
+    // O RPC retorna um List puro (NÃO tem .data)
+    final result = await supabase.rpc('get_daily_curiosities');
 
-      if (shuffle) limited.shuffle(Random());
-
-      setState(() {
-        curiosities = limited;
-        isLoading = false;
-      });
-    } catch (e) {
-      debugPrint("Erro ao carregar curiosidades: $e");
+    if (result == null || result is! List || result.isEmpty) {
+      debugPrint("❌ RPC retornou vazio ou formato inesperado: $result");
       setState(() => isLoading = false);
+      return;
     }
+
+    debugPrint("📌 RPC RECEBIDO (${result.length} itens): $result");
+
+    // Garante que veio no formato certo
+    final List<dynamic> data = result;
+
+    final formatted = data.map((item) {
+      return {
+        'id': item['id'],
+        'category': item['category'],
+        'category_en': item['category_en'],
+        'content': item['content'],
+        'text_en': item['text_en'],
+      };
+    }).toList();
+
+    if (shuffle) {
+      formatted.shuffle(Random());
+    }
+
+    // GARANTE QUE MOSTRA SÓ 5 SEMPRE
+    final limited = formatted.take(5).toList();
+
+    setState(() {
+      curiosities = limited;
+      isLoading = false;
+    });
+  } catch (e) {
+    debugPrint("Erro ao carregar curiosidades via RPC: $e");
+    setState(() => isLoading = false);
   }
+}
+
+
+
 
   Future<void> _handleRefresh() async {
     if (!isPremiumUser) {
-      showPremiumPrompt(context);
+      showPremiumPopup(context);
       return;
     }
 
@@ -122,11 +154,6 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
       setState(() => refreshCount = maxRefresh);
       return;
     }
-
-    final random = Random();
-    setState(() {
-      currentButtonColor = categoryColors[random.nextInt(categoryColors.length)];
-    });
 
     await _loadCuriosities(shuffle: true);
     await prefs.setInt(todayKey, count + 1);
@@ -143,11 +170,10 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
     return MonthPageTemplate(
       month: widget.month,
       year: widget.year,
-      title: "Você Sabia?",
-
-      // 🌸 PADRONIZADO
+      title: "",
+      pageLabel: "Você Sabia?",
+      labelColor: const Color(0xFFdbaf35),
       description: message,
-
       child: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
@@ -215,7 +241,7 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
                               color: Colors.black87,
                               height: 1.5,
                             ),
-                            textAlign: TextAlign.left, // 🌸 tirado do justify
+                            textAlign: TextAlign.left,
                           ),
                         ],
                       ),
@@ -223,43 +249,59 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
                   );
                 }).toList(),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
 
-                Center(
-                  child: GestureDetector(
-                    onTapDown: (_) => setState(() => isPressed = true),
-                    onTapUp: (_) async {
-                      setState(() => isPressed = false);
-                      await Future.delayed(const Duration(milliseconds: 120));
-                      _handleRefresh();
-                    },
-                    onTapCancel: () => setState(() => isPressed = false),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeOutBack,
-                      transform: Matrix4.identity()
-                        ..scale(isPressed ? 0.93 : 1.0),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFC03B66),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 28, vertical: 14),
-                      child: Text(
-                        isPremiumUser
-                            ? (refreshCount >= maxRefresh
-                                ? "Volte amanhã 🌙"
-                                : "Ver mais curiosidades (${maxRefresh - refreshCount} restantes)")
-                            : "Ver mais curiosidades 🌟 (Premium)",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                // -------------------------------
+                //      BOTÃO VER MAIS
+                // -------------------------------
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    FittedBox(
+                      child: GestureDetector(
+                        onTapDown: (_) => setState(() => isPressed = true),
+                        onTapUp: (_) async {
+                          setState(() => isPressed = false);
+                          await Future.delayed(const Duration(milliseconds: 120));
+                          _handleRefresh();
+                        },
+                        onTapCancel: () => setState(() => isPressed = false),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          transform: Matrix4.identity()
+                            ..scale(isPressed ? 0.93 : 1.0),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: const Color.fromARGB(255, 214, 86, 150),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            isPremiumUser
+      ? (refreshCount >= maxRefresh
+          ? (context.locale.languageCode == "en"
+              ? "Come back tomorrow 🌙"
+              : "Volte amanhã 🌙")
+          : (context.locale.languageCode == "en"
+              ? "See more curiosities (${maxRefresh - refreshCount})"
+              : "Ver mais curiosidades (${maxRefresh - refreshCount})"))
+      : (context.locale.languageCode == "en"
+          ? "See more 🌟"
+          : "Ver mais 🌟"),
+  textAlign: TextAlign.center,
+  style: const TextStyle(
+    color: Colors.white,
+    fontSize: 13,
+    fontWeight: FontWeight.w600,
+  ),
+),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
+
+                const SizedBox(height: 40),
               ],
             ),
     );

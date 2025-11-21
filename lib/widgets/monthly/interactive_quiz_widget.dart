@@ -234,11 +234,11 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
 
           Text(
             question,
-            textAlign: TextAlign.center,
+            textAlign: TextAlign.left,
             style: const TextStyle(
-              fontSize: 17,
+              fontSize: 15,
               fontWeight: FontWeight.w600,
-              color: Color(0xFFE2377D),
+              color: Color.fromARGB(255, 189, 58, 112),
             ),
           ),
 
@@ -310,7 +310,7 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
     }
 
     if (!userIsPremium) {
-      showPremiumPrompt(context);
+      showPremiumPopup(context);
       return;
     }
 
@@ -334,7 +334,7 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
       year: widget.year,
       title: "",
       pageLabel: "quiz.page_label".tr(),
-      labelColor: const Color(0xFFE9B9C9),
+      labelColor: const Color(0xFFdd97b7),
 
       description: getLocalized(
         quizData?["description"],
