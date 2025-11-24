@@ -49,7 +49,7 @@ class MonthMenu extends StatelessWidget {
       {'title': 'month_menu.gratitude', 'icon': PhosphorIconsRegular.heart, 'color': const Color(0xFFE2377D)},
       {'title': 'month_menu.reflections', 'icon': PhosphorIconsRegular.quotes, 'color': const Color(0xFFcf78f7)},
       {'title': 'month_menu.photos', 'icon': PhosphorIconsRegular.camera, 'color': const Color(0xFFb71691)},
-      {'title': 'month_menu.dates', 'icon': PhosphorIconsRegular.calendarDots, 'color': const Color(0xFF636EE6)},
+      {'title': 'month_menu.dates', 'icon': PhosphorIconsRegular.calendarDots, 'color': const Color(0xFF627fdd)},
 
     ];
 

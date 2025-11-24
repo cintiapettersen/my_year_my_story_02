@@ -8,13 +8,13 @@
   "auth": {
     "welcome_title": "Bem-vindo(a) ao My Year, My Story!",
     "choose_start": "Escolha como deseja começar:",
-    "login_google_email": "Entrar com Google ou Email",
+    "login_google_email": "Entrar com Google ou E-mail",
     "login_guest": "Continuar como convidado",
     "signup_button": "Criar uma conta",
     "login": {
       "description": "Registre suas memórias, acompanhe seu humor e conte sua história única mês a mês.",
       "sign_in": "Entrar",
-      "create_account": "Criar conta",
+      "create_account": "Criar Conta",
       "email": "E-mail",
       "password": "Senha",
       "remember_me": "Lembrar de mim",
@@ -95,6 +95,7 @@
     "dialog_button": "Amei ✨",
     "back_button": "Voltar"
   },
+
   "signup": {
     "subtitle": "Crie sua conta e comece sua jornada de autodescoberta e memórias.",
     "full_name": "Nome completo",
@@ -102,7 +103,7 @@
     "email": "E-mail",
     "password": "Senha",
     "confirm_password": "Confirmar senha",
-    "button_create": "Criar conta",
+    "button_create": "Criar Conta",
     "magic_link_button": "Acessar com Link Mágico ✉️",
     "magic_link_title": "Já tem uma conta?",
     "magic_link_description": "Digite seu e-mail e enviaremos um link para você entrar direto.",
@@ -119,6 +120,7 @@
     "error_confirm": "As senhas não coincidem",
     "biometric_hint": "🔒 Após criar sua conta, você poderá ativar o login biométrico para acesso rápido e seguro."
   },
+
   "bottom": {
     "home": "Início",
     "current_month": "Mês Atual",
@@ -127,6 +129,7 @@
     "mood": "Humor",
     "luck": "Sorte do Dia"
   },
+
   "photos": {
     "title": "Fotos do Mês",
     "description": "Registre os momentos mais preciosos do mês em 'Fotos' e guarde lembranças que farão seu coração sorrir depois 💕",
@@ -135,34 +138,33 @@
     "popup_content": "A galeria de fotos estará disponível nas próximas atualizações.\nPor enquanto, aproveite as outras seções do app!",
     "ok_button": "Ok",
     "page_label": "Fotos do mês"
-  
-
-
   },
+
   "premium_popup": {
-  "title": "Vem ser Premium",
-  "message": "Com o plano Premium, você desbloqueia todas as funções do app e pode criar quantas memórias quiser!",
-  "upgrade_button": "Conhecer Premium"
-
-
+    "title": "Vem ser Premium",
+    "message": "Com o plano Premium, você desbloqueia todas as funções do app e pode criar quantas memórias quiser!",
+    "upgrade_button": "Conhecer Premium"
   },
+
   "popup_login": {
     "required_title": "Login necessário",
     "required_description": "Crie uma conta gratuita para salvar suas respostas 💖",
     "cancel": "Depois",
     "login_button": "Entrar"
   },
+
   "actions": {
     "ok": "OK",
     "close": "Fechar",
     "login": "Entrar"
   },
+
   "coming_soon_popup": {
     "title": "Recurso em breve",
     "message": "Este recurso estará disponível em breve! 💕",
     "button": "Entendi"
+  },
 
-    },
   "monthly_goals": {
     "title": "Metas do Mês",
     "description": "Planeje, cocrie e organize suas metas do mês. Toda vez que você decide, você já está um passo mais perto de transformar seus sonhos em realidade.",
@@ -175,6 +177,7 @@
     "error_update_goal": "Erro ao atualizar meta.",
     "error_remove_goal": "Erro ao remover meta."
   },
+
   "month_menu": {
     "goals": "Metas do Mês",
     "about_me": "Sobre Mim",
@@ -187,10 +190,11 @@
     "gratitude": "Gratidão",
     "reflections": "Reflexões",
     "photos": "Fotos do Mês",
-    "fortune": " Datas pra lembrar",
+    "dates": "Datas pra lembrar",
     "choose_section": "O que você quer explorar hoje?"
   },
-    "dailyLuck": {
+
+  "dailyLuck": {
     "consultingUniverse": "Consultando o universo...",
     "alreadyReceived": "✨ Você já recebeu sua sorte de hoje!",
     "comeBackTomorrow": "Todo dia o universo tem algo pra te dizer",
@@ -198,58 +202,51 @@
     "premiumOnly": "Recurso disponível apenas para usuários Premium 🔒",
     "becomePremium": "Tornar-se Premium",
     "drawAnother": "Sortear outra mensagem"
-  
   },
-
-  "dashboard": {
-    "hello_user": "Olá, {user}!",
-"guest_user": "Convidado",
-"track_your_activities": "Acompanhe suas atividades 👋",
-"goals": "Metas",
-"mood": "Humor",
-"diary": "Diário",
-"monthly_quiz": "Quiz do Mês",
-"gratitude": "Gratidão",
-"about_me": "Sobre Mim",
-"daily_inspiration": "🌙 Buscando inspiração para hoje...",
-"search_previous_dates": "Buscar datas anteriores",
-"select_date": "Selecione uma data",
-
-
-  "month_short": {
-  "jan": "Jan",
-  "feb": "Fev",
-  "mar": "Mar",
-  "apr": "Abr",
-  "may": "Mai",
-  "jun": "Jun",
-  "jul": "Jul",
-  "aug": "Ago",
-  "sep": "Set",
-  "oct": "Out",
-  "nov": "Nov",
-  "dec": "Dez"
-}
-
-    },
-
-    "month": {
-  "january": "Janeiro",
-  "february": "Fevereiro",
-  "march": "Março",
-  "april": "Abril",
-  "may": "Maio",
-  "june": "Junho",
-  "july": "Julho",
-  "august": "Agosto",
-  "september": "Setembro",
-  "october": "Outubro",
-  "november": "Novembro",
-  "december": "Dezembro"
-
     
+  "dashboard": {
+  "hello_user": "Olá, {user}!",
+  "guest_user": "Convidado",
+  "track_your_activities": "Acompanhe suas atividades 👋",
+  "goals": "Metas",
+  "mood": "Humor",
+  "diary": "Diário",
+  "monthly_quiz": "Quiz do Mês",
+  "gratitude": "Gratidão",
+  "about_me": "Sobre Mim",
+  "daily_inspiration": "Buscando inspiração para hoje...",
+  "search_previous_dates": "Buscar datas anteriores",
+  "select_date": "Selecione uma data",
+  "month_short": {
+    "jan": "Jan",
+    "feb": "Fev",
+    "mar": "Mar",
+    "apr": "Abr",
+    "may": "Mai",
+    "jun": "Jun",
+    "jul": "Jul",
+    "aug": "Ago",
+    "sep": "Set",
+    "oct": "Out",
+    "nov": "Nov",
+    "dec": "Dez"
+  }
+},
 
-    },
+  "month": {
+    "january": "Janeiro",
+    "february": "Fevereiro",
+    "march": "Março",
+    "april": "Abril",
+    "may": "Maio",
+    "june": "Junho",
+    "july": "Julho",
+    "august": "Agosto",
+    "september": "Setembro",
+    "october": "Outubro",
+    "november": "Novembro",
+    "december": "Dezembro"
+  },
 
   "quiz": {
     "page_label": "Quiz Interativo",
@@ -267,162 +264,107 @@
     "description": "Responda perguntas divertidas e descubra mais sobre você!",
     "answer_hint": "Sua resposta...",
     "save": "Salvar respostas"
-
-    },
-
-
-  "zodiac": {
-  "title": "Signos do Mês",
-  "description": "Descubra a energia e as características que influenciam este período.",
-  "no_data": "Não encontramos informações do signo para hoje.",
-  "today_sign": "Signo de hoje",
-  "phrase_title": "Energia do Signo",
-  "moon_today": "Lua de hoje",
-  
-  
-  "label_color": "Cor",
-  "label_regent": "Regente",
-  "label_number": "Número",
-  "label_element": "Elemento",
-  "label_stone": "Pedra",
-  "label_flower": "Flor"
-},
-
-  "my_moment": {
-  "title": "Meu Momento",
-  "description": "Todo mês traz uma chance de se reconectar com você mesma. Explore essas ideias com leveza e descubra o que faz sentido para o seu momento atual."
-},
-
-"refresh_limit": {
-  "title": "Ei, você já viu tudo por hoje 👀✨",
-  "message": "Amanhã tem dicas fresquinhas te esperando!",
-  "ok": "OK"
-
-},
-  
- "did_you_know": {
- 
-  "title": "Você Sabia?",
-  "default_message": "✨ Curiosidades que inspiram e surpreendem!",
-
-  
-  "refresh_more_left": "Ver mais curiosidades ({0} restantes)",
-  "refresh_premium_only": "Ver mais ✨",
-  "refresh_come_back_tomorrow": "Volte amanhã 🌙",
-
-  
-  "premium_required_title": "Conteúdo exclusivo 💎",
-  "premium_required_text": "Atualize para ver mais curiosidades por dia.",
-
-  "month_msg_1": "✨ Janeiro é um recomeço — hora de abrir o coração e se encher de curiosidade pelo novo!",
-  "month_msg_2": "💫 Fevereiro traz leveza, cor e descobertas curiosas que aquecem o coração.",
-  "month_msg_3": "🌿 Março é tempo de crescer, aprender e se encantar com o que o mundo tem pra contar.",
-  "month_msg_4": "🌸 Abril desperta a criatividade — prepare-se para curiosidades cheias de vida!",
-  "month_msg_5": "🌼 Maio é doce e inspirador — perfeito pra descobrir algo que te faça sorrir.",
-  "month_msg_6": "🌞 Junho vem com energia boa e histórias fascinantes esperando por você!",
-  "month_msg_7": "🌻 Julho é o mês das surpresas — mergulhe nessas curiosidades e se inspire.",
-  "month_msg_8": "🌺 Agosto convida à reflexão e à descoberta de coisas novas e inesperadas.",
-  "month_msg_9": "🍂 Setembro é pura inspiração — pequenas curiosidades pra te fazer ver o mundo com outros olhos.",
-  "month_msg_10": "🌕 Outubro vem com mistério e magia — perfeito pra explorar o desconhecido!",
-  "month_msg_11": "🍁 Novembro é um lembrete: nunca é tarde pra aprender algo novo e se surpreender.",
-  "month_msg_12": "🎇 Dezembro fecha o ano com brilho — curiosidades pra encerrar com leveza e encantamento.",
-
-  
-  "categories": {
-    "Science": "Ciência",
-    "Astronomy": "Astronomia",
-    "Mythology": "Mitologia",
-    "History": "História",
-    "General Curiosity": "Curiosidade Geral",
-    "Pop Culture": "Cultura Pop",
-    "Art": "Arte",
-    "Psychology": "Psicologia",
-    "Literature": "Literatura",
-    "Nature": "Natureza"
   },
 
- 
-  "error_loading": "Não foi possível carregar as curiosidades.",
-  "error_empty": "Nenhuma curiosidade encontrada por enquanto."
+  "zodiac": {
+    "title": "Signos do Mês",
+    "description": "Descubra a energia e as características que influenciam este período.",
+    "no_data": "Não encontramos informações do signo para hoje.",
+    "today_sign": "Signo de hoje",
+    "phrase_title": "Energia do Signo",
+    "moon_today": "Lua de hoje",
 
+    "label_color": "Cor",
+    "label_regent": "Regente",
+    "label_number": "Número",
+    "label_element": "Elemento",
+    "label_stone": "Pedra",
+    "label_flower": "Flor"
+  },
 
-},
+  "my_moment": {
+    "title": "Meu Momento",
+    "description": "Todo mês traz uma chance de se reconectar com você mesma. Explore essas ideias com leveza e descubra o que faz sentido para o seu momento atual."
+  },
 
+  "refresh_limit": {
+    "title": "Ei, você já viu tudo por hoje 👀✨",
+    "message": "Amanhã tem dicas fresquinhas te esperando!",
+    "ok": "OK"
+  },
 
   "interview": {
     "title": "Conexões",
-    "default_description": "Um espaço para registrar suas respostas e guardar lembranças especiais ✨",
-    
-    "who_prompt": "De quem você vai guardar as memórias este mês?",
-    
-    "name_label": "Qual é o nome da pessoa?",
+    "default_description": "Um espaço para registrar respostas e guardar memórias especiais ✨",
+
+    "who_prompt": "De quem você está guardando lembranças este mês?",
+
+    "name_label": "Qual é o nome dessa pessoa?",
     "name_hint": "Digite o nome completo...",
-    
-    "relation_hint": "Quem é essa pessoa pra você?",
+
+    "relation_hint": "Quem é essa pessoa para você?",
     "age_hint": "Idade",
-    
+
     "ask": "PERGUNTE...",
     "answer_hint": "Escreva sua resposta aqui...",
-    
+
     "show_more": "Ver mais perguntas",
-    
+
     "save_button": "Salvar memória",
     "audio_button": "Gravar áudio",
-    
-    "saved_success": "Suas memórias foram salvas com sucesso!",
-    "save_error": "Ocorreu um erro ao salvar. Tente novamente."
 
- },
-  
+    "saved_success": "Memórias salvas com sucesso!",
+    "save_error": "Algo deu errado ao salvar. Tente novamente."
+  },
 
   "gratitude": {
     "title": "",
     "page_label": "Gratidão",
-    "description": "A gratidão nos ajuda a enxergar o lado bom da vida e fortalecer o coração. Registre aqui as pequenas alegrias e coisas especiais deste mês. 💖",
-    "placeholder": "Sou grato por...",
-    "empty_state": "Nenhum registro de gratidão ainda.\nComece registrando algo pelo qual você é grato este mês!",
+    "description": "Gratidão ajuda a ver o lado bonito da vida e fortalece o coração. Use este espaço para registrar pequenas alegrias e momentos especiais do mês. 💖",
+    "placeholder": "Sou grata(o) por...",
+    "empty_state": "Nenhum registro de gratidão ainda.\nComece escrevendo algo pelo qual você é grata(o) este mês!",
     "add_button": "Adicionar",
     "save_success": "Gratidão adicionada com sucesso! 💖",
     "delete_success": "Gratidão removida com sucesso!",
     "save_error": "Erro ao salvar gratidão. 😞",
     "delete_error": "Erro ao remover gratidão. 😞"
-
   },
+
   "reflection": {
     "page_label": "Reflexões",
-    "description": "Tire um momento para refletir sobre seu mês: o que te fez crescer, o que te desafiou e o que te trouxe alegria 💭",
-    
-    "biggest_lesson_title": "Maior Aprendizado",
-    "biggest_lesson_prompt": "Qual foi o maior aprendizado que você teve este mês?",
-    
-    "most_grateful_title": "Maior Gratidão",
-    "most_grateful_prompt": "Pelo que você é mais grata neste mês?",
-    
-    "proudest_moment_title": "Momento de Orgulho",
-    "proudest_moment_prompt": "Qual foi seu momento de maior orgulho este mês?",
-    
-    "biggest_challenge_title": "Maior Desafio",
-    "biggest_challenge_prompt": "Qual foi o maior desafio que você enfrentou e como o superou?",
-    
-    "personal_growth_title": "Crescimento Pessoal",
-    "personal_growth_prompt": "Como você cresceu como pessoa neste mês?",
-    
-    "unexpected_joy_title": "Alegria Inesperada",
-    "unexpected_joy_prompt": "Qual alegria inesperada você descobriu este mês?",
-    
-    "next_month_focus_title": "Foco do Próximo Mês",
-    "next_month_focus_prompt": "No que você quer focar no próximo mês?",
-    
+    "description": "Reserve um momento para refletir sobre seu mês: o que te fez crescer, o que te desafiou e o que trouxe alegria 💭",
+
+    "biggest_lesson_title": "Maior lição",
+    "biggest_lesson_prompt": "Qual foi a maior lição que você aprendeu este mês?",
+
+    "most_grateful_title": "Maior gratidão",
+    "most_grateful_prompt": "Pelo que você mais se sente grata(o) este mês?",
+
+    "proudest_moment_title": "Momento de orgulho",
+    "proudest_moment_prompt": "Qual foi o momento de maior orgulho este mês?",
+
+    "biggest_challenge_title": "Maior desafio",
+    "biggest_challenge_prompt": "Qual foi o maior desafio que enfrentou e como superou?",
+
+    "personal_growth_title": "Crescimento pessoal",
+    "personal_growth_prompt": "Como você cresceu como pessoa este mês?",
+
+    "unexpected_joy_title": "Alegria inesperada",
+    "unexpected_joy_prompt": "Que alegria inesperada você descobriu este mês?",
+
+    "next_month_focus_title": "Foco do próximo mês",
+    "next_month_focus_prompt": "Em que você quer focar no próximo mês?",
+
     "hint": "Escreva sua reflexão aqui...",
-    
+
     "save_button": "Salvar Reflexões",
     "saved": "Reflexões salvas com sucesso!",
     "save_error": "Erro ao salvar reflexões."
+  },
 
-    },
   "lists": {
     "title": "Minhas Listas",
-    "description": "Um espaço para anotar o que marcou seu mês — livros, músicas, ideias, compras e lembranças especiais. 💖",
+    "description": "Um espaço para registrar o que marcou seu mês — livros, músicas, ideias, compras e memórias especiais. 💖",
 
     "read": "Para ler",
     "write": "Para anotar",
@@ -436,71 +378,156 @@
     "saved": "Lista salva com sucesso! 💖"
   },
 
-  "stickers": {
-    "read": "Leitura do mês",
-    "write": "Pensamentos soltos",
-    "buy": "Coisinhas que quero",
-    "listen": "Músicas que amei",
-    "keep": "Essas eu guardo"
 
-},
-    "tips": {
-  "page_label": "Dicas do Mês",
-  "description": "Uma seleção especial de dicas para te inspirar, te cuidar e deixar seu mês mais leve. Novas reflexões todos os dias ✨",
+  "did_you_know": {
+    "title": "Você Sabia?",
+    "default_message": "✨ Curiosidades que inspiram e surpreendem!",
 
-  "category_autocuidado": "Autocuidado",
-  "category_energia": "Energia",
-  "category_proposito": "Propósito",
-  "category_leveza": "Leveza",
-  "category_reflexao": "Reflexão",
-  "category_gratidao": "Gratidão",
-  "category_rotina": "Rotina",
-  "category_crescimento": "Crescimento",
-  "category_confianca": "Confiança",
-  "category_presenca": "Presença",
-  "category_encerramento": "Encerramento",
-  "category_intuicao": "Intuição",
+    "refresh_more_left": "Ver mais curiosidades ({0} restantes)",
+    "refresh_premium_only": "Ver mais ✨",
+    "refresh_come_back_tomorrow": "Volte amanhã 🌙",
 
-  "seen_all_today": "Você já viu todas as dicas de hoje. Volte amanhã 💛",
+    "premium_required_title": "Conteúdo exclusivo 💎",
+    "premium_required_text": "Atualize para ver mais curiosidades por dia.",
 
-  "refresh_title": "Volte amanhã ✨",
-  "refresh_message": "Você já atualizou suas dicas de hoje!",
-  "refresh_ok": "Entendi",
+    "month_msg_1": "✨ Janeiro é um recomeço — hora de abrir o coração e se encher de curiosidade pelo novo!",
+    "month_msg_2": "💫 Fevereiro traz leveza, cor e descobertas curiosas que aquecem o coração.",
+    "month_msg_3": "🌿 Março é tempo de crescer, aprender e se encantar com o que o mundo tem pra contar.",
+    "month_msg_4": "🌸 Abril desperta a criatividade — prepare-se para curiosidades cheias de vida!",
+    "month_msg_5": "🌼 Maio é doce e inspirador — perfeito pra descobrir algo que te faça sorrir.",
+    "month_msg_6": "🌞 Junho vem com energia boa e histórias fascinantes esperando por você!",
+    "month_msg_7": "🌻 Julho é o mês das surpresas — mergulhe nessas curiosidades e se inspire.",
+    "month_msg_8": "🌺 Agosto convida à reflexão e à descoberta de coisas novas e inesperadas.",
+    "month_msg_9": "🍂 Setembro é pura inspiração — pequenas curiosidades pra te fazer ver o mundo com outros olhos.",
+    "month_msg_10": "🌕 Outubro vem com mistério e magia — perfeito pra explorar o desconhecido!",
+    "month_msg_11": "🍁 Novembro é um lembrete: nunca é tarde pra aprender algo novo e se surpreender.",
+    "month_msg_12": "🎇 Dezembro fecha o ano com brilho — curiosidades pra encerrar com leveza e encantamento.",
 
-  "refresh_premium_button": "Ver mais dicas",
-  "refresh_see_more": "Ver mais dicas (__remaining__ restantes)",
-  "refresh_come_back_tomorrow": "Volte amanhã 🌙",
-
-  "empty": "Nenhuma dica disponível no momento."
+    "categories": {
+      "Science": "Ciência",
+      "Astronomy": "Astronomia",
+      "Mythology": "Mitologia",
+      "History": "História",
+      "General Curiosity": "Curiosidade Geral",
+      "Pop Culture": "Cultura Pop",
+      "Art": "Arte",
+      "Psychology": "Psicologia",
+      "Literature": "Literatura",
+      "Nature": "Natureza"
+    }
 
   },
-  "dates": {
-    "title": "Datas para lembrar",
-    "description": "Salve lembretes importantes do mês e receba alertas especiais.",
-    "instruction": "Toque em um dia do calendário para adicionar um lembrete especial ✨",
-    "modal_add_event": "adicionar evento",
-    "modal_title_hint": "titulo",
-    "modal_desc_hint": "descricao",
-    "modal_save": "criar alerta",
-    "alert_created": "Seu alerta foi criado ✨",
-    "repeat_label": "repetir",
-    "repeat_none": "não repetir",
-    "repeat_yearly": "todo ano",
-    "repeat_monthly": "todo mês",
-    "repeat_weekly": "toda semana",
-    "repeat_1day": "1 dia antes",
-    "repeat_3days": "3 dias antes",
-    "repeat_7days": "7 dias antes"
-  }
+
+  "stickers": {
+    "read": "Leitura do Mês",
+    "write": "Pensamentos Livres",
+    "buy": "Coisas que Quero",
+    "listen": "Músicas que Amei",
+    "keep": "Coisas que Guardo"
+  },
+
+  "tips": {
+    "page_label": "Dicas",
+    "description": "Uma seleção suave de dicas para inspirar, equilibrar e deixar seu mês mais leve. Novas reflexões todos os dias ✨",
+
+    "category_autocuidado": "Autocuidado",
+    "category_energia": "Energia",
+    "category_proposito": "Propósito",
+    "category_leveza": "Leveza",
+    "category_reflexao": "Reflexão",
+    "category_gratidao": "Gratidão",
+    "category_rotina": "Rotina",
+    "category_crescimento": "Crescimento",
+    "category_confianca": "Confiança",
+    "category_presenca": "Presença",
+    "category_encerramento": "Encerramento",
+    "category_intuicao": "Intuição",
+
+    "seen_all_today": "Você viu todas as dicas de hoje. Volte amanhã 💛",
+
+    "refresh_title": "Volte amanhã ✨",
+    "refresh_message": "Você já atualizou suas sugestões de hoje!",
+    "refresh_ok": "OK",
+
+    "refresh_premium_button": "Ver mais dicas",
+    "refresh_see_more": "Ver mais dicas (__remaining__ restantes)",
+    "refresh_come_back_tomorrow": "Volte amanhã 🌙",
+
+    "empty": "Nenhuma dica disponível no momento."
+  },
+
+"calendar": {
+  "page_label": "Calendário e Alertas",
+  "description": "Marque seus momentos importantes, lembretes e destaques coloridos ao longo do mês.",
+
+  "add_event": "adicionar evento",
+  "edit_event": "editar evento",
+
+  "event_hint": "descreva seu lembrete",
+
+  "color_label": "cor do lembrete",
+
+  "repeat_label": "repetição",
+  "repeat_none": "Nenhuma",
+  "repeat_daily": "Todos os dias",
+  "repeat_weekly": "Todas as semanas",
+  "repeat_yearly": "Todos os anos",
+  "repeat_monthly": "Todos os meses",
+
+  "days_before_label": "quantos dias antes quer ser avisada?",
+  "days_suffix": "dias",
+
+  "test_alert": "Testar alerta (10s)",
+  "test_alert_message": "Seu alerta tocará em 10 segundos!",
+
+  "delete_event": "Excluir alerta",
+  "delete_title": "Excluir alerta?",
+  "delete_message": "Tem certeza que deseja apagar este alerta?",
+  "delete_cancel": "Cancelar",
+  "delete_confirm": "Excluir",
+  "delete_done": "Alerta excluído 💔",
+
+  "save_new": "criar alerta",
+  "save_edit": "salvar alterações",
+  "save_error_empty": "Digite algo para salvar.",
+  "save_created": "Seu alerta foi criado! 💛",
+  "save_updated": "Seu alerta foi editado ✨",
+
+  "weekdays_short": "D,S,T,Q,Q,S,S",
+
+  "empty": "Nenhum evento neste mês."
+},
+
+  "notifications": {
+  "page_label": "Notificações",
+  "description": "Seus lembretes e alertas aparecem aqui. Você pode revisar ou limpar seu histórico quando quiser.",
+
+  "title": "Notificações",
+  "clear_history_tooltip": "Limpar histórico",
+  
+  "dialog_clear_title": "Limpar todas as notificações?",
+  "dialog_clear_message": "Tem certeza que deseja apagar todo o histórico de notificações?",
+  "dialog_cancel": "Cancelar",
+  "dialog_confirm_clear": "Limpar",
+
+  "empty_state": "Você não tem notificações salvas.\nNovos alertas aparecerão aqui quando forem ativados."
+
+
+},
+
+  "daily_popup": {
+  "default_title": "Alerta do dia",
+  "subtitle": "Você tem um evento ou lembrete programado para hoje!",
+  "mark_seen": "Marcar como visto",
+  "cancel_alert": "Cancelar alerta"
+}
+
 }
 
 
 
   
 
-
-  
-
-  
+ 
 
 

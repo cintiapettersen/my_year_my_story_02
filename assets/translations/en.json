@@ -1,18 +1,18 @@
 {
   "splash": {
     "new_chapter": "A new chapter begins…",
-    "subtitle": "Your digital memory journal 💕",
-    "login_button": "Login / Create account",
-    "guest_button": "Explore without login"
+    "subtitle": "Your digital memory diary 💕",
+    "login_button": "Log in / Create account",
+    "guest_button": "Explore as guest"
   },
   "auth": {
     "welcome_title": "Welcome to My Year, My Story!",
-    "choose_start": "Choose how you’d like to start:",
+    "choose_start": "Choose how you want to begin:",
     "login_google_email": "Sign in with Google or Email",
-    "login_guest": "Continue as Guest",
+    "login_guest": "Continue as guest",
     "signup_button": "Create an account",
     "login": {
-      "description": "Capture your memories, track your moods, and tell your unique story through the months.",
+      "description": "Record your memories, track your mood and tell your unique story month by month.",
       "sign_in": "Sign in",
       "create_account": "Create Account",
       "email": "Email",
@@ -22,20 +22,20 @@
       "button": "Sign in",
       "or": "OR",
       "or_biometric": "or with biometrics",
-      "magic_link_button": "Sign in with a Magic Link",
+      "magic_link_button": "Sign in with magic link",
       "magic_link_title": "Prefer a magic link?",
-      "magic_link_description": "Type your email and we'll send you a secure login link.",
+      "magic_link_description": "Enter your email and we’ll send you a secure login link.",
       "magic_link_confirm": "Send magic link",
       "magic_link_sent": "Magic link sent to {{0}}! Check your inbox ✨",
       "magic_link_error": "Error sending magic link: {{0}}",
-      "error_email_empty": "Please enter your email",
-      "error_email_invalid": "Please enter a valid email",
-      "error_password_empty": "Please enter your password",
-      "error_password_short": "Password must be at least 6 characters long",
+      "error_email_empty": "Enter your email",
+      "error_email_invalid": "Enter a valid email",
+      "error_password_empty": "Enter your password",
+      "error_password_short": "Password must be at least 6 characters",
       "success": "Login successful!",
-      "error_general": "Error logging in",
-      "signup_title": "Sign Up",
-      "welcome_subtitle": "Choose how you’d like to begin:",
+      "error_general": "Error signing in",
+      "signup_title": "Create Account",
+      "welcome_subtitle": "Choose how you want to begin:",
       "login_google_email": "Sign in with Google or Email",
       "enter_guest": "Enter as guest"
     }
@@ -48,22 +48,22 @@
     "language": "Language",
     "login": "Login",
     "logout": "Logout",
-    "logout_title": "Sign out",
+    "logout_title": "End session",
     "logout_message": "Are you sure you want to log out?",
     "cancel": "Cancel",
-    "go_premium": "🌸 Go Premium",
+    "go_premium": "🌸 Become Premium",
     "premium_active": "🌷 Premium Account Active",
     "select_language": "Select language",
-    "logout_success": "You have successfully logged out!",
+    "logout_success": "You logged out successfully!",
     "logout_error": "Could not log out. Please try again."
   },
   "profile": {
     "title": "My Profile",
     "no_name": "User without name",
-    "sign": "Your zodiac sign is {0} ✨",
-    "add_birthdate": "Add your birth date to discover your sign ✨",
+    "sign": "Your sign is {0} ✨",
+    "add_birthdate": "Add your birthdate to discover your sign ✨",
     "full_name": "Full name",
-    "birth_date": "Date of birth",
+    "birth_date": "Birth date",
     "email": "Email",
     "save_changes": "Save changes",
     "updated": "Profile updated successfully! 🎉",
@@ -72,53 +72,55 @@
   "premium": {
     "title_guest": "Exclusive Access 🌟",
     "title_user": "Premium Plan ✨",
-    "message_guest": "Shine bright and unlock all Premium features ✨\n\nLog in to continue and learn more!",
-    "message_user": "Keep shining! 🌈\nUnlock all Premium features and enjoy everything the app has to offer.",
+    "message_guest": "Shine and unlock all Premium features ✨\n\nLog in to continue and learn more!",
+    "message_user": "Keep shining! 🌈\nUnlock all Premium features and enjoy everything the app offers.",
     "button_login": "Log in",
     "button_view_plans": "View plans",
     "button_later": "Maybe later",
     "title": "Premium Plan",
     "subtitle": "Turn your year into eternal memories ✨",
     "monthly_title": "🌷 Monthly Plan",
-    "monthly_price": "$2.49 / month",
+    "monthly_price": "R$ 12.90 / month",
     "monthly_detail1": "Full access for 30 days",
     "monthly_detail2": "Auto-renewal enabled",
     "monthly_detail3": "Cancel anytime",
     "annual_title": "🌸 Annual Plan (Most Popular)",
-    "annual_price": "$24 / year",
+    "annual_price": "R$ 120 / year",
     "annual_detail1": "Full access for 12 months",
     "annual_detail2": "Save 25%",
     "annual_detail3": "Bonus: exclusive pages and features 💫",
     "subscribe_button": "Subscribe now",
     "dialog_title": "💖 Coming soon!",
-    "dialog_message": "The payment system will be available soon.\n\nSoon you’ll be able to subscribe and enjoy all the Premium features of My Year, My Story!",
+    "dialog_message": "The payment system will be available soon.\nYou'll soon be able to subscribe and enjoy all Premium features!",
     "dialog_button": "Love it ✨",
     "back_button": "Back"
   },
+
   "signup": {
-    "subtitle": "Create your account and start your journey of self-discovery and memory keeping.",
+    "subtitle": "Create your account and start your journey of self-discovery and memories.",
     "full_name": "Full name",
-    "birth_date": "Date of birth",
+    "birth_date": "Birth date",
     "email": "Email",
     "password": "Password",
     "confirm_password": "Confirm password",
     "button_create": "Create Account",
-    "magic_link_button": "Access with a Magic Link ✉️",
+    "magic_link_button": "Access with Magic Link ✉️",
     "magic_link_title": "Already have an account?",
-    "magic_link_description": "Enter your email and we'll send you a login link so you can jump right in.",
+    "magic_link_description": "Enter your email and we’ll send a link to enter directly.",
     "magic_link_confirm": "Send magic link",
     "or": "OR",
     "have_account": "Already have an account",
     "success": "Account created successfully!",
     "error": "Error creating account: {0}",
-    "error_name": "Please enter your name",
-    "error_birth": "Please select your date of birth",
-    "error_email_empty": "Please enter your email",
+    "error_name": "Enter your name",
+    "error_birth": "Select your birth date",
+    "error_email_empty": "Enter your email",
     "error_email_invalid": "Invalid email",
-    "error_password": "Password must be at least 6 characters long",
+    "error_password": "Password must be at least 6 characters",
     "error_confirm": "Passwords do not match",
-    "biometric_hint": "🔒 After creating your account, you’ll be able to enable biometric login for quick and secure access."
+    "biometric_hint": "🔒 After creating your account, you can enable biometric login for quick and secure access."
   },
+
   "bottom": {
     "home": "Home",
     "current_month": "Current Month",
@@ -127,124 +129,126 @@
     "mood": "Mood",
     "luck": "Daily Luck"
   },
+
   "photos": {
-    "title": "Photos of the Month",
-    "description": "Capture the most precious moments of the month in 'Photos' and keep memories that will make your heart smile later 💕",
+    "title": "Monthly Photos",
+    "description": "Record the most precious moments of the month and keep memories that will make your heart smile later 💕",
     "empty": "No photos yet 💕\nChoose up to 4 special photos for this month!",
-    "popup_title": "Coming Soon 💫",
-    "popup_content": "The photo gallery will be available in future updates.\nFor now, enjoy the other sections of the app!",
+    "popup_title": "Coming soon 💫",
+    "popup_content": "The photo gallery will be available in upcoming updates.\nFor now, enjoy the other sections!",
     "ok_button": "Ok",
-    "page_label": "Photos of the Month"
-
-  
+    "page_label": "Monthly Photos"
   },
+
   "premium_popup": {
-  "title": "Go Premium",
-  "message": "With the Premium plan, you unlock all features and can create unlimited memories!",
-  "upgrade_button": "See Premium Options"
-
-
+    "title": "Become Premium",
+    "message": "With the Premium plan, you unlock all app features and can create as many memories as you want!",
+    "upgrade_button": "See Premium"
   },
+
   "popup_login": {
     "required_title": "Login required",
     "required_description": "Create a free account to save your answers 💖",
     "cancel": "Later",
-    "login_button": "Login"
+    "login_button": "Log in"
   },
+
   "actions": {
     "ok": "OK",
     "close": "Close",
     "login": "Login"
   },
+
   "coming_soon_popup": {
     "title": "Feature coming soon",
-    "message": "This feature will be available soon! Stay tuned 💕",
+    "message": "This feature will be available soon! 💕",
     "button": "Got it"
   },
-  "monthly_goals": {
-  "title": "Monthly Goals",
-  "description": "Plan, co-create, and organize your goals for the month. Every time you choose a direction, you're already one step closer to turning your dreams into reality.",
-  "add_goal_hint": "Type your new goal...",
-  "no_goals_yet": "No goals added yet.\nStart by setting your goals for this month!",
-  "goal_added": "Goal added successfully!",
-  "goal_removed": "Goal removed successfully!",
-  "error_load_goals": "Error loading goals.",
-  "error_add_goal": "Error adding goal.",
-  "error_update_goal": "Error updating goal.",
-  "error_remove_goal": "Error removing goal."
- },
 
+  "monthly_goals": {
+    "title": "Monthly Goals",
+    "description": "Plan, co-create and organize your goals. Every time you decide, you’re already one step closer to making your dreams real.",
+    "add_goal_hint": "Type your new goal...",
+    "no_goals_yet": "No goals added yet.\nStart by setting your goals for this month!",
+    "goal_added": "Goal added successfully!",
+    "goal_removed": "Goal removed successfully!",
+    "error_load_goals": "Error loading goals.",
+    "error_add_goal": "Error adding goal.",
+    "error_update_goal": "Error updating goal.",
+    "error_remove_goal": "Error removing goal."
+  },
 
   "month_menu": {
-  "goals": "Monthly Goals",
-  "about_me": "About Me",
-  "quiz": "Interactive Quiz",
-  "signs": "Zodiac Signs",
-  "tips": "My Moment",
-  "facts": "Did You Know?",
-  "interview": "Connections",
-  "lists": "My Lists",
-  "gratitude": "Gratitude",
-  "reflections": "Reflections",
-  "photos": "Monthly Photos",
-  "fortune": "Daily Fortune",
-  "choose_section": "Choose what you want to explore"
-
-
+    "goals": "Monthly Goals",
+    "about_me": "About Me",
+    "quiz": "Interactive Quiz",
+    "signs": "Zodiac of the Month",
+    "tips": "Tips of the Month",
+    "facts": "Did You Know?",
+    "interview": "Connections",
+    "lists": "My Lists",
+    "gratitude": "Gratitude",
+    "reflections": "Reflections",
+    "photos": "Monthly Photos",
+    "dates": "Dates to Remember",
+    "choose_section": "What do you want to explore today?"
   },
+
   "dailyLuck": {
     "consultingUniverse": "Consulting the universe...",
-    "alreadyReceived": "✨ You've already received your luck for today!",
-    "comeBackTomorrow": "Every day the universe has something to tell you",
+    "alreadyReceived": "✨ You already received today’s message!",
+    "comeBackTomorrow": "Every day the universe has something for you",
     "discoverLuck": "Today’s Message",
-    "premiumOnly": "Feature available for Premium users only 🔒",
+    "premiumOnly": "Feature available only for Premium users 🔒",
     "becomePremium": "Become Premium",
-    "drawAnother": "Draw another fortune"
+    "drawAnother": "Draw another message"
   },
+
   "dashboard": {
-    "hello_user": "Hi, {user}!",
-    "guest_user": "Guest",
-    "track_your_activities": "Track your activities 💫",
-    "goals": "Goals",
-    "mood": "Mood",
-    "diary": "Diary",
-    "monthly_quiz": "Monthly Quiz",
-    "gratitude": "Gratitude",
-    "about_me": "About Me",
-    "daily_inspiration": "🌙 Looking for today’s inspiration...",
-    "search_previous_dates": "Search previous dates",
-    "select_date": "Select a date",
+  "hello_user": "Hello, {user}!",
+  "guest_user": "Guest",
+  "track_your_activities": "Track your activities 👋",
+  "goals": "Goals",
+  "mood": "Mood",
+  "diary": "Diary",
+  "monthly_quiz": "Monthly Quiz",
+  "gratitude": "Gratitude",
+  "about_me": "About Me",
+  "daily_inspiration": "🌙 Fetching today’s inspiration...",
+  "search_previous_dates": "Search previous dates",
+  "select_date": "Select a date",
+  "month_short": {
+    "jan": "Jan",
+    "feb": "Feb",
+    "mar": "Mar",
+    "apr": "Apr",
+    "may": "May",
+    "jun": "Jun",
+    "jul": "Jul",
+    "aug": "Aug",
+    "sep": "Sep",
+    "oct": "Oct",
+    "nov": "Nov",
+    "dec": "Dec"
+  }
+},
 
-    "month_short": {
-      "jan": "Jan",
-      "feb": "Feb",
-      "mar": "Mar",
-      "apr": "Apr",
-      "may": "May",
-      "jun": "Jun",
-      "jul": "Jul",
-      "aug": "Aug",
-      "sep": "Sep",
-      "oct": "Oct",
-      "nov": "Nov",
-      "dec": "Dec"
-    },
 
-    "month": {
-      "january": "January",
-      "february": "February",
-      "march": "March",
-      "april": "April",
-      "may": "May",
-      "june": "June",
-      "july": "July",
-      "august": "August",
-      "september": "September",
-      "october": "October",
-      "november": "November",
-      "december": "December"
-    }
+  "month": {
+    "january": "January",
+    "february": "February",
+    "march": "March",
+    "april": "April",
+    "may": "May",
+    "june": "June",
+    "july": "July",
+    "august": "August",
+    "september": "September",
+    "october": "October",
+    "november": "November",
+    "december": "December"
   },
+
   "quiz": {
     "page_label": "Interactive Quiz",
     "button_result": "See my result ✨",
@@ -252,120 +256,73 @@
     "missing_title": "Oops!",
     "missing_message": "You left one or more questions unanswered.",
     "missing_button": "Got it",
-    "missing_answers_barrier": "Missing answers",
+    "missing_answers_barrier": "missing_answers_popup",
     "result_close": "Close"
-},
-    "curiosities": {
-  "title": "About Me",
-  "description": "Answer fun questions and discover more about yourself!",
-  "answer_hint": "Your answer...",
-  "save": "Save Answers"
+  },
 
-},
+  "curiosities": {
+    "title": "About Me",
+    "description": "Answer fun questions and discover more about yourself!",
+    "answer_hint": "Your answer...",
+    "save": "Save answers"
+  },
+
   "zodiac": {
-  "title": "Zodiac of the Month",
-  "description": "Discover the energy and characteristics influencing this period.",
-  "no_data": "We couldn’t find zodiac information for today.",
-  "today_sign": "Today's Sign",
-  "phrase_title": "Zodiac Energy",
-  "moon_today": "Moon today",
-  
-  "label_color": "Color",
-  "label_regent": "Ruler",
-  "label_number": "Number",
-  "label_element": "Element",
-  "label_stone": "Stone",
-  "label_flower": "Flower"
-},
+    "title": "Zodiac of the Month",
+    "description": "Discover the energy and characteristics influencing this period.",
+    "no_data": "We couldn't find zodiac info for today.",
+    "today_sign": "Today’s sign",
+    "phrase_title": "Sign Energy",
+    "moon_today": "Moon today",
+
+    "label_color": "Color",
+    "label_regent": "Ruler",
+    "label_number": "Number",
+    "label_element": "Element",
+    "label_stone": "Stone",
+    "label_flower": "Flower"
+  },
+
   "my_moment": {
-  "title": "My Moment",
-  "description": "Each month brings a new chance to reconnect with yourself. Explore these ideas gently and discover what resonates with your current moment."
+    "title": "My Moment",
+    "description": "Every month brings a chance to reconnect with yourself. Explore these ideas gently and discover what speaks to your heart."
+  },
 
-},
   "refresh_limit": {
-  "title": "You've seen everything for today 👀✨",
-  "message": "Come back tomorrow for fresh new tips!",
-  "ok": "OK"
-
-  },
-
- "did_you_know": {
-
-  "title": "Did You Know?",
-  "default_message": "✨ Curiosities that inspire and surprise!",
-
+    "title": "Hey, you’ve seen everything for today 👀✨",
+    "message": "Tomorrow brings fresh tips!",
+    "ok": "OK"
   
-  "refresh_more_left": "See more curiosities ({0} left)",
-  "refresh_premium_only": "See more ✨",
-  "refresh_come_back_tomorrow": "Come back tomorrow 🌙",
-
-  "premium_required_title": "Exclusive content 💎",
-  "premium_required_text": "Upgrade to unlock more daily refreshes.",
-
-  "month_msg_1": "✨ January is a fresh start — the perfect time to welcome curiosity into your heart!",
-  "month_msg_2": "💫 February brings joy, color, and small discoveries that warm the heart.",
-  "month_msg_3": "🌿 March invites growth — a chance to learn and be enchanted by the world around you.",
-  "month_msg_4": "🌸 April awakens creativity — get ready for curious facts full of life!",
-  "month_msg_5": "🌼 May feels soft and inspiring — perfect for discovering something that makes you smile.",
-  "month_msg_6": "🌞 June comes with good energy and fascinating stories waiting for you!",
-  "month_msg_7": "🌻 July is the month of surprises — dive into these curiosities and be inspired.",
-  "month_msg_8": "🌺 August invites reflection and the discovery of new and unexpected things.",
-  "month_msg_9": "🍂 September brings inspiration — small curiosities to help you see the world through new eyes.",
-  "month_msg_10": "🌕 October carries mystery and magic — perfect for exploring the unknown!",
-  "month_msg_11": "🍁 November is a reminder: it's never too late to learn something new.",
-  "month_msg_12": "🎇 December closes the year with sparkle — curiosities to end with joy and lightness.",
-
- 
-  "categories": {
-    "Science": "Science",
-    "Astronomy": "Astronomy",
-    "Mythology": "Mythology",
-    "History": "History",
-    "General Curiosity": "General Curiosity",
-    "Pop Culture": "Pop Culture",
-    "Art": "Art",
-    "Psychology": "Psychology",
-    "Literature": "Literature",
-    "Nature": "Nature"
   },
-
-  "error_loading": "Could not load curiosities.",
-  "error_empty": "No curiosities available right now."
-
-
-},
 
   "interview": {
-    
     "title": "Connections",
-    "default_description": "A space to record your answers and save special memories ✨",
-    
-    "who_prompt": "Whose memories are you keeping this month?",
-    
+    "default_description": "A place to record answers and save special memories ✨",
+
+    "who_prompt": "Whose memories are you saving this month?",
+
     "name_label": "What is this person's name?",
-    "name_hint": "Type their full name...",
-    
+    "name_hint": "Enter full name...",
+
     "relation_hint": "Who is this person to you?",
     "age_hint": "Age",
-    
+
     "ask": "ASK...",
     "answer_hint": "Write your answer here...",
-    
-    "show_more": "See more questions",
-    
+
+    "show_more": "Show more questions",
+
     "save_button": "Save memory",
     "audio_button": "Record audio",
-    
-    "saved_success": "Your memories were saved successfully!",
-    "save_error": "Something went wrong while saving. Please try again."
 
-    },
+    "saved_success": "Memories saved successfully!",
+    "save_error": "Something went wrong. Try again."
+  },
 
-    
   "gratitude": {
     "title": "",
     "page_label": "Gratitude",
-    "description": "Gratitude helps us see the bright side of life and strengthen the heart. Use this space to record the small joys and special moments of the month. 💖",
+    "description": "Gratitude helps you see the beautiful side of life and strengthens your heart. Use this space to record small joys and special moments of the month. 💖",
     "placeholder": "I am grateful for...",
     "empty_state": "No gratitude entries yet.\nStart by writing something you're grateful for this month!",
     "add_button": "Add",
@@ -373,47 +330,87 @@
     "delete_success": "Gratitude removed successfully!",
     "save_error": "Error saving gratitude. 😞",
     "delete_error": "Error removing gratitude. 😞"
+  },
 
-    },
-  
   "reflection": {
     "page_label": "Reflections",
-    "description": "Take a moment to reflect on your month: what made you grow, what challenged you, and what brought you joy 💭",
-    
-    "biggest_lesson_title": "Biggest Lesson",
+    "description": "Take a moment to reflect on your month: what helped you grow, what challenged you, and what brought joy 💭",
+
+    "biggest_lesson_title": "Biggest lesson",
     "biggest_lesson_prompt": "What was the biggest lesson you learned this month?",
-    
-    "most_grateful_title": "Biggest Gratitude",
+
+    "most_grateful_title": "Greatest gratitude",
     "most_grateful_prompt": "What are you most grateful for this month?",
-    
-    "proudest_moment_title": "Proudest Moment",
+
+    "proudest_moment_title": "Proudest moment",
     "proudest_moment_prompt": "What was your proudest moment this month?",
-    
-    "biggest_challenge_title": "Biggest Challenge",
+
+    "biggest_challenge_title": "Biggest challenge",
     "biggest_challenge_prompt": "What was the biggest challenge you faced and how did you overcome it?",
-    
-    "personal_growth_title": "Personal Growth",
+
+    "personal_growth_title": "Personal growth",
     "personal_growth_prompt": "How did you grow as a person this month?",
-    
-    "unexpected_joy_title": "Unexpected Joy",
-    "unexpected_joy_prompt": "What unexpected joy did you discover this month?",
-    
-    "next_month_focus_title": "Next Month's Focus",
+
+    "unexpected_joy_title": "Unexpected joy",
+    "unexpected_joy_prompt": "What unexpected joy did you find this month?",
+
+    "next_month_focus_title": "Next month’s focus",
     "next_month_focus_prompt": "What do you want to focus on next month?",
-    
+
     "hint": "Write your reflection here...",
-    
+
     "save_button": "Save Reflections",
     "saved": "Reflections saved successfully!",
     "save_error": "Error saving reflections."
+  },
 
-    },
+
+  "did_you_know": {
+    "title": "Did You Know?",
+    "default_message": "✨ Curiosities that inspire and surprise!",
+
+    "refresh_more_left": "See more curiosities ({0} remaining)",
+    "refresh_premium_only": "See more ✨",
+    "refresh_come_back_tomorrow": "Come back tomorrow 🌙",
+
+    "premium_required_title": "Exclusive content 💎",
+    "premium_required_text": "Upgrade to see more daily curiosities.",
+
+    "month_msg_1": "✨ January is a fresh start — time to open your heart and get curious about the new!",
+    "month_msg_2": "💫 February brings lightness, color and sweet discoveries.",
+    "month_msg_3": "🌿 March is a time to grow, learn and enjoy what the world has to tell.",
+    "month_msg_4": "🌸 April awakens creativity — get ready for lively curiosities!",
+    "month_msg_5": "🌼 May is sweet and inspiring — perfect to discover something that makes you smile.",
+    "month_msg_6": "🌞 June comes with good energy and fascinating stories waiting for you!",
+    "month_msg_7": "🌻 July is full of surprises — dive into these curiosities and get inspired.",
+    "month_msg_8": "🌺 August invites reflection and the discovery of new and unexpected things.",
+    "month_msg_9": "🍂 September is pure inspiration — small curiosities to help you see the world differently.",
+    "month_msg_10": "🌕 October comes with mystery and magic — perfect to explore the unknown!",
+    "month_msg_11": "🍁 November reminds us: it's never too late to learn something new and be surprised.",
+    "month_msg_12": "🎇 December closes the year with sparkle — curiosities to end with lightness and wonder.",
+
+    "categories": {
+      "Science": "Science",
+      "Astronomy": "Astronomy",
+      "Mythology": "Mythology",
+      "History": "History",
+      "General Curiosity": "General Curiosity",
+      "Pop Culture": "Pop Culture",
+      "Art": "Art",
+      "Psychology": "Psychology",
+      "Literature": "Literature",
+      "Nature": "Nature"
+    
+  }
+},
+  
+
   "lists": {
     "title": "My Lists",
-    "description": "A space to write down what marked your month — books, music, ideas, purchases and special memories. 💖",
+    "description": "A space to record what marked your month — books, music, ideas, shopping and special memories. 💖",
 
     "read": "To read",
-    "write": "To note",
+    "write": "To write",
     "buy": "To buy",
     "listen": "To listen",
     "keep": "To keep",
@@ -428,59 +425,108 @@
     "read": "Reading of the Month",
     "write": "Free Thoughts",
     "buy": "Things I Want",
-    "listen": "Music I Loved",
-    "keep": "Things I Treasure"
+    "listen": "Songs I Loved",
+    "keep": "Things I Keep"
+  },
+
+  "tips": {
+    "page_label": "Tips",
+    "description": "A soft selection of tips to inspire, balance and lighten your month. New reflections every day ✨",
+
+    "category_autocuidado": "Self-care",
+    "category_energia": "Energy",
+    "category_proposito": "Purpose",
+    "category_leveza": "Lightness",
+    "category_reflexao": "Reflection",
+    "category_gratidao": "Gratitude",
+    "category_rotina": "Routine",
+    "category_crescimento": "Growth",
+    "category_confianca": "Confidence",
+    "category_presenca": "Presence",
+    "category_encerramento": "Closure",
+    "category_intuicao": "Intuition",
+
+    "seen_all_today": "You've seen all tips for today. Come back tomorrow 💛",
+
+    "refresh_title": "Come back tomorrow ✨",
+    "refresh_message": "You've already refreshed today’s tips!",
+    "refresh_ok": "OK",
+
+    "refresh_premium_button": "See more tips",
+    "refresh_see_more": "See more tips (__remaining__ remaining)",
+    "refresh_come_back_tomorrow": "Come back tomorrow 🌙",
+
+    "empty": "No tips available right now."
+
+  },
+
+  "calendar": {
+  "page_label": "Calendar and Alerts",
+  "description": "Mark your important moments, reminders and colorful highlights throughout the month.",
+
+  "add_event": "Add event",
+  "edit_event": "Edit event",
+
+  "event_hint": "describe your reminder",
+
+  "color_label": "reminder color",
+
+  "repeat_label": "repeat",
+  "repeat_none": "None",
+  "repeat_daily": "Every day",
+  "repeat_weekly": "Every week",
+  "repeat_yearly": "Every year",
+  "repeat_monthly": "Every month",
+
+  "days_before_label": "how many days before do you want to be notified?",
+  "days_suffix": "days",
+
+  "test_alert": "Test alert (10s)",
+  "test_alert_message": "Your alert will ring in 10 seconds!",
+
+  "delete_event": "Delete alert",
+  "delete_title": "Delete alert?",
+  "delete_message": "Are you sure you want to delete this alert?",
+  "delete_cancel": "Cancel",
+  "delete_confirm": "Delete",
+  "delete_done": "Alert deleted 💔",
+
+  "save_new": "create alert",
+  "save_edit": "save changes",
+  "save_error_empty": "Type something to save.",
+  "save_created": "Your alert was created! 💛",
+  "save_updated": "Your alert was updated ✨",
+
+  "weekdays_short": "S,M,T,W,T,F,S",
+
+  "empty": "No events this month."
+  
+},
+
+
+
+  "notifications": {
+  "page_label": "Notifications",
+  "description": "Your saved reminders and alerts appear here. You can review or clear your notification history anytime.",
+
+  "title": "Notifications",
+  "clear_history_tooltip": "Clear history",
+  
+  "dialog_clear_title": "Clear all notifications?",
+  "dialog_clear_message": "Are you sure you want to remove your entire notification history?",
+  "dialog_cancel": "Cancel",
+  "dialog_confirm_clear": "Clear",
+
+  "empty_state": "You have no saved notifications.\nNew alerts will appear here when they’re triggered."
 
 },
-    "tips": {
-  "page_label": "Tips",
-  "description": "A soft selection of sweet tips to inspire you, bring balance and make your month feel lighter. New reflections every day ✨",
+  "daily_popup": {
+  "default_title": "Today's alert",
+  "subtitle": "You have a scheduled event or reminder for today!",
+  "mark_seen": "Mark as seen",
+  "cancel_alert": "Cancel alert"
+}
 
-  "category_autocuidado": "Self-care",
-  "category_energia": "Energy",
-  "category_proposito": "Purpose",
-  "category_leveza": "Lightness",
-  "category_reflexao": "Reflection",
-  "category_gratidao": "Gratitude",
-  "category_rotina": "Routine",
-  "category_crescimento": "Growth",
-  "category_confianca": "Confidence",
-  "category_presenca": "Presence",
-  "category_encerramento": "Closure",
-  "category_intuicao": "Intuition",
-
-  "seen_all_today": "You've seen all the tips for today. Come back tomorrow 💛",
-
-  "refresh_title": "Come back tomorrow ✨",
-  "refresh_message": "You've already refreshed your suggestions for today!",
-  "refresh_ok": "OK",
-
-  "refresh_premium_button": "See more tips",
-  "refresh_see_more": "See more tips (__remaining__ left)",
-  "refresh_come_back_tomorrow": "Come back tomorrow 🌙",
-
-  "empty": "No tips available right now."
-
-
- },
-  "dates": {
-    "title": "Important Dates",
-    "description": "Save special reminders this month and receive alerts.",
-    "instruction": "Tap a day to add a special reminder ✨",
-    "modal_add_event": "add event",
-    "modal_title_hint": "title",
-    "modal_desc_hint": "description",
-    "modal_save": "create alert",
-    "alert_created": "Your alert was created ✨",
-    "repeat_label": "repeat",
-    "repeat_none": "do not repeat",
-    "repeat_yearly": "every year",
-    "repeat_monthly": "every month",
-    "repeat_weekly": "every week",
-    "repeat_1day": "1 day before",
-    "repeat_3days": "3 days before",
-    "repeat_7days": "7 days before"
-  }
 }
 
 
@@ -488,16 +534,3 @@
   
 
 
-
-
-  
-
-  
-
-
-
-
-
-
-
-  

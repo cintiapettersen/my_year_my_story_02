@@ -37,9 +37,15 @@ import 'package:myyearmystory/widgets/monthly/gratitude_widget.dart';
 import 'package:myyearmystory/screens/profile/profile_screen.dart';
 import 'package:myyearmystory/screens/help/help_screen.dart';
 
+/// 🌎 Alertas de calendarios 
+
+import 'package:myyearmystory/screens/notifications/notifications_page.dart';
+
+
 
 /// 🌎 Chave global de navegação
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -71,6 +77,8 @@ Future<void> main() async {
   // 🔐 Inicia listener global de autenticação (o CORRETO)
   AuthListener.initialize(navigatorKey);
 
+  
+
 await profileService.load();
 
   // 🌎 Define locale inicial do app
@@ -94,6 +102,10 @@ await profileService.load();
       startLocale: initialLocale,
       saveLocale: true,
       child: const MyApp(),
+
+      
+
+
     ),
   );
 }
@@ -120,94 +132,111 @@ class MyApp extends StatelessWidget {
       home: const SplashTransitionScreen(),
 
       // 🌸 Rotas nomeadas
-      routes: {
-        '/splash': (context) => const SplashTransitionScreen(),
-        '/login': (context) => const AuthPageView(),
-        '/dashboard': (context) => _withArgs(
-          context,
-              (args) => DashboardScreen(
-            month: args['month'] ?? DateTime.now().month,
-            year: args['year'] ?? DateTime.now().year,
-          ),
+     routes: {
+  '/splash': (context) => const SplashTransitionScreen(),
+  '/login': (context) => const AuthPageView(),
+
+  '/dashboard': (context) => _withArgs(
+        context,
+        (args) => DashboardScreen(
+          month: args['month'] ?? DateTime.now().month,
+          year: args['year'] ?? DateTime.now().year,
         ),
-        '/profile': (context) => const ProfileScreen(),
-        '/help': (context) => const HelpScreen(),
-        '/premium': (context) => _withArgs(
-          context,
-              (args) => PremiumPage(
-          ),
+      ),
+
+  '/profile': (context) => const ProfileScreen(),
+  '/help': (context) => const HelpScreen(),
+
+  '/premium': (context) => _withArgs(
+        context,
+        (args) => const PremiumPage(),
+      ),
+
+  // ⭐ NOVA ROTA — NOTIFICAÇÕES
+  '/daily_notifications': (context) => const NotificationsPage(),
+
+  // ⭐ WIDGETS MENSAIS
+  '/monthly_goals': (context) => _withArgs(
+        context,
+        (args) => MonthlyGoalsWidget(
+          month: args['month'],
+          year: args['year'],
         ),
-        '/monthly_goals': (context) => _withArgs(
-          context,
-              (args) => MonthlyGoalsWidget(
-            month: args['month'],
-            year: args['year'],
-          ),
+      ),
+
+  '/gratitude': (context) => _withArgs(
+        context,
+        (args) => GratitudeWidget(
+          month: args['month'],
+          year: args['year'],
         ),
-        '/gratitude': (context) => _withArgs(
-          context,
-              (args) => GratitudeWidget(
-            month: args['month'],
-            year: args['year'],
-          ),
+      ),
+
+  '/reflections': (context) => _withArgs(
+        context,
+        (args) => ReflectionsWidget(
+          month: args['month'],
+          year: args['year'],
         ),
-        '/reflections': (context) => _withArgs(
-          context,
-              (args) => ReflectionsWidget(
-            month: args['month'],
-            year: args['year'],
-          ),
+      ),
+
+  '/curiosities': (context) => _withArgs(
+        context,
+        (args) => CuriositiesWidget(
+          month: args['month'],
+          year: args['year'],
         ),
-        '/curiosities': (context) => _withArgs(
-          context,
-              (args) => CuriositiesWidget(
-            month: args['month'],
-            year: args['year'],
-          ),
+      ),
+
+  '/zodiac': (context) => _withArgs(
+        context,
+        (args) => ZodiacWidget(
+          month: args['month'],
+          year: args['year'],
         ),
-        '/zodiac': (context) => _withArgs(
-          context,
-              (args) => ZodiacWidget(
-            month: args['month'],
-            year: args['year'],
-          ),
+      ),
+
+  '/skills_development': (context) => _withArgs(
+        context,
+        (args) => SkillsDevelopmentWidget(
+          month: args['month'],
+          year: args['year'],
         ),
-        '/skills_development': (context) => _withArgs(
-          context,
-              (args) => SkillsDevelopmentWidget(
-            month: args['month'],
-            year: args['year'],
-          ),
+      ),
+
+  '/did_you_know': (context) => _withArgs(
+        context,
+        (args) => DidYouKnowWidget(
+          month: args['month'],
+          year: args['year'],
         ),
-        '/did_you_know': (context) => _withArgs(
-          context,
-              (args) => DidYouKnowWidget(
-            month: args['month'],
-            year: args['year'],
-          ),
+      ),
+
+  '/interview': (context) => _withArgs(
+        context,
+        (args) => InterviewScreen(
+          month: args['month'],
+          year: args['year'],
         ),
-        '/interview': (context) => _withArgs(
-          context,
-              (args) => InterviewScreen(
-            month: args['month'],
-            year: args['year'],
-          ),
+      ),
+
+  '/monthly_lists': (context) => _withArgs(
+        context,
+        (args) => MonthlyListsWidget(
+          month: args['month'],
+          year: args['year'],
         ),
-        '/monthly_lists': (context) => _withArgs(
-          context,
-              (args) => MonthlyListsWidget(
-            month: args['month'],
-            year: args['year'],
-          ),
+      ),
+
+  '/monthly_photo_gallery': (context) => _withArgs(
+        context,
+        (args) => MonthlyPhotoGallery(
+          month: args['month'],
+          year: args['year'],
         ),
-        '/monthly_photo_gallery': (context) => _withArgs(
-          context,
-              (args) => MonthlyPhotoGallery(
-            month: args['month'],
-            year: args['year'],
-          ),
-        ),
-      },
+      ),
+},
+
     );
   }
 

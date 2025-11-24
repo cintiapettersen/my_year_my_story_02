@@ -14,13 +14,21 @@ import 'package:myyearmystory/widgets/monthly/gratitude_widget.dart';
 import 'package:myyearmystory/screens/quiz/interactive_quiz_screen.dart';
 import 'package:myyearmystory/screens/monthly/current_month_screen.dart';
 import '../../widgets/monthly/curiosities_widget.dart';
+import 'package:myyearmystory/widgets/monthly/did_you_know_widget.dart';
+import 'package:myyearmystory/widgets/monthly/dailyluckpage.dart';
+import 'package:myyearmystory/widgets/monthly/calendar_page.dart';
 
 // Menu inferior
 import 'package:myyearmystory/widgets/shared/app_bottom_menu.dart';
 // Menu superior
 import '../../widgets/shared/custom_drawer.dart';
+
 // Transição personalizada
 import 'package:myyearmystory/screens/splash/fade_page_transition.dart';
+
+//notificacoes
+import 'package:myyearmystory/screens/notifications/daily_popup.dart';
+
 
 class DashboardScreen extends StatefulWidget {
   final int month;
@@ -51,15 +59,105 @@ class _DashboardScreenState extends State<DashboardScreen> {
   late int selectedYear;
   bool isLoading = true;
 
-  @override
-  void initState() {
-    super.initState();
-    selectedMonth = widget.month;
-    selectedYear = widget.year;
+@override
+void initState() {
+  super.initState();
+  selectedMonth = widget.month;
+  selectedYear = widget.year;
 
-    _syncUserLanguage();
-    _loadDashboardData();
+  _syncUserLanguage();
+  _loadDashboardData();
+
+  // MOSTRA POPUP AUTOMÁTICO BASEADO EM ALERTAS REAIS
+  Future.delayed(const Duration(seconds: 2), () {
+    if (mounted) {
+      _checkAndShowDailyAlert();
+    }
+  });
+}
+
+
+Future<void> _checkAndShowDailyAlert() async {
+  final user = supabase.auth.currentUser;
+  if (user == null) return;
+
+  final now = DateTime.now();
+  final weekday = DateFormat('EEE').format(now); // "Mon", "Tue" etc.
+
+  // busca TODOS alertas ativos
+  final events = await supabase
+      .from('calendar_events')
+      .select()
+      .eq('user_id', user.id)
+      .eq('remind', true);
+
+  if (events.isEmpty) return;
+
+  for (final event in events) {
+    final type = event['repeat_type'];
+    final daysBefore = event['days_before'] ?? 0;
+    final seenToday = event['seen_today'] ?? false;
+
+    // já visto → não mostra
+    if (seenToday) continue;
+
+    bool shouldShow = false;
+
+    // DATA BASE DO EVENTO
+    final eventDate = DateTime(
+      event['year'],
+      event['month'],
+      event['day'],
+    );
+
+    // aplica dias antes
+    final triggerDate = eventDate.subtract(Duration(days: daysBefore));
+
+    // 🔹 EVENTO NORMAL (sem repetição)
+    if (type == "none") {
+      if (now.year == triggerDate.year &&
+          now.month == triggerDate.month &&
+          now.day == triggerDate.day) {
+        shouldShow = true;
+      }
+    }
+
+    // 🔹 TODOS OS DIAS
+    if (type == "daily") {
+      shouldShow = true;
+    }
+
+    // 🔹 SEMANAL
+    if (type == "weekly") {
+      final repeatDays = List<String>.from(event['repeat_days'] ?? []);
+      if (repeatDays.contains(weekday)) {
+        shouldShow = true;
+      }
+    }
+
+    // 🔹 MENSAL
+    if (type == "monthly") {
+      if (now.day == event['day']) {
+        shouldShow = true;
+      }
+    }
+
+    // 🔹 ANUAL
+    if (type == "yearly") {
+      if (now.day == event['day'] &&
+          now.month == event['month']) {
+        shouldShow = true;
+      }
+    }
+
+    // SE BATER → MOSTRA POPUP
+    if (shouldShow) {
+      DailyPopup.show(context, event);
+      break;
+    }
   }
+}
+
 
   // 🔄 Sincroniza o idioma do app com o Supabase
   Future<void> _syncUserLanguage() async {
@@ -387,6 +485,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       color: const Color(0xFFddbfef),
                       route: '/curiosities',
                     ),
+                    _buildCard(
+                      title: tr('did_you_know.title'),
+                      icon: PhosphorIconsRegular.lightbulb,
+                      color: const Color(0xFFa1a8f0),
+                      route: '/did_you_know',
+                    ),
+                    _buildCard(
+                      title: tr('dailyLuck.discoverLuck'),
+                      icon: PhosphorIconsRegular.clover,
+                      color: const Color(0xFF9CBC68),
+                      route: '/daily_luck',
+                    ),
+                    _buildCard(
+                      title: tr('dates'),
+                      icon: PhosphorIconsRegular.calendarDots,
+                      color: const Color(0xFFFFD4E3),
+                      route: '/calendar_page',
+                    ),
                   ],
                 ),
 
@@ -496,6 +612,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
             break;
           case '/curiosities':
             target = CuriositiesWidget(month: selectedMonth, year: selectedYear);
+            break;
+          case '/did_you_know':
+            target = DidYouKnowWidget(month: selectedMonth, year: selectedYear);
+            break;
+          case '/daily_luck':
+            target = const DailyLuckPage();
+            break;
+          case '/calendar_page':
+            target = CalendarPage(month: selectedMonth, year: selectedYear);
             break;
           default:
             return;

@@ -7,7 +7,6 @@ version: 1.0.0+1
 environment:
   sdk: ">=3.7.0 <4.0.0"
 
-
 dependencies:
   flutter:
     sdk: flutter
@@ -55,6 +54,10 @@ dependencies:
   package_info_plus: 9.0.0
   confetti: ^0.8.0
   flutter_animate: ^4.5.2
+
+  # Notificações
+
+  android_intent_plus: ^4.0.2
 
 dev_dependencies:
   flutter_test:

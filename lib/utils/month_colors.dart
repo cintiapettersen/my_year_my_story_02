@@ -13,7 +13,7 @@ Color getMonthColor(int month) {
     Color.fromARGB(255, 186, 119, 218), // Setembro
     Color(0xFFc48c00), // Outubro
     Color.fromARGB(255, 208, 37, 168), // Novembro
-    Color(0xFF636ee6), // Dezembro
+    Color(0xFF627fdd), // Dezembro
   ];
   return monthColors[month - 1];
 }
