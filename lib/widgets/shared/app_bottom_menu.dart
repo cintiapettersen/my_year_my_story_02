@@ -8,13 +8,20 @@ import 'package:myyearmystory/screens/monthly/current_month_screen.dart';
 import 'package:myyearmystory/screens/diary/diary_screen.dart';
 import 'package:myyearmystory/screens/mood/mood_screen.dart';
 import 'package:myyearmystory/widgets/monthly/dailyluckpage.dart';
- // 🍀 nova tela da sorte
 
 class AppBottomMenu extends StatelessWidget {
   final int currentIndex;
 
-  const AppBottomMenu({super.key, required this.currentIndex});
+  // 👇 ESTA LINHA PRECISA EXISTIR!
+  final Color themeColor;
 
+  const AppBottomMenu({
+    super.key,
+    required this.currentIndex,
+    this.themeColor = const Color(0xFFE32278), // 🌸 cor padrão
+  });
+
+  
   @override
   Widget build(BuildContext context) {
     final DateTime now = DateTime.now();
@@ -23,7 +30,7 @@ class AppBottomMenu extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: themeColor, // 🌈 fundo externo do menu
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(28),
           topRight: Radius.circular(28),
@@ -49,19 +56,21 @@ class AppBottomMenu extends StatelessWidget {
             Widget nextScreen;
             switch (index) {
               case 0:
-                nextScreen = DashboardScreen(month: currentMonth, year: currentYear);
+                nextScreen = DashboardScreen(
+                    month: currentMonth, year: currentYear);
                 break;
               case 1:
                 nextScreen = const CurrentMonthScreen();
                 break;
               case 2:
-                nextScreen = const DailyLuckPage(); // 🍀 substituindo Fotos por Sorte
+                nextScreen = const DailyLuckPage();
                 break;
               case 3:
                 nextScreen = const DiaryScreen();
                 break;
               case 4:
-                nextScreen = MoodScreen(month: currentMonth, year: currentYear);
+                nextScreen =
+                    MoodScreen(month: currentMonth, year: currentYear);
                 break;
               default:
                 return;
@@ -72,22 +81,27 @@ class AppBottomMenu extends StatelessWidget {
               PageRouteBuilder(
                 pageBuilder: (_, __, ___) => nextScreen,
                 transitionDuration: const Duration(milliseconds: 300),
-                transitionsBuilder: (_, anim, __, child) => FadeTransition(
+                transitionsBuilder: (_, anim, __, child) =>
+                    FadeTransition(
                   opacity: anim,
                   child: child,
                 ),
               ),
             );
           },
+
           type: BottomNavigationBarType.fixed,
-          backgroundColor: const Color(0xFFE32278),
-          selectedItemColor: const Color(0xFFFFB500),
+
+          // 🌈 AGORA USA A COR ESCOLHIDA
+          backgroundColor: themeColor,
+
+          selectedItemColor: const Color(0xFFFFB500), // dourado
           unselectedItemColor: Colors.white,
           showUnselectedLabels: true,
           elevation: 0,
+
           items: [
             _buildItem(
-              context,
               index: 0,
               currentIndex: currentIndex,
               icon: PhosphorIconsRegular.house,
@@ -95,7 +109,6 @@ class AppBottomMenu extends StatelessWidget {
               label: 'bottom.home'.tr(),
             ),
             _buildItem(
-              context,
               index: 1,
               currentIndex: currentIndex,
               icon: PhosphorIconsRegular.calendarBlank,
@@ -103,15 +116,13 @@ class AppBottomMenu extends StatelessWidget {
               label: 'bottom.current_month'.tr(),
             ),
             _buildItem(
-              context,
               index: 2,
               currentIndex: currentIndex,
-              icon: PhosphorIconsRegular.clover, // 🍀 novo ícone da sorte
+              icon: PhosphorIconsRegular.clover,
               activeIcon: PhosphorIconsFill.clover,
-              label: 'Sorte do Dia', // pode traduzir depois se quiser
+              label: 'Sorte do Dia',
             ),
             _buildItem(
-              context,
               index: 3,
               currentIndex: currentIndex,
               icon: PhosphorIconsRegular.bookOpenText,
@@ -119,7 +130,6 @@ class AppBottomMenu extends StatelessWidget {
               label: 'bottom.diary'.tr(),
             ),
             _buildItem(
-              context,
               index: 4,
               currentIndex: currentIndex,
               icon: PhosphorIconsRegular.smiley,
@@ -132,14 +142,13 @@ class AppBottomMenu extends StatelessWidget {
     );
   }
 
-  BottomNavigationBarItem _buildItem(
-      BuildContext context, {
-        required int index,
-        required int currentIndex,
-        required IconData icon,
-        required IconData activeIcon,
-        required String label,
-      }) {
+  BottomNavigationBarItem _buildItem({
+    required int index,
+    required int currentIndex,
+    required IconData icon,
+    required IconData activeIcon,
+    required String label,
+  }) {
     final bool isActive = index == currentIndex;
 
     return BottomNavigationBarItem(
@@ -152,8 +161,8 @@ class AppBottomMenu extends StatelessWidget {
           isActive ? activeIcon : icon,
           size: isActive ? 28 : 24,
           color: isActive
-              ? const Color(0xFFFFB500) // dourado do ícone ativo
-              : Colors.white,           // branco inativo
+              ? const Color(0xFFFFB500) // dourado
+              : Colors.white, // branco
         ),
       ),
     );

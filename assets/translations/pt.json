@@ -208,15 +208,25 @@
   "hello_user": "Olá, {user}!",
   "guest_user": "Convidado",
   "track_your_activities": "Acompanhe suas atividades 👋",
+  
+  
   "goals": "Metas",
   "mood": "Humor",
   "diary": "Diário",
   "monthly_quiz": "Quiz do Mês",
   "gratitude": "Gratidão",
   "about_me": "Sobre Mim",
+  "did_you_know": "você sabia",
+  "dailyluckpage": "Mensagem de hoje",
+  "calendar_page": "Calendário & Alertas",
+
+
+
   "daily_inspiration": "Buscando inspiração para hoje...",
   "search_previous_dates": "Buscar datas anteriores",
   "select_date": "Selecione uma data",
+
+
   "month_short": {
     "jan": "Jan",
     "feb": "Fev",
@@ -456,47 +466,80 @@
     "empty": "Nenhuma dica disponível no momento."
   },
 
-"calendar": {
-  "page_label": "Calendário e Alertas",
-  "description": "Marque seus momentos importantes, lembretes e destaques coloridos ao longo do mês.",
 
-  "add_event": "adicionar evento",
-  "edit_event": "editar evento",
+  "calendar": {
+    "page_label": "Calendário e Alertas",
+    "description": "Marque seus momentos importantes, lembretes e destaques coloridos ao longo do mês.",
 
-  "event_hint": "descreva seu lembrete",
+    "add_event": "adicionar evento",
+    "edit_event": "editar evento",
 
-  "color_label": "cor do lembrete",
+    "event_hint": "descreva seu lembrete",
 
-  "repeat_label": "repetição",
-  "repeat_none": "Nenhuma",
-  "repeat_daily": "Todos os dias",
-  "repeat_weekly": "Todas as semanas",
-  "repeat_yearly": "Todos os anos",
-  "repeat_monthly": "Todos os meses",
+    "color_label": "cor do lembrete",
 
-  "days_before_label": "quantos dias antes quer ser avisada?",
-  "days_suffix": "dias",
+    "repeat_label": "repetição",
+    "repeat_none": "Nenhuma",
+    "repeat_daily": "Todos os dias",
+    "repeat_weekly": "Todas as semanas",
+    "repeat_yearly": "Todos os anos",
+    "repeat_monthly": "Todos os meses",
 
-  "test_alert": "Testar alerta (10s)",
-  "test_alert_message": "Seu alerta tocará em 10 segundos!",
+    "weekdays": "Dias da semana",
 
-  "delete_event": "Excluir alerta",
-  "delete_title": "Excluir alerta?",
-  "delete_message": "Tem certeza que deseja apagar este alerta?",
-  "delete_cancel": "Cancelar",
-  "delete_confirm": "Excluir",
-  "delete_done": "Alerta excluído 💔",
+    "days_before_label": "quantos dias antes quer ser avisada?",
+    "days_before": "quantos dias antes quer ser avisada?",
+    "days_suffix": "dias",
 
-  "save_new": "criar alerta",
-  "save_edit": "salvar alterações",
-  "save_error_empty": "Digite algo para salvar.",
-  "save_created": "Seu alerta foi criado! 💛",
-  "save_updated": "Seu alerta foi editado ✨",
+    "test_alert": "Testar alerta (10s)",
+    "test_alert_message": "Seu alerta tocará em 10 segundos!",
 
-  "weekdays_short": "D,S,T,Q,Q,S,S",
+    "delete_event": "Excluir alerta",
+    "delete_button": "Excluir alerta",
+    "delete_title": "Excluir alerta?",
+    "delete_message": "Tem certeza que deseja apagar este alerta?",
+    "delete_cancel": "Cancelar",
+    "delete_confirm": "Excluir",
+    "delete_done": "Alerta excluído 💔",
 
-  "empty": "Nenhum evento neste mês."
-},
+    "save_new": "criar alerta",
+    "save_edit": "salvar alterações",
+    "create": "criar alerta",
+    "save": "salvar alterações",
+
+    "error_empty": "Digite algo para salvar.",
+    "save_created": "Seu alerta foi criado! 💛",
+    "save_updated": "Seu alerta foi editado ✨",
+
+    "empty": "Nenhum evento neste mês."
+  },
+
+  "dates": {
+    "title": "Datas",
+    "description": "Veja seus dias importantes e marque seus melhores momentos."
+  },
+
+  "week": {
+    "short": {
+      "sun": "D",
+      "mon": "S",
+      "tue": "T",
+      "wed": "Q",
+      "thu": "Q",
+      "fri": "S",
+      "sat": "S"
+    },
+
+    "sun": "Dom",
+    "mon": "Seg",
+    "tue": "Ter",
+    "wed": "Qua",
+    "thu": "Qui",
+    "fri": "Sex",
+    "sat": "Sáb"
+  },
+
+
 
   "notifications": {
   "page_label": "Notificações",
@@ -520,9 +563,41 @@
   "subtitle": "Você tem um evento ou lembrete programado para hoje!",
   "mark_seen": "Marcar como visto",
   "cancel_alert": "Cancelar alerta"
+
+},
+  "mood": {
+  "happy": "Feliz",
+  "calm": "Calma",
+  "loving": "Amando",
+  "thoughtful": "Pensativa",
+  "anxious": "Ansiosa",
+  "tired": "Cansada",
+  "sad": "Triste",
+  "irritated": "Irritada",
+  "embarrassed": "Envergonhada",
+  "comforted": "Acolhida",
+  "bored": "Entediada",
+  "excited": "Empolgada", 
+  "overwhelmed": "Sobrecarregada",
+  "proud": "Orgulhosa",
+  "surprised": "Surpresa",
+  "confused": "Confusa",
+
+  "title_today": "Como você está hoje?",
+  "month_summary": "HUMOR DO MÊS",
+  "summary_description": "Como você esteve se sentindo 💛",
+
+  "limit_message": "💖 Você já registrou seu humor! Tente novamente em 1 hora.",
+  "saved": "Seu humor foi registrado 💖",
+
+  "not_authenticated": "Usuário não autenticado 😕"
 }
 
 }
+
+
+
+
 
 
 

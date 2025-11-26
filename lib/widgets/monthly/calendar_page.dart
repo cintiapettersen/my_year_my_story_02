@@ -288,7 +288,7 @@ class _CalendarPageState extends State<CalendarPage> {
                                 const SizedBox(height: 20),
 
                                 Text(
-                                  tr("calendar.color"),
+                                  tr("calendar.color_label"),
                                   style: TextStyle(
                                       color: Colors.white
                                           .withOpacity(0.9)),
@@ -352,7 +352,7 @@ class _CalendarPageState extends State<CalendarPage> {
                                 const SizedBox(height: 22),
 
                                 Text(
-                                  tr("calendar.repeat"),
+                                  tr("calendar.repeat_label"),
                                   style: TextStyle(
                                       color: Colors.white
                                           .withOpacity(0.9)),
@@ -473,7 +473,7 @@ class _CalendarPageState extends State<CalendarPage> {
                                 ],
 
                                 Text(
-                                  tr("calendar.days_before"),
+                                  tr("calendar.days_before_label"),
                                   style: TextStyle(
                                       color: Colors.white
                                           .withOpacity(0.9)),
@@ -572,7 +572,7 @@ class _CalendarPageState extends State<CalendarPage> {
                                       _loadMonthEvents();
                                     },
                                     child: Text(
-                                      tr("calendar.delete_button"),
+                                      "calendar.delete_button".tr(),
                                       style: const TextStyle(
                                         color: Colors.white,
                                         decoration:

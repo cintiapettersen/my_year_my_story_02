@@ -208,15 +208,24 @@
   "hello_user": "Hello, {user}!",
   "guest_user": "Guest",
   "track_your_activities": "Track your activities 👋",
+
+
   "goals": "Goals",
   "mood": "Mood",
   "diary": "Diary",
   "monthly_quiz": "Monthly Quiz",
   "gratitude": "Gratitude",
   "about_me": "About Me",
+  "did_you_know": "Did you know?",
+  "dailyluckpage": "Today's Message",
+  "calendar_page": "Calendar & Reminders",
+
+
   "daily_inspiration": "🌙 Fetching today’s inspiration...",
   "search_previous_dates": "Search previous dates",
   "select_date": "Select a date",
+
+
   "month_short": {
     "jan": "Jan",
     "feb": "Feb",
@@ -460,47 +469,79 @@
 
   },
 
-  "calendar": {
-  "page_label": "Calendar and Alerts",
-  "description": "Mark your important moments, reminders and colorful highlights throughout the month.",
-
-  "add_event": "Add event",
-  "edit_event": "Edit event",
-
-  "event_hint": "describe your reminder",
-
-  "color_label": "reminder color",
-
-  "repeat_label": "repeat",
-  "repeat_none": "None",
-  "repeat_daily": "Every day",
-  "repeat_weekly": "Every week",
-  "repeat_yearly": "Every year",
-  "repeat_monthly": "Every month",
-
-  "days_before_label": "how many days before do you want to be notified?",
-  "days_suffix": "days",
-
-  "test_alert": "Test alert (10s)",
-  "test_alert_message": "Your alert will ring in 10 seconds!",
-
-  "delete_event": "Delete alert",
-  "delete_title": "Delete alert?",
-  "delete_message": "Are you sure you want to delete this alert?",
-  "delete_cancel": "Cancel",
-  "delete_confirm": "Delete",
-  "delete_done": "Alert deleted 💔",
-
-  "save_new": "create alert",
-  "save_edit": "save changes",
-  "save_error_empty": "Type something to save.",
-  "save_created": "Your alert was created! 💛",
-  "save_updated": "Your alert was updated ✨",
-
-  "weekdays_short": "S,M,T,W,T,F,S",
-
-  "empty": "No events this month."
   
+  "calendar": {
+    "page_label": "Calendar & Alerts",
+    "description": "Mark your important moments, reminders and colorful highlights throughout the month.",
+
+    "add_event": "add event",
+    "edit_event": "edit event",
+
+    "event_hint": "describe your reminder",
+
+    "color_label": "reminder color",
+
+    "repeat_label": "repeat",
+    "repeat_none": "None",
+    "repeat_daily": "Every day",
+    "repeat_weekly": "Every week",
+    "repeat_monthly": "Every month",
+    "repeat_yearly": "Every year",
+
+    "weekdays": "Weekdays",
+
+    "days_before_label": "how many days before do you want to be notified?",
+    "days_before": "how many days before?",
+    "days_suffix": "days",
+
+    "test_alert": "Test alert (10s)",
+    "test_alert_message": "Your alert will ring in 10 seconds!",
+
+    "delete_event": "Delete alert",
+    "delete_button": "Delete alert",
+    "delete_title": "Delete alert?",
+    "delete_message": "Are you sure you want to delete this alert?",
+    "delete_cancel": "Cancel",
+    "delete_confirm": "Delete",
+    "delete_done": "Alert deleted 💔",
+
+    "save_new": "create alert",
+    "save_edit": "save changes",
+    "create": "create alert",
+    "save": "save changes",
+
+    "error_empty": "Type something to save.",
+    "save_created": "Your alert was created! 💛",
+    "save_updated": "Your alert was updated ✨",
+
+    "empty": "No events this month."
+  },
+
+  "dates": {
+    "title": "Dates",
+    "description": "Check your important days and highlight your favorite moments."
+  },
+
+  "week": {
+    "short": {
+      "sun": "S",
+      "mon": "M",
+      "tue": "T",
+      "wed": "W",
+      "thu": "T",
+      "fri": "F",
+      "sat": "S"
+    },
+
+    "sun": "Sun",
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat"
+
+
 },
 
 
@@ -525,9 +566,40 @@
   "subtitle": "You have a scheduled event or reminder for today!",
   "mark_seen": "Mark as seen",
   "cancel_alert": "Cancel alert"
+
+},
+
+  "mood": {
+  "happy": "Happy",
+  "calm": "Calm",
+  "loving": "Loving",
+  "thoughtful": "Thoughtful",
+  "anxious": "Anxious",
+  "tired": "Tired",
+  "sad": "Sad",
+  "irritated": "Irritated",
+  "embarrassed": "Embarrassed",
+  "comforted": "Comforted",
+  "bored": "Bored",
+  "excited": "Excited",
+  "overwhelmed": "Overwhelmed",
+  "proud": "Proud",
+  "surprised": "Surprised",
+  "confused": "Confused",
+
+  "title_today": "How are you today?",
+  "month_summary": "MOOD OF THE MONTH",
+  "summary_description": "How you have been feeling 💛",
+
+  "limit_message": "💖 You already registered your mood! Try again in 1 hour.",
+  "saved": "Your mood has been recorded 💖",
+
+  "not_authenticated": "User not authenticated 😕"
 }
 
 }
+
+
 
 
 

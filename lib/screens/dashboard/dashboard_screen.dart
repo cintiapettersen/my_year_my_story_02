@@ -6,7 +6,6 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'dart:ui' as ui;
 
-// Telas principais
 import 'package:myyearmystory/screens/diary/diary_screen.dart';
 import 'package:myyearmystory/screens/mood/mood_screen.dart';
 import 'package:myyearmystory/widgets/monthly/monthly_goals_widget.dart';
@@ -18,17 +17,13 @@ import 'package:myyearmystory/widgets/monthly/did_you_know_widget.dart';
 import 'package:myyearmystory/widgets/monthly/dailyluckpage.dart';
 import 'package:myyearmystory/widgets/monthly/calendar_page.dart';
 
-// Menu inferior
 import 'package:myyearmystory/widgets/shared/app_bottom_menu.dart';
-// Menu superior
 import '../../widgets/shared/custom_drawer.dart';
 
-// Transição personalizada
 import 'package:myyearmystory/screens/splash/fade_page_transition.dart';
-
-//notificacoes
 import 'package:myyearmystory/screens/notifications/daily_popup.dart';
-
+import 'package:myyearmystory/services/daily_quote_service.dart';
+import 'package:myyearmystory/utils/month_colors.dart';
 
 class DashboardScreen extends StatefulWidget {
   final int month;
@@ -53,113 +48,122 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String? humorMaisComum;
   String? quizResultado;
   String? curiosidadeAleatoria;
-  String? dailyQuote;
+
+  Map<String, dynamic>? dailyQuote;
+  final quoteService = DailyQuoteService();
 
   late int selectedMonth;
   late int selectedYear;
   bool isLoading = true;
 
-@override
-void initState() {
-  super.initState();
-  selectedMonth = widget.month;
-  selectedYear = widget.year;
+  // 🎨 Tema dinâmico selecionado
+  Color currentThemeColor = const Color(0xFFE04CB7);
 
-  _syncUserLanguage();
-  _loadDashboardData();
+  // 🎨 Paleta de 5 cores (tons do app — opção 3)
+  final List<Color> themeOptions = const [
+    Color(0xFFe04cb7), // Janeiro
+    Color(0xFF976FD0), // Abril
+    Color(0xFFe2377d), // Novembro
+    Color(0xFF627fdd), // Dezembro
+    Color(0xFFBEB6F2), // Junho
+  ];
 
-  // MOSTRA POPUP AUTOMÁTICO BASEADO EM ALERTAS REAIS
-  Future.delayed(const Duration(seconds: 2), () {
-    if (mounted) {
-      _checkAndShowDailyAlert();
+  @override
+  void initState() {
+    super.initState();
+    selectedMonth = widget.month;
+    selectedYear = widget.year;
+
+    _syncUserLanguage();
+    _loadDashboardData();
+    loadDailyQuote();
+
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        _checkAndShowDailyAlert();
+      }
+    });
+  }
+
+  Future<void> loadDailyQuote() async {
+    try {
+      final quote = await quoteService.getRandomQuote();
+      setState(() {
+        dailyQuote = quote;
+      });
+    } catch (e) {
+      debugPrint('Erro ao carregar frase do dia: $e');
     }
-  });
-}
+  }
 
+  Future<void> _checkAndShowDailyAlert() async {
+    final user = supabase.auth.currentUser;
+    if (user == null) return;
 
-Future<void> _checkAndShowDailyAlert() async {
-  final user = supabase.auth.currentUser;
-  if (user == null) return;
+    final now = DateTime.now();
+    final weekday = DateFormat('EEE').format(now);
 
-  final now = DateTime.now();
-  final weekday = DateFormat('EEE').format(now); // "Mon", "Tue" etc.
+    final events = await supabase
+        .from('calendar_events')
+        .select()
+        .eq('user_id', user.id)
+        .eq('remind', true);
 
-  // busca TODOS alertas ativos
-  final events = await supabase
-      .from('calendar_events')
-      .select()
-      .eq('user_id', user.id)
-      .eq('remind', true);
+    if (events.isEmpty) return;
 
-  if (events.isEmpty) return;
+    for (final event in events) {
+      final type = event['repeat_type'];
+      final daysBefore = event['days_before'] ?? 0;
+      final seenToday = event['seen_today'] ?? false;
 
-  for (final event in events) {
-    final type = event['repeat_type'];
-    final daysBefore = event['days_before'] ?? 0;
-    final seenToday = event['seen_today'] ?? false;
+      if (seenToday) continue;
 
-    // já visto → não mostra
-    if (seenToday) continue;
+      bool shouldShow = false;
 
-    bool shouldShow = false;
+      final eventDate = DateTime(
+        event['year'],
+        event['month'],
+        event['day'],
+      );
 
-    // DATA BASE DO EVENTO
-    final eventDate = DateTime(
-      event['year'],
-      event['month'],
-      event['day'],
-    );
+      final triggerDate =
+          eventDate.subtract(Duration(days: daysBefore));
 
-    // aplica dias antes
-    final triggerDate = eventDate.subtract(Duration(days: daysBefore));
+      if (type == "none") {
+        if (now.year == triggerDate.year &&
+            now.month == triggerDate.month &&
+            now.day == triggerDate.day) {
+          shouldShow = true;
+        }
+      }
 
-    // 🔹 EVENTO NORMAL (sem repetição)
-    if (type == "none") {
-      if (now.year == triggerDate.year &&
-          now.month == triggerDate.month &&
-          now.day == triggerDate.day) {
+      if (type == "daily") shouldShow = true;
+
+      if (type == "weekly") {
+        final repeatDays =
+            List<String>.from(event['repeat_days'] ?? []);
+        if (repeatDays.contains(weekday)) {
+          shouldShow = true;
+        }
+      }
+
+      if (type == "monthly" && now.day == event['day']) {
         shouldShow = true;
       }
-    }
 
-    // 🔹 TODOS OS DIAS
-    if (type == "daily") {
-      shouldShow = true;
-    }
-
-    // 🔹 SEMANAL
-    if (type == "weekly") {
-      final repeatDays = List<String>.from(event['repeat_days'] ?? []);
-      if (repeatDays.contains(weekday)) {
-        shouldShow = true;
-      }
-    }
-
-    // 🔹 MENSAL
-    if (type == "monthly") {
-      if (now.day == event['day']) {
-        shouldShow = true;
-      }
-    }
-
-    // 🔹 ANUAL
-    if (type == "yearly") {
-      if (now.day == event['day'] &&
+      if (type == "yearly" &&
+          now.day == event['day'] &&
           now.month == event['month']) {
         shouldShow = true;
       }
-    }
 
-    // SE BATER → MOSTRA POPUP
-    if (shouldShow) {
-      DailyPopup.show(context, event);
-      break;
+      if (shouldShow) {
+        DailyPopup.show(context, event);
+        break;
+      }
     }
   }
-}
 
-
-  // 🔄 Sincroniza o idioma do app com o Supabase
   Future<void> _syncUserLanguage() async {
     final user = supabase.auth.currentUser;
     if (user == null) return;
@@ -185,10 +189,10 @@ Future<void> _checkAndShowDailyAlert() async {
       debugPrint('Erro ao sincronizar idioma no Dashboard: $e');
     }
   }
-
   Future<void> _loadDashboardData() async {
     if (!mounted) return;
     setState(() => isLoading = true);
+
     final user = supabase.auth.currentUser;
 
     try {
@@ -199,7 +203,6 @@ Future<void> _checkAndShowDailyAlert() async {
         humorMaisComum = '🙂';
         quizResultado = null;
         curiosidadeAleatoria = null;
-        dailyQuote = 'Cada dia é uma nova página na sua história ✨';
         if (!mounted) return;
         setState(() => isLoading = false);
         return;
@@ -226,10 +229,12 @@ Future<void> _checkAndShowDailyAlert() async {
       if (entriesResponse != null) {
         gratidaoCount =
             (entriesResponse['gratitude_entries'] as List?)?.length ?? 0;
+
         final curiosities = entriesResponse['curiosities'];
         if (curiosities != null && curiosities is List && curiosities.isNotEmpty) {
           curiosidadeAleatoria = (curiosities..shuffle()).first;
         }
+
         quizResultado = entriesResponse['quiz_data']?['result'];
       }
 
@@ -244,46 +249,17 @@ Future<void> _checkAndShowDailyAlert() async {
           final mood = m['mood'] ?? '';
           moods[mood] = (moods[mood] ?? 0) + 1;
         }
-        humorMaisComum =
-            moods.entries.reduce((a, b) => a.value > b.value ? a : b).key;
+        humorMaisComum = moods.entries.reduce((a, b) => a.value > b.value ? a : b).key;
       }
 
-      final startOfMonth = DateTime(selectedYear, selectedMonth, 1);
-      final endOfMonth = DateTime(selectedYear, selectedMonth + 1, 0);
-      final diaryResponse = await supabase
-          .from('diary_entries')
-          .select()
-          .eq('user_id', user.id)
-          .gte('entry_date', startOfMonth.toIso8601String())
-          .lte('entry_date', endOfMonth.toIso8601String());
-
-      diarioCount = diaryResponse.length;
-      await _loadDailyQuote();
+      setState(() => isLoading = false);
     } catch (e) {
       debugPrint('Erro ao carregar dashboard: $e');
+      setState(() => isLoading = false);
     }
-
-    if (!mounted) return;
-    setState(() => isLoading = false);
   }
 
-  Future<void> _loadDailyQuote() async {
-  try {
-    final response = await supabase.rpc('random_daily_quote');
-
-    if (response != null) {
-      setState(() {
-        dailyQuote = response;
-      });
-    }
-  } catch (e) {
-    debugPrint('Erro ao carregar frase do dia: $e');
-  }
-}
-
-
-
-  // 🔠 Mês abreviado traduzido
+  // 🔠 Mês abreviado
   String getNomeMesAbreviado(int mes) {
     final mesesAbrev = [
       'dashboard.month_short.jan'.tr(),
@@ -302,32 +278,30 @@ Future<void> _checkAndShowDailyAlert() async {
     return mesesAbrev[mes - 1];
   }
 
-  // 🔠 Mês completo traduzido
+  // 🔠 Mês completo
   String getNomeMesCompleto(int mes) {
-  final meses = [
-    'month.january'.tr(),
-    'month.february'.tr(),
-    'month.march'.tr(),
-    'month.april'.tr(),
-    'month.may'.tr(),
-    'month.june'.tr(),
-    'month.july'.tr(),
-    'month.august'.tr(),
-    'month.september'.tr(),
-    'month.october'.tr(),
-    'month.november'.tr(),
-    'month.december'.tr(),
-  ];
-  return meses[mes - 1];
-}
+    final meses = [
+      'month.january'.tr(),
+      'month.february'.tr(),
+      'month.march'.tr(),
+      'month.april'.tr(),
+      'month.may'.tr(),
+      'month.june'.tr(),
+      'month.july'.tr(),
+      'month.august'.tr(),
+      'month.september'.tr(),
+      'month.october'.tr(),
+      'month.november'.tr(),
+      'month.december'.tr(),
+    ];
+    return meses[mes - 1];
+  }
 
   @override
   Widget build(BuildContext context) {
-
-
-
     final user = supabase.auth.currentUser;
     final userName = user?.userMetadata?['name'] ?? tr('dashboard.guest_user');
+
     final now = DateTime.now();
     final diaSemana = DateFormat.EEEE(context.locale.languageCode).format(now);
     final dataCompleta =
@@ -335,9 +309,12 @@ Future<void> _checkAndShowDailyAlert() async {
 
     return Scaffold(
       backgroundColor: const Color(0xFFFDFDFD),
+
+      // 🟣 Drawer com cor dinâmica
       drawer: const CustomDrawer(),
+      // 🟣 AppBar com cor dinâmica
       appBar: AppBar(
-        backgroundColor: const Color(0xFFe2377d),
+        backgroundColor: currentThemeColor,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
@@ -349,6 +326,7 @@ Future<void> _checkAndShowDailyAlert() async {
         ),
         centerTitle: true,
       ),
+
       body: RefreshIndicator(
         onRefresh: _loadDashboardData,
         child: SingleChildScrollView(
@@ -358,23 +336,85 @@ Future<void> _checkAndShowDailyAlert() async {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  tr('dashboard.hello_user', namedArgs: {'user': userName}),
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF679bd3),
+
+                
+                // 👋 Saudação
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5E1F7),
+                    borderRadius: BorderRadius.circular(28),
+                  ),
+                  child: Text(
+                    tr('dashboard.hello_user', namedArgs: {'user': userName}),
+                    style: GoogleFonts.courierPrime(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black87,
+                      letterSpacing: 1.1,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
+
                 const SizedBox(height: 8),
+
+              
                 Text(
                   dataCompleta,
-                  style: const TextStyle(color: Colors.black54),
+                  style: const TextStyle(
+                    color: Colors.black45,
+                    fontSize: 11,
+                    height: 1.2,
+                  ),
                 ),
+
                 const SizedBox(height: 32),
 
+               // 🎨 Seletor de cores
+                Column(
+                  children: [
+                    const Text(
+                      "Escolha sua cor hoje:",
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Color.fromARGB(231, 0, 0, 0),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
 
-                // 📅 Seleção de mês
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: themeOptions.map((color) {
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() => currentThemeColor = color);
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 6),
+                            width: 22,
+                            height: 22,
+                            decoration: BoxDecoration(
+                              color: color,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: currentThemeColor == color
+                                    ? const Color.fromARGB(255, 221, 219, 221)
+                                    : Colors.transparent,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+
+
+
+                // 📅 Meses
                 GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -387,26 +427,24 @@ Future<void> _checkAndShowDailyAlert() async {
                   ),
                   itemBuilder: (context, index) {
                     final ativo = index + 1 == selectedMonth;
+
                     return GestureDetector(
                       onTap: () {
                         Navigator.of(context).push(
                           fadePageTransition(
                             CurrentMonthScreen(
-                              month: index + 1,
-                              year: selectedYear,
-                            ),
+                                month: index + 1, year: selectedYear),
                           ),
                         );
                       },
                       child: Container(
                         decoration: BoxDecoration(
-                          color: ativo ? const Color(0xFFdbaf35) : Colors.white,
+                          color: ativo ? getMonthColor(index + 1) : Colors.white,
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
+                              color: Colors.black.withOpacity(0.05),
                               blurRadius: 4,
-                              offset: const Offset(0, 2),
                             ),
                           ],
                         ),
@@ -427,125 +465,160 @@ Future<void> _checkAndShowDailyAlert() async {
                 const SizedBox(height: 40),
 
                 _buildDateSearch(context),
-
                 const SizedBox(height: 36),
 
-                Text(
-                  'dashboard.track_your_activities'.tr(),
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF665C8E),
+                // 🏷️ Etiqueta "Seu espaço do mês"
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEEDAF0),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    'Seu espaço do mês!',
+                    style: GoogleFonts.courierPrime(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black87,
+                      letterSpacing: 0.5,
+                    ),
                   ),
                 ),
+
                 const SizedBox(height: 24),
 
                 isLoading
                     ? const CircularProgressIndicator()
                     : GridView.count(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 14,
-                  children: [
-                    _buildCard(
-                      title: tr('dashboard.goals'),
-                      icon: PhosphorIconsRegular.target,
-                      color: const Color(0xFF679BD3),
-                      route: '/monthly_goals',
-                    ),
-                    _buildCard(
-                      title: tr('dashboard.mood'),
-                      icon: PhosphorIconsRegular.smiley,
-                      color: const Color(0xFFF6B8C6),
-                      route: '/mood_summary',
-                    ),
-                    _buildCard(
-                      title: tr('dashboard.diary'),
-                      icon: PhosphorIconsRegular.notebook,
-                      color: const Color(0xFFe2377d),
-                      route: '/diary_entries',
-                    ),
-                    _buildCard(
-                      title: tr('dashboard.monthly_quiz'),
-                      icon: PhosphorIconsRegular.star,
-                      color: const Color(0xFFDBAF35),
-                      route: '/interactive_quiz',
-                    ),
-                    _buildCard(
-                      title: tr('dashboard.gratitude'),
-                      icon: PhosphorIconsRegular.heart,
-                      color: const Color(0xFFCF8EE8),
-                      route: '/gratitude',
-                    ),
-                    _buildCard(
-                      title: tr('dashboard.about_me'),
-                      icon: PhosphorIconsRegular.flower,
-                      color: const Color(0xFFddbfef),
-                      route: '/curiosities',
-                    ),
-                    _buildCard(
-                      title: tr('did_you_know.title'),
-                      icon: PhosphorIconsRegular.lightbulb,
-                      color: const Color(0xFFa1a8f0),
-                      route: '/did_you_know',
-                    ),
-                    _buildCard(
-                      title: tr('dailyLuck.discoverLuck'),
-                      icon: PhosphorIconsRegular.clover,
-                      color: const Color(0xFF9CBC68),
-                      route: '/daily_luck',
-                    ),
-                    _buildCard(
-                      title: tr('dates'),
-                      icon: PhosphorIconsRegular.calendarDots,
-                      color: const Color(0xFFFFD4E3),
-                      route: '/calendar_page',
-                    ),
-                  ],
-                ),
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisCount: 3,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 14,
+                       
+                        children: [
+                            
+  // CARDS
+  _buildCard(
+    title: tr('dashboard.goals'),
+    icon: PhosphorIconsRegular.target,
+    color: const Color(0xFFe04cb7),
+    route: '/monthly_goals',
+  ),
+  _buildCard(
+    title: tr('dashboard.mood'),
+    icon: PhosphorIconsRegular.smiley,
+    color: const Color(0xFFfbcce9),
+    iconColor: const Color(0xFF943482),
+    textColor: const Color(0xFF943482),
+    route: '/mood_summary',
+  ),
+  _buildCard(
+    title: tr('dashboard.diary'),
+    icon: PhosphorIconsRegular.notebook,
+    color: const Color(0xFFa0378c),
+    route: '/diary_entries',
+  ),
+
+  // 2ª linha (agora com itens da última fileira!)
+  _buildCard(
+    title: tr('dashboard.did_you_know.'),
+    icon: PhosphorIconsRegular.lightbulb,
+    color: const Color(0xFFdbaf35),
+    route: '/did_you_know',
+  ),
+  _buildCard(
+    title: tr('dashboard.dailyluckpage'),
+    icon: PhosphorIconsRegular.clover,
+    color: const Color(0xFF74a192),
+    route: '/daily_luck',
+  ),
+  _buildCard(
+    title: tr('dashboard.calendar_page'),
+    icon: PhosphorIconsRegular.calendarDots,
+    color: const Color(0xFF627fdd),
+    route: '/calendar_page',
+  ),
+
+  // 3ª linha (agora com os da antiga fileira do meio!)
+  _buildCard(
+    title: tr('dashboard.monthly_quiz'),
+    icon: PhosphorIconsRegular.star,
+    color: const Color(0xFFdd97b7),
+    route: '/interactive_quiz',
+  ),
+  _buildCard(
+    title: tr('dashboard.gratitude'),
+    icon: PhosphorIconsRegular.heart,
+    color: const Color(0xFFe2377d),
+    route: '/gratitude',
+  ),
+  _buildCard(
+    title: tr('dashboard.about_me'),
+    icon: PhosphorIconsRegular.flower,
+    color: const Color(0xFFcf8ee8),
+    route: '/curiosities',
+  ),
+],
+
+                      ),
 
                 const SizedBox(height: 48),
-                if (dailyQuote != null)
-                  Text(
-                    '"$dailyQuote"',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontStyle: FontStyle.italic,
-                      color: Color(0xFF665C8E),
-                      fontSize: 14,
-                      height: 1.4,
-                    ),
-                  )
-                else
-                  Text(
-                    'dashboard.daily_inspiration'.tr(),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.black45,
-                      fontSize: 13,
+
+                // 🍀 FRASE DO DIA
+                if (dailyQuote != null) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      '"${dailyQuote!['text']}"',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontStyle: FontStyle.italic,
+                        color: Color(0xFF665C8E),
+                        fontSize: 14,
+                        height: 1.4,
+                      ),
                     ),
                   ),
+                ] else ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      'dashboard.daily_inspiration'.tr(),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.black45,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ],
+
                 const SizedBox(height: 60),
               ],
             ),
           ),
         ),
       ),
-      bottomNavigationBar: const AppBottomMenu(currentIndex: 0),
+
+      // 🔻 Menu inferior
+      bottomNavigationBar: AppBottomMenu(
+  currentIndex: 0,
+  themeColor: currentThemeColor, // 🌈 novo
+  ),
     );
   }
 
-  // 🔎 Pesquisa de data — bloqueando anos anteriores ao atual
+  // 🔎 Busca de datas
   Widget _buildDateSearch(BuildContext context) {
     return GestureDetector(
       onTap: () async {
         final currentYear = DateTime.now().year;
-        final DateTime? picked = await showDatePicker(
+
+        final picked = await showDatePicker(
           context: context,
           initialDate: DateTime.now(),
-          firstDate: DateTime(currentYear), // bloqueia anos anteriores
+          firstDate: DateTime(currentYear),
           lastDate: DateTime(currentYear + 2),
           locale: context.locale,
           helpText: tr('dashboard.select_date'),
@@ -554,7 +627,10 @@ Future<void> _checkAndShowDailyAlert() async {
         if (picked != null) {
           Navigator.of(context).push(
             fadePageTransition(
-              CurrentMonthScreen(month: picked.month, year: picked.year),
+              CurrentMonthScreen(
+                month: picked.month,
+                year: picked.year,
+              ),
             ),
           );
         }
@@ -583,16 +659,19 @@ Future<void> _checkAndShowDailyAlert() async {
     );
   }
 
-  // 💠 Cards
+  // 💠 Cards personalizados
   Widget _buildCard({
     required String title,
     required IconData icon,
     required Color color,
     required String route,
+    Color iconColor = Colors.white,
+    Color textColor = Colors.white,
   }) {
     return GestureDetector(
       onTap: () {
         Widget target;
+
         switch (route) {
           case '/monthly_goals':
             target = MonthlyGoalsWidget(month: selectedMonth, year: selectedYear);
@@ -604,8 +683,7 @@ Future<void> _checkAndShowDailyAlert() async {
             target = const DiaryScreen();
             break;
           case '/interactive_quiz':
-            target = InteractiveQuizScreen(
-                month: selectedMonth, year: selectedYear);
+            target = InteractiveQuizScreen(month: selectedMonth, year: selectedYear);
             break;
           case '/gratitude':
             target = GratitudeWidget(month: selectedMonth, year: selectedYear);
@@ -634,7 +712,7 @@ Future<void> _checkAndShowDailyAlert() async {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
+              color: Colors.black.withOpacity(0.08),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -644,15 +722,15 @@ Future<void> _checkAndShowDailyAlert() async {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 32, color: Colors.black54),
+            Icon(icon, size: 32, color: iconColor),
             const SizedBox(height: 6),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Colors.black87,
+                color: textColor,
               ),
             ),
           ],
