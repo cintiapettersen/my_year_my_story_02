@@ -374,8 +374,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                // 🎨 Seletor de cores
                 Column(
                   children: [
-                    const Text(
-                      "Escolha sua cor hoje:",
+                    Text(
+                    tr('dashboard.choose_your_color_today'),
                       style: TextStyle(
                         fontSize: 13,
                         color: Color.fromARGB(231, 0, 0, 0),
@@ -475,7 +475,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
-                    'Seu espaço do mês!',
+                    tr('dashboard.your_month_space'),
                     style: GoogleFonts.courierPrime(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -680,7 +680,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             target = MoodScreen(month: selectedMonth, year: selectedYear);
             break;
           case '/diary_entries':
-            target = const DiaryScreen();
+            target = DiaryScreen();
             break;
           case '/interactive_quiz':
             target = InteractiveQuizScreen(month: selectedMonth, year: selectedYear);

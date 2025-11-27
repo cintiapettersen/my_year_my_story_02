@@ -4,6 +4,7 @@ class DiaryEntryModel {
   final DateTime entryDate;
   final String content;
   final DateTime createdAt;
+  final String? moodIcon; // 👈 NOVO
 
   DiaryEntryModel({
     required this.id,
@@ -11,6 +12,7 @@ class DiaryEntryModel {
     required this.entryDate,
     required this.content,
     required this.createdAt,
+    this.moodIcon, // 👈 NOVO
   });
 
   factory DiaryEntryModel.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,7 @@ class DiaryEntryModel {
       entryDate: DateTime.parse(json['entry_date']),
       content: json['content'],
       createdAt: DateTime.parse(json['created_at']),
+      moodIcon: json['mood_icon'], // 👈 NOVO
     );
   }
 
@@ -30,6 +33,7 @@ class DiaryEntryModel {
       'entry_date': entryDate.toIso8601String(),
       'content': content,
       'created_at': createdAt.toIso8601String(),
+      'mood_icon': moodIcon, // 👈 NOVO
     };
   }
 }

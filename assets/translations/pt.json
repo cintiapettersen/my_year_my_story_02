@@ -221,10 +221,11 @@
   "calendar_page": "Calendário & Alertas",
 
 
-
   "daily_inspiration": "Buscando inspiração para hoje...",
   "search_previous_dates": "Buscar datas anteriores",
   "select_date": "Selecione uma data",
+  "choose_your_color_today": "Escolha sua cor hoje:",
+  "your_month_space": "Seu espaço do mês!",
 
 
   "month_short": {
@@ -565,7 +566,11 @@
   "cancel_alert": "Cancelar alerta"
 
 },
-  "mood": {
+ "mood": {
+  "how_are_you_feeling": "Como você está se sentindo?",
+  "highlight_title": "HUMOR DESTAQUE",
+  "other_marked": "OUTROS HUMORES MAIS MARCADOS",
+
   "happy": "Feliz",
   "calm": "Calma",
   "loving": "Amando",
@@ -577,23 +582,71 @@
   "embarrassed": "Envergonhada",
   "comforted": "Acolhida",
   "bored": "Entediada",
-  "excited": "Empolgada", 
+  "excited": "Empolgada",
   "overwhelmed": "Sobrecarregada",
   "proud": "Orgulhosa",
   "surprised": "Surpresa",
   "confused": "Confusa",
 
-  "title_today": "Como você está hoje?",
-  "month_summary": "HUMOR DO MÊS",
-  "summary_description": "Como você esteve se sentindo 💛",
+  "limit_message": "💗 Você já registrou seu humor! Tente novamente em 1 hora.",
 
-  "limit_message": "💖 Você já registrou seu humor! Tente novamente em 1 hora.",
-  "saved": "Seu humor foi registrado 💖",
+  "motivation_happy": "🌞 Continue espalhando essa luz!",
+  "motivation_calm": "🌿 Aproveite essa paz.",
+  "motivation_loving": "💖 Seu coração tá quentinho hoje.",
+  "motivation_thoughtful": "🌙 Pensar é essencial.",
+  "motivation_anxious": "🌸 Respira… vai ficar tudo bem.",
+  "motivation_tired": "💙 Seu corpo pede descanso.",
+  "motivation_sad": "💜 Você não está sozinha.",
+  "motivation_irritated": "🔥 Respira antes de reagir.",
+  "motivation_embarrassed": "😳 Todo mundo passa por isso.",
+  "motivation_comforted": "🤗 Que delícia esse acolhimento.",
+  "motivation_bored": "😑 Talvez tentar algo novo?",
+  "motivation_excited": "🤩 Amo ver você animada!",
+  "motivation_overwhelmed": "😵 Uma coisa por vez.",
+  "motivation_proud": "😇 E com razão! Continue assim.",
+  "motivation_surprised": "🤯 A vida surpreende mesmo!",
+  "motivation_confused": "😕 Vai clareando aos poucos.",
 
-  "not_authenticated": "Usuário não autenticado 😕"
+  "calendar_description": "Esse é o seu calendário de humor.\nTodo dia você pode registrar como está se sentindo e, aos poucos, as carinhas vão aparecendo aqui.",
+  "calendar_register_hint": "Clique nos botões abaixo e registre seu humor do dia"
+
+  },
+  "diary": {
+  "title": "Meu Diário",
+  "subtitle": "Seu espaço livre para reflexões e pensamentos ✨",
+
+  "empty_title": "Seu diário está vazio",
+  "empty_description": "Comece escrevendo sobre seu dia, seus sentimentos ou algo que queira guardar na memória.",
+  "empty_button": "Escrever Primeira Entrada",
+
+  "new_entry": "Nova Entrada",
+  "hint_text": "Como foi seu dia?",
+  "cancel": "Cancelar",
+  "save": "Salvar",
+
+  "edit": "Editar",
+  "delete": "Excluir",
+  "delete_confirmation": "Tem certeza que deseja excluir esta entrada?",
+  "deleted_success": "Entrada excluída com sucesso 🗑️",
+  "saved_success": "Entrada salva com sucesso! ✨",
+
+  "select_date": "Selecionar data",
+
+  "icons_title": "Como você está se sentindo?",
+  "icon_happy": "Feliz",
+  "icon_sad": "Triste",
+  "icon_lucky": "Sorte",
+  "icon_neutral": "Neutro",
+  "icon_confused": "Confuso"
 }
 
 }
+
+
+
+
+
+
 
 
 

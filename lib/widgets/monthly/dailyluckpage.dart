@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:myyearmystory/widgets/shared/main_scaffold.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
 
@@ -16,23 +18,86 @@ class DailyLuckPage extends StatefulWidget {
 class _DailyLuckPageState extends State<DailyLuckPage> {
   bool _isLoading = false;
   String? _luckMessage;
-  Color _cardColor = const Color(0xFFECC3E2); // 🎨 cor inicial do card
 
   final supabase = SupabaseConfig.client;
-  final List<Color> _cardColors = [
-    const Color(0xFFECC3E2), // rosa suave
-    const Color(0xFFE8D4F2), // lilás
-    const Color(0xFFD1E8F4), // azul clarinho
-    const Color(0xFFE6EACB), // verde pálido
-    const Color(0xFFFFE0CC), // pêssego
+
+  // CONTAGEM DE VIRADAS
+  int _turnsToday = 0;
+  DateTime? _lastTurnDate;
+
+  // Premium (mudar depois quando integrar com o Supabase)
+  bool _isPremium = false;
+
+  // Cor atual do card
+  Color _cardColor = const Color(0xFFDAB6E8);
+
+  // Paleta aleatória para cada virada
+  final List<Color> _cardColors = const [
+    Color(0xFFDAB6E8),
+    Color(0xFFE8D7F2),
+    Color(0xFFECD9F6),
+    Color(0xFFFFE3D3),
+    Color(0xFFD9F2DC),
   ];
 
   @override
   void initState() {
     super.initState();
     _loadDailyLuck();
+    _loadTurnData();
   }
 
+  // ---------------------------------------------------------
+  //  🔮 CARREGA DADOS DIÁRIOS DE VIRADAS DO SHARED PREFERENCES
+  // ---------------------------------------------------------
+  Future<void> _loadTurnData() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final savedDate = prefs.getString("luck_last_turn_date");
+    final savedTurns = prefs.getInt("luck_turns_today") ?? 0;
+
+    if (savedDate != null) {
+      _lastTurnDate = DateTime.parse(savedDate);
+
+      if (!_isSameDay(_lastTurnDate!, DateTime.now())) {
+        _turnsToday = 0;
+      } else {
+        _turnsToday = savedTurns;
+      }
+    }
+  }
+
+  bool _isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+  // ---------------------------------------------------------
+  //  🔮 VERIFICA SE PODE VIRAR
+  // ---------------------------------------------------------
+  Future<bool> _canTurnCard() async {
+    if (_isPremium) {
+      return _turnsToday < 1; // premium = 1 vez por dia
+    } else {
+      return _turnsToday < 3; // free = 3 vezes por dia
+    }
+  }
+
+  // ---------------------------------------------------------
+  //  🔄 REGISTRA VIRADA
+  // ---------------------------------------------------------
+  Future<void> _registerTurn() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    _turnsToday++;
+    _lastTurnDate = DateTime.now();
+
+    await prefs.setString("luck_last_turn_date", _lastTurnDate!.toIso8601String());
+    await prefs.setInt("luck_turns_today", _turnsToday);
+  }
+
+  // ---------------------------------------------------------
+  //  🌟 CARREGAR MENSAGEM DO SUPABASE
+  // ---------------------------------------------------------
   Future<void> _loadDailyLuck() async {
     setState(() {
       _isLoading = true;
@@ -51,14 +116,11 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
           .eq('active', true);
 
       if (response.isNotEmpty) {
-        final randomIndex =
-            DateTime.now().millisecondsSinceEpoch % response.length;
-        final randomColor =
-        _cardColors[Random().nextInt(_cardColors.length)]; // 🌈 cor aleatória
+        final randomIndex = Random().nextInt(response.length);
 
         setState(() {
           _luckMessage = response[randomIndex][columnToUse];
-          _cardColor = randomColor;
+          _cardColor = _cardColors[Random().nextInt(_cardColors.length)];
           _isLoading = false;
         });
       } else {
@@ -68,7 +130,6 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
         });
       }
     } catch (e) {
-      debugPrint('Erro ao carregar sorte: $e');
       setState(() {
         _luckMessage = '☁️ ${"dailyLuck.consultingUniverse".tr()}';
         _isLoading = false;
@@ -76,10 +137,146 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
     }
   }
 
+  // ---------------------------------------------------------
+  //  ❤️ ANIMAÇÃO DOS CORAÇÕES PISCANDO
+  // ---------------------------------------------------------
+  Widget _pulseHeart(Color color, int delay) {
+    return Icon(Icons.favorite, color: color, size: 26)
+        .animate(
+          onPlay: (c) => c.repeat(reverse: true),
+          delay: Duration(milliseconds: delay),
+        )
+        .scale(begin: const Offset(0.8, 0.8), end: const Offset(1.2, 1.2))
+        .fadeIn();
+  }
+
+  // ---------------------------------------------------------
+  //  📦 CARD DE LOADING (CORAÇÕES PISCANDO)
+  // ---------------------------------------------------------
+  Widget _buildLoadingCard() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _pulseHeart(const Color(0xFFA84ABF), 0),
+            const SizedBox(width: 12),
+            _pulseHeart(const Color(0xFFD4BA33), 150),
+            const SizedBox(width: 12),
+            _pulseHeart(const Color(0xFFC27FDB), 300),
+          ],
+        ),
+        const SizedBox(height: 20),
+        Text(
+          "Consultando o universo... ✨",
+          style: GoogleFonts.robotoMono(
+            fontSize: 14,
+            color: Colors.black54,
+          ),
+        ),
+      ]
+    );
+  }
+
+  // ---------------------------------------------------------
+  //  💌 CARD DA MENSAGEM
+  // ---------------------------------------------------------
+  Widget _buildMessageCard() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          DateFormat("dd, MMM yyyy").format(DateTime.now()).toUpperCase(),
+          style: GoogleFonts.robotoMono(
+            fontSize: 16,
+            color: Colors.black87,
+            letterSpacing: 2,
+          ),
+        ),
+
+        const SizedBox(height: 22),
+
+        Column(
+          children: const [
+          Icon(Icons.favorite, size: 22, color: Color(0xFFD4BA33)),
+          SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.favorite, size: 22, color: Color(0xFFA84ABF)),
+              SizedBox(width: 10),
+              Icon(Icons.favorite, size: 20, color: Color(0xFFC27FDB)),
+            ],
+          ),
+        ],
+        ),
+
+        const SizedBox(height: 22),
+
+        Text(
+          _luckMessage ?? "",
+          textAlign: TextAlign.center,
+          style: GoogleFonts.dmSerifDisplay(
+            fontSize: 20,
+            height: 1.6,
+            color: const Color.fromARGB(221, 76, 30, 81),
+          ),
+        ),
+
+        const SizedBox(height: 28),
+
+        // 🔄 BOTÃO DE VIRAR
+        TextButton.icon(
+          onPressed: () async {
+            final canTurn = await _canTurnCard();
+
+            if (!canTurn) {
+              showDialog(
+                context: context,
+                builder: (_) => AlertDialog(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  title: Text(
+                    "Limite diário atingido 💜",
+                    style: GoogleFonts.dmSerifDisplay(fontSize: 22),
+                  ),
+                  content: Text(
+                    _isPremium
+                        ? "Você já virou sua carta hoje!"
+                        : "Você já virou 3 vezes hoje.\n\nQuer liberar viradas ilimitadas? 💫",
+                    style: GoogleFonts.robotoMono(fontSize: 14),
+                  ),
+                ),
+              );
+              return;
+            }
+
+            setState(() => _isLoading = true);
+
+            await _loadDailyLuck();
+            await _registerTurn();
+          },
+          icon: const Icon(Icons.refresh, color: Color(0xFFA84ABF)),
+          label: Text(
+            "Virar novamente",
+            style: GoogleFonts.robotoMono(
+              color: Colors.black87,
+              fontSize: 14,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ---------------------------------------------------------
+  //  🌟 UI COMPLETA
+  // ---------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return MainScaffold(
-      currentIndex: 2, // 🍀 menu Sorte do Dia
+      currentIndex: 2,
       title: "My Year, My Story",
       body: Stack(
         children: [
@@ -87,161 +284,107 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
 
           Column(
             children: [
-              // 💜 Cabeçalho
+              // 🌙 HEADER GIGANTE CURVADO
               Container(
                 width: double.infinity,
-                padding:
-                const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-                margin: const EdgeInsets.only(bottom: 4), // 👈 aproxima do card
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.03),
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(24),
-                    bottomRight: Radius.circular(24),
+                padding: const EdgeInsets.only(top: 45, bottom: 40),
+                decoration: const BoxDecoration(
+                  color: Color.fromARGB(255, 241, 215, 242),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(120),
+                    bottomRight: Radius.circular(120),
                   ),
                 ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      'dailyLuck.discoverLuck'.tr(),
-                      style: GoogleFonts.poppins(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFFD1186C),
-                        letterSpacing: 0.1,
+                    const Icon(Icons.favorite,
+                        color: Color(0xFFA84ABF), size: 35),
+                    const SizedBox(height: 8),
+
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8, horizontal: 22),
+                      decoration: const BoxDecoration(
+                        color: Color.fromARGB(255, 235, 203, 236),
+                        borderRadius: BorderRadius.all(Radius.circular(14)),
+                      ),
+                      child: Text(
+                        "MENSAGEM DO DIA",
+                        style: GoogleFonts.robotoMono(
+                          fontSize: 18,
+                          letterSpacing: 1.4,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 6),
+
+                    const SizedBox(height: 20),
+
                     Text(
-                      'dailyLuck.comeBackTomorrow'.tr(),
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        color: const Color(0xFF1B1F25),
-                        height: 1.3,
-                      ),
+                      "TODO DIA UMA MENSAGEM NOVA PRA\nVOCÊ SE INSPIRAR",
                       textAlign: TextAlign.center,
+                      style: GoogleFonts.robotoMono(
+                        fontSize: 12,
+                        height: 1.4,
+                        color: Colors.black87,
+                      ),
                     ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 12), // 💫 novo espaçamento controlado até o card
+              const SizedBox(height: 28),
 
-              // 🌙 Conteúdo principal
               Expanded(
-                child: Center(
-                  child: _isLoading
-                      ? Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(
-                          3,
-                              (i) => Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 5.0),
-                            child: Icon(
-                              Icons.auto_awesome,
-                              color: const Color(0xFFE1BA22),
-                              size: 30 + (i * 5),
-                            )
-                                .animate(
-                              delay: Duration(milliseconds: i * 200),
-                              onPlay: (controller) =>
-                                  controller.repeat(reverse: true),
-                            )
-                                .scale(
-                                begin: const Offset(0.8, 0.8),
-                                end: const Offset(1.3, 1.3))
-                                .fadeIn(),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 28.0),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 600),
+                    padding: const EdgeInsets.all(32),
+                    decoration: BoxDecoration(
+                      color: _cardColor,
+                      borderRadius: BorderRadius.circular(40),
+                      boxShadow: [
+                        BoxShadow(
+                          color: _cardColor.withOpacity(0.30),
+                          blurRadius: 22,
+                          offset: const Offset(0, 12),
+                        ),
+                      ],
+                    ),
+                    child: AnimatedSwitcher(
+                      duration: 600.ms,
+                      transitionBuilder: (child, animation) {
+                        return ScaleTransition(
+                          scale: Tween(begin: 0.0, end: 1.0).animate(
+                            CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeOutBack,
+                            ),
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        'dailyLuck.consultingUniverse'.tr(),
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
+                          child: child,
+                        );
+                      },
+                      child:
+                          _isLoading ? _buildLoadingCard() : _buildMessageCard(),
+                    ),
                   )
-                      : Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 28.0),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 600),
-                      curve: Curves.easeInOut,
-                      padding: const EdgeInsets.all(28),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: _cardColor, // 🌈 cor dinâmica do card
-                        boxShadow: [
-                          BoxShadow(
-                            color: (_cardColor ?? const Color(0xFFECC3E2)).withOpacity(0.25),
-
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.auto_awesome,
-                              size: 40, color: Color(0xFFB83FA9))
-                              .animate()
-                              .scale(
-                              duration: 1600.ms,
-                              begin: const Offset(0.9, 0.9),
-                              end: const Offset(1.1, 1.1))
-                              .fadeIn(),
-
-                          const SizedBox(height: 20),
-
-                          Text(
-                            _luckMessage ?? '',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.poppins(
-                              fontSize: 17,
-                              fontStyle: FontStyle.italic,
-                              fontWeight: FontWeight.w400,
-                              color: const Color(0xFF151515),
-                              height: 1.6,
-                            ),
-                          ).animate().fadeIn(duration: 1000.ms),
-
-                          const SizedBox(height: 32),
-
-                          ElevatedButton.icon(
-                            onPressed: _loadDailyLuck,
-                            icon: const Icon(Icons.refresh,
-                                color: Colors.white, size: 18),
-                            label: Text(
-                              'dailyLuck.drawAnother'.tr(),
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF407CC1),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 22, vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                            ),
-                          ).animate().fadeIn(delay: 800.ms),
-                        ],
-                      ),
-                    ).animate().fadeIn(duration: 900.ms).scale(
-                        begin: const Offset(0.97, 0.97),
-                        end: const Offset(1, 1)),
-                  ),
+                      .animate()
+                      .moveY(
+                          begin: 60,
+                          end: 0,
+                          duration: 700.ms,
+                          curve: Curves.easeOutCubic)
+                      .fadeIn(duration: 600.ms),
                 ),
+              ),
+
+              Container(
+                height: 1,
+                color: Colors.black,
+                margin: const EdgeInsets.symmetric(
+                    horizontal: 40, vertical: 30),
               ),
             ],
           ),

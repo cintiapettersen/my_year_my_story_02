@@ -7,96 +7,107 @@ class DiaryService {
   /// Lista todas as entradas de diário do usuário
   static Future<List<DiaryEntryModel>> getEntries(String userId) async {
     try {
-      print('DiaryService: Fetching entries for user $userId');
+      print('DiaryService → Fetching entries for user $userId');
+
       final response = await _supabase
           .from('diary_entries')
           .select()
           .eq('user_id', userId)
           .order('entry_date', ascending: false);
 
-      print('DiaryService: Raw response: $response');
+      print('DiaryService → Raw response: $response');
+
       final entries = (response as List)
           .map((entry) => DiaryEntryModel.fromJson(entry))
           .toList();
-      print('DiaryService: Parsed ${entries.length} entries');
+
+      print('DiaryService → Parsed ${entries.length} entries');
       return entries;
     } catch (e) {
-      print('DiaryService: Error fetching diary entries: $e');
+      print('DiaryService → Error fetching diary entries: $e');
       rethrow;
     }
   }
 
   /// Cria uma nova entrada de diário
+  /// Agora aceita opcionalmente `moodIcon`
   static Future<DiaryEntryModel> createEntry(
     String userId,
     String content,
-    DateTime entryDate,
-  ) async {
+    DateTime entryDate, {
+    String? moodIcon,
+  }) async {
     try {
-      print('DiaryService: Creating entry for user $userId');
-      print('DiaryService: Content: ${content.substring(0, content.length > 100 ? 100 : content.length)}...');
-      print('DiaryService: Date: $entryDate');
-      
+      print('DiaryService → Creating entry (user: $userId, mood: $moodIcon)');
+
       final response = await _supabase
           .from('diary_entries')
           .insert({
             'user_id': userId,
             'entry_date': entryDate.toIso8601String(),
             'content': content,
+            'mood_icon': moodIcon, // 👈 NOVO
           })
           .select()
           .single();
 
-      print('DiaryService: Entry created successfully: ${response['id']}');
+      print('DiaryService → Entry created: ${response['id']}');
+
       return DiaryEntryModel.fromJson(response);
     } catch (e) {
-      print('DiaryService: Error creating diary entry: $e');
+      print('DiaryService → Error creating entry: $e');
       rethrow;
     }
   }
 
-  /// Atualiza uma entrada de diário existente
+  /// Atualiza entrada (agora também permite atualizar moodIcon)
   static Future<DiaryEntryModel> updateEntry(
     String entryId,
     String content,
-    DateTime entryDate,
-  ) async {
+    DateTime entryDate, {
+    String? moodIcon,
+  }) async {
     try {
-      print('DiaryService: Updating entry $entryId');
+      print('DiaryService → Updating entry $entryId');
+
       final response = await _supabase
           .from('diary_entries')
           .update({
             'entry_date': entryDate.toIso8601String(),
             'content': content,
+            'mood_icon': moodIcon, // 👈 NOVO
           })
           .eq('id', entryId)
           .select()
           .single();
 
-      print('DiaryService: Entry updated successfully');
+      print('DiaryService → Entry updated successfully');
+
       return DiaryEntryModel.fromJson(response);
     } catch (e) {
-      print('DiaryService: Error updating diary entry: $e');
+      print('DiaryService → Error updating entry: $e');
       rethrow;
     }
   }
 
-  /// Exclui uma entrada de diário
+  /// Deleta entrada
   static Future<void> deleteEntry(String entryId) async {
     try {
-      print('DiaryService: Deleting entry $entryId');
+      print('DiaryService → Deleting entry $entryId');
+
       await _supabase
           .from('diary_entries')
           .delete()
           .eq('id', entryId);
-      print('DiaryService: Entry deleted successfully');
+
+      print('DiaryService → Entry deleted');
     } catch (e) {
-      print('DiaryService: Error deleting diary entry: $e');
+      print('DiaryService → Error deleting entry: $e');
       rethrow;
     }
   }
 
-  /// Lista entradas de diário por período
+  /// Lista entradas por intervalo de datas
   static Future<List<DiaryEntryModel>> getEntriesByDateRange(
     String userId,
     DateTime startDate,
@@ -115,7 +126,7 @@ class DiaryService {
           .map((entry) => DiaryEntryModel.fromJson(entry))
           .toList();
     } catch (e) {
-      print('Error fetching diary entries by date range: $e');
+      print('DiaryService → Error fetching entries by date: $e');
       rethrow;
     }
   }

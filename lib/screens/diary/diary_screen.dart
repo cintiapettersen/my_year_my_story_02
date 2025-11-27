@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:myyearmystory/models/diary_entry.dart';
 import 'package:myyearmystory/services/diary_service.dart';
@@ -6,9 +7,7 @@ import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/widgets/shared/show_login_prompt.dart';
 import 'package:myyearmystory/widgets/shared/main_scaffold.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-
-
+import 'package:easy_localization/easy_localization.dart';
 
 class DiaryScreen extends StatefulWidget {
   const DiaryScreen({super.key});
@@ -25,6 +24,21 @@ class _DiaryScreenState extends State<DiaryScreen> {
   DateTime _selectedDate = DateTime.now();
 
   final int _maxFreeEntries = 3;
+
+  // NOVO: ícone selecionado para cada entrada
+  final List<String> moodIcons = ["😊", "😢", "🍀", "😐", "🤯"];
+  String _selectedIcon = "😊";
+
+  // 5 temas da paleta
+  final List<Color> diaryUserThemes = [
+    const Color(0xFFE04CB7),
+    const Color(0xFFA1A8F0),
+    const Color(0xFFDBAF35),
+    const Color(0xFF7654A3),
+    const Color(0xFFC79FE2),
+  ];
+
+  Color _userThemeColor = const Color(0xFFE04CB7);
 
   @override
   void initState() {
@@ -83,13 +97,11 @@ class _DiaryScreenState extends State<DiaryScreen> {
   Future<void> _handleNewEntry() async {
     final user = SupabaseConfig.client.auth.currentUser;
 
-    // 🔒 Convidado → mostrar popup de login
     if (user == null) {
       showLoginPrompt(context);
       return;
     }
 
-    // 💎 Usuário free → limitar 3 entradas
     if (!_isPremiumUser && _entries.length >= _maxFreeEntries) {
       showPremiumPopup(context);
       return;
@@ -101,109 +113,123 @@ class _DiaryScreenState extends State<DiaryScreen> {
   @override
   Widget build(BuildContext context) {
     return MainScaffold(
-      currentIndex: 3, // índice do menu inferior (ajuste se for outro)
+      currentIndex: 3,
       body: Stack(
         children: [
-          Container(color: const Color(0xFFFAE5ED),),
+          // 🌈 FUNDO — apenas a cor base
+          Container(color: _userThemeColor.withOpacity(0.10)),
 
           Column(
             children: [
-              // 🌸 Cabeçalho no estilo mensal
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.08),
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(24),
-                    bottomRight: Radius.circular(24),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.01),
-                      offset: const Offset(0, 2),
-                      blurRadius: 3,
-                    ),
-                  ],
+              // 🌸 Banner com efeito vidro
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(24),
+                  bottomRight: Radius.circular(24),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      'assets/imagens/logo_512px.png',
-                      height: 56,
-                      fit: BoxFit.contain,
-                    ),
-                    const SizedBox(height: 12),
-                     Text(
-                      'Diário Pessoal',
-                      style: GoogleFonts.poppins(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFFD1186C),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.white.withOpacity(0.35),
+                          Colors.white.withOpacity(0.10),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Seu espaço livre para reflexões e pensamentos ✨',
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: const Color(0xFF1B1F25),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    if (_entries.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Text(
-                          '${_entries.length} ${_entries.length == 1 ? 'entrada' : 'entradas'} registradas',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Theme.of(context).primaryColor,
-                            fontWeight: FontWeight.w500,
-                          ),
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Colors.white.withOpacity(0.3),
+                          width: 1.2,
                         ),
                       ),
-                  ],
+                    ),
+                    child: Column(
+                      children: [
+                        Image.asset(
+                          'assets/imagens/logo_512px.png',
+                          height: 56,
+                          fit: BoxFit.contain,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Diário Pessoal'.tr(),
+                          style: GoogleFonts.courierPrime(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Seu espaço livre para reflexões e pensamentos ✨'.tr(),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 15),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // 🎨 Seletor de cores
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: diaryUserThemes.map((color) {
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() => _userThemeColor = color);
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(horizontal: 6),
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  color: color,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.8),
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
 
-
-              // 🌿 Conteúdo principal
               Expanded(
                 child: _isLoading
                     ? _buildLoadingState()
                     : _entries.isEmpty
-                    ? _buildEmptyState()
-                    : _buildEntriesList(),
+                        ? _buildEmptyState()
+                        : _buildEntriesList(),
               ),
             ],
           ),
 
-          // 🪄 Botão flutuante
           Positioned(
             bottom: 20,
             right: 20,
             child: FloatingActionButton(
               onPressed: _handleNewEntry,
-              backgroundColor: Theme.of(context).primaryColor,
-              child: const Icon(Icons.add_rounded, color: const Color(
-                  0xFFEFE2E8), size: 28),
+              backgroundColor: _userThemeColor,
+              child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
             ),
           ),
         ],
       ),
     );
   }
+  // -----------------------------
+  //      ESTADOS DA TELA
+  // -----------------------------
 
-  // 🌀 Estado de carregamento
-  Widget _buildLoadingState() {
-    return const Center(
-      child: CircularProgressIndicator(),
-    );
-  }
+  Widget _buildLoadingState() => const Center(child: CircularProgressIndicator());
 
-  // 📖 Estado vazio
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
@@ -211,39 +237,31 @@ class _DiaryScreenState extends State<DiaryScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-
             const SizedBox(height: 20),
-            const Text(
-              'Seu diário está vazio',
+            Text(
+              'Seu diário está vazio'.tr(),
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF1C6097),
+                color: _userThemeColor,
               ),
             ),
             const SizedBox(height: 10),
             Text(
-              'Comece escrevendo sobre seu dia, seus sentimentos ou algo que queira guardar na memória.',
-              style: TextStyle(
-                fontSize: 15,
-                color: const Color(0xFF1C1719),
-                height: 1.4,
-              ),
+              'Comece escrevendo sobre seu dia, seus sentimentos ou algo que queira guardar na memória.'
+                  .tr(),
               textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 15, height: 1.4),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: _handleNewEntry,
               icon: const Icon(Icons.edit_rounded),
-              label: const Text('Escrever Primeira Entrada'),
+              label: Text('Escrever Primeira Entrada'.tr()),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
+                backgroundColor: _userThemeColor,
                 foregroundColor: Colors.white,
-                padding:
-                const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
             ),
           ],
@@ -252,10 +270,10 @@ class _DiaryScreenState extends State<DiaryScreen> {
     );
   }
 
-  // 📜 Lista de entradas
   Widget _buildEntriesList() {
     return RefreshIndicator(
       onRefresh: _loadEntries,
+      color: _userThemeColor,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: _entries.length,
@@ -266,10 +284,15 @@ class _DiaryScreenState extends State<DiaryScreen> {
     );
   }
 
+  // -----------------------------
+  //      CARD DE ENTRADA
+  // -----------------------------
+
   Widget _buildEntryCard(DiaryEntryModel entry) {
     return Card(
+      color: Colors.white, // ❗ cartões sempre brancos
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -279,38 +302,33 @@ class _DiaryScreenState extends State<DiaryScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  _formatDate(entry.entryDate),
-                  style: TextStyle(
-                    color: Theme.of(context).primaryColor,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
+                // TAG DE DATA com paleta fixa
+                _buildDateTag(entry),
+
                 PopupMenuButton<String>(
                   onSelected: (value) {
                     if (value == 'edit') _editEntry(entry);
                     if (value == 'delete') _deleteEntry(entry);
                   },
                   itemBuilder: (context) => [
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'edit',
                       child: Row(
                         children: [
-                          Icon(Icons.edit, size: 16),
-                          SizedBox(width: 8),
-                          Text('Editar'),
+                          const Icon(Icons.edit, size: 16),
+                          const SizedBox(width: 8),
+                          Text('Editar'.tr()),
                         ],
                       ),
                     ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'delete',
                       child: Row(
                         children: [
-                          Icon(Icons.delete, color: Colors.red, size: 16),
-                          SizedBox(width: 8),
-                          Text('Excluir',
-                              style: TextStyle(color: Colors.red)),
+                          const Icon(Icons.delete, color: Colors.red, size: 16),
+                          const SizedBox(width: 8),
+                          Text('Excluir'.tr(),
+                              style: const TextStyle(color: Colors.red)),
                         ],
                       ),
                     ),
@@ -318,20 +336,20 @@ class _DiaryScreenState extends State<DiaryScreen> {
                 ),
               ],
             ),
+
             const SizedBox(height: 12),
+
+            // CONTEÚDO
             Text(
               entry.content,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.black87,
-                height: 1.5,
-              ),
+              style: const TextStyle(fontSize: 16, height: 1.5),
             ),
+
             const SizedBox(height: 12),
+
             Row(
               children: [
-                Icon(Icons.access_time,
-                    size: 14, color: Colors.grey[500]),
+                Icon(Icons.access_time, size: 14, color: Colors.grey[500]),
                 const SizedBox(width: 4),
                 Text(
                   _formatTime(entry.entryDate),
@@ -345,9 +363,57 @@ class _DiaryScreenState extends State<DiaryScreen> {
     );
   }
 
-  // ✏️ Novo registro
+  // TAG COLORIDA DE DATA COM ÍCONE
+  Widget _buildDateTag(DiaryEntryModel entry) {
+    // 10 cores fixas para data
+    final List<Color> palette = [
+      const Color(0xFFE04CB7),
+      const Color(0xFFA1A8F0),
+      const Color(0xFFDBAF35),
+      const Color(0xFF7654A3),
+      const Color(0xFFC79FE2),
+      const Color(0xFF6DD3CE),
+      const Color(0xFFFAA275),
+      const Color(0xFF9DB4C0),
+      const Color(0xFFFFC9DE),
+      const Color(0xFF88A0E5),
+    ];
+
+    final index = entry.id.hashCode.abs() % palette.length;
+    final color = palette[index];
+    final icon = entry.moodIcon ?? "😊";
+
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withOpacity(0.6), width: 1),
+      ),
+      child: Row(
+        children: [
+          Text(icon, style: const TextStyle(fontSize: 18)),
+          const SizedBox(width: 6),
+          Text(
+            _formatDate(entry.entryDate),
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // -----------------------------
+  //   MODAL: NOVA ENTRADA
+  // -----------------------------
+
   void _showNewEntryDialog() {
     _entryController.clear();
+    _selectedIcon = "😊";
     _selectedDate = DateTime.now();
 
     showModalBottomSheet(
@@ -372,23 +438,46 @@ class _DiaryScreenState extends State<DiaryScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.auto_stories_rounded,
-              color: Theme.of(context).primaryColor, size: 36),
+          Icon(Icons.auto_stories_rounded, color: _userThemeColor, size: 36),
           const SizedBox(height: 12),
-          const Text(
-            'Nova Entrada',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
+          Text('Nova Entrada'.tr(),
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 22),
+
+          // ÍCONES SELECIONÁVEIS 🌟
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: moodIcons.map((icon) {
+              final isSelected = icon == _selectedIcon;
+              return GestureDetector(
+                onTap: () {
+                  setState(() => _selectedIcon = icon);
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? _userThemeColor.withOpacity(0.25)
+                        : Colors.grey[200],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected ? _userThemeColor : Colors.transparent,
+                      width: 2,
+                    ),
+                  ),
+                  child: Text(icon, style: const TextStyle(fontSize: 26)),
+                ),
+              );
+            }).toList(),
           ),
-          const SizedBox(height: 16),
+
+          const SizedBox(height: 20),
+
           GestureDetector(
-            onTap: _selectDate,
+            onTap: _selectDateFromEdit,
             child: Container(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: const Color(0xFFF9F6F3),
                 borderRadius: BorderRadius.circular(12),
@@ -396,13 +485,12 @@ class _DiaryScreenState extends State<DiaryScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.calendar_today,
-                      size: 16, color: Theme.of(context).primaryColor),
+                  Icon(Icons.calendar_today, size: 16, color: _userThemeColor),
                   const SizedBox(width: 8),
                   Text(
                     _formatDate(_selectedDate),
                     style: TextStyle(
-                      color: Theme.of(context).primaryColor,
+                      color: _userThemeColor,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -410,31 +498,30 @@ class _DiaryScreenState extends State<DiaryScreen> {
               ),
             ),
           ),
+
           const SizedBox(height: 20),
+
           TextField(
             controller: _entryController,
             maxLines: 8,
             decoration: InputDecoration(
-              hintText: 'Como foi seu dia?',
+              hintText: 'Como foi seu dia?'.tr(),
               filled: true,
               fillColor: Colors.grey[50],
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey[300]!),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Theme.of(context).primaryColor),
               ),
             ),
           ),
+
           const SizedBox(height: 20),
+
           Row(
             children: [
               Expanded(
                 child: TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancelar'),
+                  child: Text('Cancelar'.tr()),
                 ),
               ),
               const SizedBox(width: 16),
@@ -445,13 +532,10 @@ class _DiaryScreenState extends State<DiaryScreen> {
                     if (mounted) Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
+                    backgroundColor: _userThemeColor,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
                   ),
-                  child: const Text('Salvar'),
+                  child: Text('Salvar'.tr()),
                 ),
               ),
             ],
@@ -461,15 +545,26 @@ class _DiaryScreenState extends State<DiaryScreen> {
     );
   }
 
-  void _selectDate() async {
-    final date = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
-    );
-    if (date != null) setState(() => _selectedDate = date);
+  
+// -----------------------------
+//   SELETOR DE DATA (NOVO)
+// -----------------------------
+void _selectDateFromEdit() async {
+  final date = await showDatePicker(
+    context: context,
+    initialDate: _selectedDate,
+    firstDate: DateTime(2020),
+    lastDate: DateTime.now(),
+  );
+
+  if (date != null) {
+    setState(() => _selectedDate = date);
   }
+}
+
+  // -----------------------------
+  //      SALVAR ENTRADA
+  // -----------------------------
 
   Future<void> _saveEntry() async {
     final content = _entryController.text.trim();
@@ -482,11 +577,18 @@ class _DiaryScreenState extends State<DiaryScreen> {
     }
 
     try {
-      await DiaryService.createEntry(userId, content, _selectedDate);
+      await DiaryService.createEntry(
+        userId,
+        content,
+        _selectedDate,
+        moodIcon: _selectedIcon, // SALVA O ÍCONE!
+      );
+
       await _loadEntries();
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Entrada salva com sucesso! ✨'),
+          content: Text('Entrada salva com sucesso! ✨'.tr()),
           backgroundColor: Colors.green,
         ),
       );
@@ -495,9 +597,14 @@ class _DiaryScreenState extends State<DiaryScreen> {
     }
   }
 
+  // -----------------------------
+  //   EDIÇÃO E EXCLUSÃO
+  // -----------------------------
+
   void _editEntry(DiaryEntryModel entry) {
     _entryController.text = entry.content;
     _selectedDate = entry.entryDate;
+    _selectedIcon = entry.moodIcon ?? "😊";
 
     showModalBottomSheet(
       context: context,
@@ -514,12 +621,12 @@ class _DiaryScreenState extends State<DiaryScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Excluir Entrada'),
-        content: const Text('Tem certeza que deseja excluir esta entrada?'),
+        title: Text('Excluir Entrada'.tr()),
+        content: Text('Tem certeza que deseja excluir esta entrada?'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            child: Text('Cancelar'.tr()),
           ),
           TextButton(
             onPressed: () async {
@@ -527,19 +634,22 @@ class _DiaryScreenState extends State<DiaryScreen> {
               await DiaryService.deleteEntry(entry.id);
               await _loadEntries();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Entrada excluída com sucesso 🗑️'),
+                SnackBar(
+                  content: Text('Entrada excluída com sucesso 🗑️'.tr()),
                   backgroundColor: Colors.orange,
                 ),
               );
             },
-            child:
-            const Text('Excluir', style: TextStyle(color: Colors.red)),
+            child: Text('Excluir'.tr(), style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
     );
   }
+
+  // -----------------------------
+  //   FORMATADORES
+  // -----------------------------
 
   String _formatDate(DateTime date) {
     const months = [

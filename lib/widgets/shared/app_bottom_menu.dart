@@ -61,17 +61,17 @@ class AppBottomMenu extends StatelessWidget {
                 break;
               case 1:
                 nextScreen = const CurrentMonthScreen();
+            
                 break;
               case 2:
-                nextScreen = const DailyLuckPage();
+                nextScreen =  DiaryScreen();
                 break;
+              
               case 3:
-                nextScreen = const DiaryScreen();
-                break;
-              case 4:
                 nextScreen =
                     MoodScreen(month: currentMonth, year: currentYear);
                 break;
+              
               default:
                 return;
             }
@@ -115,22 +115,16 @@ class AppBottomMenu extends StatelessWidget {
               activeIcon: PhosphorIconsFill.calendarBlank,
               label: 'bottom.current_month'.tr(),
             ),
+      
             _buildItem(
               index: 2,
               currentIndex: currentIndex,
-              icon: PhosphorIconsRegular.clover,
-              activeIcon: PhosphorIconsFill.clover,
-              label: 'Sorte do Dia',
-            ),
-            _buildItem(
-              index: 3,
-              currentIndex: currentIndex,
-              icon: PhosphorIconsRegular.bookOpenText,
-              activeIcon: PhosphorIconsFill.bookOpenText,
+              icon: PhosphorIconsRegular.notebook,
+              activeIcon: PhosphorIconsFill.notebook,
               label: 'bottom.diary'.tr(),
             ),
             _buildItem(
-              index: 4,
+              index: 3,
               currentIndex: currentIndex,
               icon: PhosphorIconsRegular.smiley,
               activeIcon: PhosphorIconsFill.smiley,
