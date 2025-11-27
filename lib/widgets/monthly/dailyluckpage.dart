@@ -7,6 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:myyearmystory/widgets/shared/main_scaffold.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
+import 'package:myyearmystory/screens/premium/premium_popup.dart';
+
 
 class DailyLuckPage extends StatefulWidget {
   const DailyLuckPage({Key? key}) : super(key: key);
@@ -25,13 +27,13 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
   int _turnsToday = 0;
   DateTime? _lastTurnDate;
 
-  // Premium (mudar depois quando integrar com o Supabase)
+  // Premium (mudar depois)
   bool _isPremium = false;
 
   // Cor atual do card
   Color _cardColor = const Color(0xFFDAB6E8);
 
-  // Paleta aleatória para cada virada
+  // Cores aleatórias
   final List<Color> _cardColors = const [
     Color(0xFFDAB6E8),
     Color(0xFFE8D7F2),
@@ -43,12 +45,27 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
   @override
   void initState() {
     super.initState();
-    _loadDailyLuck();
-    _loadTurnData();
+
+    _loadTurnData().then((_) {
+      _loadSavedMessage();
+    });
   }
 
   // ---------------------------------------------------------
-  //  🔮 CARREGA DADOS DIÁRIOS DE VIRADAS DO SHARED PREFERENCES
+  //  🔮 CARREGA ÚLTIMA MENSAGEM SALVA
+  // ---------------------------------------------------------
+  Future<void> _loadSavedMessage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastMessage = prefs.getString("luck_last_message");
+
+    setState(() {
+      _luckMessage = lastMessage ??
+          "Clique em 'Virar novamente' para revelar sua mensagem do dia ✨";
+    });
+  }
+
+  // ---------------------------------------------------------
+  //  🔮 CARREGA DADOS DE VIRADA
   // ---------------------------------------------------------
   Future<void> _loadTurnData() async {
     final prefs = await SharedPreferences.getInstance();
@@ -72,13 +89,13 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
   }
 
   // ---------------------------------------------------------
-  //  🔮 VERIFICA SE PODE VIRAR
+  //  🔮 VERIFICA SE PODE VIRAR HOJE
   // ---------------------------------------------------------
   Future<bool> _canTurnCard() async {
     if (_isPremium) {
-      return _turnsToday < 1; // premium = 1 vez por dia
+      return _turnsToday < 1; 
     } else {
-      return _turnsToday < 3; // free = 3 vezes por dia
+      return _turnsToday < 3;
     }
   }
 
@@ -91,12 +108,16 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
     _turnsToday++;
     _lastTurnDate = DateTime.now();
 
-    await prefs.setString("luck_last_turn_date", _lastTurnDate!.toIso8601String());
+    await prefs.setString(
+      "luck_last_turn_date",
+      _lastTurnDate!.toIso8601String(),
+    );
+
     await prefs.setInt("luck_turns_today", _turnsToday);
   }
 
   // ---------------------------------------------------------
-  //  🌟 CARREGAR MENSAGEM DO SUPABASE
+  //  🌟 BUSCA NOVA FRASE DO BANCO
   // ---------------------------------------------------------
   Future<void> _loadDailyLuck() async {
     setState(() {
@@ -123,22 +144,28 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
           _cardColor = _cardColors[Random().nextInt(_cardColors.length)];
           _isLoading = false;
         });
+
+        // SALVA A NOVA MENSAGEM
+        final prefs = await SharedPreferences.getInstance();
+        prefs.setString("luck_last_message", _luckMessage!);
+
       } else {
         setState(() {
-          _luckMessage = '✨ ${"dailyLuck.comeBackTomorrow".tr()}';
+          _luckMessage = "✨ ${"dailyLuck.comeBackTomorrow".tr()}";
           _isLoading = false;
         });
       }
+
     } catch (e) {
       setState(() {
-        _luckMessage = '☁️ ${"dailyLuck.consultingUniverse".tr()}';
+        _luckMessage = "☁️ ${"dailyLuck.consultingUniverse".tr()}";
         _isLoading = false;
       });
     }
   }
 
   // ---------------------------------------------------------
-  //  ❤️ ANIMAÇÃO DOS CORAÇÕES PISCANDO
+  // ❤️ CORAÇÃO QUE PULSA
   // ---------------------------------------------------------
   Widget _pulseHeart(Color color, int delay) {
     return Icon(Icons.favorite, color: color, size: 26)
@@ -151,7 +178,7 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
   }
 
   // ---------------------------------------------------------
-  //  📦 CARD DE LOADING (CORAÇÕES PISCANDO)
+  // ⏳ CARD DE LOADING
   // ---------------------------------------------------------
   Widget _buildLoadingCard() {
     return Column(
@@ -175,7 +202,7 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
             color: Colors.black54,
           ),
         ),
-      ]
+      ],
     );
   }
 
@@ -186,6 +213,7 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+
         Text(
           DateFormat("dd, MMM yyyy").format(DateTime.now()).toUpperCase(),
           style: GoogleFonts.robotoMono(
@@ -199,17 +227,17 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
 
         Column(
           children: const [
-          Icon(Icons.favorite, size: 22, color: Color(0xFFD4BA33)),
-          SizedBox(height: 6),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.favorite, size: 22, color: Color(0xFFA84ABF)),
-              SizedBox(width: 10),
-              Icon(Icons.favorite, size: 20, color: Color(0xFFC27FDB)),
-            ],
-          ),
-        ],
+            Icon(Icons.favorite, size: 22, color: Color(0xFFD4BA33)),
+            SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.favorite, size: 22, color: Color(0xFFA84ABF)),
+                SizedBox(width: 10),
+                Icon(Icons.favorite, size: 20, color: Color(0xFFC27FDB)),
+              ],
+            ),
+          ],
         ),
 
         const SizedBox(height: 22),
@@ -226,29 +254,35 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
 
         const SizedBox(height: 28),
 
-        // 🔄 BOTÃO DE VIRAR
+        // ---------------------------------------------------------
+        //  🌙 BOTÃO DE VIRAR
+        // ---------------------------------------------------------
         TextButton.icon(
           onPressed: () async {
             final canTurn = await _canTurnCard();
 
             if (!canTurn) {
-              showDialog(
-                context: context,
-                builder: (_) => AlertDialog(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)),
-                  title: Text(
-                    "Limite diário atingido 💜",
-                    style: GoogleFonts.dmSerifDisplay(fontSize: 22),
+              if (_isPremium) {
+                // PREMIUM → popup simples
+                showDialog(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    title: const Text(
+                      "Limite diário atingido 💜",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    content: const Text(
+                      "Você já virou sua carta hoje.\nVolte amanhã para uma nova mensagem ✨",
+                    ),
                   ),
-                  content: Text(
-                    _isPremium
-                        ? "Você já virou sua carta hoje!"
-                        : "Você já virou 3 vezes hoje.\n\nQuer liberar viradas ilimitadas? 💫",
-                    style: GoogleFonts.robotoMono(fontSize: 14),
-                  ),
-                ),
-              );
+                );
+              } else {
+                // FREE → popup premium padrao
+                showPremiumPopup(context);
+              }
               return;
             }
 
@@ -284,12 +318,12 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
 
           Column(
             children: [
-              // 🌙 HEADER GIGANTE CURVADO
+              // 🌙 HEADER CURVO
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.only(top: 45, bottom: 40),
                 decoration: const BoxDecoration(
-                  color: Color.fromARGB(255, 241, 215, 242),
+                  color: Color(0xFFF1D7F2),
                   borderRadius: BorderRadius.only(
                     bottomLeft: Radius.circular(120),
                     bottomRight: Radius.circular(120),
@@ -305,7 +339,7 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
                       padding: const EdgeInsets.symmetric(
                           vertical: 8, horizontal: 22),
                       decoration: const BoxDecoration(
-                        color: Color.fromARGB(255, 235, 203, 236),
+                        color: Color(0xFFEBCCE9),
                         borderRadius: BorderRadius.all(Radius.circular(14)),
                       ),
                       child: Text(
@@ -372,10 +406,11 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
                   )
                       .animate()
                       .moveY(
-                          begin: 60,
-                          end: 0,
-                          duration: 700.ms,
-                          curve: Curves.easeOutCubic)
+                        begin: 60,
+                        end: 0,
+                        duration: 700.ms,
+                        curve: Curves.easeOutCubic,
+                      )
                       .fadeIn(duration: 600.ms),
                 ),
               ),
@@ -384,7 +419,9 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
                 height: 1,
                 color: Colors.black,
                 margin: const EdgeInsets.symmetric(
-                    horizontal: 40, vertical: 30),
+                  horizontal: 40,
+                  vertical: 30,
+                ),
               ),
             ],
           ),
