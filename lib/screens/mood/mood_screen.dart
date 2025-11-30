@@ -296,10 +296,10 @@ class _MoodScreenState extends State<MoodScreen> {
       child: Text(
         'mood.how_are_you_feeling'.tr(),
         textAlign: TextAlign.center,
-        style: GoogleFonts.courierPrime(
+        style: GoogleFonts.robotoMono(
           fontSize: 18,
           fontWeight: FontWeight.w600,
-          letterSpacing: 0.8,
+          letterSpacing: 1.4,
         ),
       ),
     );
@@ -307,31 +307,27 @@ class _MoodScreenState extends State<MoodScreen> {
 
   // GRID dos botões
   Widget _buildMoodGrid() {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      itemCount: moods.length,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 26,
-        childAspectRatio: 2.3,
-      ),
-      itemBuilder: (context, index) {
-        final mood = moods[index];
-        final emoji = mood['emoji'];
-        final key = mood['key'];
-        final color = moodColors[key]!;
+  final screenWidth = MediaQuery.of(context).size.width;
+  final itemWidth = (screenWidth - 22 - 22 - 16) / 2;
 
-        return _moodButton(
-          emoji,
-          safeTr(key),
-          color,
-          () => saveMood(key),
-        );
-      },
-    );
-  }
+  return Wrap(
+    alignment: WrapAlignment.start,
+    spacing: 16,
+    runSpacing: 32,
+    children: moods.map((mood) {
+      return SizedBox(
+        width: itemWidth,
+        child: _moodButton(
+          mood['emoji'],
+          safeTr(mood['key']),
+          moodColors[mood['key']]!,
+          () => saveMood(mood['key']),
+        ),
+      );
+    }).toList(),
+  );
+}
+
 
   // BOTÃO com emoji
   Widget _moodButton(

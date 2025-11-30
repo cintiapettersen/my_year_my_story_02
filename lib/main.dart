@@ -1,3 +1,4 @@
+
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -34,8 +35,8 @@ import 'package:myyearmystory/widgets/monthly/gratitude_widget.dart';
 
 
 // 🌸 Telas do menu lateral (hambúrguer)
-import 'package:myyearmystory/screens/profile/profile_screen.dart';
-import 'package:myyearmystory/screens/help/help_screen.dart';
+import 'package:myyearmystory/screens/menus/profile_screen.dart';
+import 'package:myyearmystory/screens/menus/help_screen.dart';
 
 /// 🌎 Alertas de calendarios 
 
@@ -144,8 +145,8 @@ class MyApp extends StatelessWidget {
         ),
       ),
 
-  '/profile': (context) => const ProfileScreen(),
-  '/help': (context) => const HelpScreen(),
+  '/profile': (context) =>  ProfileScreen(),
+  '/help': (context) =>  HelpScreen(),
 
   '/premium': (context) => _withArgs(
         context,
@@ -250,3 +251,4 @@ class MyApp extends StatelessWidget {
     return builder(args.cast<String, dynamic>());
   }
 }
+

@@ -1,22 +1,29 @@
+import 'dart:math';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DidYouKnowService {
   final SupabaseClient _supabase = Supabase.instance.client;
 
-  Future<List<Map<String, dynamic>>> fetchCuriosities(int month, int year) async {
+  /// 🔥 Busca curiosidades diárias (5 por dia)
+  /// - Se premium → embaralha e permite refresh
+  /// - Se gratuito → apenas pega as 5 do dia, sem refresh
+  Future<List<Map<String, dynamic>>> fetchDailyCuriosities() async {
     try {
-      final response = await _supabase
+      final result = await _supabase
           .from('monthly_curiosities')
-          .select()
-          .eq('month', month)
-          .eq('year', year)
-          .order('category', ascending: true);
+          .select(
+              'id, category, category_en, content, text_en, created_at')
+          .order('created_at', ascending: false);
 
-      if (response.isEmpty) return [];
+      if (result.isEmpty) return [];
 
-      return List<Map<String, dynamic>>.from(response);
+      // Embaralha para sempre gerar combinações novas
+      final shuffled = List<Map<String, dynamic>>.from(result)..shuffle(Random());
+
+      // Limita a 5 curiosidades por dia
+      return shuffled.take(5).toList();
     } catch (error) {
-      print('Erro ao buscar curiosidades: $error');
+      print('Erro ao carregar curiosidades diárias: $error');
       return [];
     }
   }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:intl/intl.dart';
+
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'dart:ui' as ui;
@@ -10,7 +10,7 @@ import 'package:myyearmystory/screens/diary/diary_screen.dart';
 import 'package:myyearmystory/screens/mood/mood_screen.dart';
 import 'package:myyearmystory/widgets/monthly/monthly_goals_widget.dart';
 import 'package:myyearmystory/widgets/monthly/gratitude_widget.dart';
-import 'package:myyearmystory/screens/quiz/interactive_quiz_screen.dart';
+
 import 'package:myyearmystory/screens/monthly/current_month_screen.dart';
 import '../../widgets/monthly/curiosities_widget.dart';
 import 'package:myyearmystory/widgets/monthly/did_you_know_widget.dart';
@@ -18,12 +18,18 @@ import 'package:myyearmystory/widgets/monthly/dailyluckpage.dart';
 import 'package:myyearmystory/widgets/monthly/calendar_page.dart';
 
 import 'package:myyearmystory/widgets/shared/app_bottom_menu.dart';
-import '../../widgets/shared/custom_drawer.dart';
+import 'package:myyearmystory/screens/menus/app_drawer.dart';
+
 
 import 'package:myyearmystory/screens/splash/fade_page_transition.dart';
 import 'package:myyearmystory/screens/notifications/daily_popup.dart';
 import 'package:myyearmystory/services/daily_quote_service.dart';
 import 'package:myyearmystory/utils/month_colors.dart';
+import 'package:myyearmystory/screens/quiz/standalone.dart';
+
+
+
+
 
 class DashboardScreen extends StatefulWidget {
   final int month;
@@ -311,7 +317,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       backgroundColor: const Color(0xFFFDFDFD),
 
       // 🟣 Drawer com cor dinâmica
-      drawer: const CustomDrawer(),
+      drawer: const AppDrawer(),
       // 🟣 AppBar com cor dinâmica
       appBar: AppBar(
         backgroundColor: currentThemeColor,
@@ -542,11 +548,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // 3ª linha (agora com os da antiga fileira do meio!)
   _buildCard(
-    title: tr('dashboard.monthly_quiz'),
-    icon: PhosphorIconsRegular.star,
-    color: const Color(0xFFdd97b7),
-    route: '/interactive_quiz',
-  ),
+  title: tr('dashboard.monthly_quiz'),
+  icon: PhosphorIconsRegular.star,
+  color: const Color(0xFFdd97b7),
+  route: '/interactive_quiz',
+),
   _buildCard(
     title: tr('dashboard.gratitude'),
     icon: PhosphorIconsRegular.heart,
@@ -555,7 +561,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   ),
   _buildCard(
     title: tr('dashboard.about_me'),
-    icon: PhosphorIconsRegular.flower,
+    icon: PhosphorIconsRegular.userCircle,
     color: const Color(0xFFcf8ee8),
     route: '/curiosities',
   ),
@@ -669,7 +675,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     Color textColor = Colors.white,
   }) {
     return GestureDetector(
-      onTap: () {
+         onTap: () {
         Widget target;
 
         switch (route) {
@@ -683,7 +689,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             target = DiaryScreen();
             break;
           case '/interactive_quiz':
-            target = InteractiveQuizScreen(month: selectedMonth, year: selectedYear);
+            target = InteractiveQuizStandalone(
+            month: selectedMonth,
+            year: selectedYear,
+            );
             break;
           case '/gratitude':
             target = GratitudeWidget(month: selectedMonth, year: selectedYear);

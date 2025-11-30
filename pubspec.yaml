@@ -28,12 +28,14 @@ dependencies:
     sdk: flutter
   easy_localization: ^3.0.8
   intl: 0.20.2
+  mask_text_input_formatter: ^2.0.0
 
   # ✨ Ícones e fontes
   cupertino_icons: 1.0.8
   google_fonts: 6.1.0
   phosphor_flutter: 2.1.0
   iconsax: 0.0.8
+  
 
   # 🔐 Autenticação e banco de dados
   supabase_flutter: ^2.10.3
@@ -56,7 +58,6 @@ dependencies:
   flutter_animate: ^4.5.2
 
   # Notificações
-
   android_intent_plus: ^4.0.2
 
 dev_dependencies:
@@ -75,3 +76,4 @@ flutter:
     - assets/translations/
     - assets/imagens/logo.png
     - assets/imagens/logo_512px.png
+    - assets/fonts/

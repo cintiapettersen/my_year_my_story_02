@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:myyearmystory/screens/profile/profile_screen.dart';
+import 'package:myyearmystory/screens/menus/profile_screen.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
 
 class ProfileCompletionDialog {

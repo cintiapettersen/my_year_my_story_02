@@ -41,34 +41,37 @@
     }
   },
   "drawer": {
-    "hello": "Hello,",
-    "guest": "Guest",
-    "profile": "Profile",
-    "help": "Help / Support",
-    "language": "Language",
-    "login": "Login",
-    "logout": "Logout",
-    "logout_title": "End session",
-    "logout_message": "Are you sure you want to log out?",
-    "cancel": "Cancel",
-    "go_premium": "🌸 Become Premium",
-    "premium_active": "🌷 Premium Account Active",
-    "select_language": "Select language",
-    "logout_success": "You logged out successfully!",
-    "logout_error": "Could not log out. Please try again."
+  "user": "Your Name",
+  "email": "Your Email",
+  "change_icon": "Change icon",
+  "profile": "Profile",
+  "help": "Help",
+  "about": "About",
+  "logout": "Logout",
+  "go_premium": "Go Premium",
+  "choose_icon":" Pick your icon"
+  
+
+
   },
+
+
   "profile": {
-    "title": "My Profile",
-    "no_name": "User without name",
-    "sign": "Your sign is {0} ✨",
-    "add_birthdate": "Add your birthdate to discover your sign ✨",
-    "full_name": "Full name",
-    "birth_date": "Birth date",
-    "email": "Email",
-    "save_changes": "Save changes",
-    "updated": "Profile updated successfully! 🎉",
-    "error_update": "Error updating profile: {0}"
+   
+  "title": "Profile",
+  "name": "Full Name",
+  "email": "Email",
+  "birth": "Birth Date",
+  "save": "Save Changes",
+  "your_sign": "Your sign",
+  "years": "years"
   },
+
+  "date_picker": {
+  "ok": "OK",
+  "cancel": "Cancel"
+},
+  
   "premium": {
     "title_guest": "Exclusive Access 🌟",
     "title_user": "Premium Plan ✨",
@@ -195,13 +198,15 @@
   },
 
   "dailyLuck": {
-    "consultingUniverse": "Consulting the universe...",
-    "alreadyReceived": "✨ You already received today’s message!",
-    "comeBackTomorrow": "Every day the universe has something for you",
-    "discoverLuck": "Today’s Message",
-    "premiumOnly": "Feature available only for Premium users 🔒",
-    "becomePremium": "Become Premium",
-    "drawAnother": "Draw another message"
+    "title": "DAILY MESSAGE",
+    "subtitle": "EVERY DAY A NEW MESSAGE TO INSPIRE YOU",
+    "initialPlaceholder": "Tap to reveal your daily message ✨",
+    "loading": "Consulting the universe... ✨",
+    "turnAgain": "Turn again",
+    "comeBackTomorrow": "Come back tomorrow ✨",
+    "consultingUniverse": "Consulting the universe... ✨",
+    "limitPremiumUserMessage": "Daily limit reached 💜",
+    "limitPremiumUserText": "You have already turned your card today.\nCome back tomorrow for a new message ✨"
   },
 
   "dashboard": {
@@ -261,8 +266,11 @@
   },
 
   "quiz": {
-    "page_label": "Interactive Quiz",
+    
+    "description": "Answer this month's questions and discover a little more about yourself. Sometimes small answers reveal big things.",
     "button_result": "See my result ✨",
+    "page_label": "Interactive Quiz",
+    
     "button_retry": "Retry quiz",
     "missing_title": "Oops!",
     "missing_message": "You left one or more questions unanswered.",
@@ -307,27 +315,31 @@
   },
 
   "interview": {
-    "title": "Connections",
-    "default_description": "A place to record answers and save special memories ✨",
+  "page_label": "Connections",
+  "default_description": "Ask someone special and keep their answers forever.",
+  
+  "who_prompt": "Who do you want to interview?",
+  "name_label": "Name",
+  "name_hint": "Enter the name",
+  "relation_hint": "Relationship (friend, mother, uncle…)",
+  "age_hint": "Age",
 
-    "who_prompt": "Whose memories are you saving this month?",
+  "ask": "Ask:",
+  "answer_hint": "Write the answer here…",
 
-    "name_label": "What is this person's name?",
-    "name_hint": "Enter full name...",
+  "show_more": "Show all questions",
+  
+  "save_button": "Save memory",
+  "audio_button": "Record audio",
 
-    "relation_hint": "Who is this person to you?",
-    "age_hint": "Age",
+  "saved_success": "Interview saved successfully! ✨",
+  "save_error": "Error while saving. Try again!",
 
-    "ask": "ASK...",
-    "answer_hint": "Write your answer here...",
+  "not_premium": "Feature available for premium users only.",
+  "login_required": "Login required to continue."
 
-    "show_more": "Show more questions",
 
-    "save_button": "Save memory",
-    "audio_button": "Record audio",
 
-    "saved_success": "Memories saved successfully!",
-    "save_error": "Something went wrong. Try again."
   },
 
   "gratitude": {
@@ -377,44 +389,39 @@
 
 
   "did_you_know": {
-    "title": "Did You Know?",
-    "default_message": "✨ Curiosities that inspire and surprise!",
+  "title": "Did You Know?",
 
-    "refresh_more_left": "See more curiosities ({0} remaining)",
-    "refresh_premium_only": "See more ✨",
-    "refresh_come_back_tomorrow": "Come back tomorrow 🌙",
+  "desc": {
+    "fixed": "Here you’ll find small daily curiosities to inspire you, learn something new, and brighten your day!"
+  },
 
-    "premium_required_title": "Exclusive content 💎",
-    "premium_required_text": "Upgrade to see more daily curiosities.",
+  "daily_message": "Here are your curiosities for today ✨",
+  "updated_at": "Updated on",
+  "empty": "No curiosities found for today.",
 
-    "month_msg_1": "✨ January is a fresh start — time to open your heart and get curious about the new!",
-    "month_msg_2": "💫 February brings lightness, color and sweet discoveries.",
-    "month_msg_3": "🌿 March is a time to grow, learn and enjoy what the world has to tell.",
-    "month_msg_4": "🌸 April awakens creativity — get ready for lively curiosities!",
-    "month_msg_5": "🌼 May is sweet and inspiring — perfect to discover something that makes you smile.",
-    "month_msg_6": "🌞 June comes with good energy and fascinating stories waiting for you!",
-    "month_msg_7": "🌻 July is full of surprises — dive into these curiosities and get inspired.",
-    "month_msg_8": "🌺 August invites reflection and the discovery of new and unexpected things.",
-    "month_msg_9": "🍂 September is pure inspiration — small curiosities to help you see the world differently.",
-    "month_msg_10": "🌕 October comes with mystery and magic — perfect to explore the unknown!",
-    "month_msg_11": "🍁 November reminds us: it's never too late to learn something new and be surprised.",
-    "month_msg_12": "🎇 December closes the year with sparkle — curiosities to end with lightness and wonder.",
+  "button": {
+    "discover_more": "Discover more",
+    "come_back_tomorrow": "Come back tomorrow 🌙"
+  },
 
-    "categories": {
-      "Science": "Science",
-      "Astronomy": "Astronomy",
-      "Mythology": "Mythology",
-      "History": "History",
-      "General Curiosity": "General Curiosity",
-      "Pop Culture": "Pop Culture",
-      "Art": "Art",
-      "Psychology": "Psychology",
-      "Literature": "Literature",
-      "Nature": "Nature"
+  "categories": {
+    "science": "Science",
+    "history": "History",
+    "nature": "Nature",
+    "psychology": "Psychology",
+    "art": "Art",
+    "culture": "Culture",
+    "pop_culture": "Pop Culture",
+    "geography": "Geography",
+    "universe": "Universe",
+    "mind_and_soul": "Mind, Body & Spirit",
+    "behavior": "Human Behavior",
+    "general": "General Curiosity",
+    "general_curiosity": "General Curiosity"
     
   }
-},
-  
+
+  },
 
   "lists": {
     "title": "My Lists",
@@ -441,33 +448,18 @@
   },
 
   "tips": {
-    "page_label": "Tips",
-    "description": "A soft selection of tips to inspire, balance and lighten your month. New reflections every day ✨",
+  "page_label": "Tips",
+  "description": "A soft selection of tips to inspire, balance and lighten your month. New reflections every day ✨",
 
-    "category_autocuidado": "Self-care",
-    "category_energia": "Energy",
-    "category_proposito": "Purpose",
-    "category_leveza": "Lightness",
-    "category_reflexao": "Reflection",
-    "category_gratidao": "Gratitude",
-    "category_rotina": "Routine",
-    "category_crescimento": "Growth",
-    "category_confianca": "Confidence",
-    "category_presenca": "Presence",
-    "category_encerramento": "Closure",
-    "category_intuicao": "Intuition",
+  "seen_all_today": "You've seen all the tips for today. Come back tomorrow 💛",
 
-    "seen_all_today": "You've seen all tips for today. Come back tomorrow 💛",
+  "refresh_title": "Come back tomorrow ✨",
+  "refresh_message": "You've already refreshed today's suggestions!",
+  "refresh_ok": "OK",
 
-    "refresh_title": "Come back tomorrow ✨",
-    "refresh_message": "You've already refreshed today’s tips!",
-    "refresh_ok": "OK",
-
-    "refresh_premium_button": "See more tips",
-    "refresh_see_more": "See more tips (__remaining__ remaining)",
-    "refresh_come_back_tomorrow": "Come back tomorrow 🌙",
-
-    "empty": "No tips available right now."
+  "refresh_premium_button": "See more tips",
+  "refresh_see_more": "See more tips (__remaining__ left)",
+  "refresh_come_back_tomorrow": "Come back tomorrow 🌙"
 
   },
 
@@ -511,6 +503,8 @@
     "save_edit": "save changes",
     "create": "create alert",
     "save": "save changes",
+    "cancel": "Cancel",
+    "ok": "OK",
 
     "error_empty": "Type something to save.",
     "save_created": "Your alert was created! 💛",
@@ -520,7 +514,7 @@
   },
 
   "dates": {
-    "title": "Dates",
+    "title": "Calendar & Reminder",
     "description": "Check your important days and highlight your favorite moments."
   },
 
@@ -649,7 +643,6 @@
 
  
 }
-
 
 
 

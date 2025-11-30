@@ -113,7 +113,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
   @override
   Widget build(BuildContext context) {
     return MainScaffold(
-      currentIndex: 3,
+      currentIndex: 2,
       body: Stack(
         children: [
           // 🌈 FUNDO — apenas a cor base
@@ -157,15 +157,17 @@ class _DiaryScreenState extends State<DiaryScreen> {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          'Diário Pessoal'.tr(),
-                          style: GoogleFonts.courierPrime(
+                          'diary.title'.tr(),
+                          style: GoogleFonts.robotoMono(
                             fontSize: 24,
+                            letterSpacing: 1.4,
+                            color: const Color.fromARGB(221, 143, 50, 98),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Seu espaço livre para reflexões e pensamentos ✨'.tr(),
+                          'diary.subtitle'.tr(),
                           textAlign: TextAlign.center,
                           style: const TextStyle(fontSize: 15),
                         ),

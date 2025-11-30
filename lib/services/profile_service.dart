@@ -1,10 +1,12 @@
+// lib/services/profile_service.dart
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProfileService extends ChangeNotifier {
-  Map<String, dynamic>? profile;
-
   final supabase = Supabase.instance.client;
+
+  Map<String, dynamic>? profile;
 
   Future<void> load() async {
     final user = supabase.auth.currentUser;
@@ -20,7 +22,13 @@ class ProfileService extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateLocal(Map<String, dynamic> newData) {
+    profile = newData;
+    notifyListeners();
+  }
+
   bool get isPremium => (profile?['is_premium'] ?? false) == true;
 }
 
+// 🌟 SINGLETON OFICIAL DO APP
 final profileService = ProfileService();

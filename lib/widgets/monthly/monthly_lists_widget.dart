@@ -77,7 +77,7 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
     },
     'pra_ouvir': {
       'title': 'lists.listen',
-      'color': const Color(0xFFfcdde8),
+      'color': const Color.fromARGB(255, 243, 205, 219),
     },
     'pra_guardar': {
       'title': 'lists.keep',
@@ -175,7 +175,7 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('lists.saved'.tr()),
-            backgroundColor: Colors.green,
+            backgroundColor: const Color.fromARGB(255, 166, 82, 182),
           ),
         );
       }
@@ -223,152 +223,135 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
     );
   }
 
-  Widget _buildList(String key) {
-    final info = _listData[key]!;
-    final bgColor = info['color'] as Color;
 
-    final sticker = _stickers[key]!;
+Widget _buildList(String key) {
+  final info = _listData[key]!;
+  final bgColor = info['color'] as Color;
+  final sticker = _stickers[key]!;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 32),
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12.withOpacity(0.10),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          )
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 🌸 Sticker minimalista acima do título
-          Row(
-            children: [
-              Icon(
-                sticker['icon'],
-                size: 16,
-                color: Colors.black.withOpacity(0.5),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                sticker['label'],
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black.withOpacity(0.55),
-                ),
-              ),
-            ],
+  // Ajustes exclusivos do bloco rosa (pra ouvir)
+  final isListenBlock = key == 'pra_ouvir';
+  final titleColor = isListenBlock ? const Color.fromARGB(255, 199, 70, 113) : const Color.fromARGB(255, 248, 238, 238).withOpacity(0.85);
+  final saveTextColor = isListenBlock ? const Color.fromARGB(255, 233, 98, 143) : bgColor;
+  final saveBorderColor = isListenBlock ? const Color.fromARGB(255, 205, 165, 178) : bgColor;
+
+  return Container(
+    margin: const EdgeInsets.only(bottom: 32),
+    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
+    decoration: BoxDecoration(
+      color: bgColor,
+      borderRadius: BorderRadius.circular(22),
+      boxShadow: [
+        BoxShadow(
+          color: const Color.fromARGB(230, 255, 255, 255).withOpacity(0.10),
+          blurRadius: 6,
+          offset: const Offset(0, 2),
+        )
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        
+        // STICKER SEM ÍCONE + ITÁLICO
+        Text(
+          sticker['label'],
+          style: TextStyle(
+            fontSize: 14,
+            fontStyle: FontStyle.italic,
+            fontWeight: FontWeight.w500,
+            color: const Color.fromARGB(255, 255, 255, 255).withOpacity(0.55),
           ),
+        ),
 
-          const SizedBox(height: 14),
+        const SizedBox(height: 14),
 
-          // 🔹 Título da categoria
-          Text(
-            info['title'].toString().tr(),
-            style: const TextStyle(
-              fontSize: 19,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              shadows: [
-                Shadow(
-                  blurRadius: 4,
-                  color: Colors.black38,
-                ),
-              ],
+        // TÍTULO EM ITÁLICO E SEM SOMBRA
+        Text(
+          info['title'].toString().tr(),
+          style: TextStyle(
+            fontSize: 19,
+            fontWeight: FontWeight.w600,
+            fontStyle: FontStyle.italic,
+            color: titleColor,
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        // CAMPOS
+        ..._controllers[key]!.asMap().entries.map((entry) {
+          final index = entry.key;
+          final controller = entry.value;
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: TextField(
+              controller: controller,
+              decoration: InputDecoration(
+  filled: true,
+  fillColor: Colors.white,
+  hintText: '${"lists.item".tr()} ${index + 1}',
+  contentPadding: const EdgeInsets.symmetric(
+    horizontal: 16,
+    vertical: 14,
+  ),
+  enabledBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(14),
+    borderSide: const BorderSide(
+      color: Color.fromARGB(255, 242, 240, 240),
+      width: 1.3,
+    ),
+  ),
+  focusedBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(14),
+    borderSide: const BorderSide(
+      color: Color(0xffC03B66),
+      width: 1.6,
+    ),
+  ),
+),
             ),
-          ),
+          );
+        }),
 
-          const SizedBox(height: 16),
-
-          // 🔹 Campos de texto com animação
-          ..._controllers[key]!.asMap().entries.map((entry) {
-            final index = entry.key;
-            final controller = entry.value;
-
-            return TweenAnimationBuilder<double>(
-              tween: Tween(begin: 1, end: controller.text.isEmpty ? 1 : 1.02),
-              duration: const Duration(milliseconds: 150),
-              builder: (context, scale, child) {
-                return Transform.scale(
-                  scale: scale,
-                  child: child,
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: TextField(
-                  controller: controller,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.white,
-                    hintText: '${"lists.item".tr()} ${index + 1}',
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide:
-                          BorderSide(color: bgColor.withOpacity(0.18)),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }),
-
-          // ➕ Adicionar mais
-          Center(
-            child: TextButton.icon(
-              onPressed: () => _addNewField(key),
-              icon:
-                  const Icon(Icons.add_circle_outline, color: Colors.white),
-              label: Text(
-                'lists.add_more'.tr(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
+        // ADICIONAR MAIS
+        Center(
+          child: TextButton.icon(
+            onPressed: () => _addNewField(key),
+            icon: const Icon(Icons.add_circle_outline, color: Colors.white),
+            label: Text(
+              'lists.add_more'.tr(),
+              style: const TextStyle(
+                color: Color.fromARGB(255, 255, 255, 255),
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
+        ),
 
-          const SizedBox(height: 10),
+        const SizedBox(height: 10),
 
-          // 💾 Botão salvar estilizado
-          Center(
-            child: ElevatedButton(
-              onPressed: _isSaving ? null : () => _saveSingleList(key),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: bgColor,
-                side: BorderSide(color: bgColor),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 26,
-                  vertical: 14,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                elevation: 0,
-              ),
-              child: Text(
-                'lists.save'.tr(),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+        // BOTÃO SALVAR COM COR AJUSTADA NO BLOCO ROSA
+        Center(
+          child: ElevatedButton(
+            onPressed: _isSaving ? null : () => _saveSingleList(key),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: saveTextColor,
+              side: BorderSide(color: saveBorderColor),
+              padding: EdgeInsets.symmetric(horizontal: 26, vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              elevation: 0,
+            ),
+            child: Text(
+              'lists.save'.tr(),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             ),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 }

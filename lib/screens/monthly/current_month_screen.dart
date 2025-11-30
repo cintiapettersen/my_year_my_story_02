@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:myyearmystory/widgets/shared/main_scaffold.dart';
 
+
+
 // Imports dos widgets mensais
 import 'package:myyearmystory/widgets/monthly/month_menu.dart';
 import 'package:myyearmystory/widgets/monthly/monthly_goals_widget.dart';
@@ -18,6 +20,8 @@ import 'package:myyearmystory/widgets/monthly/gratitude_widget.dart';
 import 'package:myyearmystory/widgets/monthly/reflections_widget.dart';
 import 'package:myyearmystory/widgets/monthly/photo_gallery_widget.dart';
 import 'package:myyearmystory/widgets/monthly/calendar_page.dart';
+import 'package:myyearmystory/screens/quiz/standalone.dart';
+
 
 
 class CurrentMonthScreen extends StatefulWidget {
@@ -68,7 +72,9 @@ class _CurrentMonthScreenState extends State<CurrentMonthScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final monthName = DateFormat.MMMM('pt_BR').format(DateTime(year, month));
+    final monthName = DateFormat.MMMM('pt_BR')
+    .format(DateTime(0, month));
+
 
     final List<Widget> pages = [
       MonthMenu(
@@ -81,11 +87,8 @@ class _CurrentMonthScreenState extends State<CurrentMonthScreen> {
       ),
       MonthlyGoalsWidget(month: month, year: year),
       CuriositiesWidget(month: month, year: year),
-      MonthlyQuizWidget(
-        month: month,
-        year: year,
-        
-      ),
+    
+      InteractiveQuizStandalone(month: month, year: year),
       ZodiacWidget(month: month, year: year),
       SkillsDevelopmentWidget(month: month, year: year),
       DidYouKnowWidget(month: month, year: year),

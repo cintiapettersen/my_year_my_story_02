@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:myyearmystory/utils/month_colors.dart';
 
-// Popup Premium já existente
+// Popup Premium
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
 
 class MonthlyQuizWidget extends StatefulWidget {
@@ -25,8 +25,7 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
   Map<String, dynamic>? quizData;
   bool loading = true;
 
-  // TODO: trocar depois pela lógica real
-  bool userIsPremium = false;
+  bool userIsPremium = false; // depois troca pela lógica real
 
   @override
   void initState() {
@@ -56,40 +55,34 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
     return pt ?? "";
   }
 
-  // 🌸 Popup Rosinha: perguntas faltando
+  // 🌸 Popup: faltam respostas
   void showMissingAnswersCutePopup(BuildContext context) {
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
       barrierLabel: "quiz.missing_answers_barrier".tr(),
       transitionDuration: const Duration(milliseconds: 280),
-      pageBuilder: (context, anim1, anim2) => const SizedBox.shrink(),
-      transitionBuilder: (context, animation1, animation2, child) {
-        final curved = Curves.easeInOut.transform(animation1.value) - 1.0;
+      pageBuilder: (_, __, ___) => const SizedBox.shrink(),
+      transitionBuilder: (context, anim, __, child) {
+        final curved = Curves.easeInOut.transform(anim.value) - 1.0;
 
         return Transform(
-          transform: Matrix4.translationValues(0.0, curved * -40, 0.0),
+          transform: Matrix4.translationValues(0, curved * -40, 0),
           child: Opacity(
-            opacity: animation1.value,
+            opacity: anim.value,
             child: AlertDialog(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
               ),
               backgroundColor: const Color.fromARGB(255, 224, 134, 204),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 22,
-                vertical: 26,
-              ),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
-                    Icons.warning_amber_rounded,
-                    size: 48,
-                    color: Color(0xFFC03B66),
-                  ),
+                  const Icon(Icons.warning_amber_rounded,
+                      size: 48, color: Color(0xFFC03B66)),
                   const SizedBox(height: 14),
-
                   Text(
                     "quiz.missing_title".tr(),
                     textAlign: TextAlign.center,
@@ -99,9 +92,7 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
                       color: Color(0xFFC03B66),
                     ),
                   ),
-
                   const SizedBox(height: 12),
-
                   Text(
                     "quiz.missing_message".tr(),
                     textAlign: TextAlign.center,
@@ -111,9 +102,7 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
                       height: 1.6,
                     ),
                   ),
-
                   const SizedBox(height: 26),
-
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -123,7 +112,7 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
-                          elevation: 3,
+                        elevation: 3,
                         shadowColor:
                             const Color(0xFFC03B66).withOpacity(0.3),
                       ),
@@ -131,10 +120,9 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
                       child: Text(
                         "quiz.missing_button".tr(),
                         style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                        ),
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16),
                       ),
                     ),
                   )
@@ -176,22 +164,19 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
                 style: const TextStyle(fontSize: 16, height: 1.4),
               ),
               const SizedBox(height: 24),
-
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFE2377D),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 26,
-                    vertical: 12,
-                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 26, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 onPressed: () => Navigator.pop(context),
                 child: Text("quiz.result_close".tr()),
-              )
+              ),
             ],
           ),
         ),
@@ -202,7 +187,6 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
   bool _allQuestionsAnswered() {
     final questions = quizData?["questions"];
     if (questions == null) return false;
-
     for (int i = 0; i < questions.length; i++) {
       if (!selectedOptions.containsKey(i)) return false;
     }
@@ -231,7 +215,6 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 14),
-
           Text(
             question,
             textAlign: TextAlign.left,
@@ -241,9 +224,9 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
               color: Color.fromARGB(255, 189, 58, 112),
             ),
           ),
-
           const SizedBox(height: 12),
 
+          // Options
           ...List.generate(options.length, (optIndex) {
             final isSelected = selectedOptions[i] == optIndex;
 
@@ -301,7 +284,6 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
   void _submit() {
     final questions = quizData?["questions"];
     final results = quizData?["results"];
-
     if (questions == null || results == null) return;
 
     if (!_allQuestionsAnswered()) {
@@ -323,40 +305,38 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final currentButtonColor = getMonthColor(widget.month);
+
     if (loading) {
       return const Center(
         child: CircularProgressIndicator(color: Color(0xFFE2377D)),
       );
     }
 
-    return MonthPageTemplate(
-      month: widget.month,
-      year: widget.year,
-      title: "",
-      pageLabel: "quiz.page_label".tr(),
-      labelColor: const Color(0xFFdd97b7),
-
-      description: getLocalized(
-        quizData?["description"],
-        quizData?["description_en"],
-      ),
-
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 12),
+
           ..._buildQuestionsList(),
+
           const SizedBox(height: 28),
 
-          // BOTÃO RESULTADO
+          // Botão
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE2377D),
+                backgroundColor: currentButtonColor,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                shadowColor: currentButtonColor.withOpacity(0.4),
+                elevation: 3,
               ),
               onPressed: _submit,
               child: Text(

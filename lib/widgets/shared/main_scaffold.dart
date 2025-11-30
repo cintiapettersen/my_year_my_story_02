@@ -3,27 +3,29 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:myyearmystory/widgets/shared/app_bottom_menu.dart';
 
 class MainScaffold extends StatelessWidget {
-  final int currentIndex;
+  final int? currentIndex; // AGORA OPCIONAL 💕
   final Widget body;
-  final String? title; // ← título opcional 💕
+  final String? title;
 
   const MainScaffold({
-    super.key, // simplifica a passagem da key
-    required this.currentIndex,
+    super.key,
+    this.currentIndex, // opcional
     required this.body,
-    this.title, // ← adiciona aqui também pra inicializar
+    this.title,
   });
 
   @override
   Widget build(BuildContext context) {
+    final bool showBottomMenu = currentIndex != null;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFCE9EF), // 💕 rosa clarinho padrão
+      backgroundColor: const Color(0xFFFCE9EF),
       appBar: AppBar(
         centerTitle: true,
-        backgroundColor: const Color(0xFFE91E63), // rosa forte do logo
+        backgroundColor: const Color(0xFFE91E63),
         elevation: 0,
         title: Text(
-          title ?? 'My Year, My Story', // usa o título recebido ou o padrão
+          title ?? 'My Year, My Story',
           style: GoogleFonts.cinzel(
             textStyle: const TextStyle(
               color: Colors.white,
@@ -33,9 +35,22 @@ class MainScaffold extends StatelessWidget {
             ),
           ),
         ),
+        leading: Navigator.of(context).canPop()
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              )
+            : null,
       ),
+
+      // conteúdo principal
       body: SafeArea(child: body),
-      bottomNavigationBar: AppBottomMenu(currentIndex: currentIndex),
+
+      // 🔥 MOSTRA O MENU APENAS SE currentIndex NÃO FOR nulo
+      bottomNavigationBar: currentIndex != null 
+    ? AppBottomMenu(currentIndex: currentIndex)
+    : null,
+
     );
   }
 }

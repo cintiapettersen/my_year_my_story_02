@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 import 'package:myyearmystory/services/interview_service.dart';
 import 'package:myyearmystory/utils/access_control.dart';
+import 'package:myyearmystory/utils/month_colors.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:myyearmystory/screens/popups/coming_soon.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
+import 'package:myyearmystory/utils/month_colors.dart';
 
 class InterviewScreen extends StatefulWidget {
   final int? month;
@@ -25,7 +27,7 @@ class _InterviewScreenState extends State<InterviewScreen>
   bool _isSaving = false;
   bool _isPremiumUser = false;
   String? _currentUserId;
-  int _saveCount = 0;
+
   bool _showAllQuestions = false;
 
   final List<TextEditingController> _controllers = [];
@@ -103,7 +105,6 @@ class _InterviewScreenState extends State<InterviewScreen>
 
     if (!_isPremiumUser) {
       showPremiumPopup(context);
-      
       return;
     }
 
@@ -156,6 +157,7 @@ class _InterviewScreenState extends State<InterviewScreen>
 
     final month = widget.month ?? DateTime.now().month;
     final year = widget.year ?? DateTime.now().year;
+    final currentButtonColor = getMonthColor(month);
 
     final visibleQuestions = _showAllQuestions || _isPremiumUser
         ? _questions
@@ -164,9 +166,8 @@ class _InterviewScreenState extends State<InterviewScreen>
     return MonthPageTemplate(
       month: month,
       year: year,
-
       title: "",
-      pageLabel: "Conexões",
+      pageLabel: "interview.page_label".tr(),
       labelColor: const Color(0xFFa1a8f0),
 
       description: _description.isNotEmpty
@@ -178,11 +179,13 @@ class _InterviewScreenState extends State<InterviewScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+
+            /// TÍTULO SUPERIOR
             Center(
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 14),
                 child: Text(
-                  'interview.who_prompt'.tr(),
+                  "interview.who_prompt".tr(),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 17,
@@ -194,7 +197,7 @@ class _InterviewScreenState extends State<InterviewScreen>
               ),
             ),
 
-            // 🔹 Campos fixos
+            /// CAMPOS FIXOS (nome, parentesco, idade)
             Container(
               margin: const EdgeInsets.only(bottom: 20),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
@@ -205,8 +208,9 @@ class _InterviewScreenState extends State<InterviewScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+
                   Text(
-                    'interview.name_label'.tr(),
+                    "interview.name_label".tr(),
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -214,10 +218,11 @@ class _InterviewScreenState extends State<InterviewScreen>
                     ),
                   ),
                   const SizedBox(height: 8),
+
                   TextField(
                     controller: _nameController,
                     decoration: InputDecoration(
-                      hintText: 'interview.name_hint'.tr(),
+                      hintText: "interview.name_hint".tr(),
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
@@ -229,6 +234,7 @@ class _InterviewScreenState extends State<InterviewScreen>
                       ),
                     ),
                   ),
+
                   const SizedBox(height: 12),
 
                   Row(
@@ -238,7 +244,7 @@ class _InterviewScreenState extends State<InterviewScreen>
                         child: TextField(
                           controller: _relationController,
                           decoration: InputDecoration(
-                            hintText: 'interview.relation_hint'.tr(),
+                            hintText: "interview.relation_hint".tr(),
                             filled: true,
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
@@ -251,13 +257,15 @@ class _InterviewScreenState extends State<InterviewScreen>
                           ),
                         ),
                       ),
+
                       const SizedBox(width: 10),
+
                       Expanded(
                         flex: 1,
                         child: TextField(
                           controller: _ageController,
                           decoration: InputDecoration(
-                            hintText: 'interview.age_hint'.tr(),
+                            hintText: "interview.age_hint".tr(),
                             filled: true,
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
@@ -276,12 +284,12 @@ class _InterviewScreenState extends State<InterviewScreen>
               ),
             ),
 
-            // 🔹 Título separador
+            /// TÍTULO DAS PERGUNTAS
             Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 6),
                 child: Text(
-                  'interview.ask'.tr(),
+                  "interview.ask".tr(),
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -292,7 +300,7 @@ class _InterviewScreenState extends State<InterviewScreen>
               ),
             ),
 
-            // 🔹 Perguntas
+            /// LISTA DE PERGUNTAS
             ...visibleQuestions.asMap().entries.map((entry) {
               final index = entry.key;
               final question = entry.value;
@@ -340,7 +348,7 @@ class _InterviewScreenState extends State<InterviewScreen>
                       controller: _controllers[index],
                       maxLines: null,
                       decoration: InputDecoration(
-                        hintText: 'interview.answer_hint'.tr(),
+                        hintText: "interview.answer_hint".tr(),
                         filled: true,
                         fillColor: Colors.white,
                         contentPadding: const EdgeInsets.symmetric(
@@ -361,7 +369,7 @@ class _InterviewScreenState extends State<InterviewScreen>
               );
             }),
 
-            // 🔹 Mostrar mais (não premium)
+            /// MOSTRAR MAIS (somente para não premium)
             if (!_isPremiumUser && !_showAllQuestions)
               Center(
                 child: TextButton(
@@ -369,7 +377,7 @@ class _InterviewScreenState extends State<InterviewScreen>
                     showPremiumPopup(context);
                   },
                   child: Text(
-                    'interview.show_more'.tr(),
+                    "interview.show_more".tr(),
                     style: const TextStyle(
                       color: Color.fromARGB(255, 114, 46, 121),
                       fontWeight: FontWeight.w600,
@@ -381,49 +389,53 @@ class _InterviewScreenState extends State<InterviewScreen>
 
             const SizedBox(height: 20),
 
-            // 🔹 Botões lado a lado — versão final
+            /// BOTÕES FINAIS
             Row(
-  children: [
-    // 🌸 BOTÃO SALVAR
-    Expanded(
-      child: GestureDetector(
-        onTap: () {
-          if (!_isPremiumUser) {
-            showPremiumPopup(context);
-            return;
-          }
-          if (!_isSaving) _saveInterview();
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 15),
-          decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 237, 176, 195),
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: const Color.fromARGB(255, 154, 64, 92).withOpacity(0.3),
-                blurRadius: 0,
-                offset: const Offset(0, 1),
-              ),
-            ],
-          ),
-          child: Center(
-            child: Text(
-              'interview.save_button'.tr(),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ),
+              children: [
+                /// BOTÃO SALVAR (COR DO MÊS)
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      if (!_isPremiumUser) {
+                        showPremiumPopup(context);
+                        return;
+                      }
+                      if (!_isSaving) _saveInterview();
+                    },
+                    child: AnimatedContainer(
+  duration: const Duration(milliseconds: 180),
+  padding: const EdgeInsets.symmetric(vertical: 14), // sem horizontal
+  decoration: BoxDecoration(
+    color: _isPremiumUser
+        ? currentButtonColor
+        : currentButtonColor,
+    borderRadius: BorderRadius.circular(10),
+    boxShadow: [
+      BoxShadow(
+        color: currentButtonColor.withOpacity(0.4),
+        blurRadius: 12,
+        offset: const Offset(0, 4),
+      ),
+    ],
+  ),
+  child: Center(
+    child: Text(
+      "interview.save_button".tr(),
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 15,
+        fontWeight: FontWeight.w700,
       ),
     ),
+  ),
+),
 
-    const SizedBox(width: 12),
-                // ÁUDIO
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                /// BOTÃO ÁUDIO
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () => showComingSoonPrompt(context),
@@ -437,7 +449,7 @@ class _InterviewScreenState extends State<InterviewScreen>
                       elevation: 0,
                     ),
                     child: Text(
-                      'interview.audio_button'.tr(),
+                      "interview.audio_button".tr(),
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
