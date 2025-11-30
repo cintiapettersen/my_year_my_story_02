@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 
@@ -14,10 +15,13 @@ class _PremiumPageState extends State<PremiumPage>
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
 
-  final Color lightPink = const Color(0xFFFFF6F9);
-  final Color rose = const Color(0xFFF8C7D8);
-  final Color hotPink = const Color(0xFFE15C8C);
-  final Color accent = const Color(0xFFC03B66);
+  // Paleta BabyKangoo
+  final Color blue = const Color(0xFFA8C5DB);
+  final Color orange = const Color(0xFFE18B50);
+  final Color yellow = const Color(0xFFDDC872);
+  final Color green = const Color(0xFF9CBC68);
+  final Color brown = const Color(0xFFA07756);
+  final Color pink = const Color(0xFFFF4FA3);
 
   @override
   void initState() {
@@ -25,7 +29,7 @@ class _PremiumPageState extends State<PremiumPage>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 900),
     );
 
     _fadeAnimation = CurvedAnimation(
@@ -47,238 +51,263 @@ class _PremiumPageState extends State<PremiumPage>
     super.dispose();
   }
 
+  // === GLASS CONTAINER ===
+  Widget _glass({
+    required Widget child,
+    double opacity = 0.10,
+    double borderOpacity = 0.25,
+    EdgeInsetsGeometry padding = const EdgeInsets.all(20),
+    double radius = 26,
+  }) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(radius),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: Container(
+          padding: padding,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(opacity),
+            borderRadius: BorderRadius.circular(radius),
+            border: Border.all(
+              color: Colors.white.withOpacity(borderOpacity),
+              width: 1.3,
+            ),
+          ),
+          child: child,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: lightPink,
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // 🌸 Header
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.only(top: 80, bottom: 40),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [rose, accent.withOpacity(0.9)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(40),
-                    bottomRight: Radius.circular(40),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    const Icon(Icons.star_rounded,
-                        color: Colors.white, size: 60),
-                    const SizedBox(height: 10),
-                    Text(
-                      'premium.title'.tr(),
-                      style: const TextStyle(
-                        fontFamily: 'Barriecito',
-                        fontSize: 36,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
+      // 🌌 Fundo dark premium
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF2C2F66),
+              Color(0xFF1B1C3A),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 70),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // ⭐ Hero Card
+                _glass(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 22, vertical: 32),
+                  child: Column(
+                    children: [
+                      // Ícone premium dentro de círculo glass
+                      _glass(
+                        padding: const EdgeInsets.all(20),
+                        radius: 60,
+                        opacity: 0.12,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          child: Icon(
+                            Icons.workspace_premium_rounded,
+                            size: 52,
+                            color: pink,
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'premium.subtitle'.tr(),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 16,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                      const SizedBox(height: 20),
 
-              const SizedBox(height: 30),
-
-              // 🌸 Cards
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  children: [
-                    _buildPlanCard(
-                      title: 'premium.monthly_title'.tr(),
-                      price: 'premium.monthly_price'.tr(),
-                      details: [
-                        'premium.monthly_detail1'.tr(),
-                        'premium.monthly_detail2'.tr(),
-                        'premium.monthly_detail3'.tr(),
-                      ],
-                      accentColor: rose,
-                    ),
-                    _buildPlanCard(
-                      title: 'premium.annual_title'.tr(),
-                      price: 'premium.annual_price'.tr(),
-                      details: [
-                        'premium.annual_detail1'.tr(),
-                        'premium.annual_detail2'.tr(),
-                        'premium.annual_detail3'.tr(),
-                      ],
-                      accentColor: hotPink,
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 30),
-
-              // 🌟 Botão assinar
-              ScaleTransition(
-                scale: _scaleAnimation,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.lock_open_rounded,
-                          color: Colors.white),
-                      label: Text(
-                        'premium.subscribe_button'.tr(),
+                      Text(
+                        "Premium",
                         style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontFamily: "Barriecito",
                           color: Colors.white,
+                          fontSize: 38,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: accent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+
+                      const SizedBox(height: 10),
+
+                      Text(
+                        'premium.subtitle'.tr(),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.75),
+                          fontSize: 16,
+                          height: 1.4,
                         ),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        elevation: 4,
                       ),
-                      onPressed: () {
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 35),
+
+                // 🎁 Benefícios
+                _buildBenefitsCard(),
+
+                const SizedBox(height: 35),
+
+                // 🔒 Botão Assinar
+                ScaleTransition(
+                  scale: _scaleAnimation,
+                  child: _glass(
+                    opacity: 0.12,
+                    borderOpacity: 0.35,
+                    padding: EdgeInsets.zero,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(26),
+                      onTap: () {
                         showDialog(
                           context: context,
-                          builder: (context) => AlertDialog(
+                          builder: (_) => AlertDialog(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            title: Text('premium.dialog_title'.tr()),
+                            title: Text(
+                              "premium.dialog_title".tr(),
+                              textAlign: TextAlign.center,
+                            ),
                             content: Text(
-                              'premium.dialog_message'.tr(),
+                              "premium.dialog_message".tr(),
                               textAlign: TextAlign.center,
                             ),
                             actionsAlignment: MainAxisAlignment.center,
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(context),
-                                child: Text('premium.dialog_button'.tr()),
+                                child: Text("premium.dialog_button".tr()),
                               ),
                             ],
                           ),
                         );
                       },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 18, horizontal: 10),
+                        alignment: Alignment.center,
+                        child: Text(
+                          "premium.subscribe_button".tr(),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            shadows: [
+                              Shadow(
+                                color: pink.withOpacity(0.5),
+                                blurRadius: 12,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 20),
+                const SizedBox(height: 25),
 
-              // Voltar
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'premium.back_button'.tr(),
-                  style: const TextStyle(
-                    color: Colors.black54,
-                    fontSize: 16,
+                // 🔙 Botão Voltar
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'premium.back_button'.tr(),
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 15,
+                    ),
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 40),
-            ],
+                const SizedBox(height: 40),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  // 🌸 Card de plano
-  Widget _buildPlanCard({
-    required String title,
-    required String price,
-    required List<String> details,
-    required Color accentColor,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: accentColor.withOpacity(0.2),
-            blurRadius: 10,
-            offset: const Offset(0, 6),
-          ),
-        ],
-        border: Border.all(
-          color: accentColor.withOpacity(0.3),
-          width: 1,
-        ),
-      ),
+  // 🌈 Benefícios em cards glass
+  Widget _buildBenefitsCard() {
+    final items = [
+      {
+        "icon": Icons.favorite_rounded,
+        "color": pink,
+        "text": "premium.monthly_detail1".tr(),
+      },
+      {
+        "icon": Icons.auto_awesome,
+        "color": blue,
+        "text": "premium.monthly_detail2".tr(),
+      },
+      {
+        "icon": Icons.lock_open_rounded,
+        "color": orange,
+        "text": "premium.monthly_detail3".tr(),
+      },
+      {
+        "icon": Icons.star_rounded,
+        "color": yellow,
+        "text": "premium.annual_detail1".tr(),
+      },
+      {
+        "icon": Icons.extension_rounded,
+        "color": green,
+        "text": "premium.annual_detail2".tr(),
+      },
+      {
+        "icon": Icons.bubble_chart_rounded,
+        "color": brown,
+        "text": "premium.annual_detail3".tr(),
+      },
+    ];
+
+    return _glass(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            title,
-            style: TextStyle(
-              fontSize: 20,
+            "premium.title".tr(),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 22,
               fontWeight: FontWeight.w600,
-              color: accentColor,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 18),
 
-          ...details.map(
-            (d) => Padding(
-              padding: const EdgeInsets.only(bottom: 6),
+          ...items.map((i) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
               child: Row(
                 children: [
-                  Icon(Icons.favorite_rounded,
-                      color: accentColor, size: 18),
-                  const SizedBox(width: 8),
+                  Icon(i["icon"] as IconData,
+                      color: i["color"] as Color, size: 22),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      d,
+                      i["text"] as String,
                       style: const TextStyle(
-                        fontSize: 15,
-                        color: Colors.black87,
+                        color: Colors.white,
+                        fontSize: 16,
+                        height: 1.3,
                       ),
                     ),
                   ),
                 ],
               ),
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          Center(
-            child: Text(
-              price,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: accentColor,
-              ),
-            ),
-          ),
+            );
+          }),
         ],
       ),
     );
