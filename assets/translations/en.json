@@ -172,7 +172,7 @@
   "monthly_goals": {
     "title": "Monthly Goals",
     "description": "Plan, co-create and organize your goals. Every time you decide, you’re already one step closer to making your dreams real.",
-    "add_goal_hint": "Type your new goal...",
+    "add_goal_hint": "Type here...",
     "no_goals_yet": "No goals added yet.\nStart by setting your goals for this month!",
     "goal_added": "Goal added successfully!",
     "goal_removed": "Goal removed successfully!",
@@ -357,7 +357,7 @@
     "fixed_description": "Become a keeper of memories and record the stories of those you love. This can be a unique moment with family, friends, and special people. 💖",
 
 
-    "input_hint": "I am grateful for...",
+    "hint": "I am grateful for...",
     "empty_state": "No entries yet.\nStart by adding something you're grateful for 💛",
 
     "added_success": "Gratitude added! 💖",

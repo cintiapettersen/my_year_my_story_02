@@ -4,7 +4,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-
 class ZodiacWidget extends StatefulWidget {
   final int month;
   final int year;
@@ -47,10 +46,10 @@ class _ZodiacWidgetState extends State<ZodiacWidget> {
         return;
       }
 
-      // SIGNO DO DIA
+      // SIGNO DO DIA BLOQUEADO
       for (final row in rows) {
-        final start = DateTime.parse(row['start_date']);
-        final end = DateTime.parse(row['end_date']);
+        final start = DateTime.tryParse(row['start_date'] ?? '') ?? now;
+        final end = DateTime.tryParse(row['end_date'] ?? '') ?? now;
 
         if (!start.isAfter(now) && !end.isBefore(now)) {
           _todaySign = row;
@@ -58,17 +57,17 @@ class _ZodiacWidgetState extends State<ZodiacWidget> {
         }
       }
 
-      // SIGNO DO MÊS
+      // SIGNO DO MÊS - corrigido
       _monthSign = rows.firstWhere(
-        (row) => row["mes"] == widget.month,
+        (row) => (row['mes'] ?? -1) == widget.month,
         orElse: () => {},
       );
 
-      // descrição do banner
+      // descrição segura
       if (_todaySign != null) {
         _bannerDescription = context.locale.languageCode == 'en'
-            ? _todaySign!['descricao_en']
-            : _todaySign!['descricao_pt'];
+            ? (_todaySign!['descricao_en'] ?? '')
+            : (_todaySign!['descricao_pt'] ?? '');
       }
 
       setState(() {});
@@ -79,11 +78,9 @@ class _ZodiacWidgetState extends State<ZodiacWidget> {
     setState(() => _isLoading = false);
   }
 
-  // -----------------------------------------------------
   // BOX COLORIDA
-  // -----------------------------------------------------
   Widget _infoBox(String label, String? value, Color color) {
-    if (value == null || value.isEmpty) return const SizedBox.shrink();
+    if (value == null || value.trim().isEmpty) return const SizedBox.shrink();
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 14),
@@ -103,23 +100,17 @@ class _ZodiacWidgetState extends State<ZodiacWidget> {
           ),
           const SizedBox(height: 8),
           Text(
-            value,
+            value.trim(),
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 15,
-              height: 1.35,
-            ),
-          ),
+            style: const TextStyle(fontSize: 15, height: 1.35),
+          )
         ],
       ),
     );
   }
 
-  // -----------------------------------------------------
-  // Datas abreviadas
-  // -----------------------------------------------------
   String formatDateShort(String date, bool isEN) {
-    final dt = DateTime.parse(date);
+    final dt = DateTime.tryParse(date) ?? DateTime.now();
 
     const monthsPt = [
       "Jan.", "Fev.", "Mar.", "Abr.", "Mai.", "Jun.",
@@ -136,7 +127,6 @@ class _ZodiacWidgetState extends State<ZodiacWidget> {
     return "${dt.day} $month";
   }
 
-  // -----------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return MonthPageTemplate(
@@ -153,58 +143,53 @@ class _ZodiacWidgetState extends State<ZodiacWidget> {
           ? const Center(child: CircularProgressIndicator())
           : _todaySign == null
               ? Center(
-                  child: Text('zodiac.no_data'.tr(),
-                      style: const TextStyle(color: Colors.grey)),
+                  child: Text(
+                    'zodiac.no_data'.tr(),
+                    style: const TextStyle(color: Colors.grey),
+                  ),
                 )
               : _buildZodiacContent(),
     );
   }
 
-  // -----------------------------------------------------
-  // CONTEÚDO COMPLETO
-  // -----------------------------------------------------
   Widget _buildZodiacContent() {
     final sign = _todaySign!;
     final isEN = context.locale.languageCode == 'en';
 
     // nome
-    final name = isEN ? sign['signo_en'] : sign['signo_pt'];
+    final name = (isEN ? sign['signo_en'] : sign['signo_pt']) ?? '—';
 
     // período abreviado
-    final startShort = formatDateShort(sign['start_date'], isEN);
-    final endShort = formatDateShort(sign['end_date'], isEN);
+    final startShort = formatDateShort(sign['start_date'] ?? '', isEN);
+    final endShort = formatDateShort(sign['end_date'] ?? '', isEN);
     final periodShort = "$startShort — $endShort";
 
     // dados do mês
     final colorText = _monthSign?[isEN ? "cor_en" : "cor_pt"] ?? '';
     final regenteText = _monthSign?[isEN ? "regente_en" : "regente_pt"] ?? '';
-    final numeroText = _monthSign?["numero"] ?? '';
+    final numeroText = _monthSign?["numero"]?.toString() ?? '';
     final elementoText =
         _monthSign?[isEN ? "elemento_en" : "elemento_pt"] ?? '';
     final pedraText = _monthSign?[isEN ? "pedra_en" : "pedra_pt"] ?? '';
     final florText = _monthSign?[isEN ? "flor_en" : "flor_pt"] ?? '';
 
-    // LUA HOJE
-   final moonPhase = getMoonPhase(DateTime.now(), isEN: isEN);
-   final moonEmoji = getMoonEmoji(moonPhase);
-   final moonTodayLabel = "zodiac.moon_today".tr();
-   final moonText = "$moonTodayLabel: $moonEmoji $moonPhase";
+    // LUA
+    final moonPhase = getMoonPhase(DateTime.now(), isEN: isEN);
+    final moonEmoji = getMoonEmoji(moonPhase);
 
     return Column(
       children: [
         const SizedBox(height: 20),
-
-        // Ícone maior do signo
         Text(sign['emoji'] ?? '⭐', style: const TextStyle(fontSize: 60)),
-
         const SizedBox(height: 16),
 
-        Text('zodiac.today_sign'.tr(),
-            style: const TextStyle(
+        Text(
+          'zodiac.today_sign'.tr(),
+          style: const TextStyle(
               fontSize: 15,
               fontStyle: FontStyle.italic,
-              color: Colors.black54,
-            )),
+              color: Colors.black54),
+        ),
 
         const SizedBox(height: 4),
 
@@ -219,38 +204,28 @@ class _ZodiacWidgetState extends State<ZodiacWidget> {
 
         const SizedBox(height: 10),
 
-        // PERÍODO COM BORDA
         Container(
           alignment: Alignment.center,
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Colors.black26,
-              width: 1.2,
-            ),
+            border: Border.all(color: Colors.black26, width: 1.2),
           ),
           child: Text(
             periodShort,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.black87,
-            ),
+            style: const TextStyle(fontSize: 16),
           ),
         ),
 
         const SizedBox(height: 8),
 
-        // LUA HOJE
         Text(
-          moonText,
+          "${'zodiac.moon_today'.tr()}: $moonEmoji $moonPhase",
           style: TextStyle(
-          fontSize: 14,
-          fontStyle: FontStyle.italic,
-          color: Colors.black.withOpacity(0.7),
-          ),
-           ),
+              fontSize: 14,
+              fontStyle: FontStyle.italic,
+              color: Colors.black.withOpacity(0.7)),
+        ),
 
         const SizedBox(height: 26),
 
@@ -264,59 +239,44 @@ class _ZodiacWidgetState extends State<ZodiacWidget> {
           childAspectRatio: 1.18,
           children: [
             _infoBox("Cor", colorText, const Color(0xFFFAD4D8)),
-            _infoBox("Regente", regenteText, const Color.fromARGB(255, 233, 92, 139)),
-            _infoBox("Número", numeroText, const Color.fromARGB(255, 151, 192, 219)),
-            _infoBox("Elemento", elementoText, const Color.fromARGB(255, 220, 224, 115)),
-            _infoBox("Pedra", pedraText, const Color.fromARGB(255, 180, 154, 233)),
+            _infoBox("Regente", regenteText, const Color(0xFFE95C8B)),
+            _infoBox("Número", numeroText, const Color(0xFF97C0DB)),
+            _infoBox("Elemento", elementoText, const Color(0xFFDCE073)),
+            _infoBox("Pedra", pedraText, const Color(0xFFB49AE9)),
             _infoBox("Flor", florText, const Color(0xFFD7CFF2)),
           ],
         ),
 
-        const SizedBox(height: 34),
-// aqui fica o divisor pra frase do dia
-        const SizedBox(height: 26),
+        const SizedBox(height: 40),
 
-Row(
-  children: [
-    Expanded(
-      child: Container(
-        height: 1,
-        color: Colors.black26,
-      ),
-    ),
-    const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 8),
-      child: Icon(
-        Icons.circle,
-        size: 6,
-        color: Colors.black38,
-      ),
-    ),
-    Expanded(
-      child: Container(
-        height: 1,
-        color: Colors.black26,
-      ),
-    ),
-  ],
-),
+        // FRASE
+        Row(
+          children: [
+            Expanded(child: Container(height: 1, color: Colors.black26)),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              child: Icon(Icons.circle, size: 6, color: Colors.black38),
+            ),
+            Expanded(child: Container(height: 1, color: Colors.black26)),
+          ],
+        ),
 
-const SizedBox(height: 22),
+        const SizedBox(height: 24),
 
+        Text(
+          'zodiac.phrase_title'.tr(),
+          style: GoogleFonts.satisfy(
+            fontSize: 24,
+            color: const Color(0xFF554587),
+          ),
+        ),
 
-        Text('zodiac.phrase_title'.tr(),
-            style: GoogleFonts.satisfy(
-              fontSize: 22,
-              fontWeight: FontWeight.w400,
-              color: Color.fromARGB(255, 85, 69, 135), //
-            )),
-
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
 
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
-            isEN ? sign['frase_en'] : sign['frase_pt'],
+            (isEN ? sign['frase_en'] : sign['frase_pt']) ?? '',
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 15, height: 1.4),
           ),
@@ -327,9 +287,9 @@ const SizedBox(height: 22),
     );
   }
 
-  // -----------------------------------------------------
-  // CÁLCULO OFFLINE DA LUA
-  // -----------------------------------------------------
+  // -----------------------------------------------
+  // LUA
+  // -----------------------------------------------
   String getMoonPhase(DateTime date, {required bool isEN}) {
     final lp = 2551443;
     final newDate = DateTime(1970, 1, 7, 20, 35);
@@ -367,16 +327,31 @@ const SizedBox(height: 22),
   }
 
   String getMoonEmoji(String phase) {
-    if (phase.contains("Nova") || phase.contains("New")) return "🌑";
-    if (phase.contains("Crescente") || phase.contains("Waxing Crescent"))
-      return "🌒";
-    if (phase.contains("Quarto") && phase.contains("Crescente")) return "🌓";
-    if (phase.contains("Gibosa") && phase.contains("Crescente")) return "🌔";
-    if (phase.contains("Cheia") || phase.contains("Full")) return "🌕";
-    if (phase.contains("Gibosa") && phase.contains("Minguante")) return "🌖";
-    if (phase.contains("Quarto") && phase.contains("Minguante")) return "🌗";
-    if (phase.contains("Minguante") || phase.contains("Waning Crescent"))
-      return "🌘";
-    return "✨";
+  if (phase.contains('Nova') || phase.contains('New')) {
+    return '🌑';
   }
+  if (phase.contains('Waxing Crescent') || phase.contains('Crescente')) {
+    return '🌒';
+  }
+  if (phase.contains('First Quarter') || phase.contains('Quarto Crescente')) {
+    return '🌓';
+  }
+  if (phase.contains('Waxing Gibbous') || phase.contains('Gibosa Crescente')) {
+    return '🌔';
+  }
+  if (phase.contains('Cheia') || phase.contains('Full')) {
+    return '🌕';
+  }
+  if (phase.contains('Waning Gibbous') || phase.contains('Gibosa Minguante')) {
+    return '🌖';
+  }
+  if (phase.contains('Last Quarter') || phase.contains('Quarto Minguante')) {
+    return '🌗';
+  }
+  if (phase.contains('Waning Crescent') || phase.contains('Minguante')) {
+    return '🌘';
+  }
+
+  return '✨';
+}
 }
