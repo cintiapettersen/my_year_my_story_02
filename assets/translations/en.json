@@ -49,7 +49,8 @@
   "about": "About",
   "logout": "Logout",
   "go_premium": "Go Premium",
-  "choose_icon":" Pick your icon"
+  "choose_icon":" Pick your icon",
+  "language": "Language"
   
 
 
@@ -64,7 +65,12 @@
   "birth": "Birth Date",
   "save": "Save Changes",
   "your_sign": "Your sign",
-  "years": "years"
+  "years": "years",
+  "email_change_alert": "To change the email of your account, please contact support.",
+  "app_name": "My Year, My Story"
+  
+
+
   },
 
   "date_picker": {
@@ -73,30 +79,25 @@
 },
   
   "premium": {
-    "title_guest": "Exclusive Access 🌟",
-    "title_user": "Premium Plan ✨",
-    "message_guest": "Shine and unlock all Premium features ✨\n\nLog in to continue and learn more!",
-    "message_user": "Keep shining! 🌈\nUnlock all Premium features and enjoy everything the app offers.",
-    "button_login": "Log in",
-    "button_view_plans": "View plans",
-    "button_later": "Maybe later",
-    "title": "Premium Plan",
-    "subtitle": "Turn your year into eternal memories ✨",
-    "monthly_title": "🌷 Monthly Plan",
-    "monthly_price": "R$ 12.90 / month",
-    "monthly_detail1": "Full access for 30 days",
-    "monthly_detail2": "Auto-renewal enabled",
-    "monthly_detail3": "Cancel anytime",
-    "annual_title": "🌸 Annual Plan (Most Popular)",
-    "annual_price": "R$ 120 / year",
-    "annual_detail1": "Full access for 12 months",
-    "annual_detail2": "Save 25%",
-    "annual_detail3": "Bonus: exclusive pages and features 💫",
-    "subscribe_button": "Subscribe now",
-    "dialog_title": "💖 Coming soon!",
-    "dialog_message": "The payment system will be available soon.\nYou'll soon be able to subscribe and enjoy all Premium features!",
-    "dialog_button": "Love it ✨",
-    "back_button": "Back"
+    
+  "app_name": "My Year, my Story",
+  "title": "Premium Experience",
+  "main_phrase": "Create memories to carry for life.",
+  "sub_phrase": "Unlock special features and make your journal even more magical.",
+
+  "benefit1": "Unlimited access to monthly widgets",
+  "benefit2": "Enhanced Daily Message experience",
+  "benefit3": "Save unlimited memories",
+  "benefit4": "Unlimited Lists, Goals and Gratitude",
+  "benefit5": "Special quizzes with results",
+  "benefit6": "Exclusive daily tips",
+  "benefit7": "Journal always unlocked",
+  "benefit8": "Complete mood calendar",
+
+  "button": "BECOME PREMIUM ✨",
+  "later": "Maybe later"
+
+
   },
 
   "signup": {
@@ -213,6 +214,9 @@
   "hello_user": "Hello, {user}!",
   "guest_user": "Guest",
   "track_your_activities": "Track your activities 👋",
+  "about_you_title": "A curiosity about you",
+  "about_you_empty": "You haven't shared anything about yourself this month",
+  "navigate_months": "Browse the months",
 
 
   "goals": "Goals",
@@ -231,6 +235,9 @@
   "select_date": "Select a date",
   "choose_your_color_today": "Choose your color today:",
   "your_month_space": "Your month space!",
+  "curiosity_title": "A curiosity about you",
+  "no_curiosity": "You haven't shared anything about yourself this month.",
+
 
 
   "month_short": {
@@ -343,49 +350,59 @@
   },
 
   "gratitude": {
-    "title": "",
-    "page_label": "Gratitude",
-    "description": "Gratitude helps you see the beautiful side of life and strengthens your heart. Use this space to record small joys and special moments of the month. 💖",
-    "placeholder": "I am grateful for...",
-    "empty_state": "No gratitude entries yet.\nStart by writing something you're grateful for this month!",
-    "add_button": "Add",
-    "save_success": "Gratitude added successfully! 💖",
-    "delete_success": "Gratitude removed successfully!",
-    "save_error": "Error saving gratitude. 😞",
-    "delete_error": "Error removing gratitude. 😞"
+  
+    "page_label": "Gratitude Page",
+
+    "description": "Gratitude helps us see the good in life and strengthens the heart. Write down the good things that happened this month 💖",
+    "fixed_description": "Become a keeper of memories and record the stories of those you love. This can be a unique moment with family, friends, and special people. 💖",
+
+
+    "input_hint": "I am grateful for...",
+    "empty_state": "No entries yet.\nStart by adding something you're grateful for 💛",
+
+    "added_success": "Gratitude added! 💖",
+    "save_error": "Error while saving. 😞",
+
+    "item_removed": "Item removed!",
+    "remove_error": "Error while removing."
   },
 
+  
   "reflection": {
-    "page_label": "Reflections",
-    "description": "Take a moment to reflect on your month: what helped you grow, what challenged you, and what brought joy 💭",
+    "page_label": "Monthly Reflections",
 
-    "biggest_lesson_title": "Biggest lesson",
-    "biggest_lesson_prompt": "What was the biggest lesson you learned this month?",
-
-    "most_grateful_title": "Greatest gratitude",
-    "most_grateful_prompt": "What are you most grateful for this month?",
-
-    "proudest_moment_title": "Proudest moment",
-    "proudest_moment_prompt": "What was your proudest moment this month?",
-
-    "biggest_challenge_title": "Biggest challenge",
-    "biggest_challenge_prompt": "What was the biggest challenge you faced and how did you overcome it?",
-
-    "personal_growth_title": "Personal growth",
-    "personal_growth_prompt": "How did you grow as a person this month?",
-
-    "unexpected_joy_title": "Unexpected joy",
-    "unexpected_joy_prompt": "What unexpected joy did you find this month?",
-
-    "next_month_focus_title": "Next month’s focus",
-    "next_month_focus_prompt": "What do you want to focus on next month?",
+    "description": "A gentle space to look within, acknowledge your feelings, and record the moments that shaped your month. 💖",
 
     "hint": "Write your reflection here...",
 
-    "save_button": "Save Reflections",
-    "saved": "Reflections saved successfully!",
-    "save_error": "Error saving reflections."
-  },
+    "saved": "Reflections saved successfully! 💖",
+    "save_error": "Error saving your reflections.",
+
+    "biggest_lesson_title": "Biggest lesson of the month",
+    "biggest_lesson_prompt": "What did life teach you in these last days?",
+
+    "most_grateful_title": "Most grateful for",
+    "most_grateful_prompt": "What moment warmed your heart this month?",
+
+    "proudest_moment_title": "Proudest moment",
+    "proudest_moment_prompt": "What achievement or attitude made you proud?",
+
+    "biggest_challenge_title": "Biggest challenge",
+    "biggest_challenge_prompt": "What required more strength, courage, or patience from you?",
+
+    "personal_growth_title": "Personal growth",
+    "personal_growth_prompt": "What changed inside you? What did you learn about yourself?",
+
+    "unexpected_joy_title": "Unexpected joy",
+    "unexpected_joy_prompt": "What good surprise did the month bring to you?",
+
+    "next_month_focus_title": "Focus for next month",
+    "next_month_focus_prompt": "Where do you want to put your energy in the coming weeks?",
+
+    "save_button": "Save Reflections"
+  
+},
+
 
 
   "did_you_know": {
@@ -424,18 +441,26 @@
   },
 
   "lists": {
-    "title": "My Lists",
-    "description": "A space to record what marked your month — books, music, ideas, shopping and special memories. 💖",
+    "page_label": "My Lists",
 
-    "read": "To read",
-    "write": "To write",
-    "buy": "To buy",
-    "listen": "To listen",
-    "keep": "To keep",
+    "description": "A space to collect what shaped your month — books, ideas, music, wishlist items and special memories. 💖",
+
+    "read": "To Read",
+    "write": "To Write",
+    "buy": "To Buy",
+    "listen": "To Listen",
+    "keep": "To Keep",
+
+    "read_label": "Reading of the month",
+    "write_label": "Random thoughts",
+    "buy_label": "Little things I want",
+    "listen_label": "Songs I loved",
+    "keep_label": "Treasures to keep",
 
     "item": "Item",
+
     "add_more": "Add more",
-    "save": "Save list",
+    "save": "Save List",
     "saved": "List saved successfully! 💖"
   },
 
@@ -639,10 +664,69 @@
   "icon_lucky": "Lucky",
   "icon_neutral": "Neutral",
   "icon_confused": "Confused"
+
+},
+
+
+  "help": {
+  "title": "Help Center",
+  "subtitle": "If something doesn't work as expected, just reach us",
+
+  "faq": "FAQ (soon)",
+  "contact": "Contact: email@sonhodepapel.com",
+
+  "button": "Back",
+  "app_name": "My Year, My Story"
+
+},
+  "about": {
+  "title": "My Year, My Story",
+  "description": "An interactive journal for you to record memories, feelings and special moments throughout the year.",
+  "version": "Version 1.0.0",
+  "close": "Close",
+  "contact": "Contact: email@sonhodepapel.com",
+  "app_name": "My Year, My Story"
+
+},
+
+  "sign": {
+  "aries": "Aries",
+  "taurus": "Taurus",
+  "gemini": "Gemini",
+  "cancer": "Cancer",
+  "leo": "Leo",
+  "virgo": "Virgo",
+  "libra": "Libra",
+  "scorpio": "Scorpio",
+  "sagittarius": "Sagittarius",
+  "capricorn": "Capricorn",
+  "aquarius": "Aquarius",
+  "pisces": "Pisces"
+
+
+},
+
+  "language": {
+  "title": "App Language",
+  "subtitle": "Choose how you prefer to use MyYearMyStory.",
+  "system": "Follow system language",
+  "portuguese": "Portuguese (Brazil)",
+  "english": "English",
+  "saved": "Language updated!",
+  "language": "Language",
+  "app_name": "My Year, My Story"
 }
 
- 
 }
+
+
+
+
+
+
+
+ 
+
 
 
 

@@ -4,7 +4,6 @@ import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/utils/access_control.dart';
-import 'package:myyearmystory/utils/label_colors.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 class ReflectionsWidget extends StatefulWidget {
@@ -30,15 +29,15 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
   bool _isSaving = false;
 
   String? _currentUserId;
-  bool isPremiumUser = false;
+  bool _isPremiumUser = false;
 
-  /// Free users: só pode salvar 1 reflexão.
+  /// Free users podem salvar APENAS 1 reflexão
   int _freeSaveCount = 0;
 
   @override
   bool get wantKeepAlive => true;
 
-  /// 🔸 Lista de prompts traduzíveis
+  /// Lista de prompts traduzidos
   final List<Map<String, String>> _reflectionPrompts = [
     {
       'key': 'biggest_lesson',
@@ -93,44 +92,27 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
   Future<void> _initializeAndLoad() async {
     _currentUserId = _supabase.auth.currentUser?.id;
 
-    await _loadPremiumStatus();
+    _isPremiumUser = await AccessControl.isPremium();
     await _loadReflections();
   }
 
-  Future<void> _loadPremiumStatus() async {
-    final user = _supabase.auth.currentUser;
-
-    if (user == null) {
-      isPremiumUser = false;
-      return;
-    }
-
-    final profile = await _supabase
-        .from('profiles')
-        .select()
-        .eq('id', user.id)
-        .maybeSingle();
-
-    isPremiumUser = AccessControl.isPremium(profile);
-  }
-
   Future<void> _loadReflections() async {
+    if (_currentUserId == null) return;
+
     setState(() => _isLoading = true);
 
     try {
-      if (_currentUserId != null) {
-        final reflections = await ReflectionsService.getReflections(
-          widget.month ?? DateTime.now().month,
-          widget.year ?? DateTime.now().year,
-          _currentUserId!,
-        );
+      final reflections = await ReflectionsService.getReflections(
+        widget.month ?? DateTime.now().month,
+        widget.year ?? DateTime.now().year,
+        _currentUserId!,
+      );
 
-        reflections.forEach((key, value) {
-          if (_controllers.containsKey(key)) {
-            _controllers[key]!.text = value;
-          }
-        });
-      }
+      reflections.forEach((key, value) {
+        if (_controllers.containsKey(key)) {
+          _controllers[key]!.text = value;
+        }
+      });
     } catch (e) {
       debugPrint('Erro ao carregar reflexões: $e');
     } finally {
@@ -141,13 +123,14 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
   Future<void> _saveReflections() async {
     final user = _supabase.auth.currentUser;
 
+    /// Usuário deslogado → popup premium (mesma experiência das outras telas)
     if (user == null) {
       showPremiumPopup(context);
       return;
     }
 
-    /// Free user tentando salvar mais de 1 reflexão
-    if (!isPremiumUser && _freeSaveCount >= 1) {
+    /// Free user tentando salvar mais de uma reflexão
+    if (!_isPremiumUser && _freeSaveCount >= 1) {
       showPremiumPopup(context);
       return;
     }
@@ -170,7 +153,7 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
         user.id,
       );
 
-      if (!isPremiumUser) _freeSaveCount++;
+      if (!_isPremiumUser) _freeSaveCount++;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -194,19 +177,16 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
 
     if (_isLoading) return const Center(child: CircularProgressIndicator());
 
-    return MonthPageTemplate(
-      month: widget.month ?? DateTime.now().month,
-      year: widget.year ?? DateTime.now().year,
+    final month = widget.month ?? DateTime.now().month;
+    final year = widget.year ?? DateTime.now().year;
 
-      /// Etiqueta no topo!
+    return MonthPageTemplate(
+      month: month,
+      year: year,
       pageLabel: 'reflection.page_label'.tr(),
       labelColor: const Color(0xFFcf78f7),
-
-      /// Título oculto
       title: '',
-
       description: 'reflection.description'.tr(),
-
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -221,6 +201,7 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFF2D7E0)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black12.withOpacity(0.05),
@@ -228,7 +209,6 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
                     offset: const Offset(0, 2),
                   )
                 ],
-                border: Border.all(color: const Color(0xFFF2D7E0)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -239,13 +219,6 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: Color.fromARGB(255, 192, 59, 161),
-                      shadows: [
-    Shadow(
-      blurRadius: 2,
-      offset: Offset(0, 1),
-      color: Colors.black12,
-    ),
-  ],
                     ),
                   ),
 
@@ -262,27 +235,23 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
                   const SizedBox(height: 12),
 
                   TextField(
-  controller: controller,
-  maxLines: 4,
-
-  readOnly: !isPremiumUser && _freeSaveCount >= 1,
-
-  onTap: () {
-    if (!isPremiumUser && _freeSaveCount >= 1) {
-      showPremiumPopup(context);
-    }
-  },
-
-  decoration: InputDecoration(
-    hintText: 'reflection.hint'.tr(),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(10),
-    ),
-    filled: true,
-    fillColor: const Color(0xFFFFF7FA),
-  ),
-),
-
+                    controller: controller,
+                    maxLines: 4,
+                    readOnly: !_isPremiumUser && _freeSaveCount >= 1,
+                    onTap: () {
+                      if (!_isPremiumUser && _freeSaveCount >= 1) {
+                        showPremiumPopup(context);
+                      }
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'reflection.hint'.tr(),
+                      filled: true,
+                      fillColor: const Color(0xFFFFF7FA),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             );
@@ -290,39 +259,39 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
 
           const SizedBox(height: 20),
 
-          
-          /// Botão SALVAR — padronizado + checagem premium
-SizedBox(
-  width: double.infinity,
-  child: ElevatedButton(
-    onPressed: _isSaving
-        ? null
-        : () {
-            if (!isPremiumUser && _freeSaveCount >= 1) {
-              showPremiumPopup(context);
-              return;
-            }
-            _saveReflections();
-          },
-    style: ElevatedButton.styleFrom(
-      backgroundColor: const Color.fromARGB(255, 183, 54, 159),
-      foregroundColor: Colors.white,
-      elevation: 0,
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-    ),
-    child: Text(
-      'reflection.save_button'.tr(),
-      style: const TextStyle(
-        fontSize: 15,
-        fontWeight: FontWeight.w700,
-      ),
-    ),
-  ),
-),
+          /// BOTÃO SALVAR
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _isSaving
+                  ? null
+                  : () {
+                      if (!_isPremiumUser && _freeSaveCount >= 1) {
+                        showPremiumPopup(context);
+                        return;
+                      }
+                      _saveReflections();
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 183, 54, 159),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                'reflection.save_button'.tr(),
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
 
+          const SizedBox(height: 20),
         ],
       ),
     );

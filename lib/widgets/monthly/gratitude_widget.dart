@@ -5,6 +5,7 @@ import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 import 'package:myyearmystory/utils/access_control.dart';
 import 'package:myyearmystory/widgets/shared/show_login_prompt.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class GratitudeWidget extends StatefulWidget {
   final int month;
@@ -25,7 +26,8 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
   List<String> _gratitudes = [];
   bool _isLoading = false;
 
-  // 🌈 Lixeirinhas arco-íris (12 cores)
+  bool _isPremiumUser = false;
+
   final List<Color> trashColors = const [
     Color(0xFFcdd8e8),
     Color(0xFFe04cb7),
@@ -44,7 +46,12 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
   @override
   void initState() {
     super.initState();
-    _loadGratitudes();
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    _isPremiumUser = await AccessControl.isPremium();
+    await _loadGratitudes();
   }
 
   @override
@@ -53,9 +60,7 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
     super.dispose();
   }
 
-  // ---------------------------------------------------------
-  // ❤️‍🔥 ANIMAÇÃO DOS CORAÇÕES FOFOS SUBINDO
-  // ---------------------------------------------------------
+  // ❤️ animação do coração
   void _showHeartAnimation() {
     final overlay = Overlay.of(context);
     if (overlay == null) return;
@@ -89,8 +94,6 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
     });
   }
 
-  // ---------------------------------------------------------
-
   Future<void> _loadGratitudes() async {
     final user = SupabaseConfig.client.auth.currentUser;
     if (user == null) return;
@@ -111,29 +114,19 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
 
   Future<void> _addGratitude() async {
     final user = SupabaseConfig.client.auth.currentUser;
-    final text = _controller.text.trim();
 
     if (user == null) {
       showLoginPrompt(context);
       return;
     }
 
-    if (text.isEmpty) return;
-
-    final profile = await SupabaseConfig.client
-        .from('profiles')
-        .select()
-        .eq('id', user.id)
-        .maybeSingle();
-
-    final userProfile = profile ?? {'plan_type': 'guest'};
-    final isPremium = AccessControl.isPremium(userProfile);
-    final isFree = AccessControl.isFree(userProfile);
-
-    if (isFree && _gratitudes.length >= 3) {
+    if (!_isPremiumUser && _gratitudes.length >= 3) {
       showPremiumPopup(context);
       return;
     }
+
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
 
     setState(() => _isLoading = true);
 
@@ -149,18 +142,17 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
       _controller.clear();
       setState(() => _gratitudes = newList);
 
-      // 💖 dispara o coraçãozinho fofo!
       _showHeartAnimation();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gratidão adicionada! 💖')),
+          SnackBar(content: Text('gratitude.added'.tr())),
         );
       }
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erro ao salvar. 😞')),
+          SnackBar(content: Text('gratitude.error_save'.tr())),
         );
       }
     }
@@ -187,13 +179,13 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
       setState(() => _gratitudes = newList);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Item removido!')),
+          SnackBar(content: Text('gratitude.removed'.tr())),
         );
       }
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erro ao remover.')),
+          SnackBar(content: Text('gratitude.error_remove'.tr())),
         );
       }
     }
@@ -207,11 +199,9 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
       month: widget.month,
       year: widget.year,
       title: "",
-      pageLabel: "Página da Gratidão",
+      pageLabel: "gratitude.page_label".tr(),
       labelColor: const Color(0xFFe2377d),
-      description:
-          "A gratidão nos ajuda a enxergar o lado bom da vida e fortalecer o coração. Registre as coisas boas que aconteceram neste mês 💖",
-
+      description: "gratitude.description".tr(),
       child: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -220,14 +210,13 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ➕ Campo de adicionar
                   Row(
                     children: [
                       Expanded(
                         child: TextField(
                           controller: _controller,
                           decoration: InputDecoration(
-                            hintText: 'Sou grato por...',
+                            hintText: 'gratitude.hint'.tr(),
                             filled: true,
                             fillColor: Colors.white,
                             contentPadding: const EdgeInsets.symmetric(
@@ -243,7 +232,7 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
                       ),
                       const SizedBox(width: 10),
                       ElevatedButton(
-                        onPressed: _isLoading ? null : _addGratitude,
+                        onPressed: _addGratitude,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFC03B66),
                           foregroundColor: Colors.white,
@@ -266,13 +255,11 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
                         color: Colors.grey.withOpacity(0.05),
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: const Center(
-                        child: Text(
-                          'Nenhum registro ainda.\nComece adicionando algo pelo qual você é grato 💛',
-                          textAlign: TextAlign.center,
-                          style:
-                              TextStyle(fontSize: 16, color: Colors.grey),
-                        ),
+                      child: Text(
+                        'gratitude.empty'.tr(),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                            fontSize: 16, color: Colors.grey),
                       ),
                     )
                   else
@@ -288,8 +275,8 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
                           decoration: BoxDecoration(
                             color: const Color(0xFFFDF0F4),
                             borderRadius: BorderRadius.circular(14),
-                            border:
-                                Border.all(color: const Color(0xFFF3DCE4)),
+                            border: Border.all(
+                                color: const Color(0xFFF3DCE4)),
                           ),
                           child: ListTile(
                             dense: true,
@@ -310,18 +297,15 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
                                 color: Colors.black87,
                               ),
                             ),
-                            trailing: Transform.translate(
-                              offset: const Offset(4, 0),
-                              child: IconButton(
-                                icon: Icon(
-                                  Icons.delete_rounded,
-                                  color: trashColors[
-                                      index % trashColors.length],
-                                  size: 22,
-                                ),
-                                padding: EdgeInsets.zero,
-                                onPressed: () => _deleteGratitude(index),
+                            trailing: IconButton(
+                              icon: Icon(
+                                Icons.delete_rounded,
+                                color: trashColors[
+                                    index % trashColors.length],
+                                size: 22,
                               ),
+                              padding: EdgeInsets.zero,
+                              onPressed: () => _deleteGratitude(index),
                             ),
                           ),
                         );
@@ -334,11 +318,7 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
   }
 }
 
-
-
-// ----------------------------------------------------------------------
-// ❤️ WIDGET DO CORAÇÃO FLUTUANTE
-// ----------------------------------------------------------------------
+// ❤️ Coraçãozinho animado
 class _HeartFloating extends StatefulWidget {
   final double startX;
   final Color color;

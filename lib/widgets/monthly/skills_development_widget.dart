@@ -8,6 +8,8 @@ import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/utils/month_colors.dart';
 import 'package:myyearmystory/utils/label_colors.dart';
+import 'package:myyearmystory/utils/access_control.dart';
+
 
 final Map<String, Color> skillCategoryColors = {
   "autocuidado": Color(0xFFFAD4D8),
@@ -79,23 +81,10 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
     _loadData();
   }
 Future<void> _checkPremiumStatus() async {
-  final user = supabase.auth.currentUser;
-
-  if (user == null) {
-    setState(() => isPremiumUser = false);
-    return;
-  }
-
-  final response = await supabase
-      .from('users')
-      .select('is_premium')
-      .eq('id', user.id)
-      .maybeSingle();
-
-  setState(() {
-    isPremiumUser = response != null && response['is_premium'] == true;
-  });
+  final premium = await AccessControl.isPremium();
+  setState(() => isPremiumUser = premium);
 }
+
 
 String getLocalizedText(Map<String, dynamic> tip) {
   final locale = context.locale.languageCode;

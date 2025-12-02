@@ -2,20 +2,23 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:myyearmystory/services/profile_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:myyearmystory/main.dart';
+import 'package:myyearmystory/services/profile_service.dart';
 
 import 'glass_drawer.dart';
 import 'glass_drawer_item.dart';
 import 'premium_button_glass.dart';
 import 'about_modal.dart';
 
-// telas
-import 'profile_screen.dart';
-import 'help_screen.dart';
+import '../menus/profile_screen.dart';
+import '../menus/help_screen.dart';
+import '../premium/premium_page.dart';
+import '../menus/language_screen.dart';
 
-// storage local para salvar avatar
+
+
 final storage = const FlutterSecureStorage();
 
 class AppDrawer extends StatefulWidget {
@@ -34,10 +37,12 @@ class _AppDrawerState extends State<AppDrawer> {
   @override
   void initState() {
     super.initState();
-    _loadProfile();      // ← agora carrega nome + email + avatar
+    _loadProfile();
   }
 
-  /// Carrega nome, email e avatar do Supabase
+  // ------------------------------------------------------
+  // LOAD PROFILE
+  // ------------------------------------------------------
   Future<void> _loadProfile() async {
     await profileService.load();
     final data = profileService.profile;
@@ -50,47 +55,76 @@ class _AppDrawerState extends State<AppDrawer> {
     }
   }
 
-  /// Salva avatar no Supabase
-  Future<void> _saveAvatarEmoji(String emoji) async {
-  setState(() => avatarEmoji = emoji);
+  // ------------------------------------------------------
+  // EMOJI BUTTON (AGORA NO LUGAR CERTO!)
+  // ------------------------------------------------------
+  Widget _emojiButton(String emoji) {
+    final bool isSelected = (emoji == avatarEmoji);
 
-  // salva local
-  await storage.write(key: "avatar_icon", value: emoji);
+    return GestureDetector(
+      onTap: () async {
+        setState(() => avatarEmoji = emoji);
 
-  try {
-    final user = profileService.profile;
+        // salvar local
+        await storage.write(key: "avatar_icon", value: emoji);
 
-    if (user != null && user["id"] != null) {
-      await Supabase.instance.client
-          .from("profiles")
-          .update({"avatar_emoji": emoji})
-          .eq("id", user["id"]);
-    }
-  } catch (e) {
-    debugPrint("Erro ao atualizar avatar no Supabase: $e");
+        // salvar no supabase
+        try {
+          final user = profileService.profile;
+          if (user != null && user["id"] != null) {
+            await Supabase.instance.client
+                .from("profiles")
+                .update({"avatar_emoji": emoji})
+                .eq("id", user["id"]);
+          }
+        } catch (e) {
+          debugPrint("Erro ao salvar emoji: $e");
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.only(right: 12),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.white.withOpacity(isSelected ? 0.40 : 0.18),
+          border: Border.all(
+            color: Colors.white.withOpacity(isSelected ? 0.9 : 0.5),
+            width: isSelected ? 2 : 1.2,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.purple.withOpacity(0.25),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  )
+                ]
+              : [],
+        ),
+        child: Text(
+          emoji,
+          style: const TextStyle(fontSize: 28),
+        ),
+      ),
+    );
   }
 
-  if (mounted) Navigator.pop(context);
-}
-
-
-
-
-
+  // ------------------------------------------------------
+  // UI
+  // ------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return GlassDrawer(
       children: [
         const SizedBox(height: 54),
 
-        // -------------------------------------------------------
+        // ------------------------------------------------------
         // HEADER
-        // -------------------------------------------------------
+        // ------------------------------------------------------
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Row(
             children: [
-              // Avatar
               ClipRRect(
                 borderRadius: BorderRadius.circular(50),
                 child: BackdropFilter(
@@ -118,7 +152,6 @@ class _AppDrawerState extends State<AppDrawer> {
 
               const SizedBox(width: 16),
 
-              // Nome + Email
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,17 +163,13 @@ class _AppDrawerState extends State<AppDrawer> {
                         fontSize: 19,
                         fontWeight: FontWeight.bold,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                     Text(
-                      profile?['email'] ?? "Seu e-mail",
+                      profile?['email'] ?? "email",
                       style: const TextStyle(
                         color: Colors.white70,
-                        fontSize: 13,
+                        fontSize: 11,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -149,37 +178,89 @@ class _AppDrawerState extends State<AppDrawer> {
           ),
         ),
 
-        // -------------------------------------------------------
-        // TEXTO "TROCAR ÍCONE" — alinhado à esquerda
-        // -------------------------------------------------------
+        // ------------------------------------------------------
+        // TROCAR ÍCONE
+        // ------------------------------------------------------
         Padding(
           padding: const EdgeInsets.only(left: 24, top: 8, bottom: 10),
-          child: GestureDetector(
-            onTap: _showIconSelector,
-            child: Text(
-              "drawer.change_icon".tr(),
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.85),
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-              textAlign: TextAlign.left,
+          child: Text(
+            "drawer.change_icon".tr(),
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.85),
+              fontSize: 13,
             ),
           ),
         ),
 
-        // botão premium
-        PremiumButtonGlass(
-          onTap: () => Navigator.pushNamed(context, "/premium"),
+        // Lista horizontal de emojis
+        Padding(
+          padding: const EdgeInsets.only(left: 24, bottom: 18),
+          child: SizedBox(
+            height: 62,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                _emojiButton("🌸"),
+                _emojiButton("👑"),
+                _emojiButton("💖"),
+                _emojiButton("🌙"),
+                _emojiButton("⭐"),
+                _emojiButton("🍒"),
+                _emojiButton("🦋"),
+                _emojiButton("🌼"),
+              ],
+            ),
+          ),
         ),
 
-        // itens do menu
+        // ------------------------------------------------------
+        // PREMIUM BUTTON
+        // ------------------------------------------------------
+        PremiumButtonGlass(
+          onTap: () {
+            Navigator.pop(context);
+
+            Future.delayed(const Duration(milliseconds: 40), () {
+              showGeneralDialog(
+                context: navigatorKey.currentContext!,
+                barrierDismissible: true,
+                barrierLabel: "premium",
+                barrierColor: Colors.black.withOpacity(0.05),
+                transitionBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: child,
+                  );
+                },
+                pageBuilder: (context, animation, secondaryAnimation) {
+                  return const PremiumPage();
+                 
+                },
+              );
+            });
+          },
+        ),
+
+         const SizedBox(height: 24), // ou 32 se quiser maior
+
+         
+        // ------------------------------------------------------
+        // MENU ITEMS
+        // ------------------------------------------------------
         GlassDrawerItem(
           icon: Icons.person_outline,
           color: Colors.white,
           text: "drawer.profile".tr(),
           onTap: () => _open(context, const ProfileScreen()),
         ),
+
+        GlassDrawerItem(
+           icon:  Icons.translate,
+           color: Colors.white,
+           text: "drawer.language".tr(),
+           onTap: () => _open(context, const LanguageScreen()),
+         ),
 
         GlassDrawerItem(
           icon: Icons.help_outline,
@@ -192,123 +273,37 @@ class _AppDrawerState extends State<AppDrawer> {
           icon: Icons.info_outline,
           color: Colors.white,
           text: "drawer.about".tr(),
-          onTap: () => showAboutAppModal(context),
+          onTap: () => _open(context, const AboutAppScreen()),
+
         ),
 
-        const Spacer(),
+        
+        
 
-        GlassDrawerItem(
+          const SizedBox(height: 240),
+
+          GlassDrawerItem(
           icon: Icons.logout,
           color: Colors.pinkAccent,
           text: "drawer.logout".tr(),
           onTap: () => _logout(context),
-        ),
 
-        const SizedBox(height: 40),
+
+        ),
       ],
     );
   }
 
-  // -------------------------------------------------------
+  // ------------------------------------------------------
   // Navegação
-  // -------------------------------------------------------
+  // ------------------------------------------------------
   void _open(BuildContext context, Widget screen) {
     Navigator.pop(context);
     Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
   }
 
-  // -------------------------------------------------------
-  // Logout
-  // -------------------------------------------------------
   Future<void> _logout(BuildContext context) async {
     await storage.deleteAll();
     Navigator.pushNamedAndRemoveUntil(context, "/login", (_) => false);
-  }
-
-  // -------------------------------------------------------
-  // MODAL DE SELEÇÃO DE ÍCONE
-  // -------------------------------------------------------
-  void _showIconSelector() {
-    showDialog(
-      context: context,
-      barrierColor: Colors.black26,
-      builder: (_) {
-        return Center(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(26),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-              child: Container(
-                width: 280,
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 18),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.12),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.4),
-                    width: 1.2,
-                  ),
-                  borderRadius: BorderRadius.circular(26),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      "Escolha seu ícone",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-
-                    const SizedBox(height: 18),
-
-                    Wrap(
-                      alignment: WrapAlignment.center,
-                      spacing: 16,
-                      runSpacing: 16,
-                      children: [
-                        _iconOption("🌸"),
-                        _iconOption("⭐"),
-                        _iconOption("💎"),
-                        _iconOption("👑"),
-                        _iconOption("🌙"),
-                        _iconOption("✨"),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  // -------------------------------------------------------
-  // COMPONENTE DO ÍCONE
-  // -------------------------------------------------------
-  Widget _iconOption(String emoji) {
-    return GestureDetector(
-      onTap: () => _saveAvatarEmoji(emoji),
-      child: Container(
-        width: 58,
-        height: 58,
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.15),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.30),
-          ),
-        ),
-        child: Center(
-          child: Text(
-            emoji,
-            style: const TextStyle(fontSize: 32),
-          ),
-        ),
-      ),
-    );
   }
 }

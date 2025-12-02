@@ -39,6 +39,8 @@
       "login_google_email": "Entrar com Google ou E-mail",
       "enter_guest": "Entrar como convidado"
     }
+
+
   },
   "drawer": {
   "user": "Seu nome",
@@ -49,7 +51,8 @@
   "about": "Sobre o App",
   "logout": "Sair",
   "go_premium": "Quero ser Premium",
-  "choose_icon":" Escolha seu ícone de hoje"
+  "choose_icon":" Escolha seu ícone de hoje",
+  "language": "Idioma"
   
   
 },
@@ -63,7 +66,9 @@
   "birth_date": "Data de nascimento",
   "save": "Salvar alterações",
   "your_sign": "Seu signo",
-  "years": "anos"
+  "years": "anos",
+  "email_change_alert": "Para alterar o e-mail da sua conta, entre em contato com o suporte.",
+  "app_name": "My Year, My Story"
 
   },
 
@@ -73,30 +78,24 @@
 },
 
   "premium": {
-    "title_guest": "Acesso Exclusivo 🌟",
-    "title_user": "Plano Premium ✨",
-    "message_guest": "Brilhe e desbloqueie todos os recursos Premium ✨\n\nFaça login para continuar e saber mais!",
-    "message_user": "Continue brilhando! 🌈\nDesbloqueie todos os recursos Premium e aproveite tudo que o app oferece.",
-    "button_login": "Entrar",
-    "button_view_plans": "Ver planos",
-    "button_later": "Talvez depois",
-    "title": "Plano Premium",
-    "subtitle": "Transforme seu ano em memórias eternas ✨",
-    "monthly_title": "🌷 Plano Mensal",
-    "monthly_price": "R$ 12,90 / mês",
-    "monthly_detail1": "Acesso completo por 30 dias",
-    "monthly_detail2": "Renovação automática ativada",
-    "monthly_detail3": "Cancele a qualquer momento",
-    "annual_title": "🌸 Plano Anual (Mais Popular)",
-    "annual_price": "R$ 120 / ano",
-    "annual_detail1": "Acesso completo por 12 meses",
-    "annual_detail2": "Economize 25%",
-    "annual_detail3": "Bônus: páginas e recursos exclusivos 💫",
-    "subscribe_button": "Assinar agora",
-    "dialog_title": "💖 Em breve!",
-    "dialog_message": "O sistema de pagamento estará disponível em breve.\nLogo você poderá assinar e aproveitar todos os recursos Premium do My Year, My Story!",
-    "dialog_button": "Amei ✨",
-    "back_button": "Voltar"
+    
+  "app_name": "My Year, my Story",
+  "title": "Experiência Premium",
+  "main_phrase": "Crie memórias para levar pra vida inteira.",
+  "sub_phrase": "Desbloqueie recursos especiais e deixe seu diário ainda mais mágico.",
+
+  "benefit1": "Acesso ilimitado aos widgets mensais",
+  "benefit2": "Experiência aprimorada na Mensagem do Dia",
+  "benefit3": "Salve memórias ilimitadas",
+  "benefit4": "Listas, metas e Gratidão ilimitadas",
+  "benefit5": "Quizzes especiais com resultado",
+  "benefit6": "Dicas diárias exclusivas",
+  "benefit7": "Diário liberado",
+  "benefit8": "Calendário do humor completo",
+
+  "button": "QUERO SER PREMIUM ✨",
+  "later": "Talvez depois"
+
   },
 
   "signup": {
@@ -215,6 +214,7 @@
   "track_your_activities": "Acompanhe suas atividades 👋",
   
   
+  
   "goals": "Metas",
   "mood": "Humor",
   "diary": "Diário",
@@ -231,6 +231,11 @@
   "select_date": "Selecione uma data",
   "choose_your_color_today": "Escolha sua cor hoje:",
   "your_month_space": "Seu espaço do mês!",
+  "about_you_title": "Curiosidade sobre você",
+  "about_you_empty": "Você ainda não compartilhou nada sobre você este mês",
+   "navigate_months": "Navegue pelos meses",
+   "curiosity_title": "Uma curiosidade sobre você",
+   "no_curiosity": "Você ainda não compartilhou nada sobre você este mês.",
 
 
   "month_short": {
@@ -313,6 +318,8 @@
   "interview": {
   "page_label": "Conexões",
   "default_description": "Faça perguntas para alguém especial e guarde as respostas para sempre.",
+  "fixed_description": "Seja uma guardiã de memórias e registre histórias de quem você ama. Este pode ser um momento único com familiares, amigos e pessoas queridas. 💖",
+
   
   "who_prompt": "Quem você quer entrevistar?",
   "name_label": "Nome",
@@ -338,63 +345,77 @@
   },
 
   "gratitude": {
-    "title": "",
-    "page_label": "Gratidão",
-    "description": "Gratidão ajuda a ver o lado bonito da vida e fortalece o coração. Use este espaço para registrar pequenas alegrias e momentos especiais do mês. 💖",
-    "placeholder": "Sou grata(o) por...",
-    "empty_state": "Nenhum registro de gratidão ainda.\nComece escrevendo algo pelo qual você é grata(o) este mês!",
-    "add_button": "Adicionar",
-    "save_success": "Gratidão adicionada com sucesso! 💖",
-    "delete_success": "Gratidão removida com sucesso!",
-    "save_error": "Erro ao salvar gratidão. 😞",
-    "delete_error": "Erro ao remover gratidão. 😞"
+   "page_label": "Página da Gratidão",
+
+    "description": "A gratidão nos ajuda a enxergar o lado bom da vida e fortalecer o coração. Registre as coisas boas que aconteceram neste mês 💖",
+
+    "hint": "Sou grato por...",
+    "empty_state": "Nenhum registro ainda.\nComece adicionando algo pelo qual você é grato 💛",
+
+    "added_success": "Gratidão adicionada! 💖",
+    "save_error": "Erro ao salvar. 😞",
+
+    "item_removed": "Item removido!",
+    "remove_error": "Erro ao remover."
   },
 
+  
   "reflection": {
-    "page_label": "Reflexões",
-    "description": "Reserve um momento para refletir sobre seu mês: o que te fez crescer, o que te desafiou e o que trouxe alegria 💭",
+    "page_label": "Reflexões do Mês",
 
-    "biggest_lesson_title": "Maior lição",
-    "biggest_lesson_prompt": "Qual foi a maior lição que você aprendeu este mês?",
+    "description": "Um espaço para olhar para dentro, registrar aprendizados e guardar os sentimentos que marcaram este mês. 💖",
 
-    "most_grateful_title": "Maior gratidão",
-    "most_grateful_prompt": "Pelo que você mais se sente grata(o) este mês?",
+    "hint": "Escreva aqui sua reflexão...",
+
+    "saved": "Reflexões salvas com sucesso! 💖",
+    "save_error": "Erro ao salvar suas reflexões.",
+
+    "biggest_lesson_title": "Maior lição do mês",
+    "biggest_lesson_prompt": "O que a vida te ensinou nos últimos dias?",
+
+    "most_grateful_title": "Pelo que sou mais grata",
+    "most_grateful_prompt": "Qual foi o momento que aqueceu seu coração este mês?",
 
     "proudest_moment_title": "Momento de orgulho",
-    "proudest_moment_prompt": "Qual foi o momento de maior orgulho este mês?",
+    "proudest_moment_prompt": "De qual atitude ou conquista você se orgulhou?",
 
     "biggest_challenge_title": "Maior desafio",
-    "biggest_challenge_prompt": "Qual foi o maior desafio que enfrentou e como superou?",
+    "biggest_challenge_prompt": "O que exigiu mais força, coragem ou paciência de você?",
 
     "personal_growth_title": "Crescimento pessoal",
-    "personal_growth_prompt": "Como você cresceu como pessoa este mês?",
+    "personal_growth_prompt": "O que mudou em você? O que você aprendeu sobre si mesma?",
 
     "unexpected_joy_title": "Alegria inesperada",
-    "unexpected_joy_prompt": "Que alegria inesperada você descobriu este mês?",
+    "unexpected_joy_prompt": "Qual surpresa boa o mês trouxe para você?",
 
-    "next_month_focus_title": "Foco do próximo mês",
-    "next_month_focus_prompt": "Em que você quer focar no próximo mês?",
+    "next_month_focus_title": "Foco para o próximo mês",
+    "next_month_focus_prompt": "Em que você quer colocar sua energia nas próximas semanas?",
 
-    "hint": "Escreva sua reflexão aqui...",
-
-    "save_button": "Salvar Reflexões",
-    "saved": "Reflexões salvas com sucesso!",
-    "save_error": "Erro ao salvar reflexões."
+    "save_button": "Salvar Reflexões"
   },
 
-  "lists": {
-    "title": "Minhas Listas",
-    "description": "Um espaço para registrar o que marcou seu mês — livros, músicas, ideias, compras e memórias especiais. 💖",
 
-    "read": "Para ler",
-    "write": "Para anotar",
-    "buy": "Para comprar",
-    "listen": "Para ouvir",
-    "keep": "Para guardar",
+  "lists": {
+    "page_label": "Minhas Listas",
+
+    "description": "Um espaço para guardar o que marcou seu mês — livros, ideias, músicas, comprinhas e lembranças especiais. 💖",
+
+    "read": "Para Ler",
+    "write": "Para Anotar",
+    "buy": "Para Comprar",
+    "listen": "Para Ouvir",
+    "keep": "Para Guardar",
+
+    "read_label": "Leitura do mês",
+    "write_label": "Pensamentos soltos",
+    "buy_label": "Coisinhas que quero",
+    "listen_label": "Músicas que amei",
+    "keep_label": "Essas eu guardo",
 
     "item": "Item",
+
     "add_more": "Adicionar mais",
-    "save": "Salvar lista",
+    "save": "Salvar Lista",
     "saved": "Lista salva com sucesso! 💖"
   },
 
@@ -626,9 +647,64 @@
   "icon_lucky": "Sorte",
   "icon_neutral": "Neutro",
   "icon_confused": "Confuso"
+},
+
+  "help": {
+  "title": "Central de Ajuda",
+  "subtitle": "Se algo não funcionar como esperado, chama a gente",
+
+  "faq": "FAQ (breve)",
+  "contact": "Contato: email@sonhodepapel.com",
+
+  "button": "Voltar",
+  "app_name": "My Year, My Story"
+
+},
+  "about": {
+  "title": "My Year, My Story",
+  "description": "Um diário interativo para você registrar memórias, sentimentos e momentos especiais ao longo do ano.",
+  "version": "Versão 1.0.0",
+  "close": "Fechar",
+  "contact": "Contato: email@sonhodepapel.com",
+  "app_name": "My Year, My Story"
+
+},
+
+
+  "sign": {
+  "aries": "Áries",
+  "taurus": "Touro",
+  "gemini": "Gêmeos",
+  "cancer": "Câncer",
+  "leo": "Leão",
+  "virgo": "Virgem",
+  "libra": "Libra",
+  "scorpio": "Escorpião",
+  "sagittarius": "Sagitário",
+  "capricorn": "Capricórnio",
+  "aquarius": "Aquário",
+  "pisces": "Peixes"
+
+},
+  "language": {
+  "title": "Idioma do App",
+  "subtitle": "Escolha como você prefere usar o MyYearMyStory.",
+  "system": "Seguir idioma do sistema",
+  "portuguese": "Português (Brasil)",
+  "english": "Inglês",
+  "saved": "Idioma atualizado!",
+  "language": "Idioma",
+  "app_name": "My Year, My Story"
 }
 
 }
+
+
+
+
+
+
+
 
 
 

@@ -5,7 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:myyearmystory/services/profile_service.dart';
-
+import 'package:google_fonts/google_fonts.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -53,8 +53,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       emailController.text = response['email'] ?? '';
       selectedEmoji = response['avatar_emoji'] ?? "🌸";
 
-      planType =
-          (response["is_premium"] == true) ? "Premium Plan" : "Free Plan";
+      planType = (response["is_premium"] == true)
+          ? "profile.premium_plan".tr()
+          : "profile.free_plan".tr();
 
       if (response['birth_date'] != null) {
         selectedBirthDate = DateTime.parse(response['birth_date']);
@@ -70,30 +71,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // -------------------------------------------------------
   Future<void> _saveProfile() async {
     final user = SupabaseConfig.client.auth.currentUser;
-
     if (user == null) return;
 
-    // Converter data
+    // Converte data
     if (birthDateController.text.isNotEmpty) {
-      try {
-        final p = birthDateController.text.split('/');
-        selectedBirthDate = DateTime(
-          int.parse(p[2]),
-          int.parse(p[1]),
-          int.parse(p[0]),
-        );
-      } catch (_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Data inválida."),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
+      final p = birthDateController.text.split('/');
+      selectedBirthDate = DateTime(
+        int.parse(p[2]),
+        int.parse(p[1]),
+        int.parse(p[0]),
+      );
     }
 
-    // Atualizar perfil no banco
     await SupabaseConfig.client.from('profiles').update({
       "full_name": nameController.text.trim(),
       "email": emailController.text.trim(),
@@ -101,7 +90,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         "birth_date": selectedBirthDate!.toIso8601String().split("T")[0],
     }).eq('id', user.id);
 
-    // Atualizar Local
     profileService.updateLocal({
       "full_name": nameController.text.trim(),
       "email": emailController.text.trim(),
@@ -111,9 +99,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Perfil atualizado!"),
-        backgroundColor: Colors.green,
+      SnackBar(
+        content: Text("profile.updated".tr()),
+        backgroundColor: Colors.pinkAccent.withOpacity(0.8),
       ),
     );
   }
@@ -144,18 +132,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String descobrirSigno(DateTime d) {
     final dia = d.day, mes = d.month;
 
-    if ((mes == 3 && dia >= 21) || (mes == 4 && dia <= 19)) return "Áries";
-    if ((mes == 4 && dia >= 20) || (mes == 5 && dia <= 20)) return "Touro";
-    if ((mes == 5 && dia >= 21) || (mes == 6 && dia <= 20)) return "Gêmeos";
-    if ((mes == 6 && dia >= 21) || (mes == 7 && dia <= 22)) return "Câncer";
-    if ((mes == 7 && dia >= 23) || (mes == 8 && dia <= 22)) return "Leão";
-    if ((mes == 8 && dia >= 23) || (mes == 9 && dia <= 22)) return "Virgem";
-    if ((mes == 9 && dia >= 23) || (mes == 10 && dia <= 22)) return "Libra";
-    if ((mes == 10 && dia >= 23) || (mes == 11 && dia <= 21)) return "Escorpião";
-    if ((mes == 11 && dia >= 22) || (mes == 12 && dia <= 21)) return "Sagitário";
-    if ((mes == 12 && dia >= 22) || (mes == 1 && dia <= 19)) return "Capricórnio";
-    if ((mes == 1 && dia >= 20) || (mes == 2 && dia <= 18)) return "Aquário";
-    return "Peixes";
+    if ((mes == 3 && dia >= 21) || (mes == 4 && dia <= 19)) return "sign.aries";
+    if ((mes == 4 && dia >= 20) || (mes == 5 && dia <= 20)) return "sign.taurus";
+    if ((mes == 5 && dia >= 21) || (mes == 6 && dia <= 20)) return "sign.gemini";
+    if ((mes == 6 && dia >= 21) || (mes == 7 && dia <= 22)) return "sign.cancer";
+    if ((mes == 7 && dia >= 23) || (mes == 8 && dia <= 22)) return "sign.leo";
+    if ((mes == 8 && dia >= 23) || (mes == 9 && dia <= 22)) return "sign.virgo";
+    if ((mes == 9 && dia >= 23) || (mes == 10 && dia <= 22)) return "sign.libra";
+    if ((mes == 10 && dia >= 23) || (mes == 11 && dia <= 21)) return "sign.scorpio";
+    if ((mes == 11 && dia >= 22) || (mes == 12 && dia <= 21)) return "sign.sagittarius";
+    if ((mes == 12 && dia >= 22) || (mes == 1 && dia <= 19)) return "sign.capricorn";
+    if ((mes == 1 && dia >= 20) || (mes == 2 && dia <= 18)) return "sign.aquarius";
+
+    return "sign.pisces";
   }
 
   // -------------------------------------------------------
@@ -175,13 +164,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       builder: (_, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: Colors.pinkAccent,
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFFE15C8C),
               onPrimary: Colors.white,
-              surface: Color(0xFF1F1F40),
-              onSurface: Colors.white,
+              onSurface: Color(0xFF4A266A),
             ),
-            dialogBackgroundColor: const Color(0xFF1F1F40),
+            dialogBackgroundColor: Color(0xFFF9E9FF),
           ),
           child: child!,
         );
@@ -204,22 +192,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       backgroundColor: Colors.transparent,
+
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text(
-          "Meu Perfil",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-        ),
-      ),
+  backgroundColor: const Color(0xFFE3B1FC),
+  elevation: 0,
+  centerTitle: true,
+
+  iconTheme: const IconThemeData(
+    color: Color(0xFF4B3768), // cor da seta!
+  ),
+
+  title: Text(
+   "language.app_name".tr(),
+      style: GoogleFonts.montserrat(
+      fontWeight: FontWeight.w700,
+      fontSize: 18,
+      color: const Color(0xFF4B3768),
+    ),
+  ),
+),
 
       body: Stack(
         children: [
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF2C2F66), Color(0xFF1B1C3A)],
+                colors: [Color(0xFFF9E9FF), Color(0xFFFFF4F8)],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -227,7 +225,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
 
           SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 120),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 140),
             child: Column(
               children: [
                 _buildHeader(),
@@ -236,7 +234,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _glassInput(
                   icon: Icons.person_outline,
                   controller: nameController,
-                  label: "Nome completo",
+                  label: "profile.full_name".tr(),
                 ),
 
                 const SizedBox(height: 22),
@@ -244,7 +242,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _glassInput(
                   icon: Icons.cake_outlined,
                   controller: birthDateController,
-                  label: tr("profile.birth_date"),
+                  label: "profile.birth_date".tr(),
                   readOnly: true,
                   keyboardType: TextInputType.none,
                   inputFormatters: [birthMask],
@@ -254,30 +252,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 22),
 
                 _glassInput(
-  icon: Icons.email_outlined,
-  controller: emailController,
-  label: tr("profile.email"),
-  readOnly: true,
-  onTap: () {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: Colors.pinkAccent.withOpacity(0.9),
-        content: Text(
-          tr("profile.email_change_alert"),
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 14,
-          ),
-        ),
-        duration: const Duration(seconds: 3),
-      ),
-    );
-  },
-),
-
+                  icon: Icons.email_outlined,
+                  controller: emailController,
+                  label: "profile.email".tr(),
+                  readOnly: true,
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        backgroundColor: Colors.purple.shade300,
+                        content: Text(
+                          tr("profile.email_change_alert"),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
+                        ),
+                        duration: const Duration(seconds: 3),
+                      ),
+                    );
+                  },
+                ),
 
                 const SizedBox(height: 40),
-
                 _saveButton(),
                 const SizedBox(height: 80),
               ],
@@ -289,7 +285,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   // -------------------------------------------------------
-  // HEADER CARD
+  // HEADER — estilo Premium Page
   // -------------------------------------------------------
   Widget _buildHeader() {
     final idade =
@@ -301,27 +297,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(28),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 22),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.10),
+            color: Colors.white.withOpacity(0.45),
             borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: Colors.white.withOpacity(0.25)),
+            border: Border.all(color: Colors.white.withOpacity(0.85)),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF9B59B6).withOpacity(0.12),
+                blurRadius: 28,
+                offset: const Offset(0, 12),
+              )
+            ],
           ),
           child: Column(
             children: [
-              /// avatar escolhido no drawer (supabase)
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.15),
-                  border: Border.all(color: Colors.white.withOpacity(0.35)),
+                  color: Colors.white.withOpacity(0.55),
+                  border: Border.all(color: Colors.white.withOpacity(0.8)),
                 ),
                 child: Text(
                   selectedEmoji,
-                  style: const TextStyle(fontSize: 44),
+                  style: const TextStyle(fontSize: 46),
                 ),
               ),
 
@@ -329,12 +331,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               Text(
                 nameController.text.isEmpty
-                    ? "Seu nome"
+                    ? "profile.full_name".tr()
                     : nameController.text,
                 style: const TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Color(0xFF4A266A),
                 ),
               ),
 
@@ -342,9 +344,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               Text(
                 planType,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 15,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Color(0xFF7A5BBC),
                 ),
               ),
 
@@ -354,18 +356,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Icon(Icons.auto_awesome,
-                      color: Colors.white, size: 16),
+                      color: Color(0xFF4A266A), size: 16),
                   const SizedBox(width: 6),
-                  Text(signo,
-                      style:
-                          const TextStyle(fontSize: 16, color: Colors.white)),
+                  Text(
+                    signo.tr(),
+                    style: const TextStyle(
+                        fontSize: 16, color: Color(0xFF4A266A)),
+                  ),
                   const SizedBox(width: 18),
                   const Icon(Icons.cake_outlined,
-                      color: Colors.white, size: 14),
+                      color: Color(0xFF4A266A), size: 14),
                   const SizedBox(width: 6),
-                  Text("$idade anos",
-                      style:
-                          const TextStyle(fontSize: 16, color: Colors.white)),
+                  Text(
+                    "$idade ${tr("profile.years")}",
+                    style: const TextStyle(
+                        fontSize: 16, color: Color(0xFF4A266A)),
+                  ),
                 ],
               ),
             ],
@@ -382,21 +388,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(26),
-        gradient: LinearGradient(
+        borderRadius: BorderRadius.circular(20),
+        gradient: const LinearGradient(
           colors: [
-            Colors.pinkAccent.withOpacity(0.6),
-            Colors.pink.shade300.withOpacity(0.6),
+            Color(0xFFE066A6),
+            Color(0xFFDA82C2),
           ],
         ),
       ),
       child: TextButton(
         onPressed: _saveProfile,
-        child: const Text(
-          "Salvar",
-          style: TextStyle(
+        child: Text(
+          "profile.save_button".tr(),
+          style: const TextStyle(
             color: Colors.white,
-            fontSize: 18,
+            fontSize: 17,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -422,28 +428,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
       onTap: onTap,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
-      cursorColor: Colors.white,
+      cursorColor: const Color(0xFF4A266A),
       style: const TextStyle(
-        color: Colors.white,
+        color: Color(0xFF4A266A),
         fontSize: 16,
+        fontWeight: FontWeight.w600,
       ),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(
-          color: Colors.white.withOpacity(0.55),
+          color: const Color(0xFF4A266A).withOpacity(0.55),
           fontSize: 15,
         ),
-        prefixIcon: Icon(icon, color: Colors.white.withOpacity(0.85)),
+        prefixIcon: Icon(icon, color: const Color(0xFF4A266A)),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.10),
+        fillColor: Colors.white.withOpacity(0.45),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(22),
           borderSide:
-              BorderSide(color: Colors.white.withOpacity(0.25), width: 1.3),
+              BorderSide(color: Colors.white.withOpacity(0.65), width: 1.3),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(22),
-          borderSide: const BorderSide(color: Colors.white, width: 1.5),
+          borderSide: const BorderSide(color: Color(0xFF4A266A), width: 1.5),
         ),
       ),
     );

@@ -9,6 +9,8 @@ import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/services/did_you_know_service.dart';
 import 'package:myyearmystory/utils/month_colors.dart';
 import 'package:intl/intl.dart';
+import 'package:myyearmystory/utils/access_control.dart';
+
 
 class DidYouKnowWidget extends StatefulWidget {
   final int month;
@@ -57,22 +59,9 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
   }
 
   Future<void> _checkPremiumStatus() async {
-    final user = supabase.auth.currentUser;
-    if (user == null) {
-      setState(() => isPremiumUser = false);
-      return;
-    }
-
-    final response = await supabase
-        .from('users')
-        .select('is_premium')
-        .eq('id', user.id)
-        .maybeSingle();
-
-    setState(() {
-      isPremiumUser = response != null && response['is_premium'] == true;
-    });
-  }
+  final isPrem = await AccessControl.isPremium(); // ✓ consulta unificada
+  setState(() => isPremiumUser = isPrem);
+}
 
   /// 🔎 CARREGA AS CURIOSIDADES DO DIA
   Future<void> _loadCuriositiesForToday() async {

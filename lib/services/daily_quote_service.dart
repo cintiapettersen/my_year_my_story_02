@@ -1,49 +1,50 @@
-import 'dart:math';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DailyQuoteService {
   final supabase = Supabase.instance.client;
 
-  // Carrega todas as frases
-  Future<List<Map<String, dynamic>>> _fetchAllQuotes() async {
-    final response = await supabase.from('daily_quotes').select();
-    return response.map((e) => Map<String, dynamic>.from(e)).toList();
-  }
+  Future<Map<String, dynamic>?> getRandomQuote(String lang) async {
+    try {
+      // busca apenas as colunas necessárias
+      final response = await supabase
+          .from('daily_quotes')
+          .select('id, text, text_en')
+          .order('id')   // ok
+          .limit(200);   // opcional
 
-  // Salva histórico das últimas 5 frases
-  Future<void> _saveHistory(int id) async {
-    final prefs = await SharedPreferences.getInstance();
-    List<String> history = prefs.getStringList('quote_history') ?? [];
+      if (response.isEmpty) {
+        print("⚠️ Nenhuma frase encontrada.");
+        return null;
+      }
 
-    history.insert(0, id.toString());
+      // embaralha
+      response.shuffle();
+      final quote = response.first;
 
-    if (history.length > 5) {
-      history = history.sublist(0, 5);
+      print("📝 Quote sorteada: $quote");
+
+      // idioma EN
+      if (lang == "en") {
+        final textEn = quote["text_en"]?.toString().trim();
+        if (textEn != null && textEn.isNotEmpty) {
+          print("🌎 Usando frase EN: $textEn");
+          return {"text": textEn};
+        }
+      }
+
+      // idioma PT
+      final textPt = quote["text"]?.toString().trim();
+      if (textPt != null && textPt.isNotEmpty) {
+        print("🇧🇷 Usando frase PT: $textPt");
+        return {"text": textPt};
+      }
+
+      print("⚠️ Quote vazia! Retornando fallback vazio.");
+      return {"text": ""};
+
+    } catch (e) {
+      print("❌ ERRO NO DailyQuoteService: $e");
+      return null;
     }
-
-    await prefs.setStringList('quote_history', history);
-  }
-
-  // Retorna frase aleatória evitando repetição
-  Future<Map<String, dynamic>> getRandomQuote() async {
-    final prefs = await SharedPreferences.getInstance();
-    final history = prefs.getStringList('quote_history') ?? [];
-
-    final quotes = await _fetchAllQuotes();
-
-    // Frases não usadas recentemente
-    final filtered = quotes.where(
-      (q) => !history.contains(q['id'].toString()),
-    ).toList();
-
-    final available = filtered.isNotEmpty ? filtered : quotes;
-
-    final random = Random();
-    final chosen = available[random.nextInt(available.length)];
-
-    await _saveHistory(chosen['id']);
-
-    return chosen;
   }
 }

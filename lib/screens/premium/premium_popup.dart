@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-
-import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:myyearmystory/screens/premium/premium_page.dart';
 
 Future<void> showPremiumPopup(BuildContext context) async {
   showDialog(
@@ -26,9 +26,9 @@ Future<void> showPremiumPopup(BuildContext context) async {
 
                 const SizedBox(height: 12),
 
-                const Text(
-                  "Vem ser Premium",
-                  style: TextStyle(
+                Text(
+                  "premium_popup.title".tr(),
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFFB03062),
@@ -38,9 +38,9 @@ Future<void> showPremiumPopup(BuildContext context) async {
 
                 const SizedBox(height: 14),
 
-                const Text(
-                  "Com o plano Premium, você desbloqueia todas as funções do app e pode salvar quantas memórias quiser! ✨",
-                  style: TextStyle(
+                Text(
+                  "premium_popup.message".tr(),
+                  style: const TextStyle(
                     fontSize: 15,
                     height: 1.4,
                     color: Colors.black87,
@@ -50,15 +50,20 @@ Future<void> showPremiumPopup(BuildContext context) async {
 
                 const SizedBox(height: 26),
 
-                // ⭐ BOTÃO ÚNICO — CENTRALIZADO E LINDO
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pop(context);
-                      // 👉 Coloque aqui pra onde deve ir a página premium
-                      // Navigator.push(context, MaterialPageRoute(builder: (_) => PremiumPage()));
-                    },
+                     Navigator.pop(context); // fecha o popup
+
+                      // evita abrir a PremiumPage se já estivermos nela
+                      if (context.widget is PremiumPage) return;
+
+                       Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const PremiumPage()),
+                      );
+                      },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFCD4B78),
                       padding: const EdgeInsets.symmetric(vertical: 14),
@@ -67,9 +72,9 @@ Future<void> showPremiumPopup(BuildContext context) async {
                       ),
                       elevation: 0,
                     ),
-                    child: const Text(
-                      "Conhecer Premium",
-                      style: TextStyle(
+                    child: Text(
+                      "premium_popup.upgrade_button".tr(),
+                      style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
@@ -81,7 +86,6 @@ Future<void> showPremiumPopup(BuildContext context) async {
             ),
           ),
 
-          // ❌ Botão de fechar no canto superior direito
           Positioned(
             right: 6,
             top: 6,

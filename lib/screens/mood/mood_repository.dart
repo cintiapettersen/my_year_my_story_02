@@ -7,25 +7,34 @@ class MoodRepository {
   factory MoodRepository() => _instance;
   MoodRepository._internal();
 
-  /// Salvar ou atualizar humor do dia
+  /// ---------------------------------------
+  /// SALVAR HUMOR DO DIA (corrigido)
+  /// ---------------------------------------
   Future<void> saveMood({
     required String userId,
     required String moodKey,
     required DateTime date,
   }) async {
-    final dateOnly = DateTime(date.year, date.month, date.day);
+    // Data sem timezone e sem horário
+    final dateOnlyString =
+        "${date.year.toString().padLeft(4, '0')}-"
+        "${date.month.toString().padLeft(2, '0')}-"
+        "${date.day.toString().padLeft(2, '0')}";
 
     await client.from('mood_entries').upsert({
       'user_id': userId,
       'mood': moodKey,
-      'entry_date': dateOnly.toIso8601String(),
+      'entry_date': dateOnlyString, // <-- SAFE
       'month': date.month,
       'year': date.year,
-      'created_at': DateTime.now().toIso8601String(),
+      'created_at': DateTime.now().toUtc().toIso8601String(),
     });
   }
 
-  /// Buscar todos os humores do mês
+  /// ---------------------------------------
+  /// BUSCAR TODOS OS HUMORES DO MÊS
+  /// Apenas o ÚLTIMO humor por dia
+  /// ---------------------------------------
   Future<List<Map<String, dynamic>>> getMoodsForMonth({
     required String userId,
     required int month,
@@ -39,25 +48,48 @@ class MoodRepository {
         .eq('year', year)
         .order('entry_date', ascending: true);
 
-    return List<Map<String, dynamic>>.from(response);
+    final List<Map<String, dynamic>> raw =
+        List<Map<String, dynamic>>.from(response);
+
+    // Monta map filtrando último humor do dia
+    final Map<String, Map<String, dynamic>> lastByDay = {};
+
+    for (final item in raw) {
+      final dateStr = item['entry_date'];
+      if (dateStr == null) continue;
+
+      // Parseando sem mudar fuso
+      final dateParts = dateStr.split("-");
+      if (dateParts.length != 3) continue;
+
+      final day = int.tryParse(dateParts[2]);
+      if (day == null) continue;
+
+      lastByDay[day.toString()] = item;
+    }
+
+    return lastByDay.values.toList();
   }
 
-  /// Buscar humor de um único dia
+  /// ---------------------------------------
+  /// BUSCAR HUMOR DE UM ÚNICO DIA
+  /// ---------------------------------------
   Future<String?> getMoodForDate({
     required String userId,
     required DateTime date,
   }) async {
-    final dateOnly = DateTime(date.year, date.month, date.day).toIso8601String();
+    final dateOnlyString =
+        "${date.year.toString().padLeft(4, '0')}-"
+        "${date.month.toString().padLeft(2, '0')}-"
+        "${date.day.toString().padLeft(2, '0')}";
 
     final data = await client
         .from('mood_entries')
         .select('mood')
         .eq('user_id', userId)
-        .eq('entry_date', dateOnly)
+        .eq('entry_date', dateOnlyString)
         .maybeSingle();
 
-    if (data == null) return null;
-
-    return data['mood'] as String?;
+    return data?['mood'] as String?;
   }
 }

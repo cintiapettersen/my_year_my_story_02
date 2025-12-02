@@ -9,6 +9,7 @@ import 'package:myyearmystory/widgets/monthly/dailyluckpage.dart';
 import 'package:myyearmystory/services/auth_listener.dart';
 import 'package:myyearmystory/services/profile_service.dart';
 import 'package:myyearmystory/screens/premium/premium_page.dart';
+import 'package:myyearmystory/main.dart';
 
 
 // 🌸 Estilo e Configuração

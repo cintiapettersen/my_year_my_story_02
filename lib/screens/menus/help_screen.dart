@@ -1,101 +1,180 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class HelpScreen extends StatelessWidget {
   const HelpScreen({super.key});
 
-  Future<void> _launchSupport() async {
-    final Uri url = Uri.parse('mailto:contato@sonhodepapel.com?subject=Ajuda%20-%20MyYearMyStory');
-    if (!await launchUrl(url)) {
-      throw Exception('Não foi possível abrir o e-mail');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
+      backgroundColor: Colors.transparent,
+
       appBar: AppBar(
-        title: const Text('Ajuda e Suporte'),
-        backgroundColor: theme.primaryColor,
-        foregroundColor: Colors.white,
-      ),
-      backgroundColor: Colors.grey[50],
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          _faqItem(
-            icon: Icons.edit_note,
-            title: 'Como preencher as páginas do mês?',
-            description: 'Acesse o menu principal e escolha o mês atual. Cada seção é interativa e salva automaticamente.',
+  backgroundColor: const Color(0xFFE3B1FC),
+  elevation: 0,
+  centerTitle: true,
+
+  iconTheme: const IconThemeData(
+    color: Color(0xFF4B3768), // cor da seta!
+  ),
+
+  title: Text(
+    "language.app_name".tr(),
+    style: GoogleFonts.montserrat(
+      fontWeight: FontWeight.w700,
+      fontSize: 18,
+      color: const Color(0xFF4B3768),
+    ),
+  ),
+),
+
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFF9E9FF),
+              Color(0xFFFFF4F8),
+            ],
           ),
-          _faqItem(
-            icon: Icons.person_outline,
-            title: 'Como editar meu perfil?',
-            description: 'No menu lateral, vá em “Meu Perfil” e toque em “Editar”. Você pode alterar nome e foto.',
-          ),
-          _faqItem(
-            icon: Icons.logout,
-            title: 'Como sair do app?',
-            description: 'Abra o menu lateral e toque em “Sair”. Seu progresso ficará salvo na nuvem.',
-          ),
-          const SizedBox(height: 24),
-          Center(
-            child: ElevatedButton.icon(
-              onPressed: _launchSupport,
-              icon: const Icon(Icons.email_outlined),
-              label: const Text('Falar com o suporte'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: theme.primaryColor,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+
+        child: Center(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 40),
+
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(34),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 34, horizontal: 28),
+
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.45),
+                      borderRadius: BorderRadius.circular(34),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.85),
+                        width: 1.4,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF9B59B6).withOpacity(0.12),
+                          blurRadius: 30,
+                          offset: const Offset(0, 14),
+                        ),
+                      ],
+                    ),
+
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Ícone
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.55),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.8),
+                              width: 1,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.help_outline_rounded,
+                            color: Color.fromARGB(255, 158, 119, 205),
+                            size: 44,
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Título
+                        Text(
+                          "help.title".tr(),
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w700,
+                            color: const Color.fromARGB(255, 89, 58, 127),
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        // Sub
+                        Text(
+                          "help.subtitle".tr(),
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                          ),
+                        ),
+
+                        const SizedBox(height: 28),
+
+                        Container(
+                          height: 1.2,
+                          width: double.infinity,
+                          color: Colors.white.withOpacity(0.8),
+                        ),
+
+                        const SizedBox(height: 28),
+
+                        // Itens
+                        _helpItem(Icons.star_outline_rounded, "help.faq".tr()),
+                        _helpItem(Icons.mail_outline_rounded, "help.contact".tr()),
+
+                        const SizedBox(height: 34),
+
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text(
+                            "help.button".tr(),
+                            style: GoogleFonts.inter(
+                              color: Colors.black54,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _faqItem({
-    required IconData icon,
-    required String title,
-    required String description,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            offset: const Offset(0, 2),
-            blurRadius: 6,
-          ),
-        ],
-      ),
+  Widget _helpItem(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: Colors.purple),
+          Icon(icon, size: 22, color: Color.fromARGB(255, 158, 119, 205)),
           const SizedBox(width: 12),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, color: Colors.black87)),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: TextStyle(color: Colors.grey[700], height: 1.4),
-                ),
-              ],
+            child: Text(
+              text,
+              style: GoogleFonts.inter(
+                fontSize: 15.5,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+              ),
             ),
           ),
         ],

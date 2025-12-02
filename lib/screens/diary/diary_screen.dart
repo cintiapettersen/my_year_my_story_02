@@ -8,6 +8,8 @@ import 'package:myyearmystory/widgets/shared/show_login_prompt.dart';
 import 'package:myyearmystory/widgets/shared/main_scaffold.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:myyearmystory/utils/access_control.dart';
+
 
 class DiaryScreen extends StatefulWidget {
   const DiaryScreen({super.key});
@@ -47,23 +49,10 @@ class _DiaryScreenState extends State<DiaryScreen> {
     _loadEntries();
   }
 
-  Future<void> _checkPremiumStatus() async {
-    final user = SupabaseConfig.client.auth.currentUser;
-    if (user == null) {
-      setState(() => _isPremiumUser = false);
-      return;
-    }
-
-    final response = await SupabaseConfig.client
-        .from('users')
-        .select('is_premium')
-        .eq('id', user.id)
-        .maybeSingle();
-
-    setState(() {
-      _isPremiumUser = response != null && response['is_premium'] == true;
-    });
-  }
+    Future<void> _checkPremiumStatus() async {
+  final premium = await AccessControl.isPremium();
+  setState(() => _isPremiumUser = premium);
+}
 
   @override
   void dispose() {

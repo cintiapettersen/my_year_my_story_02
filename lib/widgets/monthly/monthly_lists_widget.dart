@@ -4,7 +4,6 @@ import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 import 'package:myyearmystory/utils/access_control.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:myyearmystory/utils/label_colors.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
 
 class MonthlyListsWidget extends StatefulWidget {
@@ -19,16 +18,18 @@ class MonthlyListsWidget extends StatefulWidget {
 
 class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
     with AutomaticKeepAliveClientMixin {
-  final supabase = SupabaseConfig.client;
+  final _supabase = SupabaseConfig.client;
 
   bool _isLoading = false;
   bool _isSaving = false;
+
   bool _isPremiumUser = false;
   String? _currentUserId;
 
   @override
   bool get wantKeepAlive => true;
 
+  /// Controladores — cada categoria contém uma lista com vários campos
   final Map<String, List<TextEditingController>> _controllers = {
     'pra_ler': [],
     'pra_anotar': [],
@@ -37,51 +38,46 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
     'pra_guardar': [],
   };
 
-  // 🌸 Stickers minimalistas
+  /// Stickers
   final Map<String, Map<String, dynamic>> _stickers = {
     'pra_ler': {
-      'label': 'Leitura do mês'.tr(),
-      'icon': Icons.menu_book_rounded,
+      'label': 'lists.sticker_read'.tr(),
     },
     'pra_anotar': {
-      'label': 'Pensamentos soltos'.tr(),
-      'icon': Icons.edit_rounded,
+      'label': 'lists.sticker_write'.tr(),
     },
     'pra_comprar': {
-      'label': 'Coisinhas que quero'.tr(),
-      'icon': Icons.shopping_bag_rounded,
+      'label': 'lists.sticker_buy'.tr(),
     },
     'pra_ouvir': {
-      'label': 'Músicas que amei'.tr(),
-      'icon': Icons.music_note_rounded,
+      'label': 'lists.sticker_listen'.tr(),
     },
     'pra_guardar': {
-      'label': 'Essas eu guardo'.tr(),
-      'icon': Icons.push_pin_rounded,
+      'label': 'lists.sticker_keep'.tr(),
     },
   };
 
-  // Cores e ícones das categorias
+  /// Dados das categorias
   final Map<String, Map<String, dynamic>> _listData = {
     'pra_ler': {
       'title': 'lists.read',
-      'color': const Color(0xffe569bf),
+      'color': Color(0xffe569bf),
     },
     'pra_anotar': {
       'title': 'lists.write',
-      'color': const Color(0xFFdbaf35),
+      'color': Color(0xFFdbaf35),
     },
     'pra_comprar': {
       'title': 'lists.buy',
-      'color': const Color(0xFF679bd3),
+      'color': Color(0xFF679bd3),
     },
     'pra_ouvir': {
       'title': 'lists.listen',
-      'color': const Color.fromARGB(255, 243, 205, 219),
+      'color': Color(0xFFF3CDDB),
     },
     'pra_guardar': {
       'title': 'lists.keep',
-      'color': const Color(0xFFbeb6f2),
+      'color': Color(0xFFbeb6f2),
     },
   };
 
@@ -92,31 +88,21 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
     _initializeAndLoad();
   }
 
-  Future<void> _initializeAndLoad() async {
-    _currentUserId = supabase.auth.currentUser?.id;
-
-    if (_currentUserId != null) {
-      await _checkPremiumStatus();
-      await _loadSavedData();
-    }
-
-    setState(() => _isLoading = false);
-  }
-
-  Future<void> _checkPremiumStatus() async {
-    final response = await supabase
-        .from('profiles')
-        .select('is_premium')
-        .eq('id', _currentUserId!)
-        .maybeSingle();
-
-    _isPremiumUser = response?['is_premium'] == true;
-  }
-
   void _initializeControllers() {
     for (String key in _controllers.keys) {
       _controllers[key] = List.generate(5, (_) => TextEditingController());
     }
+  }
+
+  Future<void> _initializeAndLoad() async {
+    _currentUserId = _supabase.auth.currentUser?.id;
+    _isPremiumUser = await AccessControl.isPremium();
+
+    if (_currentUserId != null) {
+      await _loadSavedData();
+    }
+
+    setState(() => _isLoading = false);
   }
 
   Future<void> _loadSavedData() async {
@@ -133,18 +119,19 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
       _controllers[key] = List.generate(
         savedList.length > 5 ? savedList.length : 5,
         (i) => TextEditingController(
-            text: i < savedList.length ? savedList[i] : ''),
+          text: i < savedList.length ? savedList[i] : '',
+        ),
       );
     }
 
     setState(() => _isLoading = false);
   }
 
-  Future<void> _saveSingleList(String listKey) async {
-    final user = supabase.auth.currentUser;
+  Future<void> _saveList(String listKey) async {
+    final user = _supabase.auth.currentUser;
 
     if (user == null) {
-      AccessControl.showLoginPopup(context);
+      showPremiumPopup(context);
       return;
     }
 
@@ -171,20 +158,18 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
         user.id,
       );
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('lists.saved'.tr()),
-            backgroundColor: const Color.fromARGB(255, 166, 82, 182),
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('lists.saved'.tr()),
+          backgroundColor: const Color(0xFFa652b6),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
   }
 
-  void _addNewField(String listKey) {
+  void _addField(String listKey) {
     if (!_isPremiumUser) {
       showPremiumPopup(context);
       return;
@@ -208,10 +193,10 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
       month: month,
       year: year,
       title: '',
-      pageLabel: 'Minhas Listas',
+      pageLabel: 'lists.page_label'.tr(),
       labelColor: const Color.fromARGB(255, 78, 83, 150),
       description:
-          'Um espaço para anotar o que marcou seu mês — livros, músicas, ideias, compras e lembranças especiais. 💖',
+          'lists.description'.tr(),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
         child: Column(
@@ -223,135 +208,141 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
     );
   }
 
+  Widget _buildList(String key) {
+    final info = _listData[key]!;
+    final bgColor = info['color'] as Color;
+    final sticker = _stickers[key]!;
 
-Widget _buildList(String key) {
-  final info = _listData[key]!;
-  final bgColor = info['color'] as Color;
-  final sticker = _stickers[key]!;
+    final isListenBlock = key == 'pra_ouvir';
 
-  // Ajustes exclusivos do bloco rosa (pra ouvir)
-  final isListenBlock = key == 'pra_ouvir';
-  final titleColor = isListenBlock ? const Color.fromARGB(255, 199, 70, 113) : const Color.fromARGB(255, 248, 238, 238).withOpacity(0.85);
-  final saveTextColor = isListenBlock ? const Color.fromARGB(255, 233, 98, 143) : bgColor;
-  final saveBorderColor = isListenBlock ? const Color.fromARGB(255, 205, 165, 178) : bgColor;
+    final titleColor = isListenBlock
+        ? const Color.fromARGB(255, 199, 70, 113)
+        : Colors.white.withOpacity(0.92);
 
-  return Container(
-    margin: const EdgeInsets.only(bottom: 32),
-    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
-    decoration: BoxDecoration(
-      color: bgColor,
-      borderRadius: BorderRadius.circular(22),
-      boxShadow: [
-        BoxShadow(
-          color: const Color.fromARGB(230, 255, 255, 255).withOpacity(0.10),
-          blurRadius: 6,
-          offset: const Offset(0, 2),
-        )
-      ],
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        
-        // STICKER SEM ÍCONE + ITÁLICO
-        Text(
-          sticker['label'],
-          style: TextStyle(
-            fontSize: 14,
-            fontStyle: FontStyle.italic,
-            fontWeight: FontWeight.w500,
-            color: const Color.fromARGB(255, 255, 255, 255).withOpacity(0.55),
-          ),
-        ),
+    final saveTextColor =
+        isListenBlock ? const Color(0xFFE9628F) : bgColor;
 
-        const SizedBox(height: 14),
+    final saveBorderColor =
+        isListenBlock ? const Color(0xFFcda5b2) : bgColor;
 
-        // TÍTULO EM ITÁLICO E SEM SOMBRA
-        Text(
-          info['title'].toString().tr(),
-          style: TextStyle(
-            fontSize: 19,
-            fontWeight: FontWeight.w600,
-            fontStyle: FontStyle.italic,
-            color: titleColor,
-          ),
-        ),
-
-        const SizedBox(height: 16),
-
-        // CAMPOS
-        ..._controllers[key]!.asMap().entries.map((entry) {
-          final index = entry.key;
-          final controller = entry.value;
-
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: TextField(
-              controller: controller,
-              decoration: InputDecoration(
-  filled: true,
-  fillColor: Colors.white,
-  hintText: '${"lists.item".tr()} ${index + 1}',
-  contentPadding: const EdgeInsets.symmetric(
-    horizontal: 16,
-    vertical: 14,
-  ),
-  enabledBorder: OutlineInputBorder(
-    borderRadius: BorderRadius.circular(14),
-    borderSide: const BorderSide(
-      color: Color.fromARGB(255, 242, 240, 240),
-      width: 1.3,
-    ),
-  ),
-  focusedBorder: OutlineInputBorder(
-    borderRadius: BorderRadius.circular(14),
-    borderSide: const BorderSide(
-      color: Color(0xffC03B66),
-      width: 1.6,
-    ),
-  ),
-),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 32),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          )
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // STICKER
+          Text(
+            sticker['label'],
+            style: TextStyle(
+              fontSize: 14,
+              fontStyle: FontStyle.italic,
+              color: Colors.white.withOpacity(0.55),
             ),
-          );
-        }),
+          ),
 
-        // ADICIONAR MAIS
-        Center(
-          child: TextButton.icon(
-            onPressed: () => _addNewField(key),
-            icon: const Icon(Icons.add_circle_outline, color: Colors.white),
-            label: Text(
-              'lists.add_more'.tr(),
-              style: const TextStyle(
-                color: Color.fromARGB(255, 255, 255, 255),
-                fontWeight: FontWeight.w600,
+          const SizedBox(height: 14),
+
+          // TÍTULO DA LISTA
+          Text(
+            info['title'].toString().tr(),
+            style: TextStyle(
+              fontSize: 19,
+              fontWeight: FontWeight.w600,
+              fontStyle: FontStyle.italic,
+              color: titleColor,
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // CAMPOS
+          ..._controllers[key]!.asMap().entries.map((entry) {
+            final index = entry.key;
+            final controller = entry.value;
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  hintText: "${"lists.item".tr()} ${index + 1}",
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(
+                      color: Color(0xFFF2F0F0),
+                      width: 1.3,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(
+                      color: Color(0xffC03B66),
+                      width: 1.6,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
+
+          Center(
+            child: TextButton.icon(
+              onPressed: () => _addField(key),
+              icon:
+                  const Icon(Icons.add_circle_outline, color: Colors.white),
+              label: Text(
+                'lists.add_more'.tr(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
-        ),
 
-        const SizedBox(height: 10),
+          const SizedBox(height: 10),
 
-        // BOTÃO SALVAR COM COR AJUSTADA NO BLOCO ROSA
-        Center(
-          child: ElevatedButton(
-            onPressed: _isSaving ? null : () => _saveSingleList(key),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: saveTextColor,
-              side: BorderSide(color: saveBorderColor),
-              padding: EdgeInsets.symmetric(horizontal: 26, vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              elevation: 0,
-            ),
-            child: Text(
-              'lists.save'.tr(),
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          Center(
+            child: ElevatedButton(
+              onPressed: _isSaving ? null : () => _saveList(key),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: saveTextColor,
+                side: BorderSide(color: saveBorderColor),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 26, vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                elevation: 0,
+              ),
+              child: Text(
+                'lists.save'.tr(),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 }

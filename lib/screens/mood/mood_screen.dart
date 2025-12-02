@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:myyearmystory/widgets/shared/main_scaffold.dart';
 
-// IMPORTA O CALENDÁRIO
+import 'package:myyearmystory/widgets/shared/main_scaffold.dart';
 import 'package:myyearmystory/screens/mood/mood_calendar.dart';
+import 'package:myyearmystory/screens/premium/premium_popup.dart';
 
 class MoodScreen extends StatefulWidget {
   final int month;
@@ -24,12 +24,11 @@ class MoodScreen extends StatefulWidget {
 
 class _MoodScreenState extends State<MoodScreen> {
   final supabase = Supabase.instance.client;
+
   bool isSaving = false;
+  bool isPremium = false;
+  int moodsToday = 0;
 
-  // Tradução automática
-  String safeTr(String key) => 'mood.$key'.tr();
-
-  // Cores dos humores
   final Map<String, Color> moodColors = {
     "happy": Color(0xFFE04CB7),
     "calm": Color(0xFFC79FE2),
@@ -49,7 +48,6 @@ class _MoodScreenState extends State<MoodScreen> {
     "confused": Color(0xFFB539BC),
   };
 
-  // Lista de humores
   final List<Map<String, dynamic>> moods = [
     {'emoji': '😊', 'key': 'happy'},
     {'emoji': '😌', 'key': 'calm'},
@@ -69,7 +67,6 @@ class _MoodScreenState extends State<MoodScreen> {
     {'emoji': '😕', 'key': 'confused'},
   ];
 
-  // Motivacionais
   final motivationalMessages = {
     'happy': '🌞 Continue espalhando essa luz!',
     'calm': '🌿 Aproveite essa paz.',
@@ -89,18 +86,63 @@ class _MoodScreenState extends State<MoodScreen> {
     'confused': '😕 Vai clareando aos poucos.',
   };
 
-  // Salvar humor
-  Future<void> saveMood(String moodKey) async {
-    if (isSaving) return;
+  List<Map<String, dynamic>> topMoods = [];
 
-    setState(() => isSaving = true);
+  @override
+  void initState() {
+    super.initState();
+    _checkPremium();
+    fetchMonthlySummary();
+    _loadTodayCount();
+  }
 
+  Future<void> _checkPremium() async {
     final user = supabase.auth.currentUser;
+    if (user == null) return;
+
+    final res = await supabase
+        .from("profiles")
+        .select("is_premium")
+        .eq("id", user.id)
+        .maybeSingle();
+
+    isPremium = res?["is_premium"] == true;
+    setState(() {});
+  }
+
+  Future<void> _loadTodayCount() async {
+    final user = supabase.auth.currentUser;
+    if (user == null) return;
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    final result = await supabase
+        .from("mood_entries")
+        .select()
+        .eq("user_id", user.id)
+        .eq("year", today.year)
+        .eq("month", today.month)
+        .eq("day", today.day);
+
+    moodsToday = result.length;
+    setState(() {});
+  }
+
+  Future<void> saveMood(String moodKey) async {
+    final user = supabase.auth.currentUser;
+
     if (user == null) {
-      _showSnack('user.not_authenticated'.tr(), Colors.redAccent);
-      isSaving = false;
+      showPremiumPopup(context);
       return;
     }
+
+    if (!isPremium && moodsToday >= 1) {
+      showPremiumPopup(context);
+      return;
+    }
+
+    setState(() => isSaving = true);
 
     final now = DateTime.now();
 
@@ -108,43 +150,56 @@ class _MoodScreenState extends State<MoodScreen> {
       'user_id': user.id,
       'mood': moodKey,
       'entry_date': now.toIso8601String(),
+      'day': now.day,
       'month': now.month,
       'year': now.year,
       'created_at': now.toIso8601String(),
     });
 
-    _showSnack(motivationalMessages[moodKey] ?? 'mood.saved'.tr(),
-        Color(0xFFE91E63));
+    moodsToday++;
+    _showSnack(motivationalMessages[moodKey] ?? 'Mood salvo!');
 
-    isSaving = false;
+    setState(() => isSaving = false);
+
     fetchMonthlySummary();
-    setState(() {}); // Atualiza o calendário
   }
 
-  List<Map<String, dynamic>> topMoods = [];
+  // SNACK FOFO
+  void _showSnack(String text) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(text, style: const TextStyle(color: Colors.white)),
+        backgroundColor: const Color(0xFFE91E63),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
 
-  // Carregar resumo
+  // ANALISE MENSAL
   Future<void> fetchMonthlySummary() async {
     final user = supabase.auth.currentUser;
     if (user == null) return;
 
-    final response = await supabase
-        .from('mood_entries')
+    final res = await supabase
+        .from("mood_entries")
         .select()
-        .eq('user_id', user.id)
-        .eq('month', DateTime.now().month)
-        .eq('year', DateTime.now().year);
+        .eq("user_id", user.id)
+        .eq("month", widget.month)
+        .eq("year", widget.year);
 
-    if (response.isEmpty) {
+    if (res.isEmpty) {
       setState(() => topMoods = []);
       return;
     }
 
     final counts = <String, int>{};
 
-    for (var entry in response) {
-      final moodKey = entry['mood'];
-      counts[moodKey] = (counts[moodKey] ?? 0) + 1;
+    for (var row in res) {
+      final mood = row["mood"];
+      counts[mood] = (counts[mood] ?? 0) + 1;
     }
 
     final total = counts.values.fold(0, (a, b) => a + b);
@@ -156,77 +211,40 @@ class _MoodScreenState extends State<MoodScreen> {
       );
 
       return {
-        'key': e.key,
-        'emoji': moodData['emoji'],
-        'percent': (e.value / total) * 100,
+        "key": e.key,
+        "emoji": moodData["emoji"],
+        "percent": (e.value / total) * 100,
       };
     }).toList();
 
-    list.sort((a, b) => b['percent'].compareTo(a['percent']));
+    list.sort((a, b) => b["percent"].compareTo(a["percent"]));
 
     setState(() => topMoods = list.take(4).toList());
-  }
-
-  void _showSnack(String text, Color color) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          text,
-          style: TextStyle(color: Colors.white, fontSize: 16),
-        ),
-        backgroundColor: color,
-        duration: Duration(seconds: 4),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14)),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    fetchMonthlySummary();
   }
 
   @override
   Widget build(BuildContext context) {
     return MainScaffold(
       currentIndex: 3,
-      title: 'My Year, My Story',
+      title: "My Year, My Story",
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 22, vertical: 22),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
           child: Column(
             children: [
               _buildHeader(),
-              SizedBox(height: 25),
+              const SizedBox(height: 30),
 
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      const SizedBox(height: 36),
+                      _buildDescription(),
+                      const SizedBox(height: 20),
 
-                      // 🌸 Texto explicativo acima do calendário
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 6.0),
-                        child: Text(
-                          'mood.calendar_description'.tr(),
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            fontStyle: FontStyle.italic,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 18),
-
-                      // 🌈 Calendário
+                      // CALENDÁRIO
                       MoodCalendar(
-                        userId: supabase.auth.currentUser!.id,
+                        userId: supabase.auth.currentUser?.id ?? "",
                         month: widget.month,
                         year: widget.year,
                         moodEmojis: {
@@ -235,45 +253,11 @@ class _MoodScreenState extends State<MoodScreen> {
                         moodColors: moodColors,
                       ),
 
-                      const SizedBox(height: 26),
-
-                      // —— separador ——
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 12),
-                        child: Divider(thickness: 1, color: Colors.black26),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      // Texto antes dos botões
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 12),
-                        child: Text(
-                          'mood.calendar_register_hint'.tr(),
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            fontStyle: FontStyle.italic,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 12),
-                        child: Divider(thickness: 1, color: Colors.black26),
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      // 🌸 GRID DOS BOTÕES
+                      const SizedBox(height: 40),
                       _buildMoodGrid(),
 
-                      const SizedBox(height: 30),
-
-                      if (topMoods.isNotEmpty) _buildMoodSummaryGlass(),
+                      const SizedBox(height: 40),
+                      if (topMoods.isNotEmpty) _buildSummaryCard(),
                     ],
                   ),
                 ),
@@ -285,267 +269,196 @@ class _MoodScreenState extends State<MoodScreen> {
     );
   }
 
-  // HEADER
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Color.fromARGB(255, 230, 187, 234),
-        borderRadius: BorderRadius.circular(10),
+        color: const Color(0xFFE9C4E8),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Text(
         'mood.how_are_you_feeling'.tr(),
         textAlign: TextAlign.center,
         style: GoogleFonts.robotoMono(
           fontSize: 18,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 1.4,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );
   }
 
-  // GRID dos botões
-  Widget _buildMoodGrid() {
-  final screenWidth = MediaQuery.of(context).size.width;
-  final itemWidth = (screenWidth - 22 - 22 - 16) / 2;
-
-  return Wrap(
-    alignment: WrapAlignment.start,
-    spacing: 16,
-    runSpacing: 32,
-    children: moods.map((mood) {
-      return SizedBox(
-        width: itemWidth,
-        child: _moodButton(
-          mood['emoji'],
-          safeTr(mood['key']),
-          moodColors[mood['key']]!,
-          () => saveMood(mood['key']),
+  Widget _buildDescription() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Text(
+        'mood.calendar_description'.tr(),
+        textAlign: TextAlign.center,
+        style: GoogleFonts.poppins(
+          fontSize: 13,
+          fontStyle: FontStyle.italic,
         ),
-      );
-    }).toList(),
-  );
-}
+      ),
+    );
+  }
 
+  // GRID DE HUMORES
+  Widget _buildMoodGrid() {
+    final width = MediaQuery.of(context).size.width;
+    final itemWidth = (width - 40) / 2;
 
-  // BOTÃO com emoji
+    return Wrap(
+      spacing: 16,
+      runSpacing: 30,
+      children: moods.map((mood) {
+        return SizedBox(
+          width: itemWidth,
+          child: _moodButton(
+            mood['emoji'],
+            'mood.${mood['key']}'.tr(),
+            moodColors[mood['key']]!,
+            () => saveMood(mood['key']),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
   Widget _moodButton(
-    String emoji,
-    String label,
-    Color color,
-    VoidCallback onTap,
-  ) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        GestureDetector(
-          onTap: onTap,
-          child: Container(
-            padding: EdgeInsets.only(top: 22),
+      String emoji, String label, Color color, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: isSaving ? null : onTap,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            padding: const EdgeInsets.only(top: 26, bottom: 18),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.30),
+              color: color.withOpacity(0.28),
               borderRadius: BorderRadius.circular(18),
               boxShadow: [
                 BoxShadow(
                   color: color.withOpacity(0.25),
                   blurRadius: 6,
-                  offset: Offset(0, 3),
+                  offset: const Offset(0, 3),
                 )
               ],
             ),
             alignment: Alignment.center,
             child: Text(
               label,
+              textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                letterSpacing: 1.3,
-                color: Colors.black87,
               ),
             ),
           ),
-        ),
 
-        Positioned(
-          top: -18,
-          left: 0,
-          right: 0,
-          child: CircleAvatar(
-            radius: 22,
-            backgroundColor: Colors.white.withOpacity(0.6),
+          Positioned(
+            top: -18,
+            left: 0,
+            right: 0,
             child: CircleAvatar(
-              radius: 18,
-              backgroundColor: color,
-              child: Text(
-                emoji,
-                style: const TextStyle(fontSize: 22),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // CARD RESUMO
-  Widget _buildMoodSummaryGlass() {
-    final top = topMoods.first;
-    final others = topMoods.skip(1).toList();
-
-    final now = DateTime.now();
-    final monthName = DateFormat('MMMM', 'pt_BR').format(now);
-    final monthFormatted =
-        "${monthName[0].toUpperCase()}${monthName.substring(1)}";
-    final year = now.year;
-
-    return Container(
-      margin: const EdgeInsets.only(top: 40),
-      child: Stack(
-        alignment: Alignment.topCenter,
-        children: [
-          Column(
-            children: [
-              const SizedBox(height: 1),
-              Text(
-                'HUMOR DESTAQUE',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.courierPrime(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 2,
-                  color: Colors.black87,
+              radius: 22,
+              backgroundColor: Colors.white.withOpacity(0.7),
+              child: CircleAvatar(
+                radius: 19,
+                backgroundColor: color,
+                child: Text(
+                  emoji,
+                  style: const TextStyle(fontSize: 22),
                 ),
               ),
-              const SizedBox(height: 10),
-            ],
-          ),
-
-          Container(
-            margin: const EdgeInsets.only(top: 30),
-            padding: const EdgeInsets.symmetric(
-                horizontal: 24, vertical: 38),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF2D8F4),
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(
-                color: const Color(0xFFE9C4E8),
-                width: 4,
-              ),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  "$monthFormatted $year",
-                  style: GoogleFonts.courierPrime(
-                    fontSize: 15,
-                    letterSpacing: 1.4,
-                    color: Colors.black54,
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                Container(
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEACCF0),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    top['emoji'],
-                    style: const TextStyle(fontSize: 46),
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                Text(
-                  "${top['percent'].toStringAsFixed(0)}%",
-                  style: GoogleFonts.poppins(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-
-                Text(
-                  safeTr(top['key']),
-                  style: GoogleFonts.courierPrime(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 4,
-                  ),
-                ),
-
-                const SizedBox(height: 22),
-
-                Divider(color: Colors.black38, height: 1),
-
-                const SizedBox(height: 20),
-
-                Text(
-                  "OUTROS HUMORES MAIS MARCADOS",
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.courierPrime(
-                    fontSize: 13,
-                    letterSpacing: 2,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                Row(
-                  mainAxisAlignment:
-                      MainAxisAlignment.spaceEvenly,
-                  children: others.map((item) {
-                    return Column(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(18),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFD2B4EC),
-                            borderRadius: BorderRadius.circular(60),
-                          ),
-                          child: Text(
-                            item['emoji'],
-                            style: const TextStyle(fontSize: 32),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          "${item['percent'].toStringAsFixed(0)}%",
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          safeTr(item['key']),
-                          style: GoogleFonts.courierPrime(
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    );
-                  }).toList(),
-                ),
-              ],
             ),
           ),
         ],
       ),
     );
   }
-}
 
-// EXTENSÃO AJUDA A CAPITALIZAR
-extension CapExtension on String {
-  String capitalize() {
-    if (isEmpty) return this;
-    return this[0].toUpperCase() + substring(1);
+  // CARD DE RESUMO
+  Widget _buildSummaryCard() {
+    final top = topMoods.first;
+    final others = topMoods.skip(1).toList();
+
+    return Container(
+      margin: const EdgeInsets.only(top: 20),
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF2D8F4),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFE9C4E8), width: 3),
+      ),
+      child: Column(
+        children: [
+          Text(
+            "HUMOR DESTAQUE",
+            style: GoogleFonts.courierPrime(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 2,
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          Text(
+            top["emoji"],
+            style: const TextStyle(fontSize: 48),
+          ),
+
+          const SizedBox(height: 10),
+          Text(
+            "${top['percent'].toStringAsFixed(0)}%",
+            style: GoogleFonts.poppins(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          const SizedBox(height: 8),
+          Text(
+            'mood.${top['key']}'.tr(),
+            style: GoogleFonts.courierPrime(
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 3,
+            ),
+          ),
+
+          const SizedBox(height: 20),
+          Divider(),
+
+          const SizedBox(height: 14),
+          Text(
+            "OUTROS HUMORES",
+            style: GoogleFonts.courierPrime(
+              fontSize: 13,
+              letterSpacing: 1.5,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: others.map((item) {
+              return Column(
+                children: [
+                  Text(item['emoji'], style: const TextStyle(fontSize: 32)),
+                  Text(
+                    "${item['percent'].toStringAsFixed(0)}%",
+                    style: GoogleFonts.poppins(fontSize: 14),
+                  ),
+                  Text(
+                    'mood.${item['key']}'.tr(),
+                    style: GoogleFonts.courierPrime(fontSize: 14),
+                  ),
+                ],
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
   }
 }

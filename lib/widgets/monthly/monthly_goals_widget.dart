@@ -4,8 +4,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:myyearmystory/models/monthly_goal_model.dart';
 import 'package:myyearmystory/services/monthly_goal_service.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
-
 import 'package:myyearmystory/widgets/shared/month_page_template.dart';
+
 import 'package:myyearmystory/utils/access_control.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
 
@@ -28,12 +28,16 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
   List<MonthlyGoal> _goals = [];
   bool _isLoading = false;
 
+  bool _isPremiumUser = false;
   late int currentMonth;
   late int currentYear;
 
-  // 🌈 Cores das lixeiras (repetem em loop)
+  /// Limite do usuário Free: apenas 3 metas
+  final int freeLimit = 3;
+
+  /// Cores das lixeirinhas
   final List<Color> trashColors = [
-    Color(0xFFE57373), 
+    Color(0xFFE57373),
     Color(0xFFF06292),
     Color(0xFFBA68C8),
     Color(0xFF9575CD),
@@ -48,10 +52,17 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
   @override
   void initState() {
     super.initState();
+
     final now = DateTime.now();
     currentMonth = widget.month ?? now.month;
     currentYear = widget.year ?? now.year;
-    _loadGoals();
+
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    _isPremiumUser = await AccessControl.isPremium();
+    await _loadGoals();
   }
 
   @override
@@ -78,7 +89,9 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('monthly_goals.error_load_goals'.tr())),
+          SnackBar(
+            content: Text('monthly_goals.error_load_goals'.tr()),
+          ),
         );
       }
     } finally {
@@ -89,20 +102,19 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
   // ➕ Adicionar meta
   Future<void> _addGoal() async {
     final user = SupabaseConfig.client.auth.currentUser;
-    final text = _goalController.text.trim();
 
     if (user == null) {
-      AccessControl.showLoginPopup(context);
-      return;
-    }
-
-    final isPremium = await AccessControl.checkPremiumStatus(user.id);
-
-    if (!isPremium && _goals.length >= 3) {
       showPremiumPopup(context);
       return;
     }
 
+    // Free user bateu o limite
+    if (!_isPremiumUser && _goals.length >= freeLimit) {
+      showPremiumPopup(context);
+      return;
+    }
+
+    final text = _goalController.text.trim();
     if (text.isEmpty) return;
 
     setState(() => _isLoading = true);
@@ -126,11 +138,9 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
         );
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('monthly_goals.error_add_goal'.tr())),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('monthly_goals.error_add_goal'.tr())),
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -141,9 +151,7 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
     final user = SupabaseConfig.client.auth.currentUser;
 
     if (user == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        AccessControl.showLoginPopup(context);
-      });
+      showPremiumPopup(context);
       return;
     }
 
@@ -173,7 +181,7 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
     final user = SupabaseConfig.client.auth.currentUser;
 
     if (user == null) {
-      AccessControl.showLoginPopup(context);
+      showPremiumPopup(context);
       return;
     }
 
@@ -189,11 +197,9 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
         );
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('monthly_goals.error_remove_goal'.tr())),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('monthly_goals.error_remove_goal'.tr())),
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -207,8 +213,6 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
       year: currentYear,
       title: "",
       pageLabel: "monthly_goals.title".tr(),
-      
-      // 💚 Cor temporária (pode trocar quando quiser)
       labelColor: const Color.fromARGB(255, 237, 84, 181),
 
       description: "monthly_goals.description".tr(),
@@ -216,7 +220,8 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
       child: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -243,9 +248,10 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
                       ),
                       const SizedBox(width: 10),
                       ElevatedButton(
-                        onPressed: _isLoading ? null : _addGoal,
+                        onPressed: _addGoal,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color.fromARGB(255, 139, 111, 196),
+                          backgroundColor:
+                              const Color.fromARGB(255, 139, 111, 196),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.all(14),
                           shape: RoundedRectangleBorder(
@@ -295,59 +301,56 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
         final goal = _goals[index];
 
         return Container(
-  margin: const EdgeInsets.only(bottom: 12),
-  decoration: BoxDecoration(
-    color: const Color(0xFFFDF0F4),
-    borderRadius: BorderRadius.circular(14),
-    border: Border.all(color: const Color(0xFFF3DCE4)),
-  ),
-  child: ListTile(
-    dense: true, // 🔹 deixa o tile mais compacto
-    visualDensity: const VisualDensity(
-      horizontal: -3,
-      vertical: -3, // 🔹 reduz bastante a altura sem perder conforto
-    ),
-    contentPadding: const EdgeInsets.symmetric(
-      horizontal: 10, // 🔹 bordas mais próximas
-      vertical: 4, // 🔹 menos altura
-    ),
-
-    leading: Transform.translate(
-      offset: const Offset(-4, 0), // 🔹 encosta mais o checkbox no canto
-      child: Checkbox(
-        value: goal.concluido,
-        onChanged: (_) => _toggleGoal(goal),
-        activeColor: const Color.fromARGB(255, 239, 77, 193),
-        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap, // 🔹 diminui hitbox
-      ),
-    ),
-
-    title: Text(
-      goal.conteudo,
-      style: TextStyle(
-        fontSize: 14.5,       // 🔹 menorzinho
-        height: 1.25,         // 🔹 linhas mais juntinhas
-        fontWeight: FontWeight.w500,
-        decoration: goal.concluido ? TextDecoration.lineThrough : null,
-        color: goal.concluido ? Colors.grey : Colors.black87,
-      ),
-    ),
-
-    trailing: Transform.translate(
-      offset: const Offset(4, 0), // 🔹 encosta mais a lixeirinha no canto
-      child: IconButton(
-        icon: Icon(
-          Icons.delete_rounded,
-          color: trashColors[index % trashColors.length],
-          size: 22, // 🔹 menorzinho pra combinar
-        ),
-        padding: EdgeInsets.zero, // 🔹 remove o espaço extra
-        onPressed: () => _deleteGoal(goal),
-      ),
-    ),
-  ),
-);
-
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFDF0F4),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFF3DCE4)),
+          ),
+          child: ListTile(
+            dense: true,
+            visualDensity: const VisualDensity(
+              horizontal: -3,
+              vertical: -3,
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 4,
+            ),
+            leading: Transform.translate(
+              offset: const Offset(-4, 0),
+              child: Checkbox(
+                value: goal.concluido,
+                onChanged: (_) => _toggleGoal(goal),
+                activeColor: const Color.fromARGB(255, 239, 77, 193),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ),
+            title: Text(
+              goal.conteudo,
+              style: TextStyle(
+                fontSize: 14.5,
+                height: 1.25,
+                fontWeight: FontWeight.w500,
+                decoration:
+                    goal.concluido ? TextDecoration.lineThrough : null,
+                color: goal.concluido ? Colors.grey : Colors.black87,
+              ),
+            ),
+            trailing: Transform.translate(
+              offset: const Offset(4, 0),
+              child: IconButton(
+                icon: Icon(
+                  Icons.delete_rounded,
+                  color: trashColors[index % trashColors.length],
+                  size: 22,
+                ),
+                padding: EdgeInsets.zero,
+                onPressed: () => _deleteGoal(goal),
+              ),
+            ),
+          ),
+        );
       },
     );
   }

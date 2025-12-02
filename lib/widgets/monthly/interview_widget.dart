@@ -2,18 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 import 'package:myyearmystory/services/interview_service.dart';
 import 'package:myyearmystory/utils/access_control.dart';
-import 'package:myyearmystory/utils/month_colors.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
-import 'package:myyearmystory/screens/popups/coming_soon.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
-import 'package:myyearmystory/utils/month_colors.dart';
 
 class InterviewScreen extends StatefulWidget {
   final int? month;
   final int? year;
 
-  const InterviewScreen({super.key, this.month, this.year});
+  const InterviewScreen({
+    super.key,
+    this.month,
+    this.year,
+  });
 
   @override
   State<InterviewScreen> createState() => _InterviewScreenState();
@@ -25,12 +26,15 @@ class _InterviewScreenState extends State<InterviewScreen>
 
   bool _isLoading = false;
   bool _isSaving = false;
+
   bool _isPremiumUser = false;
   String? _currentUserId;
 
+  /// Controle de perguntas visíveis
   bool _showAllQuestions = false;
 
   final List<TextEditingController> _controllers = [];
+
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _relationController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
@@ -44,25 +48,24 @@ class _InterviewScreenState extends State<InterviewScreen>
   @override
   void initState() {
     super.initState();
-    _initializeAndLoad();
+    _initialize();
   }
 
-  Future<void> _initializeAndLoad() async {
+  Future<void> _initialize() async {
     setState(() => _isLoading = true);
 
     _currentUserId = supabase.auth.currentUser?.id;
+    _isPremiumUser = await AccessControl.isPremium();
 
-    if (_currentUserId != null) {
-      _isPremiumUser = await AccessControl.checkPremiumStatus(_currentUserId!);
-    }
-
+    /// Buscar texto + perguntas do Supabase
     final interviewData = await InterviewService.getInterviewData(
       widget.month ?? DateTime.now().month,
       context.locale.languageCode,
     );
 
     _questions = List<String>.from(interviewData['questions'] ?? []);
-    _description = interviewData['description'] ?? '';
+    _description =
+        "interview.fixed_description".tr(); // agora fixa, sempre traduzida
 
     await _loadSavedAnswers();
 
@@ -79,7 +82,8 @@ class _InterviewScreenState extends State<InterviewScreen>
     );
 
     final person = data['person'] ?? {};
-    final questionsData = List<Map<String, dynamic>>.from(data['questions'] ?? []);
+    final questionsData =
+        List<Map<String, dynamic>>.from(data['questions'] ?? []);
 
     _nameController.text = person['name'] ?? '';
     _relationController.text = person['relation'] ?? '';
@@ -87,10 +91,9 @@ class _InterviewScreenState extends State<InterviewScreen>
 
     _controllers.clear();
     for (int i = 0; i < _questions.length; i++) {
-      String answer = '';
-      if (i < questionsData.length) {
-        answer = questionsData[i]['a'] ?? '';
-      }
+      final answer = i < questionsData.length
+          ? questionsData[i]['a'] ?? ''
+          : '';
       _controllers.add(TextEditingController(text: answer));
     }
   }
@@ -99,7 +102,7 @@ class _InterviewScreenState extends State<InterviewScreen>
     final user = supabase.auth.currentUser;
 
     if (user == null) {
-      AccessControl.showLoginPopup(context);
+      showPremiumPopup(context);
       return;
     }
 
@@ -133,7 +136,7 @@ class _InterviewScreenState extends State<InterviewScreen>
         );
       }
     } catch (e) {
-      debugPrint('Erro ao salvar entrevista: $e');
+      debugPrint("Erro ao salvar entrevista: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -151,15 +154,13 @@ class _InterviewScreenState extends State<InterviewScreen>
   Widget build(BuildContext context) {
     super.build(context);
 
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    if (_isLoading) return const Center(child: CircularProgressIndicator());
 
     final month = widget.month ?? DateTime.now().month;
     final year = widget.year ?? DateTime.now().year;
-    final currentButtonColor = getMonthColor(month);
 
-    final visibleQuestions = _showAllQuestions || _isPremiumUser
+    /// Usuários Free só veem 5 perguntas
+    final visibleQuestions = _isPremiumUser || _showAllQuestions
         ? _questions
         : _questions.take(5).toList();
 
@@ -169,18 +170,13 @@ class _InterviewScreenState extends State<InterviewScreen>
       title: "",
       pageLabel: "interview.page_label".tr(),
       labelColor: const Color(0xFFa1a8f0),
-
-      description: _description.isNotEmpty
-          ? _description
-          : "interview.default_description".tr(),
-
+      description: _description,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
-            /// TÍTULO SUPERIOR
+            /// Texto "Quem você está entrevistando?"
             Center(
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 14),
@@ -191,145 +187,78 @@ class _InterviewScreenState extends State<InterviewScreen>
                     fontSize: 17,
                     fontWeight: FontWeight.w600,
                     color: Color.fromARGB(221, 149, 41, 110),
-                    height: 1.5,
                   ),
                 ),
               ),
             ),
 
-            /// CAMPOS FIXOS (nome, parentesco, idade)
+            /// Card com nome / relação / idade
             Container(
-              margin: const EdgeInsets.only(bottom: 20),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
               decoration: BoxDecoration(
                 color: const Color(0xFFEFE7F5),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
-                  Text(
-                    "interview.name_label".tr(),
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  TextField(
+                  _buildTextField(
+                    label: "interview.name_label".tr(),
                     controller: _nameController,
-                    decoration: InputDecoration(
-                      hintText: "interview.name_hint".tr(),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(
-                          color: Colors.purple.shade100,
-                          width: 1.1,
-                        ),
-                      ),
-                    ),
+                    hint: "interview.name_hint".tr(),
                   ),
-
                   const SizedBox(height: 12),
-
                   Row(
                     children: [
                       Expanded(
                         flex: 2,
-                        child: TextField(
+                        child: _buildFieldBase(
                           controller: _relationController,
-                          decoration: InputDecoration(
-                            hintText: "interview.relation_hint".tr(),
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide(
-                                color: Colors.purple.shade100,
-                                width: 1.1,
-                              ),
-                            ),
-                          ),
+                          hint: "interview.relation_hint".tr(),
                         ),
                       ),
-
                       const SizedBox(width: 10),
-
                       Expanded(
                         flex: 1,
-                        child: TextField(
+                        child: _buildFieldBase(
                           controller: _ageController,
-                          decoration: InputDecoration(
-                            hintText: "interview.age_hint".tr(),
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide(
-                                color: Colors.pink.shade100,
-                                width: 1.1,
-                              ),
-                            ),
-                          ),
+                          hint: "interview.age_hint".tr(),
                         ),
-                      ),
+                      )
                     ],
-                  ),
+                  )
                 ],
               ),
             ),
 
-            /// TÍTULO DAS PERGUNTAS
+            const SizedBox(height: 20),
+
+            /// Título “Perguntas”
             Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Text(
-                  "interview.ask".tr(),
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 152, 70, 139),
-                    letterSpacing: 0.5,
-                  ),
+              child: Text(
+                "interview.ask".tr(),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color.fromARGB(255, 152, 70, 139),
                 ),
               ),
             ),
 
-            /// LISTA DE PERGUNTAS
+            const SizedBox(height: 16),
+
+            /// Lista de perguntas
             ...visibleQuestions.asMap().entries.map((entry) {
               final index = entry.key;
               final question = entry.value;
 
-              if (_controllers.length <= index) {
-                _controllers.add(TextEditingController());
-              }
-
               return Container(
-                width: double.infinity,
                 margin: const EdgeInsets.only(bottom: 20),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 18,
-                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
                 decoration: BoxDecoration(
-                  color: const Color(0xfffce4ec),
+                  color: const Color(0xFFFCE4EC),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: const Color(0xFFF2D7E0),
-                    width: 1,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12.withOpacity(0.03),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    )
-                  ],
+                  border: Border.all(color: const Color(0xFFF2D7E0)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -339,8 +268,6 @@ class _InterviewScreenState extends State<InterviewScreen>
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                        height: 1.4,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -351,37 +278,31 @@ class _InterviewScreenState extends State<InterviewScreen>
                         hintText: "interview.answer_hint".tr(),
                         filled: true,
                         fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 20,
                           vertical: 22,
                         ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(
-                            color: Colors.pink.shade100,
-                            width: 1.1,
-                          ),
-                        ),
                       ),
-                    ),
+                    )
                   ],
                 ),
               );
             }),
 
-            /// MOSTRAR MAIS (somente para não premium)
+            /// Mostrar mais perguntas (free)
             if (!_isPremiumUser && !_showAllQuestions)
               Center(
                 child: TextButton(
-                  onPressed: () {
-                    showPremiumPopup(context);
-                  },
+                  onPressed: () => showPremiumPopup(context),
                   child: Text(
                     "interview.show_more".tr(),
                     style: const TextStyle(
-                      color: Color.fromARGB(255, 114, 46, 121),
-                      fontWeight: FontWeight.w600,
                       fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF722E7A),
                     ),
                   ),
                 ),
@@ -389,64 +310,42 @@ class _InterviewScreenState extends State<InterviewScreen>
 
             const SizedBox(height: 20),
 
-            /// BOTÕES FINAIS
+            /// Botões
             Row(
               children: [
-                /// BOTÃO SALVAR (COR DO MÊS)
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      if (!_isPremiumUser) {
-                        showPremiumPopup(context);
-                        return;
-                      }
-                      if (!_isSaving) _saveInterview();
-                    },
-                    child: AnimatedContainer(
-  duration: const Duration(milliseconds: 180),
-  padding: const EdgeInsets.symmetric(vertical: 14), // sem horizontal
-  decoration: BoxDecoration(
-    color: _isPremiumUser
-        ? currentButtonColor
-        : currentButtonColor,
-    borderRadius: BorderRadius.circular(10),
-    boxShadow: [
-      BoxShadow(
-        color: currentButtonColor.withOpacity(0.4),
-        blurRadius: 12,
-        offset: const Offset(0, 4),
-      ),
-    ],
-  ),
-  child: Center(
-    child: Text(
-      "interview.save_button".tr(),
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 15,
-        fontWeight: FontWeight.w700,
-      ),
-    ),
-  ),
-),
-
-                  ),
-                ),
-
-                const SizedBox(width: 12),
-
-                /// BOTÃO ÁUDIO
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => showComingSoonPrompt(context),
+                    onPressed: _isPremiumUser ? _saveInterview : () {
+                      showPremiumPopup(context);
+                    },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 200, 129, 213),
+                      backgroundColor: const Color(0xFFA1A8F0),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      elevation: 0,
+                    ),
+                    child: Text(
+                      "interview.save_button".tr(),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => showPremiumPopup(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFC881D5),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                     child: Text(
                       "interview.audio_button".tr(),
@@ -456,14 +355,55 @@ class _InterviewScreenState extends State<InterviewScreen>
                       ),
                     ),
                   ),
-                ),
+                )
               ],
             ),
-
-            const SizedBox(height: 20),
           ],
         ),
       ),
+    );
+  }
+
+  /// Helper – campo base
+  Widget _buildFieldBase({
+    required TextEditingController controller,
+    required String hint,
+  }) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        hintText: hint,
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+    );
+  }
+
+  /// Helper – campo com label
+  Widget _buildTextField({
+    required String label,
+    required TextEditingController controller,
+    required String hint,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 8),
+        _buildFieldBase(
+          controller: controller,
+          hint: hint,
+        ),
+      ],
     );
   }
 }
