@@ -80,7 +80,7 @@
   
   "premium": {
     
-  "app_name": "My Year, my Story",
+  "app_name": "My Year, My Story",
   "title": "Premium Experience",
   "main_phrase": "Create memories to carry for life.",
   "sub_phrase": "Unlock special features and make your journal even more magical.",
@@ -127,7 +127,7 @@
 
   "bottom": {
     "home": "Home",
-    "current_month": "Current Month",
+    "current_month": "My Month",
     "photos": "Photos",
     "diary": "Diary",
     "mood": "Mood",
@@ -207,7 +207,21 @@
     "comeBackTomorrow": "Come back tomorrow ✨",
     "consultingUniverse": "Consulting the universe... ✨",
     "limitPremiumUserMessage": "Daily limit reached 💜",
-    "limitPremiumUserText": "You have already turned your card today.\nCome back tomorrow for a new message ✨"
+    "limitPremiumUserText": "You have already turned your card today.\nCome back tomorrow for a new message ✨",
+    "freeLimitTitle": "Come back tomorrow ✨",
+    "freeLimitText": "You've already seen your message of the day. More surprises await you tomorrow 💫",
+    "freeLimitButtonPremium": "See more today",
+    "freeLimitButtonCancel": "Not now",
+    "premiumLimitTitle": "Daily limit reached!",
+    "premiumLimitText": "You've already checked your messages for today. Come back tomorrow to see more ✨",
+    "premiumLimitButtonOk": "Ok",
+   
+   "fallback1": "Good energy is coming your way today.",
+   "fallback2": "Take a deep breath and trust — your day will be light.",
+   "fallback3": "Your inner glow is stronger than ever."
+
+
+
   },
 
   "dashboard": {
@@ -217,6 +231,8 @@
   "about_you_title": "A curiosity about you",
   "about_you_empty": "You haven't shared anything about yourself this month",
   "navigate_months": "Browse the months",
+  "answered_in": "answered in {{date}}",
+  "cancel": "Cancel",
 
 
   "goals": "Goals",
@@ -290,7 +306,8 @@
     "title": "About Me",
     "description": "Answer fun questions and discover more about yourself!",
     "answer_hint": "Your answer...",
-    "save": "Save answers"
+    "save": "Save answers",
+    "description_fixed": "A space just for you, to observe yourself with kindness and discover new little pieces of who you are. Here, you can reflect, listen to yourself, and allow yourself to feel — without hurry, without rules, just you."
   },
 
   "zodiac": {
@@ -301,12 +318,14 @@
     "phrase_title": "Sign Energy",
     "moon_today": "Moon today",
 
-    "label_color": "Color",
-    "label_regent": "Ruler",
-    "label_number": "Number",
-    "label_element": "Element",
-    "label_stone": "Stone",
-    "label_flower": "Flower"
+     "month_description": "Discover the energies and traits influencing this month ✨",
+    
+    "color": "Color",
+    "ruler": "Ruler",
+    "number": "Number",
+    "element": "Element",
+    "stone": "Stone",
+    "flower": "Flower"
   },
 
   "my_moment": {
@@ -343,8 +362,8 @@
   "save_error": "Error while saving. Try again!",
 
   "not_premium": "Feature available for premium users only.",
-  "login_required": "Login required to continue."
-
+  "login_required": "Login required to continue.",
+  "fixed_description": "This is your monthly interview page! Here you can talk to someone special, record meaningful answers, and save memories that will matter later. Choose someone, ask the questions, and enjoy capturing each detail of this conversation!"
 
 
   },
@@ -440,6 +459,23 @@
 
   },
 
+  "tips_categories": {
+  "autocuidado": "Self-care",
+  "energia": "Energy",
+  "proposito": "Purpose",
+  "leveza": "Lightness",
+  "reflexao": "Reflection",
+  "gratidao": "Gratitude",
+  "rotina": "Routine",
+  "crescimento": "Growth",
+  "confianca": "Confidence",
+  "presenca": "Presence",
+  "intuicao": "Intuition",
+  "habitos": "Habits"
+
+
+},
+
   "lists": {
     "page_label": "My Lists",
 
@@ -461,7 +497,8 @@
 
     "add_more": "Add more",
     "save": "Save List",
-    "saved": "List saved successfully! 💖"
+    "saved": "List saved successfully! 💖",
+    "empty_warning": "Your list is empty! Add something before saving ✨"
   },
 
   "stickers": {
@@ -483,7 +520,7 @@
   "refresh_ok": "OK",
 
   "refresh_premium_button": "See more tips",
-  "refresh_see_more": "See more tips (__remaining__ left)",
+  "refresh_see_more": "See more tips",
   "refresh_come_back_tomorrow": "Come back tomorrow 🌙"
 
   },
@@ -506,6 +543,12 @@
     "repeat_weekly": "Every week",
     "repeat_monthly": "Every month",
     "repeat_yearly": "Every year",
+
+    "mood_of_day": "Your mood on",
+    "view_entries": "View diary entries",
+    "no_entries_day": "No entries for this day",
+    "write_diary": "Write in the diary",
+    "edit_mood": "Edit today's mood",
 
     "weekdays": "Weekdays",
 
@@ -535,8 +578,155 @@
     "save_created": "Your alert was created! 💛",
     "save_updated": "Your alert was updated ✨",
 
-    "empty": "No events this month."
+    "empty": "No events this month.",
+
+  "month.1": "January",
+  "month.2": "February",
+  "month.3": "March",
+  "month.4": "April",
+  "month.5": "May",
+  "month.6": "June",
+  "month.7": "July",
+  "month.8": "August",
+  "month.9": "September",
+  "month.10": "October",
+  "month.11": "November",
+  "month.12": "December"
+
   },
+
+  "calendar_month": {
+  "1": "January",
+  "2": "February",
+  "3": "March",
+  "4": "April",
+  "5": "May",
+  "6": "June",
+  "7": "July",
+  "8": "August",
+  "9": "September",
+  "10": "October",
+  "11": "November",
+  "12": "December"
+
+ 
+},
+
+ "mood": {
+  "how_are_you_feeling": "How are you feeling?",
+  "highlight_title": "HIGHLIGHT MOOD",
+  "other_marked": "HIGHLIGHT MOOD",
+  "other_top_moods": "Other moods of the month",
+
+  "happy": "Happy",
+  "calm": "Calm",
+  "loving": "Loving",
+  "thoughtful": "Thoughtful",
+  "anxious": "Anxious",
+  "tired": "Tired",
+  "sad": "Sad",
+  "irritated": "Irritated",
+  "embarrassed": "Embarrassed",
+  "comforted": "Comforted",
+  "bored": "Bored",
+  "excited": "Excited",
+  "overwhelmed": "Overwhelmed",
+  "proud": "Proud",
+  "surprised": "Surprised",
+  "confused": "Confused",
+
+  "limit_message": "💗 You already recorded your mood! Try again in 1 hour.",
+
+
+ "calendar_description": "This is your mood calendar.\nEvery day you can record how you feel, and little by little, your emojis will appear here.",
+ "calendar_register_hint": "Click the buttons below to record your mood for the day"
+
+
+ },
+
+
+"motivation": {
+  "happy": "So good to see you happy!",
+  "calm": "Take a deep breath and stay like this!",
+  "loving": "Spread that love around!",
+  "thoughtful": "Reflecting is part of growing.",
+  "anxious": "You're not alone. One step at a time.",
+  "tired": "Rest a little — you deserve it.",
+  "sad": "It's okay to feel this way. It will pass.",
+  "irritated": "Breathe. Your day can still get better.",
+  "embarrassed": "It happens to everyone!",
+  "comforted": "It feels so good to feel safe and supported!",
+  "bored": "Maybe it's time to try something new!",
+  "excited": "Love seeing that energy!",
+  "overwhelmed": "Pause. You're doing your best.",
+  "proud": "Be proud — you earned it!",
+  "surprised": "Wow! Good things are happening!",
+  "confused": "Everything will make sense soon."
+},
+
+
+
+"diary": {
+
+    "title": "My Diary",
+    "subtitle": "Record your thoughts and important moments",
+    
+    "empty_title": "No entries yet",
+    "empty_description": "You haven't written anything here yet. How about starting today?",
+    "first_entry_button": "Write first entry",
+
+    "new_entry": "New entry",
+    "hint_text": "Write your thoughts here...",
+    "cancel": "Cancel",
+    "save": "Save",
+
+    "edit": "Edit",
+    "delete": "Delete",
+    "delete_title": "Delete entry",
+    "delete_confirm": "Are you sure you want to delete this entry?",
+    "delete_success": "Entry successfully deleted!",
+    "saved_success": "Entry saved successfully!"
+
+
+},
+  "about": {
+  "title": "My Year, My Story",
+  "description": "An interactive journal for you to record memories, feelings and special moments throughout the year.",
+  "version": "Version 1.0.0",
+  "close": "Close",
+  "contact": "Contact: email@sonhodepapel.com",
+  "app_name": "My Year, My Story"
+
+},
+
+  "sign": {
+  "aries": "Aries",
+  "taurus": "Taurus",
+  "gemini": "Gemini",
+  "cancer": "Cancer",
+  "leo": "Leo",
+  "virgo": "Virgo",
+  "libra": "Libra",
+  "scorpio": "Scorpio",
+  "sagittarius": "Sagittarius",
+  "capricorn": "Capricorn",
+  "aquarius": "Aquarius",
+  "pisces": "Pisces"
+
+
+},
+
+  "language": {
+  "title": "App Language",
+  "subtitle": "Choose how you prefer to use MyYearMyStory.",
+  "system": "Follow system language",
+  "portuguese": "Portuguese (Brazil)",
+  "english": "English",
+  "saved": "Language updated!",
+  "language": "Language",
+  "app_name": "My Year, My Story"
+
+   },
 
   "dates": {
     "title": "Calendar & Reminder",
@@ -588,133 +778,6 @@
   "mark_seen": "Mark as seen",
   "cancel_alert": "Cancel alert"
 
-},
-
- "mood": {
-  "how_are_you_feeling": "How are you feeling?",
-  "highlight_title": "HIGHLIGHT MOOD",
-  "other_marked": "OTHER MOST MARKED MOODS",
-
-  "happy": "Happy",
-  "calm": "Calm",
-  "loving": "Loving",
-  "thoughtful": "Thoughtful",
-  "anxious": "Anxious",
-  "tired": "Tired",
-  "sad": "Sad",
-  "irritated": "Irritated",
-  "embarrassed": "Embarrassed",
-  "comforted": "Comforted",
-  "bored": "Bored",
-  "excited": "Excited",
-  "overwhelmed": "Overwhelmed",
-  "proud": "Proud",
-  "surprised": "Surprised",
-  "confused": "Confused",
-
-  "limit_message": "💗 You already recorded your mood! Try again in 1 hour.",
-
-  "motivation_happy": "🌞 Keep spreading that light!",
-  "motivation_calm": "🌿 Enjoy this peaceful moment.",
-  "motivation_loving": "💖 Your heart is glowing today.",
-  "motivation_thoughtful": "🌙 Thinking is essential.",
-  "motivation_anxious": "🌸 Take a breath… everything will be okay.",
-  "motivation_tired": "💙 Your body needs rest.",
-  "motivation_sad": "💜 You are not alone.",
-  "motivation_irritated": "🔥 Breathe before reacting.",
-  "motivation_embarrassed": "😳 Everyone goes through this.",
-  "motivation_comforted": "🤗 What a comforting feeling.",
-  "motivation_bored": "😑 Maybe try something new?",
-  "motivation_excited": "🤩 LOVE seeing you so excited!",
-  "motivation_overwhelmed": "😵 One thing at a time.",
-  "motivation_proud": "😇 And with good reason! Keep it up.",
-  "motivation_surprised": "🤯 Life really surprises us!",
-  "motivation_confused": "😕 Clarity comes little by little.",
-
- "calendar_description": "This is your mood calendar.\nEvery day you can record how you feel, and little by little, your emojis will appear here.",
- "calendar_register_hint": "Click the buttons below to record your mood for the day"
-
-
- },
-
-  "diary": {
-  "title": "Personal Diary",
-  "subtitle": "Your free space for thoughts and reflections ✨",
-
-  "empty_title": "Your diary is empty",
-  "empty_description": "Start by writing about your day, your feelings, or anything you want to remember.",
-  "empty_button": "Write First Entry",
-
-  "new_entry": "New Entry",
-  "hint_text": "How was your day?",
-  "cancel": "Cancel",
-  "save": "Save",
-
-  "edit": "Edit",
-  "delete": "Delete",
-  "delete_confirmation": "Are you sure you want to delete this entry?",
-  "deleted_success": "Entry deleted successfully 🗑️",
-  "saved_success": "Entry saved successfully! ✨",
-
-  "select_date": "Select date",
-
-  "icons_title": "How are you feeling?",
-  "icon_happy": "Happy",
-  "icon_sad": "Sad",
-  "icon_lucky": "Lucky",
-  "icon_neutral": "Neutral",
-  "icon_confused": "Confused"
-
-},
-
-
-  "help": {
-  "title": "Help Center",
-  "subtitle": "If something doesn't work as expected, just reach us",
-
-  "faq": "FAQ (soon)",
-  "contact": "Contact: email@sonhodepapel.com",
-
-  "button": "Back",
-  "app_name": "My Year, My Story"
-
-},
-  "about": {
-  "title": "My Year, My Story",
-  "description": "An interactive journal for you to record memories, feelings and special moments throughout the year.",
-  "version": "Version 1.0.0",
-  "close": "Close",
-  "contact": "Contact: email@sonhodepapel.com",
-  "app_name": "My Year, My Story"
-
-},
-
-  "sign": {
-  "aries": "Aries",
-  "taurus": "Taurus",
-  "gemini": "Gemini",
-  "cancer": "Cancer",
-  "leo": "Leo",
-  "virgo": "Virgo",
-  "libra": "Libra",
-  "scorpio": "Scorpio",
-  "sagittarius": "Sagittarius",
-  "capricorn": "Capricorn",
-  "aquarius": "Aquarius",
-  "pisces": "Pisces"
-
-
-},
-
-  "language": {
-  "title": "App Language",
-  "subtitle": "Choose how you prefer to use MyYearMyStory.",
-  "system": "Follow system language",
-  "portuguese": "Portuguese (Brazil)",
-  "english": "English",
-  "saved": "Language updated!",
-  "language": "Language",
-  "app_name": "My Year, My Story"
 }
 
 }

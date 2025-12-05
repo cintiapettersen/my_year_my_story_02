@@ -7,6 +7,7 @@ import 'dart:ui' as ui;
 
 import 'package:myyearmystory/screens/diary/diary_screen.dart';
 import 'package:myyearmystory/screens/mood/mood_screen.dart';
+
 import 'package:myyearmystory/widgets/monthly/monthly_goals_widget.dart';
 import 'package:myyearmystory/widgets/monthly/gratitude_widget.dart';
 import 'package:myyearmystory/screens/monthly/current_month_screen.dart';
@@ -21,6 +22,8 @@ import 'package:myyearmystory/screens/notifications/daily_popup.dart';
 import 'package:myyearmystory/services/daily_quote_service.dart';
 import 'package:myyearmystory/utils/month_colors.dart';
 import 'package:myyearmystory/screens/quiz/standalone.dart';
+
+
 
 
 class DashboardScreen extends StatefulWidget {
@@ -291,42 +294,71 @@ Future<void> _loadDashboardData() async {
       gratidaoCount =
           (entries["gratitude_entries"] as List?)?.length ?? 0;
 
-      // =======================
-      // 💡 CURIOSIDADE DO MÊS
-      // =======================
-      final curiosities = entries["curiosities"];
-      final answers = entries["curiosities_answers"];
+    
+// =======================
+// 💡 CURIOSIDADE DO MÊS (PERGUNTA + RESPOSTA)
+// =======================
+final answers = entries["curiosities_answers"];
 
-      if (curiosities != null &&
-          curiosities is List &&
-          answers != null &&
-          answers is List &&
-          curiosities.isNotEmpty &&
-          answers.isNotEmpty &&
-          curiosities.length == answers.length) {
+List<String> questions = [];
 
-        final List<Map<String, String>> combined = [];
+// 1️⃣ Buscar perguntas do mês na tabela curiosities_entries
+final curiosityEntry = await supabase
+    .from("curiosities_entries")
+    .select("questions, questions_en")
+    .eq("month", selectedMonth)
+    .eq("year", selectedYear)
+    .maybeSingle();
 
-        for (int i = 0; i < answers.length; i++) {
-          combined.add({
-            "answer": answers[i],
-            "month": entries["month"].toString(),
-            "year": entries["year"].toString(),
-          });
-        }
+if (curiosityEntry != null) {
+  final lang = context.locale.languageCode;
 
-        combined.shuffle();
-        final selected = combined.first;
+  questions = lang == "en"
+      ? List<String>.from(curiosityEntry["questions_en"] ?? [])
+      : List<String>.from(curiosityEntry["questions"] ?? []);
+}
 
-        curiosidadeAleatoria =
-            "${selected['answer']}\n(${_formatarMesAno(
-              selected['month']!,
-              selected['year']!,
-            )})";
+// 2️⃣ Combinar pergunta + resposta
+if (answers != null &&
+    answers is List &&
+    answers.isNotEmpty &&
+    questions.isNotEmpty) {
 
-      } else {
-        curiosidadeAleatoria = null;
-      }
+  final List<Map<String, String>> combined = [];
+
+  for (int i = 0; i < answers.length; i++) {
+    if (i < questions.length) {
+      combined.add({
+        "question": questions[i],
+        "answer": answers[i],
+        "month": entries["month"].toString(),
+        "year": entries["year"].toString(),
+      });
+    }
+  }
+
+  if (combined.isNotEmpty) {
+    combined.shuffle();
+    final selected = combined.first;
+
+    final mesFormatado =
+    _formatarMesAno(selected["month"]!, selected["year"]!);
+      curiosidadeAleatoria =
+    " ${selected['question']}\n"
+    " ${selected['answer']}\n"
+    
+    "${tr('dashboard.answered_in', namedArgs: {
+      'date': "$mesFormatado/${selected['year']}"
+    })}";
+
+  } else {
+    curiosidadeAleatoria = null;
+  }
+
+} else {
+  curiosidadeAleatoria = null;
+}
+
     }
 
     setState(() => isLoading = false);
@@ -523,6 +555,13 @@ String _formatarMesAno(String mes, String ano) {
 
                 const SizedBox(height: 40),
 
+
+                // 🔎 Campo de busca de datas
+_buildDateSearch(context),
+
+const SizedBox(height: 36),
+
+
                 // 🌸 ETIQUETA "Seu mês"
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -542,12 +581,21 @@ String _formatarMesAno(String mes, String ano) {
 
                 const SizedBox(height: 24),
 
+
+
+
+
+
+
                 // CARDS
                 _buildCards(context),
 
                 const SizedBox(height: 48),
 
-                
+
+
+
+          
 
                 // 🍀 CURIOSIDADE SOBRE VOCÊ
                 _buildCuriosityBlock(),
@@ -589,6 +637,7 @@ const SizedBox(height: 20),
 
 
 
+
   // =========================================
   // BLOCOS / COMPONENTES
   // =========================================
@@ -598,10 +647,10 @@ const SizedBox(height: 20),
     alignment: Alignment.center,
     child: ConstrainedBox(
       constraints: const BoxConstraints(
-        maxWidth: 300, // largura do card
+        maxWidth: 300, // reduzido para ficar proporcional
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(32),
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
@@ -613,36 +662,73 @@ const SizedBox(height: 20),
           );
         },
         child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
           decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 245, 211, 252),
-            borderRadius: BorderRadius.circular(14),
+            color: const Color(0xFFF3D6E5),
+            borderRadius: BorderRadius.circular(40),
             boxShadow: [
               BoxShadow(
                 color: Colors.black12,
-                blurRadius: 6,
-                offset: Offset(0, 3),
+                blurRadius: 5,
+                offset: Offset(0, 2),
               ),
             ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              const Icon(Icons.favorite, size: 20, color: Color.fromARGB(221, 217, 60, 126)),
+              const SizedBox(height: 8),
+
               Text(
                 tr("dashboard.curiosity_title"),
-                style: const TextStyle(
-                  color: Color.fromARGB(255, 154, 102, 177),
+                style: GoogleFonts.courierPrime(
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  color: Colors.black,
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                curiosidadeAleatoria ?? tr("dashboard.no_curiosity"),
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 14, height: 1.35),
               ),
+
+              const SizedBox(height: 12),
+              Divider(color: Colors.black26, thickness: 1),
+              const SizedBox(height: 8),
+
+              if (curiosidadeAleatoria != null)
+                Text(
+                  curiosidadeAleatoria!.split("\n")[0], // pergunta
+                  style: GoogleFonts.courierPrime(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    height: 1.2,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+              const SizedBox(height: 8),
+              Divider(color: Colors.black26, thickness: 1),
+              const SizedBox(height: 8),
+
+              if (curiosidadeAleatoria != null)
+                Text(
+                  curiosidadeAleatoria!.split("\n")[1], // resposta
+                  style: GoogleFonts.courierPrime(
+                    fontSize: 14,
+                    height: 1.3,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+              const SizedBox(height: 10),
+
+              if (curiosidadeAleatoria != null)
+                Text(
+                  curiosidadeAleatoria!.split("\n")[2], // data
+                  style: GoogleFonts.courierPrime(
+                    fontSize: 11,
+                    color: Colors.black54,
+                  ),
+                ),
             ],
           ),
         ),
@@ -650,6 +736,7 @@ const SizedBox(height: 20),
     ),
   );
 }
+
 
 
   Widget _buildCards(BuildContext context) {
@@ -742,7 +829,8 @@ const SizedBox(height: 20),
                 MoodScreen(month: selectedMonth, year: selectedYear);
             break;
           case '/diary_entries':
-            target = DiaryScreen();
+            target = DiaryScreen(date: DateTime.now());
+
             break;
           case '/interactive_quiz':
             target = InteractiveQuizStandalone(
@@ -816,6 +904,196 @@ const SizedBox(height: 20),
       ),
     );
   }
+
+
+  // ⬇️ PESQUISA DE DATAS
+
+Widget _buildDateSearch(BuildContext context) {
+  return GestureDetector(
+    onTap: () {
+      showDialog(
+        context: context,
+        builder: (context) {
+          int selectedYear = DateTime.now().year.clamp(2025, 2100);
+
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return Dialog(
+                backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(28),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 26, 20, 26),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // ❤️ PIN NO TOPO
+                      Container(
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.15),
+                              blurRadius: 6,
+                              offset: Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.favorite,
+                          color: Color(0xFFE04CB7),
+                          size: 22,
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      Text(
+                        tr('dashboard.select_date'),
+                        style: GoogleFonts.courierPrime(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      // ➖ ANO COM SETAS ➖
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            onPressed: selectedYear > 2025
+                                ? () => setState(() => selectedYear--)
+                                : null,
+                            icon: Icon(Icons.chevron_left,
+                                color: selectedYear > 2025
+                                    ? Colors.black87
+                                    : Colors.black26),
+                          ),
+                          Text(
+                            "$selectedYear",
+                            style: GoogleFonts.courierPrime(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => setState(() => selectedYear++),
+                            icon: const Icon(Icons.chevron_right,
+                                color: Colors.black87),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      // 🌸 GRID DE MESES (fofinho!)
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: 12,
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          childAspectRatio: 1.6,
+                          mainAxisSpacing: 10,
+                          crossAxisSpacing: 10,
+                        ),
+                        itemBuilder: (_, index) {
+                          final shortNames = [
+                            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+                          ];
+
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.pop(context);
+                              Navigator.of(context).push(
+                                fadePageTransition(
+                                  CurrentMonthScreen(
+                                    month: index + 1,
+                                    year: selectedYear,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF8DFF0),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: const Color(0xFFE04CB7),
+                                  width: 1.3,
+                                ),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  shortNames[index],
+                                  style: GoogleFonts.courierPrime(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFFB73C78),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      TextButton(
+  onPressed: () => Navigator.pop(context),
+  child: Text(
+    tr("general.cancel"),
+    style: GoogleFonts.courierPrime(
+      fontSize: 14,
+      color: Colors.black54,
+    ),
+  ),
+),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      );
+    },
+
+    // 🔍 BOTÃO DO DASHBOARD
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.black26),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.search, color: Colors.black54, size: 20),
+          const SizedBox(width: 8),
+          Text(
+            tr('dashboard.search_previous_dates'),
+            style: const TextStyle(
+              color: Colors.black54,
+              fontSize: 15,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 
   // =========================
   // Nomes dos meses

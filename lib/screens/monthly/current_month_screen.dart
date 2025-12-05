@@ -41,7 +41,8 @@ class CurrentMonthScreen extends StatefulWidget {
 class _CurrentMonthScreenState extends State<CurrentMonthScreen> {
   late int month;
   late int year;
-  final PageController _pageController = PageController(viewportFraction: 0.9);
+  final PageController _pageController = PageController(viewportFraction: 0.98);
+
   int _currentPage = 0;
 
   @override
@@ -110,7 +111,7 @@ class _CurrentMonthScreenState extends State<CurrentMonthScreen> {
               // 🔹 Cabeçalho com paginação
               Padding(
                 padding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -140,7 +141,7 @@ class _CurrentMonthScreenState extends State<CurrentMonthScreen> {
                       curve: Curves.easeInOut,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 10),
+                            horizontal: 0, vertical: 0),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(20),
                           child: Card(

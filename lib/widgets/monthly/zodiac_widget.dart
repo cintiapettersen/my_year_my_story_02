@@ -22,9 +22,8 @@ class _ZodiacWidgetState extends State<ZodiacWidget> {
   bool _isLoading = false;
 
   Map<String, dynamic>? _todaySign;
-  Map<String, dynamic>? _monthSign;
-
-  String _bannerDescription = '';
+  Map<String, dynamic>? _startSign;
+  Map<String, dynamic>? _endSign;
 
   @override
   void initState() {
@@ -37,7 +36,6 @@ class _ZodiacWidgetState extends State<ZodiacWidget> {
 
     try {
       final supabase = Supabase.instance.client;
-      final now = DateTime.now();
 
       final rows = await supabase.from('zodiac_signs').select('*');
 
@@ -46,10 +44,14 @@ class _ZodiacWidgetState extends State<ZodiacWidget> {
         return;
       }
 
-      // SIGNO DO DIA BLOQUEADO
+      final now = DateTime.now();
+
+      // ------------------------
+      // SIGNO DO DIA
+      // ------------------------
       for (final row in rows) {
-        final start = DateTime.tryParse(row['start_date'] ?? '') ?? now;
-        final end = DateTime.tryParse(row['end_date'] ?? '') ?? now;
+        final start = DateTime.parse(row['start_date']);
+        final end = DateTime.parse(row['end_date']);
 
         if (!start.isAfter(now) && !end.isBefore(now)) {
           _todaySign = row;
@@ -57,18 +59,33 @@ class _ZodiacWidgetState extends State<ZodiacWidget> {
         }
       }
 
-      // SIGNO DO MÊS - corrigido
-      _monthSign = rows.firstWhere(
-        (row) => (row['mes'] ?? -1) == widget.month,
+      // ------------------------
+      // SIGNO DO INÍCIO DO MÊS
+      // ------------------------
+      final monthStartDate = DateTime(widget.year, widget.month, 1);
+
+      _startSign = rows.firstWhere(
+        (row) {
+          final s = DateTime.parse(row['start_date']);
+          final e = DateTime.parse(row['end_date']);
+          return !s.isAfter(monthStartDate) && !e.isBefore(monthStartDate);
+        },
         orElse: () => {},
       );
 
-      // descrição segura
-      if (_todaySign != null) {
-        _bannerDescription = context.locale.languageCode == 'en'
-            ? (_todaySign!['descricao_en'] ?? '')
-            : (_todaySign!['descricao_pt'] ?? '');
-      }
+      // ------------------------
+      // SIGNO DO FIM DO MÊS
+      // ------------------------
+      final lastDay = DateTime(widget.year, widget.month + 1, 0);
+
+      _endSign = rows.firstWhere(
+        (row) {
+          final s = DateTime.parse(row['start_date']);
+          final e = DateTime.parse(row['end_date']);
+          return !s.isAfter(lastDay) && !e.isBefore(lastDay);
+        },
+        orElse: () => {},
+      );
 
       setState(() {});
     } catch (e) {
@@ -78,55 +95,166 @@ class _ZodiacWidgetState extends State<ZodiacWidget> {
     setState(() => _isLoading = false);
   }
 
-  // BOX COLORIDA
-  Widget _infoBox(String label, String? value, Color color) {
-    if (value == null || value.trim().isEmpty) return const SizedBox.shrink();
+  // -----------------------------------------------------
+  // CARD DO SIGNO (um card completo, com tabela 2x3)
+  // -----------------------------------------------------
+  Widget _zodiacCard(Map<String, dynamic> sign) {
+  final isEN = context.locale.languageCode == 'en';
 
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 14),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: [
-          Text(
+  final name = isEN ? sign['signo_en'] : sign['signo_pt'];
+  final description = isEN ? sign['descricao_en'] : sign['descricao_pt'];
+  final phrase = isEN ? sign['frase_en'] : sign['frase_pt'];
+
+  final period = isEN ? sign['periodo_en'] : sign['periodo_pt'];
+
+  final color = const Color(0xFFF5DCEB);
+
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
+    margin: const EdgeInsets.only(bottom: 28),
+    decoration: BoxDecoration(
+      color: color.withOpacity(0.45),
+      borderRadius: BorderRadius.circular(26),
+      border: Border.all(color: color, width: 2),
+    ),
+    child: Column(
+      children: [
+        // ÍCONE DO SIGNO
+        Text(
+          sign["emoji"] ?? "⭐",
+          style: const TextStyle(fontSize: 60),
+        ),
+
+        const SizedBox(height: 12),
+
+        // NOME DO SIGNO
+        Text(
+          name.toUpperCase(),
+          style: GoogleFonts.poppins(
+            fontSize: 26,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+
+        const SizedBox(height: 6),
+
+        // PERÍODO ABAIXO DO NOME
+        Text(
+          period,
+          textAlign: TextAlign.center,
+          style: GoogleFonts.poppins(
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            color: Colors.black87,
+          ),
+        ),
+
+        const SizedBox(height: 18),
+
+        // DESCRIÇÃO DO SIGNO
+        Text(
+          description,
+          textAlign: TextAlign.center,
+          style: GoogleFonts.poppins(
+            fontSize: 15,
+            height: 1.45,
+            color: Colors.black87,
+          ),
+        ),
+
+        const SizedBox(height: 28),
+
+        // TABELA 2x3 (SEM LINHA NO MEIO!)
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                children: [
+                  _zItem("zodiac.color".tr(),
+                      isEN ? sign['cor_en'] : sign['cor_pt']),
+                  const SizedBox(height: 18),
+                  _zItem("zodiac.number".tr(), sign['numero']),
+                  const SizedBox(height: 18),
+                  _zItem("zodiac.element".tr(),
+                      isEN ? sign['elemento_en'] : sign['elemento_pt']),
+                ],
+              ),
+            ),
+
+            const SizedBox(width: 20), // ESPAÇO ENTRE AS COLUNAS
+
+            Expanded(
+              child: Column(
+                children: [
+                  _zItem("zodiac.stone".tr(),
+                      isEN ? sign['pedra_en'] : sign['pedra_pt']),
+                  const SizedBox(height: 18),
+                  _zItem("zodiac.flower".tr(),
+                      isEN ? sign['flor_en'] : sign['flor_pt']),
+                  const SizedBox(height: 18),
+                  _zItem("zodiac.ruler".tr(),
+                      isEN ? sign['regente_en'] : sign['regente_pt']),
+                ],
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 32),
+
+        // FRASE DO SIGNO
+        Text(
+          "“$phrase”",
+          textAlign: TextAlign.center,
+          style: GoogleFonts.satisfy(
+            fontSize: 22,
+            height: 1.4,
+            color: const Color(0xFF554587),
+          ),
+        ),
+
+        const SizedBox(height: 12),
+      ],
+    ),
+  );
+}
+
+
+  // -----------------------------------------------------
+  // ITEM DA TABELA 2x3
+  // -----------------------------------------------------
+  Widget _zItem(String label, String value) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
             label,
-            textAlign: TextAlign.center,
             style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            value.trim(),
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 15, height: 1.35),
-          )
-        ],
-      ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          value,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 15),
+        ),
+      ],
     );
   }
 
-  String formatDateShort(String date, bool isEN) {
-    final dt = DateTime.tryParse(date) ?? DateTime.now();
-
-    const monthsPt = [
-      "Jan.", "Fev.", "Mar.", "Abr.", "Mai.", "Jun.",
-      "Jul.", "Ago.", "Set.", "Out.", "Nov.", "Dez."
-    ];
-
-    const monthsEn = [
-      "Jan.", "Feb.", "Mar.", "Apr.", "May.", "Jun.",
-      "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."
-    ];
-
-    final month = isEN ? monthsEn[dt.month - 1] : monthsPt[dt.month - 1];
-
-    return "${dt.day} $month";
-  }
-
+  // -----------------------------------------------------
+  // TELA COMPLETA
+  // -----------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return MonthPageTemplate(
@@ -135,223 +263,51 @@ class _ZodiacWidgetState extends State<ZodiacWidget> {
       title: '',
       pageLabel: 'zodiac.title'.tr(),
       labelColor: const Color.fromARGB(255, 141, 99, 195),
-      useScaffoldContainer: false,
-      description: _bannerDescription.isNotEmpty
-          ? _bannerDescription
-          : 'zodiac.description'.tr(),
+      
+      description: "zodiac.month_description".tr(),
       child: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : _todaySign == null
-              ? Center(
-                  child: Text(
-                    'zodiac.no_data'.tr(),
-                    style: const TextStyle(color: Colors.grey),
-                  ),
-                )
-              : _buildZodiacContent(),
+          : _buildContent(),
     );
   }
 
-  Widget _buildZodiacContent() {
-    final sign = _todaySign!;
+  Widget _buildContent() {
     final isEN = context.locale.languageCode == 'en';
 
-    // nome
-    final name = (isEN ? sign['signo_en'] : sign['signo_pt']) ?? '—';
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const SizedBox(height: 14),
 
-    // período abreviado
-    final startShort = formatDateShort(sign['start_date'] ?? '', isEN);
-    final endShort = formatDateShort(sign['end_date'] ?? '', isEN);
-    final periodShort = "$startShort — $endShort";
-
-    // dados do mês
-    final colorText = _monthSign?[isEN ? "cor_en" : "cor_pt"] ?? '';
-    final regenteText = _monthSign?[isEN ? "regente_en" : "regente_pt"] ?? '';
-    final numeroText = _monthSign?["numero"]?.toString() ?? '';
-    final elementoText =
-        _monthSign?[isEN ? "elemento_en" : "elemento_pt"] ?? '';
-    final pedraText = _monthSign?[isEN ? "pedra_en" : "pedra_pt"] ?? '';
-    final florText = _monthSign?[isEN ? "flor_en" : "flor_pt"] ?? '';
-
-    // LUA
-    final moonPhase = getMoonPhase(DateTime.now(), isEN: isEN);
-    final moonEmoji = getMoonEmoji(moonPhase);
-
-    return Column(
-      children: [
-        const SizedBox(height: 20),
-        Text(sign['emoji'] ?? '⭐', style: const TextStyle(fontSize: 60)),
-        const SizedBox(height: 16),
-
-        Text(
-          'zodiac.today_sign'.tr(),
-          style: const TextStyle(
-              fontSize: 15,
-              fontStyle: FontStyle.italic,
-              color: Colors.black54),
-        ),
-
-        const SizedBox(height: 4),
-
-        Text(
-          name.toUpperCase(),
-          style: const TextStyle(
-            fontSize: 26,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1,
-          ),
-        ),
-
-        const SizedBox(height: 10),
-
-        Container(
-          alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.black26, width: 1.2),
-          ),
-          child: Text(
-            periodShort,
-            style: const TextStyle(fontSize: 16),
-          ),
-        ),
-
-        const SizedBox(height: 8),
-
-        Text(
-          "${'zodiac.moon_today'.tr()}: $moonEmoji $moonPhase",
-          style: TextStyle(
-              fontSize: 14,
-              fontStyle: FontStyle.italic,
-              color: Colors.black.withOpacity(0.7)),
-        ),
-
-        const SizedBox(height: 26),
-
-        // GRID
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisSpacing: 14,
-          mainAxisSpacing: 14,
-          childAspectRatio: 1.18,
-          children: [
-            _infoBox("Cor", colorText, const Color(0xFFFAD4D8)),
-            _infoBox("Regente", regenteText, const Color(0xFFE95C8B)),
-            _infoBox("Número", numeroText, const Color(0xFF97C0DB)),
-            _infoBox("Elemento", elementoText, const Color(0xFFDCE073)),
-            _infoBox("Pedra", pedraText, const Color(0xFFB49AE9)),
-            _infoBox("Flor", florText, const Color(0xFFD7CFF2)),
-          ],
-        ),
-
-        const SizedBox(height: 40),
-
-        // FRASE
-        Row(
-          children: [
-            Expanded(child: Container(height: 1, color: Colors.black26)),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              child: Icon(Icons.circle, size: 6, color: Colors.black38),
+          // -----------------------
+          // SIGNO DO DIA (linha discreta)
+          // -----------------------
+          if (_todaySign != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 24),
+              child: Text(
+                "${'zodiac.today_sign'.tr()}: "
+                "${isEN ? _todaySign!['signo_en'] : _todaySign!['signo_pt']}",
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.black.withOpacity(0.65),
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
-            Expanded(child: Container(height: 1, color: Colors.black26)),
-          ],
-        ),
 
-        const SizedBox(height: 24),
+          // CARD DO INÍCIO DO MÊS
+          if (_startSign != null && _startSign!.isNotEmpty)
+            _zodiacCard(_startSign!),
 
-        Text(
-          'zodiac.phrase_title'.tr(),
-          style: GoogleFonts.satisfy(
-            fontSize: 24,
-            color: const Color(0xFF554587),
-          ),
-        ),
-
-        const SizedBox(height: 12),
-
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Text(
-            (isEN ? sign['frase_en'] : sign['frase_pt']) ?? '',
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 15, height: 1.4),
-          ),
-        ),
-
-        const SizedBox(height: 30),
-      ],
+          // CARD DO FIM DO MÊS (se diferente do primeiro)
+          if (_endSign != null &&
+              _endSign!.isNotEmpty &&
+              _endSign!['id'] != _startSign!['id'])
+            _zodiacCard(_endSign!),
+        ],
+      ),
     );
   }
-
-  // -----------------------------------------------
-  // LUA
-  // -----------------------------------------------
-  String getMoonPhase(DateTime date, {required bool isEN}) {
-    final lp = 2551443;
-    final newDate = DateTime(1970, 1, 7, 20, 35);
-
-    final phase =
-        ((date.millisecondsSinceEpoch - newDate.millisecondsSinceEpoch) /
-                1000) %
-            lp;
-
-    final phaseIndex = ((phase / (lp / 8))).floor();
-
-    final phasesPt = [
-      "Nova",
-      "Crescente",
-      "Quarto Crescente",
-      "Gibosa Crescente",
-      "Cheia",
-      "Gibosa Minguante",
-      "Quarto Minguante",
-      "Minguante"
-    ];
-
-    final phasesEn = [
-      "New Moon",
-      "Waxing Crescent",
-      "First Quarter",
-      "Waxing Gibbous",
-      "Full Moon",
-      "Waning Gibbous",
-      "Last Quarter",
-      "Waning Crescent"
-    ];
-
-    return isEN ? phasesEn[phaseIndex] : phasesPt[phaseIndex];
-  }
-
-  String getMoonEmoji(String phase) {
-  if (phase.contains('Nova') || phase.contains('New')) {
-    return '🌑';
-  }
-  if (phase.contains('Waxing Crescent') || phase.contains('Crescente')) {
-    return '🌒';
-  }
-  if (phase.contains('First Quarter') || phase.contains('Quarto Crescente')) {
-    return '🌓';
-  }
-  if (phase.contains('Waxing Gibbous') || phase.contains('Gibosa Crescente')) {
-    return '🌔';
-  }
-  if (phase.contains('Cheia') || phase.contains('Full')) {
-    return '🌕';
-  }
-  if (phase.contains('Waning Gibbous') || phase.contains('Gibosa Minguante')) {
-    return '🌖';
-  }
-  if (phase.contains('Last Quarter') || phase.contains('Quarto Minguante')) {
-    return '🌗';
-  }
-  if (phase.contains('Waning Crescent') || phase.contains('Minguante')) {
-    return '🌘';
-  }
-
-  return '✨';
-}
 }

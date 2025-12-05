@@ -4,6 +4,25 @@ import 'package:myyearmystory/supabase/supabase_config.dart';
 class DiaryService {
   static final _supabase = SupabaseConfig.client;
 
+
+    /// Deleta entrada do diário
+  static Future<void> deleteEntry(String entryId) async {
+    try {
+      print("DiaryService → Deleting entry $entryId");
+
+      await _supabase
+          .from('diary_entries')
+          .delete()
+          .eq('id', entryId);
+
+      print("DiaryService → Entry deleted");
+    } catch (e) {
+      print("DiaryService → Error deleting entry: $e");
+      rethrow;
+    }
+  }
+
+
   /// Lista todas as entradas de diário do usuário
   static Future<List<DiaryEntryModel>> getEntries(String userId) async {
     try {
@@ -31,81 +50,77 @@ class DiaryService {
 
   /// Cria uma nova entrada de diário
   /// Agora aceita opcionalmente `moodIcon`
-  static Future<DiaryEntryModel> createEntry(
-    String userId,
-    String content,
-    DateTime entryDate, {
-    String? moodIcon,
-  }) async {
-    try {
-      print('DiaryService → Creating entry (user: $userId, mood: $moodIcon)');
+  /// Cria uma nova entrada de diário (com suporte a calendário)
+static Future<DiaryEntryModel> createEntry(
+  String userId,
+  String content,
+  DateTime entryDate, {
+  String? moodIcon,
+}) async {
+  try {
+    print('DiaryService → Creating entry (user: $userId, mood: $moodIcon)');
 
-      final response = await _supabase
-          .from('diary_entries')
-          .insert({
-            'user_id': userId,
-            'entry_date': entryDate.toIso8601String(),
-            'content': content,
-            'mood_icon': moodIcon, // 👈 NOVO
-          })
-          .select()
-          .single();
+    final response = await _supabase
+        .from('diary_entries')
+        .insert({
+          'user_id': userId,
+          'entry_date': entryDate.toIso8601String(),
+          'content': content,
+          'mood_icon': moodIcon,
 
-      print('DiaryService → Entry created: ${response['id']}');
+          // ⭐ NECESSÁRIO PARA O POPUP DO CALENDÁRIO FUNCIONAR
+          'day': entryDate.day,
+          'month': entryDate.month,
+          'year': entryDate.year,
+        })
+        .select()
+        .single();
 
-      return DiaryEntryModel.fromJson(response);
-    } catch (e) {
-      print('DiaryService → Error creating entry: $e');
-      rethrow;
-    }
+    print('DiaryService → Entry created: ${response['id']}');
+
+    return DiaryEntryModel.fromJson(response);
+  } catch (e) {
+    print('DiaryService → Error creating entry: $e');
+    rethrow;
   }
+}
+
 
   /// Atualiza entrada (agora também permite atualizar moodIcon)
   static Future<DiaryEntryModel> updateEntry(
-    String entryId,
-    String content,
-    DateTime entryDate, {
-    String? moodIcon,
-  }) async {
-    try {
-      print('DiaryService → Updating entry $entryId');
+  String entryId,
+  String content,
+  DateTime entryDate, {
+  String? moodIcon,
+}) async {
+  try {
+    print('DiaryService → Updating entry $entryId');
 
-      final response = await _supabase
-          .from('diary_entries')
-          .update({
-            'entry_date': entryDate.toIso8601String(),
-            'content': content,
-            'mood_icon': moodIcon, // 👈 NOVO
-          })
-          .eq('id', entryId)
-          .select()
-          .single();
+    final response = await _supabase
+        .from('diary_entries')
+        .update({
+          'entry_date': entryDate.toIso8601String(),
+          'content': content,
+          'mood_icon': moodIcon,
 
-      print('DiaryService → Entry updated successfully');
+          // ⭐ mantém sincronia com o calendário
+          'day': entryDate.day,
+          'month': entryDate.month,
+          'year': entryDate.year,
+        })
+        .eq('id', entryId)
+        .select()
+        .single();
 
-      return DiaryEntryModel.fromJson(response);
-    } catch (e) {
-      print('DiaryService → Error updating entry: $e');
-      rethrow;
-    }
+    print('DiaryService → Entry updated successfully');
+
+    return DiaryEntryModel.fromJson(response);
+  } catch (e) {
+    print('DiaryService → Error updating entry: $e');
+    rethrow;
   }
+}
 
-  /// Deleta entrada
-  static Future<void> deleteEntry(String entryId) async {
-    try {
-      print('DiaryService → Deleting entry $entryId');
-
-      await _supabase
-          .from('diary_entries')
-          .delete()
-          .eq('id', entryId);
-
-      print('DiaryService → Entry deleted');
-    } catch (e) {
-      print('DiaryService → Error deleting entry: $e');
-      rethrow;
-    }
-  }
 
   /// Lista entradas por intervalo de datas
   static Future<List<DiaryEntryModel>> getEntriesByDateRange(

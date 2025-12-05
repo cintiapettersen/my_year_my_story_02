@@ -21,8 +21,27 @@ class MonthMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 📱 Detecta idioma automaticamente
+
+      // 🔤 chaves existentes no JSON
+  final List<String> monthKeys = [
+    "month.january",
+    "month.february",
+    "month.march",
+    "month.april",
+    "month.may",
+    "month.june",
+    "month.july",
+    "month.august",
+    "month.september",
+    "month.october",
+    "month.november",
+    "month.december",
+  ];
+
     final lang = ui.PlatformDispatcher.instance.locale.languageCode;
     final locale = lang == 'pt' ? const Locale('pt') : const Locale('en');
+
+    
 
     // 📅 Nome e data formatados conforme idioma
     final String monthName =
@@ -30,11 +49,17 @@ class MonthMenu extends StatelessWidget {
     final String formattedDate =
     DateFormat("d 'de' MMMM 'de' y", locale.languageCode).format(DateTime.now());
 
+
+    
+
     // 🌈 Cor dinâmica do mês
     final Color bannerColor = getMonthColor(month);
 
     // 💕 Janeiro mantém texto rosa
     final Color textColor = (month == 1) ? const Color(0xFFE2377D) : Colors.black;
+
+
+    
 
     // 🌸 Itens do menu com chaves de tradução
     final List<Map<String, dynamic>> menuItems = [
@@ -50,6 +75,9 @@ class MonthMenu extends StatelessWidget {
       {'title': 'month_menu.reflections', 'icon': PhosphorIconsRegular.quotes, 'color': const Color(0xFFcf78f7)},
       {'title': 'month_menu.photos', 'icon': PhosphorIconsRegular.camera, 'color': const Color(0xFFb71691)},
       {'title': 'month_menu.dates', 'icon': PhosphorIconsRegular.calendarDots, 'color': const Color(0xFF627fdd)},
+
+
+      
 
     ];
 
@@ -192,5 +220,9 @@ extension StringCasing on String {
   String capitalize() {
     if (isEmpty) return this;
     return this[0].toUpperCase() + substring(1);
+
+
+
+    
   }
 }

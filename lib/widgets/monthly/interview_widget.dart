@@ -5,6 +5,15 @@ import 'package:myyearmystory/utils/access_control.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
+import 'package:myyearmystory/screens/popups/coming_soon.dart';
+
+/// CONFIG DEV / ADMIN
+class AppConfig {
+  static bool isDev = true; // coloque false na versão final
+  static bool isAdmin(String? email) {
+    return email != null && email.endsWith("@sonhodepapel.com");
+  }
+}
 
 class InterviewScreen extends StatefulWidget {
   final int? month;
@@ -30,7 +39,6 @@ class _InterviewScreenState extends State<InterviewScreen>
   bool _isPremiumUser = false;
   String? _currentUserId;
 
-  /// Controle de perguntas visíveis
   bool _showAllQuestions = false;
 
   final List<TextEditingController> _controllers = [];
@@ -54,22 +62,34 @@ class _InterviewScreenState extends State<InterviewScreen>
   Future<void> _initialize() async {
     setState(() => _isLoading = true);
 
-    _currentUserId = supabase.auth.currentUser?.id;
-    _isPremiumUser = await AccessControl.isPremium();
+    await _checkPremiumStatus();
 
-    /// Buscar texto + perguntas do Supabase
+    _currentUserId = supabase.auth.currentUser?.id;
+
     final interviewData = await InterviewService.getInterviewData(
       widget.month ?? DateTime.now().month,
       context.locale.languageCode,
     );
 
     _questions = List<String>.from(interviewData['questions'] ?? []);
-    _description =
-        "interview.fixed_description".tr(); // agora fixa, sempre traduzida
+    _description = "interview.fixed_description".tr();
 
     await _loadSavedAnswers();
 
     setState(() => _isLoading = false);
+  }
+
+  // 🔑 CHECAGEM PREMIUM + ADMIN + DEV
+  Future<void> _checkPremiumStatus() async {
+    final user = SupabaseConfig.client.auth.currentUser;
+    final email = user?.email;
+
+    final isPremium = await AccessControl.isPremium();
+
+    setState(() {
+      _isPremiumUser =
+          isPremium || AppConfig.isAdmin(email) || AppConfig.isDev;
+    });
   }
 
   Future<void> _loadSavedAnswers() async {
@@ -91,9 +111,8 @@ class _InterviewScreenState extends State<InterviewScreen>
 
     _controllers.clear();
     for (int i = 0; i < _questions.length; i++) {
-      final answer = i < questionsData.length
-          ? questionsData[i]['a'] ?? ''
-          : '';
+      final answer =
+          i < questionsData.length ? (questionsData[i]['a'] ?? '') : '';
       _controllers.add(TextEditingController(text: answer));
     }
   }
@@ -129,19 +148,33 @@ class _InterviewScreenState extends State<InterviewScreen>
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('interview.saved_success'.tr()),
-            backgroundColor: Colors.green,
-          ),
-        );
+  SnackBar(
+    backgroundColor: const Color(0xFFA1A8F0),
+    behavior: SnackBarBehavior.floating,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(14),
+    ),
+    content: Text(
+      "interview.saved_success".tr(),
+      style: const TextStyle(
+        color: Color.fromARGB(255, 244, 240, 246), // um roxo escuro pra contraste
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+  ),
+);
       }
     } catch (e) {
       debugPrint("Erro ao salvar entrevista: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('interview.save_error'.tr()),
+            content: Text("interview.save_error".tr()),
             backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
           ),
         );
       }
@@ -159,7 +192,6 @@ class _InterviewScreenState extends State<InterviewScreen>
     final month = widget.month ?? DateTime.now().month;
     final year = widget.year ?? DateTime.now().year;
 
-    /// Usuários Free só veem 5 perguntas
     final visibleQuestions = _isPremiumUser || _showAllQuestions
         ? _questions
         : _questions.take(5).toList();
@@ -176,7 +208,6 @@ class _InterviewScreenState extends State<InterviewScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// Texto "Quem você está entrevistando?"
             Center(
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 14),
@@ -192,7 +223,7 @@ class _InterviewScreenState extends State<InterviewScreen>
               ),
             ),
 
-            /// Card com nome / relação / idade
+            /// Card de nome/relação/idade
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
               decoration: BoxDecoration(
@@ -223,7 +254,7 @@ class _InterviewScreenState extends State<InterviewScreen>
                           controller: _ageController,
                           hint: "interview.age_hint".tr(),
                         ),
-                      )
+                      ),
                     ],
                   )
                 ],
@@ -232,7 +263,6 @@ class _InterviewScreenState extends State<InterviewScreen>
 
             const SizedBox(height: 20),
 
-            /// Título “Perguntas”
             Center(
               child: Text(
                 "interview.ask".tr(),
@@ -246,7 +276,6 @@ class _InterviewScreenState extends State<InterviewScreen>
 
             const SizedBox(height: 16),
 
-            /// Lista de perguntas
             ...visibleQuestions.asMap().entries.map((entry) {
               final index = entry.key;
               final question = entry.value;
@@ -292,7 +321,6 @@ class _InterviewScreenState extends State<InterviewScreen>
               );
             }),
 
-            /// Mostrar mais perguntas (free)
             if (!_isPremiumUser && !_showAllQuestions)
               Center(
                 child: TextButton(
@@ -310,61 +338,66 @@ class _InterviewScreenState extends State<InterviewScreen>
 
             const SizedBox(height: 20),
 
-            /// Botões
             Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _isPremiumUser ? _saveInterview : () {
-                      showPremiumPopup(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFA1A8F0),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      "interview.save_button".tr(),
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => showPremiumPopup(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFC881D5),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      "interview.audio_button".tr(),
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                )
-              ],
-            ),
+  children: [
+    /// BOTÃO DE SALVAR
+    Expanded(
+      child: ElevatedButton(
+        onPressed: _isPremiumUser
+            ? _saveInterview
+            : () => showPremiumPopup(context),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFA1A8F0),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: Text(
+          "interview.save_button".tr(),
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    ),
+
+    const SizedBox(width: 12),
+
+    /// BOTÃO DE ÁUDIO (COMING SOON)
+    Expanded(
+      child: ElevatedButton(
+        onPressed: () {
+          showComingSoonPrompt(context);
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFC881D5),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: Text(
+          "interview.audio_button".tr(),
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    ),
+  ],
+)
+
           ],
         ),
       ),
     );
   }
 
-  /// Helper – campo base
   Widget _buildFieldBase({
     required TextEditingController controller,
     required String hint,
@@ -382,7 +415,6 @@ class _InterviewScreenState extends State<InterviewScreen>
     );
   }
 
-  /// Helper – campo com label
   Widget _buildTextField({
     required String label,
     required TextEditingController controller,

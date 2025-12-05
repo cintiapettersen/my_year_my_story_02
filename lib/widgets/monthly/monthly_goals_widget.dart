@@ -219,52 +219,48 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
 
       child: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ➕ Campo adicionar meta
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _goalController,
-                          decoration: InputDecoration(
-                            hintText: "monthly_goals.add_goal_hint".tr(),
-                            filled: true,
-                            fillColor: Colors.white,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 14,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onSubmitted: (_) => _addGoal(),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      ElevatedButton(
-                        onPressed: _addGoal,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              const Color.fromARGB(255, 139, 111, 196),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.all(14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Icon(Icons.add, size: 22),
-                      ),
-                    ],
-                  ),
+          : Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _goalController,
+              decoration: InputDecoration(
+                hintText: "monthly_goals.add_goal_hint".tr(),
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onSubmitted: (_) => _addGoal(),
+            ),
+          ),
+          const SizedBox(width: 10),
+          ElevatedButton(
+            onPressed: _addGoal,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color.fromARGB(255, 139, 111, 196),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.all(14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Icon(Icons.add, size: 22),
+          ),
+        ],
+      ),
 
-                  const SizedBox(height: 20),
-
+      const SizedBox(height: 20),
                   if (_goals.isEmpty)
                     _emptyState
                   else

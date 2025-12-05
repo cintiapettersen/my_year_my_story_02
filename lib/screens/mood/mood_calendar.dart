@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:myyearmystory/screens/mood/mood_repository.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:intl/intl.dart';
 
 class MoodCalendar extends StatefulWidget {
   final String userId;
@@ -10,6 +12,8 @@ class MoodCalendar extends StatefulWidget {
   final Map<String, String> moodEmojis;
   final Map<String, Color> moodColors;
 
+  final Function(int)? onDaySelected;
+
   const MoodCalendar({
     super.key,
     required this.userId,
@@ -17,15 +21,14 @@ class MoodCalendar extends StatefulWidget {
     required this.year,
     required this.moodEmojis,
     required this.moodColors,
+    this.onDaySelected,
   });
 
-  /// 🔥 Permite o MoodScreen mandar recarregar depois de salvar
-  static final _calendarKey = GlobalKey<_MoodCalendarState>();
+  static GlobalKey<_MoodCalendarState> globalKey =
+      GlobalKey<_MoodCalendarState>();
 
   static void refresh() {
-    if (_calendarKey.currentState != null) {
-      _calendarKey.currentState!._loadMoods();
-    }
+    globalKey.currentState?.loadMoods();
   }
 
   @override
@@ -33,142 +36,264 @@ class MoodCalendar extends StatefulWidget {
 }
 
 class _MoodCalendarState extends State<MoodCalendar> {
-  final MoodRepository repo = MoodRepository();
+  final supabase = Supabase.instance.client;
 
-  Map<int, String> moodsByDay = {};
+  Map<int, String> moodByDay = {};
+  int? selectedDay;
 
   @override
   void initState() {
     super.initState();
-    _loadMoods();
+    loadMoods();
   }
 
-  Future<void> _loadMoods() async {
-    if (widget.userId.isEmpty) {
-      setState(() => moodsByDay = {});
-      return;
+  Future<void> loadMoods() async {
+    final result = await supabase
+        .from('mood_entries')
+        .select()
+        .eq('user_id', widget.userId)
+        .eq('month', widget.month)
+        .eq('year', widget.year);
+
+    final map = <int, String>{};
+
+    for (var entry in result) {
+      map[entry['day']] = entry['mood'];
     }
 
-    final moods = await repo.getMoodsForMonth(
-      userId: widget.userId,
-      month: widget.month,
-      year: widget.year,
+    setState(() => moodByDay = map);
+  }
+
+  // -------------------------------------------------------
+  // 🌸 POPUP DE AÇÕES DO HUMOR DO DIA
+  // -------------------------------------------------------
+  void _showMoodActionsPopup(int day, String moodKey) async {
+    final userId = widget.userId;
+    final currentContext = context;
+
+    final result = await Supabase.instance.client
+        .from("diary_entries")
+        .select()
+        .eq("user_id", userId)
+        .gte(
+          "entry_date",
+          DateTime(widget.year, widget.month, 1).toIso8601String(),
+        )
+        .lte(
+          "entry_date",
+          DateTime(widget.year, widget.month + 1, 0).toIso8601String(),
+        );
+
+    final bool hasEntry = result.any((entry) {
+      final date = DateTime.parse(entry["entry_date"]);
+      return date.day == day &&
+          date.month == widget.month &&
+          date.year == widget.year;
+    });
+
+    if (!mounted) return;
+
+    final fullDate = DateFormat(
+      "dd 'de' MMMM 'de' y",
+      "pt_BR",
+    ).format(DateTime(widget.year, widget.month, day));
+
+    showModalBottomSheet(
+      context: currentContext,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.only(
+              left: 22,
+              right: 22,
+              top: 24,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 40,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  widget.moodEmojis[moodKey] ?? "😊",
+                  style: const TextStyle(fontSize: 46),
+                ),
+
+                const SizedBox(height: 10),
+
+                Text(
+                  "${'calendar.mood_of_day'.tr()} $fullDate",
+                  style: GoogleFonts.poppins(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 22),
+                const Divider(),
+
+                // 📘 Ver entradas
+                ListTile(
+                  leading: const Icon(Icons.menu_book_rounded, color: Colors.purple),
+                  title: Text(
+                    hasEntry
+                        ? 'calendar.view_entries'.tr()
+                        : 'calendar.no_entries_day'.tr(),
+                    style: GoogleFonts.poppins(fontSize: 15),
+                  ),
+                  enabled: hasEntry,
+                  onTap: hasEntry
+                      ? () {
+                          Navigator.pop(context);
+                          Future.delayed(const Duration(milliseconds: 80), () {
+                            Navigator.pushNamed(
+                              currentContext,
+                              "/diary",
+                              arguments: DateTime(widget.year, widget.month, day),
+                            );
+                          });
+                        }
+                      : null,
+                ),
+
+                // ✍️ Escrever no diário
+                ListTile(
+                  leading: const Icon(Icons.edit_note_rounded,
+                      color: Colors.deepPurple),
+                  title: Text(
+                    'calendar.write_diary'.tr(),
+                    style: GoogleFonts.poppins(fontSize: 15),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Future.delayed(const Duration(milliseconds: 80), () {
+                      Navigator.pushNamed(
+                      context,
+                       "/diary",
+                        arguments: DateTime(widget.year, widget.month, day),
+);
+
+                    });
+                  },
+                ),
+
+                // 🎨 Editar humor
+                ListTile(
+                  leading:
+                      const Icon(Icons.edit_rounded, color: Colors.pinkAccent),
+                  title: Text(
+                    'calendar.edit_mood'.tr(),
+                    style: GoogleFonts.poppins(fontSize: 15),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    setState(() => selectedDay = day);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
+  } //  👈👈👈 FECHAMENTO DO MÉTODO (O QUE FALTAVA!)
 
-    final Map<int, String> map = {};
-
-    for (final m in moods) {
-      final raw = m['entry_date'];
-
-      // Correção do timezone
-      final date = DateTime.tryParse(raw)?.toLocal();
-      if (date == null) continue;
-
-      final day = date.day;
-      final moodKey = m['mood'];
-
-      // Último humor do dia vence
-      map[day] = moodKey;
-    }
-
-    setState(() => moodsByDay = map);
-  }
-
+  // -------------------------------------------------------
+  // 🏗️ BUILD
+  // -------------------------------------------------------
   @override
   Widget build(BuildContext context) {
-    final daysInMonth = DateTime(widget.year, widget.month + 1, 0).day;
+    final totalDays = DateTime(widget.year, widget.month + 1, 0).day;
+    final firstWeekday = DateTime(widget.year, widget.month, 1).weekday;
+
+    final today = DateTime.now();
+    final isTodayMonth =
+        today.month == widget.month && today.year == widget.year;
+
+    List<Widget> grid = [];
+
+    for (int i = 1; i < firstWeekday; i++) {
+      grid.add(Container());
+    }
+
+    for (int day = 1; day <= totalDays; day++) {
+      final moodKey = moodByDay[day];
+      final emoji = moodKey != null ? widget.moodEmojis[moodKey] : null;
+
+      final bool isSelected = selectedDay == day;
+      final bool isToday = isTodayMonth && today.day == day;
+
+      grid.add(
+        GestureDetector(
+          onTap: () {
+            setState(() => selectedDay = day);
+
+            final moodKey = moodByDay[day];
+
+            if (moodKey != null) {
+              Future.delayed(const Duration(milliseconds: 120), () {
+                _showMoodActionsPopup(day, moodKey);
+              });
+            }
+
+            widget.onDaySelected?.call(day);
+          },
+          child: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: isSelected ? Colors.pink.withOpacity(0.2) : Colors.white,
+              borderRadius: BorderRadius.circular(40),
+              border: isToday
+                  ? Border.all(color: Colors.pinkAccent, width: 2)
+                  : Border.all(color: Colors.black12, width: 1),
+            ),
+            alignment: Alignment.center,
+            child: emoji == null
+                ? Text(
+                    "$day",
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  )
+                : Text(
+                    emoji,
+                    style: const TextStyle(fontSize: 20),
+                  ),
+          ),
+        ),
+      );
+    }
 
     return Column(
       children: [
-        const SizedBox(height: 12),
-
         Text(
-          "${_monthName(widget.month)} ${widget.year}",
+          "${"calendar_month.${widget.month}".tr()} ${widget.year}",
           style: GoogleFonts.poppins(
-            fontSize: 20,
+            fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
         ),
 
-        const SizedBox(height: 18),
+        const SizedBox(height: 12),
 
-        GridView.builder(
+        GridView.count(
+          crossAxisCount: 7,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: daysInMonth,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 7,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 14,
-          ),
-          itemBuilder: (_, index) {
-            final day = index + 1;
-            final moodKey = moodsByDay[day];
-            final hasMood = moodKey != null;
-
-            final bgColor = hasMood
-                ? widget.moodColors[moodKey]!.withOpacity(0.85)
-                : Colors.white;
-
-            return Center(
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: bgColor,
-                  border: Border.all(
-                    color: hasMood ? Colors.transparent : Colors.grey.shade400,
-                    width: 1.2,
-                  ),
-                  boxShadow: [
-                    if (hasMood)
-                      BoxShadow(
-                        color: widget.moodColors[moodKey]!.withOpacity(0.35),
-                        blurRadius: 8,
-                        spreadRadius: 2,
-                      )
-                  ],
-                ),
-                child: Center(
-                  child: hasMood
-                      ? Text(
-                          widget.moodEmojis[moodKey]!,
-                          style: const TextStyle(fontSize: 24),
-                        )
-                      : Text(
-                          "$day",
-                          style: GoogleFonts.poppins(
-                            fontSize: 15,
-                            color: Colors.black87,
-                          ),
-                        ),
-                ),
-              ),
-            );
-          },
+          childAspectRatio: 1,
+          crossAxisSpacing: 6,
+          mainAxisSpacing: 6,
+          children: grid,
         ),
+
+        const SizedBox(height: 16),
       ],
     );
-  }
-
-  String _monthName(int m) {
-    const nomes = [
-      "",
-      "Janeiro",
-      "Fevereiro",
-      "Março",
-      "Abril",
-      "Maio",
-      "Junho",
-      "Julho",
-      "Agosto",
-      "Setembro",
-      "Outubro",
-      "Novembro",
-      "Dezembro"
-    ];
-    return nomes[m];
   }
 }

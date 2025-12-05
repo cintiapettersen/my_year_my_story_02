@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:myyearmystory/widgets/shared/app_bottom_menu.dart';
 import 'package:myyearmystory/widgets/shared/month_header.dart';
+import 'package:myyearmystory/widgets/shared/app_bottom_menu.dart';
 
-class MonthPageTemplate extends StatefulWidget {
+class MonthPageTemplate extends StatelessWidget {
   final int month;
   final int year;
   final String title;
@@ -11,7 +11,6 @@ class MonthPageTemplate extends StatefulWidget {
   final String? pageLabel;
   final Color? labelColor;
 
-  final bool useScaffoldContainer;
   final Widget child;
 
   const MonthPageTemplate({
@@ -22,23 +21,11 @@ class MonthPageTemplate extends StatefulWidget {
     this.description,
     this.pageLabel,
     this.labelColor,
-    this.useScaffoldContainer = true,
     required this.child,
   });
 
   @override
-  State<MonthPageTemplate> createState() => _MonthPageTemplateState();
-}
-
-class _MonthPageTemplateState extends State<MonthPageTemplate> {
-  Future<void> _playClick() async {
-    try {} catch (_) {}
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final hasScaffold = Scaffold.maybeOf(context) != null;
-
     final Map<String, Color> labelColors = {
       'Metas do Mês': Color.fromARGB(255, 227, 62, 123),
       'Sobre Mim': Color.fromARGB(255, 189, 134, 212),
@@ -54,99 +41,113 @@ class _MonthPageTemplateState extends State<MonthPageTemplate> {
     };
 
     final Color resolvedLabelColor =
-        widget.labelColor ?? labelColors[widget.pageLabel] ?? Colors.black26;
+        labelColor ?? labelColors[pageLabel] ?? Colors.black26;
 
-    final content = Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        MonthHeader(
-          month: widget.month,
-          year: widget.year,
-          title: widget.title,
-          pageLabel: widget.pageLabel,
-          labelColor: resolvedLabelColor,
-        ),
+    // 🔥 DETECTA SE ESTÁ DENTRO DO CARD DO MÊS (PageView)
+    final bool insideAnotherScaffold = Scaffold.maybeOf(context) != null;
 
-        const SizedBox(height: 8),
-
-        if (widget.description != null && widget.description!.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-            child: Column(
-              children: [
-                Text(
-                  widget.description!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    color: Colors.black54,
-                    fontStyle: FontStyle.italic,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  height: 1,
-                  color: Color(0xFFE9B9C9),
-                  margin: EdgeInsets.symmetric(horizontal: 12),
-                ),
-              ],
+    // -------------------------------------------------------------
+    // 🌸 CENÁRIO 1 — Página dentro do fluxo mensal (CARD)
+    // -------------------------------------------------------------
+    if (insideAnotherScaffold) {
+      return Card(
+  margin: EdgeInsets.zero,
+  elevation: 4,
+  color: Colors.white, // ← 🌟 FUNDO BRANCO AQUI!
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(20),
+  ),
+        child: Column(
+          children: [
+            // 🔥 Banner agora DENTRO do card
+            MonthHeader(
+              month: month,
+              year: year,
+              title: title,
+              pageLabel: pageLabel,
+              labelColor: resolvedLabelColor,
             ),
-          ),
 
-        /// 🌸 ÁREA LIVRE AMPLIADA
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
-            child: GestureDetector(
-              onTapDown: (_) => _playClick(),
-              behavior: HitTestBehavior.translucent,
-              child: widget.child,
+            // 🔥 Conteúdo rolável
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(10, 12, 10, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (description != null && description!.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
+                        child: Column(
+                          children: [
+                            Text(
+                              description!,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.black54,
+                                fontStyle: FontStyle.italic,
+                                height: 1.3,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              height: 1,
+                              color: Color(0xFFE9B9C9),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    child,
+                  ],
+                ),
+              ),
             ),
-          ),
+          ],
         ),
-      ],
-    );
-
-    if (hasScaffold || !widget.useScaffoldContainer) {
-      return content;
+      );
     }
 
+    // -------------------------------------------------------------
+    // 🌸 CENÁRIO 2 — Página aberta sozinha (via dashboard)
+    // -------------------------------------------------------------
     return Scaffold(
       backgroundColor: const Color(0xFFFFF7FA),
       appBar: AppBar(
         backgroundColor: const Color(0xFFE2377D),
         elevation: 0,
         centerTitle: true,
-        title: const Text(
-          'My Year, My Story',
-          style: TextStyle(
+        title: Text(
+          title.isEmpty ? (pageLabel ?? '') : title,
+          style: const TextStyle(
             fontFamily: 'Cinzel',
-            fontSize: 22,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
             color: Colors.white,
-            letterSpacing: 1.2,
+            letterSpacing: 1.1,
           ),
         ),
       ),
       body: SafeArea(
-        child: Container(
-          margin: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 6,
-                offset: Offset(0, 3),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(14, 14, 14, 40),
+          child: Column(
+            children: [
+              MonthHeader(
+                month: month,
+                year: year,
+                title: title,
+                pageLabel: pageLabel,
+                labelColor: resolvedLabelColor,
               ),
+              const SizedBox(height: 12),
+              child,
             ],
           ),
-          child: content,
         ),
       ),
-      bottomNavigationBar: const AppBottomMenu(currentIndex: 1),
+      bottomNavigationBar: AppBottomMenu(currentIndex: 1),
     );
   }
 }

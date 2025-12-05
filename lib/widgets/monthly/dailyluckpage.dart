@@ -4,10 +4,16 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/services.dart';
 
 import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/widgets/shared/app_bottom_menu.dart';
+import 'package:myyearmystory/screens/premium/limit_popup.dart';
+import 'package:myyearmystory/screens/premium/free_limit_popup.dart';
+
+import 'package:myyearmystory/utils/app_config.dart';
+import 'package:myyearmystory/utils/access_control.dart';
 
 class DailyLuckPage extends StatefulWidget {
   const DailyLuckPage({Key? key}) : super(key: key);
@@ -31,10 +37,10 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
 
   final List<Color> _cardColors = const [
     Color(0xFFDAB6E8),
-    Color.fromARGB(255, 242, 215, 234),
-    Color.fromARGB(255, 220, 141, 195),
-    Color.fromARGB(255, 253, 255, 211),
-    Color.fromARGB(255, 173, 204, 248),
+    Color(0xFFF2D7EA),
+    Color(0xFFFABFE7),
+    Color(0xFFEDC3EF),
+    Color.fromARGB(255, 188, 209, 231),
   ];
 
   @override
@@ -44,10 +50,18 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
   }
 
   Future<void> _initializePage() async {
+    _isPremium = await AccessControl.isPremium();
+    
     await _loadTurnData();
+
     final prefs = await SharedPreferences.getInstance();
 
     final lastMessage = prefs.getString("luck_last_message");
+    final savedColorIndex = prefs.getInt("luck_last_color");
+
+    if (savedColorIndex != null) {
+      _cardColor = _cardColors[savedColorIndex];
+    }
 
     if (_turnsToday > 0 && lastMessage != null) {
       _luckMessage = lastMessage;
@@ -78,8 +92,9 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
       a.year == b.year && a.month == b.month && a.day == b.day;
 
   Future<bool> _canTurnCard() async {
+    if (AppConfig.devMode) return true;  // 🔥 dev nunca tem limite
     if (_isPremium) return _turnsToday < 3;
-    return _turnsToday < 999;
+    return _turnsToday < 1;
   }
 
   Future<void> _registerTurn() async {
@@ -90,6 +105,10 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
 
     await prefs.setString("luck_last_turn_date", _lastTurnDate!.toIso8601String());
     await prefs.setInt("luck_turns_today", _turnsToday);
+
+    // 🔥 analytics simples
+    await prefs.setInt("luck_total_turns",
+        (prefs.getInt("luck_total_turns") ?? 0) + 1);
   }
 
   Future<void> _loadDailyLuck() async {
@@ -114,12 +133,21 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
         final randomIndex = Random().nextInt(response.length);
         _luckMessage = response[randomIndex][col];
 
-        _cardColor = _cardColors[Random().nextInt(_cardColors.length)];
+        final newColorIndex = Random().nextInt(_cardColors.length);
+        _cardColor = _cardColors[newColorIndex];
 
         final prefs = await SharedPreferences.getInstance();
         prefs.setString("luck_last_message", _luckMessage!);
+        prefs.setInt("luck_last_color", newColorIndex);
       } else {
-        _luckMessage = "dailyLuck.comeBackTomorrow".tr();
+        // fallback local
+        final fallbackLocal = [
+  "dailyLuck.fallback1".tr(),
+  "dailyLuck.fallback2".tr(),
+  "dailyLuck.fallback3".tr(),
+];
+
+        _luckMessage = fallbackLocal[Random().nextInt(fallbackLocal.length)];
       }
     } catch (_) {
       _luckMessage = "dailyLuck.consultingUniverse".tr();
@@ -190,36 +218,31 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
           Text(
             _luckMessage ?? "",
             textAlign: TextAlign.center,
-            style: GoogleFonts.dmSerifDisplay(
-              fontSize: 22,
+            style: GoogleFonts.satisfy(
+              fontSize: 25,
               height: 1.6,
-              color: const Color.fromARGB(221, 76, 30, 81),
+              color: const Color.fromARGB(221, 85, 38, 89),
             ),
           ),
           const SizedBox(height: 28),
+
+          /// BOTÃO DE VIRAR CARTA
           TextButton.icon(
             onPressed: () async {
+              if (_isLoading) return;
+
               final canTurn = await _canTurnCard();
 
               if (!canTurn) {
-                if (_isPremium) {
-                  showDialog(
-                    context: context,
-                    builder: (_) => AlertDialog(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18)),
-                      title: Text(
-                        "dailyLuck.limitPremiumUserMessage".tr(),
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      content: Text("dailyLuck.limitPremiumUserText".tr()),
-                    ),
-                  );
-                } else {
-                  showPremiumPopup(context);
-                }
-                return;
-              }
+  if (_isPremium) {
+    showLimitPopup(context);
+  } else {
+    showFreeLimitPopup(context);
+  }
+  return;
+}
+
+              HapticFeedback.lightImpact();
 
               setState(() => _isLoading = true);
 
@@ -260,7 +283,6 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
         ),
       ),
 
-      // ❤️ --- O SEGREDO: USE O MENU DIRECTAMENTE, SEM HIGHLIGHT
       bottomNavigationBar: const AppBottomMenu(currentIndex: null),
 
       body: Column(
@@ -271,8 +293,8 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
             decoration: const BoxDecoration(
               color: Color.fromARGB(255, 243, 218, 231),
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(120),
-                bottomRight: Radius.circular(120),
+                bottomLeft: Radius.circular(100),
+                bottomRight: Radius.circular(100),
               ),
             ),
             child: Column(
@@ -301,7 +323,7 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
                   "dailyLuck.subtitle".tr(),
                   textAlign: TextAlign.center,
                   style: GoogleFonts.robotoMono(
-                    fontSize: 12,
+                    fontSize: 11,
                     height: 1.4,
                     color: Colors.black87,
                   ),
@@ -323,9 +345,10 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
                   borderRadius: BorderRadius.circular(40),
                   boxShadow: [
                     BoxShadow(
-                      color: _cardColor.withOpacity(0.30),
-                      blurRadius: 22,
-                      offset: const Offset(0, 12),
+                      color: Colors.black.withOpacity(0.02),
+                      blurRadius: 10,
+                      spreadRadius: 0,
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),
@@ -337,13 +360,9 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
                 ),
               )
                   .animate()
-                  .moveY(
-                    begin: 60,
-                    end: 0,
-                    duration: 700.ms,
-                    curve: Curves.easeOutCubic,
-                  )
-                  .fadeIn(duration: 600.ms),
+                  .moveY(begin: 60, end: 0, duration: 700.ms, curve: Curves.easeOutCubic)
+                  .fadeIn(duration: 600.ms)
+                  .scale(begin: const Offset(0.97, 0.97), end: const Offset(1, 1)),
             ),
           ),
 

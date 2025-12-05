@@ -9,8 +9,9 @@ import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/utils/month_colors.dart';
 import 'package:myyearmystory/utils/label_colors.dart';
 import 'package:myyearmystory/utils/access_control.dart';
+import 'package:myyearmystory/utils/app_config.dart';
 
-
+// 🎨 Categorias oficiais (SEM ENCERRAMENTO)
 final Map<String, Color> skillCategoryColors = {
   "autocuidado": Color(0xFFFAD4D8),
   "energia": Color(0xFFE9B9C9),
@@ -22,23 +23,25 @@ final Map<String, Color> skillCategoryColors = {
   "crescimento": Color.fromARGB(255, 212, 178, 173),
   "confiança": Color(0xFFF7E2B5),
   "presença": Color.fromARGB(255, 238, 208, 241),
-  "encerramento": Color.fromARGB(255, 198, 176, 193),
   "intuição": Color.fromARGB(255, 229, 208, 194),
+  "hábitos": Color.fromARGB(255, 216, 216, 181),
 };
-String mapTitleToCategory(String title) {
-  title = title.toLowerCase();
 
-  if (title.contains("pausa") || title.contains("calma")) return "leveza";
-  if (title.contains("energia") || title.contains("proteja")) return "energia";
-  if (title.contains("porquê") || title.contains("propósito")) return "propósito";
-  if (title.contains("celebre") || title.contains("presença")) return "presença";
-  if (title.contains("intuição") || title.contains("intuit")) return "intuição";
-  if (title.contains("gratid")) return "gratidão";
-  if (title.contains("ritmo") || title.contains("rotina")) return "rotina";
-  if (title.contains("cres") || title.contains("mudou")) return "crescimento";
-  if (title.contains("confiança") || title.contains("confie")) return "confiança";
-  if (title.contains("reflet") || title.contains("entender")) return "reflexão";
-  if (title.contains("encerr") || title.contains("ritual")) return "encerramento";
+// 🔎 Fallback opcional (caso category_mapped esteja vazio)
+String fallbackCategory(String text) {
+  text = text.toLowerCase();
+
+  if (text.contains("pausa") || text.contains("calma")) return "leveza";
+  if (text.contains("energia") || text.contains("proteja")) return "energia";
+  if (text.contains("porquê") || text.contains("propósito")) return "propósito";
+  if (text.contains("celebre") || text.contains("presença")) return "presença";
+  if (text.contains("intuit")) return "intuição";
+  if (text.contains("gratid")) return "gratidão";
+  if (text.contains("ritmo") || text.contains("rotina")) return "rotina";
+  if (text.contains("cres")) return "crescimento";
+  if (text.contains("confian")) return "confiança";
+  if (text.contains("reflet") || text.contains("entender")) return "reflexão";
+  if (text.contains("hábito")) return "hábitos";
 
   return "autocuidado";
 }
@@ -80,242 +83,249 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
     _checkPremiumStatus();
     _loadData();
   }
-Future<void> _checkPremiumStatus() async {
-  final premium = await AccessControl.isPremium();
-  setState(() => isPremiumUser = premium);
-}
 
+  // 🔑 CHECAGEM PREMIUM / ADMIN
+  Future<void> _checkPremiumStatus() async {
+    final user = supabase.auth.currentUser;
+    final email = user?.email;
 
-String getLocalizedText(Map<String, dynamic> tip) {
-  final locale = context.locale.languageCode;
-  if (locale == "en" &&
-      tip["text_en"] != null &&
-      tip["text_en"].toString().trim().isNotEmpty) {
-    return tip["text_en"];
+    final premium = await AccessControl.isPremium();
+    final admin = AppConfig.isAdmin(email);
+
+    setState(() => isPremiumUser = premium || admin);
   }
-  return tip["text"];
-}
 
-Future<void> _loadData() async {
-  setState(() => isLoading = true);
+  // 🌎 TRADUÇÃO
+  String getLocalizedText(Map<String, dynamic> tip) {
+    final locale = context.locale.languageCode;
 
-  try {
-    final response = await supabase.from('skills_tips').select();
+    if (locale == "en" &&
+        tip["text_en"] != null &&
+        tip["text_en"].toString().trim().isNotEmpty) {
+      return tip["text_en"];
+    }
 
-    if (response.isEmpty) {
-      setState(() => skills = []);
+    return tip["text"];
+  }
+
+  // 📥 CARREGAR DADOS
+  Future<void> _loadData() async {
+    setState(() => isLoading = true);
+
+    try {
+      final response = await supabase.from('skills_tips').select();
+
+      if (response.isEmpty) {
+        setState(() => skills = []);
+        return;
+      }
+
+      final allTips = List<Map<String, dynamic>>.from(response);
+      allTips.shuffle();
+
+      final Map<String, List<Map<String, dynamic>>> grouped = {};
+
+      // ✔ usa category_mapped corretamente
+      for (var tip in allTips) {
+        final localized = getLocalizedText(tip);
+
+        final dbCategory = (tip["category_mapped"] as String?)
+            ?.toLowerCase()
+            .trim();
+
+        final category = dbCategory?.isNotEmpty == true
+            ? dbCategory!
+            : fallbackCategory(localized);
+
+        grouped.putIfAbsent(category, () => []);
+        grouped[category]!.add(tip);
+      }
+
+      // ➤ pega 1 por categoria
+      final List<Map<String, dynamic>> onePerCategory = [];
+      grouped.forEach((cat, list) {
+        if (list.isNotEmpty) onePerCategory.add(list.first);
+      });
+
+      onePerCategory.shuffle();
+
+      // ➤ seleciona 5 diferentes
+      final selected = onePerCategory.take(5).toList();
+
+      setState(() {
+        skills = selected;
+        isLoading = false;
+      });
+    } catch (e) {
+      print("Erro ao carregar dicas: $e");
+      setState(() => isLoading = false);
+    }
+  }
+
+  // 🔄 REFRESH
+  Future<void> _handleRefresh() async {
+    final prefs = await SharedPreferences.getInstance();
+    final key =
+        "refresh_${widget.year}_${widget.month}_${DateTime.now().day}";
+
+    final count = prefs.getInt(key) ?? 0;
+
+    if (!isPremiumUser) {
+      showPremiumPopup(context);
       return;
     }
 
-    final allTips = List<Map<String, dynamic>>.from(response);
-    allTips.shuffle();
-
-    final Map<String, List<Map<String, dynamic>>> grouped = {};
-
-    for (var tip in allTips) {
-      final localized = getLocalizedText(tip);
-      final category = mapTitleToCategory(localized);
-
-      grouped.putIfAbsent(category, () => []);
-      grouped[category]!.add(tip);
-    }
-
-    final List<Map<String, dynamic>> onePerCategory = [];
-    grouped.forEach((cat, list) {
-      if (list.isNotEmpty) onePerCategory.add(list.first);
-    });
-
-    onePerCategory.shuffle();
-    final selected = onePerCategory.take(5).toList();
-
-    if (selected.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("tips.seen_all_today".tr())),
-      );
-      setState(() => skills = []);
-      return;
-    }
-
-    setState(() {
-      skills = selected;
-      isLoading = false;
-    });
-  } catch (e) {
-    print("Erro ao carregar dicas: $e");
-    setState(() => isLoading = false);
-  }
-}
-Future<void> _handleRefresh() async {
-  final prefs = await SharedPreferences.getInstance();
-  final key =
-      "refresh_${widget.year}_${widget.month}_${DateTime.now().day}";
-  final count = prefs.getInt(key) ?? 0;
-
-  if (!isPremiumUser) {
-    showPremiumPopup(context);
-    return;
-  }
-
-  if (count >= 3) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(
-          "tips.refresh_title".tr(),
-          style: const TextStyle(fontWeight: FontWeight.bold),
+    if (count >= 3) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: Text("tips.refresh_title".tr(),
+              style: const TextStyle(fontWeight: FontWeight.bold)),
+          content: Text("tips.refresh_message".tr()),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("tips.refresh_ok".tr()),
+            )
+          ],
         ),
-        content: Text("tips.refresh_message".tr()),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("tips.refresh_ok".tr()),
-          )
-        ],
-      ),
-    );
-    return;
+      );
+      return;
+    }
+
+    await _loadData();
+    await prefs.setInt(key, count + 1);
+
+    setState(() => refreshCount = count + 1);
   }
 
-  final random = Random();
-  final monthColor = getMonthColor(widget.month);
-  final randomBlend = Color.lerp(
-    monthColor,
-    Colors.primaries[random.nextInt(Colors.primaries.length)],
-    0.3,
-  );
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
 
-  if (randomBlend != null) {
-    setState(() => currentButtonColor = randomBlend);
-  }
+    return MonthPageTemplate(
+      month: widget.month,
+      year: widget.year,
+      title: '',
+      pageLabel: "tips.page_label".tr(),
+      labelColor: const Color(0xFFb539bc),
+      description: "tips.description".tr(),
 
-  await _loadData();
-  await prefs.setInt(key, count + 1);
+      child: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                ...skills.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final tip = entry.value;
+                  final text = getLocalizedText(tip);
 
-  setState(() => refreshCount = count + 1);
-}
-@override
-Widget build(BuildContext context) {
-  super.build(context);
+                  final category = (tip["category_mapped"] as String?)
+                          ?.toLowerCase()
+                          .trim() ??
+                      fallbackCategory(text);
 
-  return MonthPageTemplate(
-    month: widget.month,
-    year: widget.year,
-    title: '',
-    pageLabel: "tips.page_label".tr(),
-    labelColor: const Color(0xFFb539bc),
-    description: "tips.description".tr(),
+                  final categoryColor = skillCategoryColors[category] ??
+                      Colors.purple.shade100;
 
-    child: isLoading
-        ? const Center(child: CircularProgressIndicator())
-        : Column(
-            children: [
-              ...skills.asMap().entries.map((entry) {
-                final index = entry.key;
-                final tip = entry.value;
-
-                final text = getLocalizedText(tip);
-                final category = mapTitleToCategory(text);
-                final categoryColor = skillCategoryColors[category]!;
-
-                return TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0, end: 1),
-                  duration: Duration(milliseconds: 600 + index * 150),
-                  builder: (context, value, child) {
-                    return Opacity(
-                      opacity: value,
-                      child: Transform.translate(
-                        offset: Offset(0, (1 - value) * 20),
-                        child: child,
-                      ),
-                    );
-                  },
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: categoryColor,
-                          borderRadius: BorderRadius.circular(8),
+                  return TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0, end: 1),
+                    duration: Duration(milliseconds: 600 + index * 150),
+                    builder: (context, value, child) {
+                      return Opacity(
+                        opacity: value,
+                        child: Transform.translate(
+                          offset: Offset(0, (1 - value) * 20),
+                          child: child,
                         ),
-                        child: Text(
-                          "♡ ${category[0].toUpperCase()}${category.substring(1)} ♡",
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 13,
-                            letterSpacing: .2,
+                      );
+                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: categoryColor,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            "♡ ${'tips_categories.$category'.tr()} ♡",
+
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                              letterSpacing: .2,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        text,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          height: 1.5,
-                          color: Colors.black87,
+                        const SizedBox(height: 10),
+                        Text(
+                          text,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            height: 1.5,
+                            color: Colors.black87,
+                          ),
                         ),
-                      ),
-                      if (index < skills.length - 1)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 18),
-                          child: Divider(color: Colors.black26),
+                        if (index < skills.length - 1)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 18),
+                            child: Divider(color: Colors.black26),
+                          ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+
+                const SizedBox(height: 50),
+
+                GestureDetector(
+                  onTapDown: (_) => setState(() => isPressed = true),
+                  onTapUp: (_) async {
+                    setState(() => isPressed = false);
+                    await Future.delayed(const Duration(milliseconds: 120));
+                    _handleRefresh();
+                  },
+                  onTapCancel: () => setState(() => isPressed = false),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    transform:
+                        Matrix4.identity()..scale(isPressed ? 0.93 : 1.0),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 28, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: currentButtonColor,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: currentButtonColor.withOpacity(0.4),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
                         ),
-                    ],
-                  ),
-                );
-              }).toList(),
-
-              const SizedBox(height: 50),
-
-              GestureDetector(
-                onTapDown: (_) => setState(() => isPressed = true),
-                onTapUp: (_) async {
-                  setState(() => isPressed = false);
-                  await Future.delayed(
-                      const Duration(milliseconds: 120));
-                  _handleRefresh();
-                },
-                onTapCancel: () => setState(() => isPressed = false),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 250),
-                  transform:
-                      Matrix4.identity()..scale(isPressed ? 0.93 : 1.0),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 28, vertical: 14),
-                  decoration: BoxDecoration(
-                    color: currentButtonColor,
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: currentButtonColor.withOpacity(0.4),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
+                      ],
+                    ),
+                    child: Text(
+                      !isPremiumUser
+                          ? "tips.refresh_premium_button".tr()
+                          : (refreshCount >= 3
+                              ? "tips.refresh_come_back_tomorrow".tr()
+                              : "tips.refresh_see_more".tr(namedArgs: {
+                                  "remaining":
+                                      (3 - refreshCount).toString()
+                                })),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
-                    ],
-                  ),
-                  child: Text(
-                    !isPremiumUser
-                        ? "tips.refresh_premium_button".tr()
-                        : (refreshCount >= 3
-                            ? "tips.refresh_come_back_tomorrow".tr()
-                            : "tips.refresh_see_more"
-                                .tr(namedArgs: {
-                                "remaining":
-                                    (3 - refreshCount).toString()
-                              })),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-  );
+              ],
+            ),
+    );
+  }
 }
-} //

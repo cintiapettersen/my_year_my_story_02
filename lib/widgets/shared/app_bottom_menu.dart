@@ -6,6 +6,7 @@ import 'package:myyearmystory/screens/dashboard/dashboard_screen.dart';
 import 'package:myyearmystory/screens/monthly/current_month_screen.dart';
 import 'package:myyearmystory/screens/diary/diary_screen.dart';
 import 'package:myyearmystory/screens/mood/mood_screen.dart';
+import 'package:myyearmystory/screens/diary/diary_screen.dart';
 
 class AppBottomMenu extends StatelessWidget {
   final int? currentIndex; // AGORA OPCIONAL
@@ -71,7 +72,8 @@ class AppBottomMenu extends StatelessWidget {
                 break;
 
               case 2:
-                nextScreen = DiaryScreen();
+                nextScreen = DiaryScreen(date: DateTime.now());
+
                 break;
 
               case 3:
@@ -99,7 +101,7 @@ class AppBottomMenu extends StatelessWidget {
           backgroundColor: themeColor,
 
           selectedItemColor:
-              highlightDisabled ? Colors.white : const Color(0xFFFFB500),
+              highlightDisabled ? Colors.white : const Color.fromARGB(255, 87, 24, 77),
 
           unselectedItemColor: Colors.white,
           showUnselectedLabels: true,
@@ -158,7 +160,7 @@ class AppBottomMenu extends StatelessWidget {
         child: Icon(
           isActive ? activeIcon : icon,
           size: isActive ? 28 : 24,
-          color: isActive ? const Color(0xFFFFB500) : Colors.white,
+          color: isActive ? const Color.fromARGB(255, 109, 30, 74) : Colors.white,
         ),
       ),
     );

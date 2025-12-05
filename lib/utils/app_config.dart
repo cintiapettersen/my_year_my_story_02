@@ -6,14 +6,28 @@ class AppConfig {
   /// Quando FALSE → app funciona normalmente com paywall.
   static const bool devMode = true;
 
-  /// Caso você queira liberar acesso baseado no e-mail.
-  /// (Opcional – pode deixar vazio se não quiser usar)
+  /// E-mail com acesso liberado
   static const String adminEmail = "cintyapadua@gmail.com";
 
-  /// Helper pra verificar se modo dev está ativo OU usuário é admin.
+  /// Método já existente → não mexi!
   static bool isAdmin(String? email) {
     if (devMode) return true;
     if (email == null) return false;
     return email.toLowerCase().trim() == adminEmail.toLowerCase().trim();
+  }
+
+  /// 👉 NOVO MÉTODO (compatível com seu MoodScreen)
+  /// Esse método usa exatamente a mesma lógica do isAdmin.
+  static bool isUnlocked(String? email) {
+    // Se devMode está ligado → tudo libera
+    if (devMode) return true;
+
+    // Se email é admin → libera também
+    if (email != null &&
+        email.toLowerCase().trim() == adminEmail.toLowerCase().trim()) {
+      return true;
+    }
+
+    return false; // padrão → bloqueado
   }
 }

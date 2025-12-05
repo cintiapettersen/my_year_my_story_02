@@ -34,6 +34,8 @@ import 'package:myyearmystory/widgets/monthly/photo_gallery_widget.dart';
 import 'package:myyearmystory/widgets/monthly/monthly_goals_widget.dart';
 import 'package:myyearmystory/widgets/monthly/gratitude_widget.dart';
 
+import 'package:myyearmystory/screens/diary/diary_screen.dart';
+
 
 // 🌸 Telas do menu lateral (hambúrguer)
 import 'package:myyearmystory/screens/menus/profile_screen.dart';
@@ -125,131 +127,141 @@ class MyApp extends StatelessWidget {
       darkTheme: darkTheme,
       themeMode: ThemeMode.system,
 
-      // 🌎 Configurações de localização
+      // 🌎 Localização
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,
 
-      // 🌸 Tela inicial → Splash (decide login ou dashboard)
+      // 🌸 Tela inicial
       home: const SplashTransitionScreen(),
 
       // 🌸 Rotas nomeadas
-     routes: {
-  '/splash': (context) => const SplashTransitionScreen(),
-  '/login': (context) => const AuthPageView(),
+      routes: {
+        '/splash': (context) => const SplashTransitionScreen(),
+        '/login': (context) => const AuthPageView(),
 
-  '/dashboard': (context) => _withArgs(
-        context,
-        (args) => DashboardScreen(
-          month: args['month'] ?? DateTime.now().month,
-          year: args['year'] ?? DateTime.now().year,
-        ),
-      ),
+        '/dashboard': (context) => _withArgs(
+              context,
+              (args) => DashboardScreen(
+                month: args['month'] ?? DateTime.now().month,
+                year: args['year'] ?? DateTime.now().year,
+              ),
+            ),
 
-  '/profile': (context) =>  ProfileScreen(),
-  '/help': (context) =>  HelpScreen(),
+        '/profile': (context) => ProfileScreen(),
+        '/help': (context) => HelpScreen(),
 
-  '/premium': (context) => _withArgs(
-        context,
-        (args) => const PremiumPage(),
-      ),
+        '/premium': (context) => _withArgs(
+              context,
+              (args) => const PremiumPage(),
+            ),
 
-  // ⭐ NOVA ROTA — NOTIFICAÇÕES
-  '/daily_notifications': (context) => const NotificationsPage(),
+        '/daily_notifications': (context) => const NotificationsPage(),
 
-  // ⭐ WIDGETS MENSAIS
-  '/monthly_goals': (context) => _withArgs(
-        context,
-        (args) => MonthlyGoalsWidget(
-          month: args['month'],
-          year: args['year'],
-        ),
-      ),
+        // Widgets Mensais
+        '/monthly_goals': (context) => _withArgs(
+              context,
+              (args) => MonthlyGoalsWidget(
+                month: args['month'],
+                year: args['year'],
+              ),
+            ),
 
-  '/gratitude': (context) => _withArgs(
-        context,
-        (args) => GratitudeWidget(
-          month: args['month'],
-          year: args['year'],
-        ),
-      ),
+        '/gratitude': (context) => _withArgs(
+              context,
+              (args) => GratitudeWidget(
+                month: args['month'],
+                year: args['year'],
+              ),
+            ),
 
-  '/reflections': (context) => _withArgs(
-        context,
-        (args) => ReflectionsWidget(
-          month: args['month'],
-          year: args['year'],
-        ),
-      ),
+        '/reflections': (context) => _withArgs(
+              context,
+              (args) => ReflectionsWidget(
+                month: args['month'],
+                year: args['year'],
+              ),
+            ),
 
-  '/curiosities': (context) => _withArgs(
-        context,
-        (args) => CuriositiesWidget(
-          month: args['month'],
-          year: args['year'],
-        ),
-      ),
+        '/curiosities': (context) => _withArgs(
+              context,
+              (args) => CuriositiesWidget(
+                month: args['month'],
+                year: args['year'],
+              ),
+            ),
 
-  '/zodiac': (context) => _withArgs(
-        context,
-        (args) => ZodiacWidget(
-          month: args['month'],
-          year: args['year'],
-        ),
-      ),
+        '/zodiac': (context) => _withArgs(
+              context,
+              (args) => ZodiacWidget(
+                month: args['month'],
+                year: args['year'],
+              ),
+            ),
 
-  '/skills_development': (context) => _withArgs(
-        context,
-        (args) => SkillsDevelopmentWidget(
-          month: args['month'],
-          year: args['year'],
-        ),
-      ),
+        '/skills_development': (context) => _withArgs(
+              context,
+              (args) => SkillsDevelopmentWidget(
+                month: args['month'],
+                year: args['year'],
+              ),
+            ),
 
-  '/did_you_know': (context) => _withArgs(
-        context,
-        (args) => DidYouKnowWidget(
-          month: args['month'],
-          year: args['year'],
-        ),
-      ),
+        '/did_you_know': (context) => _withArgs(
+              context,
+              (args) => DidYouKnowWidget(
+                month: args['month'],
+                year: args['year'],
+              ),
+            ),
 
-  '/interview': (context) => _withArgs(
-        context,
-        (args) => InterviewScreen(
-          month: args['month'],
-          year: args['year'],
-        ),
-      ),
+        '/interview': (context) => _withArgs(
+              context,
+              (args) => InterviewScreen(
+                month: args['month'],
+                year: args['year'],
+              ),
+            ),
 
-  '/monthly_lists': (context) => _withArgs(
-        context,
-        (args) => MonthlyListsWidget(
-          month: args['month'],
-          year: args['year'],
-        ),
-      ),
+        '/monthly_lists': (context) => _withArgs(
+              context,
+              (args) => MonthlyListsWidget(
+                month: args['month'],
+                year: args['year'],
+              ),
+            ),
 
-  '/monthly_photo_gallery': (context) => _withArgs(
-        context,
-        (args) => MonthlyPhotoGallery(
-          month: args['month'],
-          year: args['year'],
-        ),
-      ),
-},
+        '/monthly_photo_gallery': (context) => _withArgs(
+              context,
+              (args) => MonthlyPhotoGallery(
+                month: args['month'],
+                year: args['year'],
+              ),
+            ),
 
-    );
-  }
+        // ⭐ ROTA DO DIÁRIO COM DATE
+        '/diary': (context) {
+          final arg = ModalRoute.of(context)?.settings.arguments;
+          final date = arg is DateTime ? arg : DateTime.now();
+          return DiaryScreen(date: date);
+        },
+      },
+    ); // 👈 FECHA O MaterialApp CORRETAMENTE
+  } // 👈 FECHA O MÉTODO build
 
-  /// 🧭 Helper genérico para rotas com argumentos de mês/ano
+  // ---------------------------------------------------------
+  // 🧭 Helper genérico para rotas com argumentos de mês/ano
+  // ---------------------------------------------------------
   Widget _withArgs(
-      BuildContext context,
-      Widget Function(Map<String, dynamic>) builder,
-      ) {
+    BuildContext context,
+    Widget Function(Map<String, dynamic>) builder,
+  ) {
     final args = (ModalRoute.of(context)?.settings.arguments as Map?) ??
-        {'month': DateTime.now().month, 'year': DateTime.now().year};
+        {
+          'month': DateTime.now().month,
+          'year': DateTime.now().year,
+        };
+
     return builder(args.cast<String, dynamic>());
   }
-}
-
+} // 👈 FECHA A CLASSE MyApp

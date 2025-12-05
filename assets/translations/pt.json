@@ -125,7 +125,7 @@
 
   "bottom": {
     "home": "Início",
-    "current_month": "Mês Atual",
+    "current_month": "Meu Mês",
     "photos": "Fotos",
     "diary": "Diário",
     "mood": "Humor",
@@ -170,7 +170,7 @@
   "monthly_goals": {
     "title": "Metas do Mês",
     "description": "Planeje, cocrie e organize suas metas do mês. Toda vez que você decide, você já está um passo mais perto de transformar seus sonhos em realidade.",
-    "add_goal_hint": "Digite sua nova meta...",
+    "add_goal_hint": "Escreva aqui…",
     "no_goals_yet": "Nenhuma meta adicionada ainda.\nComece definindo suas metas para este mês!",
     "goal_added": "Meta adicionada com sucesso!",
     "goal_removed": "Meta removida com sucesso!",
@@ -205,16 +205,27 @@
     "comeBackTomorrow": "Volte amanhã ✨",
     "consultingUniverse": "Consultando o universo... ✨",
     "limitPremiumUserMessage": "Limite diário atingido 💜",
-    "limitPremiumUserText": "Você já virou sua carta hoje.\nVolte amanhã para uma nova mensagem ✨"
+    "limitPremiumUserText": "Você já virou sua carta hoje.\nVolte amanhã para uma nova mensagem ✨",
+    "freeLimitTitle": "Volte amanhã ✨",
+    "freeLimitText": "Você já viu sua mensagem do dia. Amanhã tem mais surpresas pra você 💫",
+    "freeLimitButtonPremium": "Quero ver mais hoje",
+    "freeLimitButtonCancel": "Agora não",
+    "fallback1": "Hoje tem boas energias chegando pra você.",
+    "fallback2": "Respira fundo e confia: o dia vai ser leve.",
+    "fallback3": "Seu brilho interior tá mais forte do que nunca.",
+    "premiumLimitTitle": "Limite diário atingido!",
+    "premiumLimitText": "Você já consultou suas mensagens de hoje. Volte amanhã para descobrir mais ✨",
+    "premiumLimitButtonOk": "Ok"
+
+
   },
     
   "dashboard": {
   "hello_user": "Olá, {user}!",
   "guest_user": "Convidado",
   "track_your_activities": "Acompanhe suas atividades 👋",
-  
-  
-  
+  "answered_in": "respondido em {{date}}",
+   
   "goals": "Metas",
   "mood": "Humor",
   "diary": "Diário",
@@ -224,7 +235,6 @@
   "did_you_know": "você sabia",
   "dailyluckpage": "Mensagem de hoje",
   "calendar_page": "Calendário & Alertas",
-
 
   "daily_inspiration": "Buscando inspiração para hoje...",
   "search_previous_dates": "Buscar datas anteriores",
@@ -236,6 +246,7 @@
    "navigate_months": "Navegue pelos meses",
    "curiosity_title": "Uma curiosidade sobre você",
    "no_curiosity": "Você ainda não compartilhou nada sobre você este mês.",
+   "cancel": "Cancelar",
 
 
   "month_short": {
@@ -285,23 +296,25 @@
     "title": "Sobre Mim",
     "description": "Responda perguntas divertidas e descubra mais sobre você!",
     "answer_hint": "Sua resposta...",
-    "save": "Salvar respostas"
+    "save": "Salvar respostas",
+    "description_fixed": "Um espaço só seu, para se observar com carinho e descobrir novos pedacinhos de quem você é. Aqui, você pode refletir, se ouvir e se permitir sentir — sem pressa, sem regras, só você."
   },
 
   "zodiac": {
+
     "title": "Signos do Mês",
     "description": "Descubra a energia e as características que influenciam este período.",
     "no_data": "Não encontramos informações do signo para hoje.",
     "today_sign": "Signo de hoje",
     "phrase_title": "Energia do Signo",
     "moon_today": "Lua de hoje",
-
-    "label_color": "Cor",
-    "label_regent": "Regente",
-    "label_number": "Número",
-    "label_element": "Elemento",
-    "label_stone": "Pedra",
-    "label_flower": "Flor"
+    "month_description": "Descubra as energias e características que influenciam o mês ✨",
+    "color": "Cor",
+    "ruler": "Regente",
+    "number": "Número",
+    "element": "Elemento",
+    "stone": "Pedra",
+    "flower": "Flor"
   },
 
   "my_moment": {
@@ -348,7 +361,7 @@
    "page_label": "Página da Gratidão",
 
     "description": "A gratidão nos ajuda a enxergar o lado bom da vida e fortalecer o coração. Registre as coisas boas que aconteceram neste mês 💖",
-
+    "fixed_description": "A gratidão nos ajuda a enxergar o lado bom da vida e fortalecer o coração. Registre as coisas boas que aconteceram neste mês 💖",
     "hint": "Sou grato por...",
     "empty_state": "Nenhum registro ainda.\nComece adicionando algo pelo qual você é grato 💛",
 
@@ -416,7 +429,8 @@
 
     "add_more": "Adicionar mais",
     "save": "Salvar Lista",
-    "saved": "Lista salva com sucesso! 💖"
+    "saved": "Lista salva com sucesso! 💖",
+    "empty_warning": "Sua lista está vazia! Adicione algo antes de salvar ✨"
   },
 
   "did_you_know": {
@@ -451,6 +465,22 @@
 
   },
 
+  "tips_categories": {
+  "autocuidado": "Self-care",
+  "energia": "Energy",
+  "proposito": "Purpose",
+  "leveza": "Lightness",
+  "reflexao": "Reflection",
+  "gratidao": "Gratitude",
+  "rotina": "Routine",
+  "crescimento": "Growth",
+  "confianca": "Confidence",
+  "presenca": "Presence",
+  "intuicao": "Intuition",
+  "habitos": "Habits"
+},
+
+
   "stickers": {
     "read": "Leitura do Mês",
     "write": "Pensamentos Livres",
@@ -470,8 +500,9 @@
   "refresh_ok": "OK",
 
   "refresh_premium_button": "Atualizar mais dicas",
-  "refresh_see_more": "Atualizar mais dicas (__remaining__ restantes)",
+  "refresh_see_more": "Atualizar mais dicas",
   "refresh_come_back_tomorrow": "Volte amanhã 🌙"
+  
   },
 
 
@@ -492,6 +523,11 @@
     "repeat_weekly": "Todas as semanas",
     "repeat_yearly": "Todos os anos",
     "repeat_monthly": "Todos os meses",
+    "mood_of_day": "Seu humor de",
+    "view_entries": "Ver entradas do diário",
+    "no_entries_day": "Nenhuma entrada feita neste dia",
+    "write_diary": "Escrever no diário",
+    "edit_mood": "Editar humor do dia",
 
     "weekdays": "Dias da semana",
 
@@ -521,64 +557,30 @@
     "save_created": "Seu alerta foi criado! 💛",
     "save_updated": "Seu alerta foi editado ✨",
 
-    "empty": "Nenhum evento neste mês."
-  },
-
-  "dates": {
-    "title": "Calendário & Alertas",
-    "description": "Veja seus dias importantes e marque seus melhores momentos."
-  },
-
-  "week": {
-    "short": {
-      "sun": "D",
-      "mon": "S",
-      "tue": "T",
-      "wed": "Q",
-      "thu": "Q",
-      "fri": "S",
-      "sat": "S"
-    },
-
-    "sun": "Dom",
-    "mon": "Seg",
-    "tue": "Ter",
-    "wed": "Qua",
-    "thu": "Qui",
-    "fri": "Sex",
-    "sat": "Sáb"
-  },
+    "empty": "Nenhum evento neste mês.",
 
 
+"month.1": "janeiro",
+"month.2": "fevereiro",
+"month.3": "março",
+"month.4": "abril",
+"month.5": "maio",
+"month.6": "junho",
+"month.7": "julho",
+"month.8": "agosto",
+"month.9": "setembro",
+"month.10": "outubro",
+"month.11": "novembro",
+"month.12": "dezembro"
 
-  "notifications": {
-  "page_label": "Notificações",
-  "description": "Seus lembretes e alertas aparecem aqui. Você pode revisar ou limpar seu histórico quando quiser.",
-
-  "title": "Notificações",
-  "clear_history_tooltip": "Limpar histórico",
-  
-  "dialog_clear_title": "Limpar todas as notificações?",
-  "dialog_clear_message": "Tem certeza que deseja apagar todo o histórico de notificações?",
-  "dialog_cancel": "Cancelar",
-  "dialog_confirm_clear": "Limpar",
-
-  "empty_state": "Você não tem notificações salvas.\nNovos alertas aparecerão aqui quando forem ativados."
-
-
-},
-
-  "daily_popup": {
-  "default_title": "Alerta do dia",
-  "subtitle": "Você tem um evento ou lembrete programado para hoje!",
-  "mark_seen": "Marcar como visto",
-  "cancel_alert": "Cancelar alerta"
 
 },
  "mood": {
   "how_are_you_feeling": "Como você está se sentindo?",
   "highlight_title": "HUMOR DESTAQUE",
-  "other_marked": "OUTROS HUMORES MAIS MARCADOS",
+  "other_marked": "HUMOR DESTAQUE",
+  "highlight_mood": "HUMOR DESTAQUE",
+  "other_top_moods": "Outros humores do mês",
 
   "happy": "Feliz",
   "calm": "Calma",
@@ -599,54 +601,73 @@
 
   "limit_message": "💗 Você já registrou seu humor! Tente novamente em 1 hora.",
 
-  "motivation_happy": "🌞 Continue espalhando essa luz!",
-  "motivation_calm": "🌿 Aproveite essa paz.",
-  "motivation_loving": "💖 Seu coração tá quentinho hoje.",
-  "motivation_thoughtful": "🌙 Pensar é essencial.",
-  "motivation_anxious": "🌸 Respira… vai ficar tudo bem.",
-  "motivation_tired": "💙 Seu corpo pede descanso.",
-  "motivation_sad": "💜 Você não está sozinha.",
-  "motivation_irritated": "🔥 Respira antes de reagir.",
-  "motivation_embarrassed": "😳 Todo mundo passa por isso.",
-  "motivation_comforted": "🤗 Que delícia esse acolhimento.",
-  "motivation_bored": "😑 Talvez tentar algo novo?",
-  "motivation_excited": "🤩 Amo ver você animada!",
-  "motivation_overwhelmed": "😵 Uma coisa por vez.",
-  "motivation_proud": "😇 E com razão! Continue assim.",
-  "motivation_surprised": "🤯 A vida surpreende mesmo!",
-  "motivation_confused": "😕 Vai clareando aos poucos.",
 
   "calendar_description": "Esse é o seu calendário de humor.\nTodo dia você pode registrar como está se sentindo e, aos poucos, as carinhas vão aparecendo aqui.",
   "calendar_register_hint": "Clique nos botões abaixo e registre seu humor do dia"
 
+
   },
-  "diary": {
-  "title": "Meu Diário",
-  "subtitle": "Seu espaço livre para reflexões e pensamentos ✨",
 
-  "empty_title": "Seu diário está vazio",
-  "empty_description": "Comece escrevendo sobre seu dia, seus sentimentos ou algo que queira guardar na memória.",
-  "empty_button": "Escrever Primeira Entrada",
+  "motivation": {
+  "happy": "Que bom ver você feliz!",
+  "calm": "Respire fundo e continue assim!",
+  "loving": "Espalhe esse amor por aí!",
+  "thoughtful": "Refletir faz parte do crescimento.",
+  "anxious": "Você não está sozinha. Um passo de cada vez.",
+  "tired": "Descanse um pouquinho, você merece.",
+  "sad": "Tudo bem se sentir assim. Vai passar.",
+  "irritated": "Respire. Seu dia pode melhorar.",
+  "embarrassed": "Acontece com todo mundo!",
+  "comforted": "Que delícia se sentir acolhida!",
+  "bored": "Talvez seja hora de tentar algo novo!",
+  "excited": "Adoro ver essa energia!",
+  "overwhelmed": "Pausa. Você está fazendo seu melhor.",
+  "proud": "Orgulhe-se mesmo!",
+  "surprised": "Uau! Coisas boas acontecem!",
+  "confused": "Tudo vai fazer mais sentido em breve."
+},
 
-  "new_entry": "Nova Entrada",
-  "hint_text": "Como foi seu dia?",
-  "cancel": "Cancelar",
-  "save": "Salvar",
 
-  "edit": "Editar",
-  "delete": "Excluir",
-  "delete_confirmation": "Tem certeza que deseja excluir esta entrada?",
-  "deleted_success": "Entrada excluída com sucesso 🗑️",
-  "saved_success": "Entrada salva com sucesso! ✨",
+   
+"diary": {
+    "title": "Meu Diário",
+    "subtitle": "Registre seus pensamentos e momentos importantes",
+    
+    "empty_title": "Nenhuma entrada ainda",
+    "empty_description": "Você ainda não escreveu nada por aqui. Que tal começar hoje?",
+    "first_entry_button": "Escrever primeira entrada",
 
-  "select_date": "Selecionar data",
+    "new_entry": "Nova entrada",
+    "hint_text": "Escreva aqui seus pensamentos...",
+    "cancel": "Cancelar",
+    "save": "Salvar",
 
-  "icons_title": "Como você está se sentindo?",
-  "icon_happy": "Feliz",
-  "icon_sad": "Triste",
-  "icon_lucky": "Sorte",
-  "icon_neutral": "Neutro",
-  "icon_confused": "Confuso"
+    "edit": "Editar",
+    "delete": "Excluir",
+    "delete_title": "Excluir entrada",
+    "delete_confirm": "Tem certeza de que deseja excluir esta entrada?",
+    "delete_success": "Entrada excluída com sucesso!",
+    "saved_success": "Entrada salva com sucesso!"
+  
+
+},
+
+"calendar_month": {
+
+  "1": "Janeiro",
+  "2": "Fevereiro",
+  "3": "Março",
+  "4": "Abril",
+  "5": "Maio",
+  "6": "Junho",
+  "7": "Julho",
+  "8": "Agosto",
+  "9": "Setembro",
+  "10": "Outubro",
+  "11": "Novembro",
+  "12": "Dezembro"
+
+
 },
 
   "help": {
@@ -695,6 +716,60 @@
   "saved": "Idioma atualizado!",
   "language": "Idioma",
   "app_name": "My Year, My Story"
+
+
+
+  },
+
+  "dates": {
+    "title": "Calendário & Alertas",
+    "description": "Veja seus dias importantes e marque seus melhores momentos."
+  },
+
+  "week": {
+    "short": {
+      "sun": "D",
+      "mon": "S",
+      "tue": "T",
+      "wed": "Q",
+      "thu": "Q",
+      "fri": "S",
+      "sat": "S"
+    },
+
+    "sun": "Dom",
+    "mon": "Seg",
+    "tue": "Ter",
+    "wed": "Qua",
+    "thu": "Qui",
+    "fri": "Sex",
+    "sat": "Sáb"
+  },
+
+
+  "notifications": {
+  "page_label": "Notificações",
+  "description": "Seus lembretes e alertas aparecem aqui. Você pode revisar ou limpar seu histórico quando quiser.",
+
+  "title": "Notificações",
+  "clear_history_tooltip": "Limpar histórico",
+  
+  "dialog_clear_title": "Limpar todas as notificações?",
+  "dialog_clear_message": "Tem certeza que deseja apagar todo o histórico de notificações?",
+  "dialog_cancel": "Cancelar",
+  "dialog_confirm_clear": "Limpar",
+
+  "empty_state": "Você não tem notificações salvas.\nNovos alertas aparecerão aqui quando forem ativados."
+
+
+},
+
+  "daily_popup": {
+  "default_title": "Alerta do dia",
+  "subtitle": "Você tem um evento ou lembrete programado para hoje!",
+  "mark_seen": "Marcar como visto",
+  "cancel_alert": "Cancelar alerta"
+
 }
 
 }

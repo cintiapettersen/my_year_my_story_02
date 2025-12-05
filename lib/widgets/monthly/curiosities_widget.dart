@@ -71,24 +71,31 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
   // 🔄 CARREGA PERGUNTAS DO MÊS
   // ------------------------------------------------------------
   Future<void> _loadThemeAndQuestions() async {
-    try {
-      final res = await SupabaseConfig.client
-          .from('curiosities_entries')
-          .select('theme_title, questions')
-          .eq('month', widget.month)
-          .eq('year', widget.year)
-          .maybeSingle();
+  try {
+    final res = await SupabaseConfig.client
+        .from('curiosities_entries')
+        .select('theme_title, questions, questions_en')
+        .eq('month', widget.month)
+        .eq('year', widget.year)
+        .maybeSingle();
 
-      if (res != null) {
-        _themeTitle = res['theme_title'] ?? '';
-        _questions = List<String>.from(res['questions'] ?? []);
-        _controllers =
-            List.generate(_questions.length, (_) => TextEditingController());
-      }
-    } catch (e) {
-      debugPrint('Erro ao carregar curiosities_entries: $e');
+    if (res != null) {
+      _themeTitle = res['theme_title'] ?? '';
+
+      final String language = context.locale.languageCode;
+
+      // 🔥 CARREGA A COLUNA CERTA CONFORME O IDIOMA DO APP
+      _questions = language == 'en'
+          ? List<String>.from(res['questions_en'] ?? [])
+          : List<String>.from(res['questions'] ?? []);
+
+      _controllers =
+          List.generate(_questions.length, (_) => TextEditingController());
     }
+  } catch (e) {
+    debugPrint('Erro ao carregar curiosities_entries: $e');
   }
+}
 
   // ------------------------------------------------------------
   // 🔄 CARREGA RESPOSTAS SALVAS
@@ -245,7 +252,7 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
       title: '',
       pageLabel: 'curiosities.title'.tr(),
       labelColor: const Color(0xFFc79fe2),
-      description: _descricaoFixa,
+      description: "curiosities.description_fixed".tr(),
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -254,54 +261,72 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
             const SizedBox(height: 6),
 
             ...List.generate(_questions.length, (index) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(children: const [
-                      Icon(Icons.favorite,
-                          size: 18, color: Color(0xFFE25BA6)),
-                      SizedBox(width: 6),
-                    ]),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 28),
-                      child: Text(
-                        _questions[index],
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15,
-                          color: Color.fromARGB(255, 189, 62, 125),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: _controllers[index],
-                      minLines: 2,
-                      maxLines: 4,
-                      decoration: InputDecoration(
-                        hintText: 'curiosities.answer_hint'.tr(),
-                        filled: true,
-                        fillColor: const Color(0xFFFCEAF4),
-                        contentPadding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 12),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                              color: Color(0xFFE8B3D0), width: 1),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                              color: Color(0xFFE25BA6), width: 1.4),
-                        ),
-                      ),
-                    ),
-                  ],
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 14),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ❤️ Coração + Pergunta lado a lado
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.favorite,
+              size: 18,
+              color: Color(0xFFE25BA6),
+            ),
+            const SizedBox(width: 8),
+
+            // texto da pergunta traduzida
+            Expanded(
+              child: Text(
+                _questions[index], // ← AGORA TRADUZ!
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                  color: Color.fromARGB(255, 189, 62, 125),
                 ),
-              );
-            }),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 8),
+
+        // Campo de resposta
+        TextField(
+          controller: _controllers[index],
+          minLines: 2,
+          maxLines: 4,
+          decoration: InputDecoration(
+            hintText: 'curiosities.answer_hint'.tr(), // ← também traduz
+            filled: true,
+            fillColor: const Color(0xFFFCEAF4),
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 10,
+              horizontal: 12,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(
+                color: Color(0xFFE8B3D0),
+                width: 1,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(
+                color: Color(0xFFE25BA6),
+                width: 1.4,
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}),
+
 
             const SizedBox(height: 20),
 

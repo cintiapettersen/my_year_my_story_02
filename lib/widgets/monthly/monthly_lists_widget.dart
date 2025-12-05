@@ -6,6 +6,13 @@ import 'package:myyearmystory/utils/access_control.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
 
+/// Config DEV/Admin igual à InterviewScreen
+class AppConfig {
+  static bool isDev = true; // Altere para false na versão final
+  static bool isAdmin(String? email) =>
+      email != null && email.endsWith("@sonhodepapel.com");
+}
+
 class MonthlyListsWidget extends StatefulWidget {
   final int? month;
   final int? year;
@@ -29,7 +36,7 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
   @override
   bool get wantKeepAlive => true;
 
-  /// Controladores — cada categoria contém uma lista com vários campos
+  /// Controllers por categoria
   final Map<String, List<TextEditingController>> _controllers = {
     'pra_ler': [],
     'pra_anotar': [],
@@ -38,47 +45,22 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
     'pra_guardar': [],
   };
 
-  /// Stickers
+  /// Stickers traduzidos
   final Map<String, Map<String, dynamic>> _stickers = {
-    'pra_ler': {
-      'label': 'lists.sticker_read'.tr(),
-    },
-    'pra_anotar': {
-      'label': 'lists.sticker_write'.tr(),
-    },
-    'pra_comprar': {
-      'label': 'lists.sticker_buy'.tr(),
-    },
-    'pra_ouvir': {
-      'label': 'lists.sticker_listen'.tr(),
-    },
-    'pra_guardar': {
-      'label': 'lists.sticker_keep'.tr(),
-    },
+    'pra_ler': {'label': 'lists.sticker_read'.tr()},
+    'pra_anotar': {'label': 'lists.sticker_write'.tr()},
+    'pra_comprar': {'label': 'lists.sticker_buy'.tr()},
+    'pra_ouvir': {'label': 'lists.sticker_listen'.tr()},
+    'pra_guardar': {'label': 'lists.sticker_keep'.tr()},
   };
 
-  /// Dados das categorias
+  /// Informações das listas
   final Map<String, Map<String, dynamic>> _listData = {
-    'pra_ler': {
-      'title': 'lists.read',
-      'color': Color(0xffe569bf),
-    },
-    'pra_anotar': {
-      'title': 'lists.write',
-      'color': Color(0xFFdbaf35),
-    },
-    'pra_comprar': {
-      'title': 'lists.buy',
-      'color': Color(0xFF679bd3),
-    },
-    'pra_ouvir': {
-      'title': 'lists.listen',
-      'color': Color(0xFFF3CDDB),
-    },
-    'pra_guardar': {
-      'title': 'lists.keep',
-      'color': Color(0xFFbeb6f2),
-    },
+    'pra_ler': {'title': 'lists.read', 'color': Color(0xffe569bf)},
+    'pra_anotar': {'title': 'lists.write', 'color': Color(0xFFdbaf35)},
+    'pra_comprar': {'title': 'lists.buy', 'color': Color(0xFF679bd3)},
+    'pra_ouvir': {'title': 'lists.listen', 'color': Color(0xFFF3CDDB)},
+    'pra_guardar': {'title': 'lists.keep', 'color': Color(0xFFbeb6f2)},
   };
 
   @override
@@ -95,8 +77,11 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
   }
 
   Future<void> _initializeAndLoad() async {
+    setState(() => _isLoading = true);
+
+    await _checkPremiumStatus();
+
     _currentUserId = _supabase.auth.currentUser?.id;
-    _isPremiumUser = await AccessControl.isPremium();
 
     if (_currentUserId != null) {
       await _loadSavedData();
@@ -105,6 +90,20 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
     setState(() => _isLoading = false);
   }
 
+  /// Premium + Dev + Admin
+  Future<void> _checkPremiumStatus() async {
+    final user = _supabase.auth.currentUser;
+    final email = user?.email;
+
+    final isPremium = await AccessControl.isPremium();
+
+    setState(() {
+      _isPremiumUser =
+          isPremium || AppConfig.isAdmin(email) || AppConfig.isDev;
+    });
+  }
+
+  /// Carrega listas salvas
   Future<void> _loadSavedData() async {
     setState(() => _isLoading = true);
 
@@ -115,60 +114,93 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
     );
 
     for (String key in _controllers.keys) {
-      final savedList = lists[key] ?? <String>[];
+      final saved = lists[key] ?? <String>[];
       _controllers[key] = List.generate(
-        savedList.length > 5 ? savedList.length : 5,
-        (i) => TextEditingController(
-          text: i < savedList.length ? savedList[i] : '',
-        ),
+        saved.length > 5 ? saved.length : 5,
+        (i) => TextEditingController(text: i < saved.length ? saved[i] : ''),
       );
     }
 
     setState(() => _isLoading = false);
   }
 
+  /// Salvar listas
   Future<void> _saveList(String listKey) async {
-    final user = _supabase.auth.currentUser;
+  final user = _supabase.auth.currentUser;
 
-    if (user == null) {
-      showPremiumPopup(context);
-      return;
-    }
-
-    if (!_isPremiumUser) {
-      showPremiumPopup(context);
-      return;
-    }
-
-    setState(() => _isSaving = true);
-
-    try {
-      final listsToSave = <String, List<String>>{};
-      for (String key in _controllers.keys) {
-        listsToSave[key] = _controllers[key]!
-            .map((c) => c.text.trim())
-            .where((t) => t.isNotEmpty)
-            .toList();
-      }
-
-      await MonthlyListsService.saveMonthlyLists(
-        listsToSave,
-        widget.month ?? DateTime.now().month,
-        widget.year ?? DateTime.now().year,
-        user.id,
-      );
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('lists.saved'.tr()),
-          backgroundColor: const Color(0xFFa652b6),
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _isSaving = false);
-    }
+  if (user == null || !_isPremiumUser) {
+    showPremiumPopup(context);
+    return;
   }
 
+  // 🔍 Checa se TODAS as listas estão vazias
+  final hasAtLeastOneFilled = _controllers.values.any(
+    (listControllers) =>
+        listControllers.any((c) => c.text.trim().isNotEmpty),
+  );
+
+  if (!hasAtLeastOneFilled) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: const Color(0xFFa652b6),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+        content: Text(
+  "lists.empty_warning".tr(),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+    return;
+  }
+
+  setState(() => _isSaving = true);
+
+  try {
+    final listsToSave = <String, List<String>>{};
+
+    for (String key in _controllers.keys) {
+      listsToSave[key] = _controllers[key]!
+          .map((c) => c.text.trim())
+          .where((t) => t.isNotEmpty)
+          .toList();
+    }
+
+    await MonthlyListsService.saveMonthlyLists(
+      listsToSave,
+      widget.month ?? DateTime.now().month,
+      widget.year ?? DateTime.now().year,
+      user.id,
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: const Color(0xFFa652b6),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+        content: Text(
+          'lists.saved'.tr(),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  } finally {
+    if (mounted) setState(() => _isSaving = false);
+  }
+}
+
+
+  /// Adicionar novo campo com animação cute ✨
   void _addField(String listKey) {
     if (!_isPremiumUser) {
       showPremiumPopup(context);
@@ -176,7 +208,16 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
     }
 
     setState(() {
-      _controllers[listKey]!.add(TextEditingController());
+      final newController = TextEditingController();
+      _controllers[listKey]!.add(newController);
+    });
+
+    // animação para suavizar
+    Future.delayed(const Duration(milliseconds: 20), () {
+      AnimatedOpacity(
+        opacity: 1,
+        duration: const Duration(milliseconds: 250),
+      );
     });
   }
 
@@ -195,14 +236,11 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
       title: '',
       pageLabel: 'lists.page_label'.tr(),
       labelColor: const Color.fromARGB(255, 78, 83, 150),
-      description:
-          'lists.description'.tr(),
+      description: 'lists.description'.tr(),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
         child: Column(
-          children: [
-            ..._listData.entries.map((entry) => _buildList(entry.key)),
-          ],
+          children: _listData.keys.map((key) => _buildList(key)).toList(),
         ),
       ),
     );
@@ -242,7 +280,7 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // STICKER
+          /// Sticker
           Text(
             sticker['label'],
             style: TextStyle(
@@ -254,7 +292,7 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
 
           const SizedBox(height: 14),
 
-          // TÍTULO DA LISTA
+          /// Título
           Text(
             info['title'].toString().tr(),
             style: TextStyle(
@@ -267,33 +305,42 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
 
           const SizedBox(height: 16),
 
-          // CAMPOS
+          /// Campos
           ..._controllers[key]!.asMap().entries.map((entry) {
             final index = entry.key;
             final controller = entry.value;
 
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: TextField(
-                controller: controller,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  hintText: "${"lists.item".tr()} ${index + 1}",
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(
-                      color: Color(0xFFF2F0F0),
-                      width: 1.3,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(
-                      color: Color(0xffC03B66),
-                      width: 1.6,
+            return AnimatedSlide(
+              offset: const Offset(0, 0.08),
+              duration: const Duration(milliseconds: 240),
+              curve: Curves.easeOut,
+              child: AnimatedOpacity(
+                opacity: 1,
+                duration: const Duration(milliseconds: 240),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: TextField(
+                    controller: controller,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      hintText: "${"lists.item".tr()} ${index + 1}",
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 14),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFF2F0F0),
+                          width: 1.3,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(
+                          color: Color(0xffC03B66),
+                          width: 1.6,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -301,11 +348,11 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
             );
           }),
 
+          /// Botão "Add More"
           Center(
             child: TextButton.icon(
               onPressed: () => _addField(key),
-              icon:
-                  const Icon(Icons.add_circle_outline, color: Colors.white),
+              icon: const Icon(Icons.add_circle_outline, color: Colors.white),
               label: Text(
                 'lists.add_more'.tr(),
                 style: const TextStyle(
@@ -318,6 +365,7 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
 
           const SizedBox(height: 10),
 
+          /// Save
           Center(
             child: ElevatedButton(
               onPressed: _isSaving ? null : () => _saveList(key),
