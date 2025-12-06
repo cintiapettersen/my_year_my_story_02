@@ -851,10 +851,14 @@ const SizedBox(height: 20),
             );
             break;
           case '/did_you_know':
-            target = DidYouKnowWidget(
-              month: selectedMonth,
-              year: selectedYear,
-            );
+            target = Builder(
+            builder: (context) {
+           return DidYouKnowWidget(
+           month: selectedMonth,
+           year: selectedYear,
+           );
+            },
+             );
             break;
           case '/daily_luck':
             target = const DailyLuckPage();

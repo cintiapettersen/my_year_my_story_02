@@ -1,10 +1,30 @@
 {
+
+  "january": "Janeiro",
+  "february": "Fevereiro",
+  "march": "Março",
+  "april": "Abril",
+  "may": "Maio",
+  "june": "Junho",
+  "july": "Julho",
+  "august": "Agosto",
+  "september": "Setembro",
+  "october": "Outubro",
+  "november": "Novembro",
+  "december": "Dezembro",
+  "months.december": "Dezembro",
+  "month.december": "Dezembro",
+
   "splash": {
     "new_chapter": "Um novo capítulo começa…",
     "subtitle": "Seu diário digital de memórias 💕",
     "login_button": "Entrar / Criar conta",
     "guest_button": "Explorar sem login"
+    
+
   },
+
+
   "auth": {
     "welcome_title": "Bem-vindo(a) ao My Year, My Story!",
     "choose_start": "Escolha como deseja começar:",
@@ -64,11 +84,13 @@
   "full_name": "Nome completo",
   "email": "E-mail",
   "birth_date": "Data de nascimento",
-  "save": "Salvar alterações",
+  "save_button": "Salvar alterações",
   "your_sign": "Seu signo",
   "years": "anos",
   "email_change_alert": "Para alterar o e-mail da sua conta, entre em contato com o suporte.",
-  "app_name": "My Year, My Story"
+  "app_name": "My Year, My Story",
+  "free_plan": "Plano Gratuito",
+  "premium_plan": "Plano Premium"
 
   },
 
@@ -280,6 +302,35 @@
     "december": "Dezembro"
   },
 
+
+  "months": {
+  "january": "Janeiro",
+  "february": "Fevereiro",
+  "march": "Março",
+  "april": "Abril",
+  "may": "Maio",
+  "june": "Junho",
+  "july": "Julho",
+  "august": "Agosto",
+  "september": "Setembro",
+  "october": "Outubro",
+  "november": "Novembro",
+  "december": "Dezembro",
+
+  "1": "Janeiro",
+  "2": "Fevereiro",
+  "3": "Março",
+  "4": "Abril",
+  "5": "Maio",
+  "6": "Junho",
+  "7": "Julho",
+  "8": "Agosto",
+  "9": "Setembro",
+  "10": "Outubro",
+  "11": "Novembro",
+  "12": "Dezembro"
+},
+
   "quiz": {
     "description": "Responda às perguntas do mês e descubra um pouquinho mais sobre você. Às vezes, pequenas respostas revelam grandes coisas.",
     "page_label": "Quiz Interativo",
@@ -438,7 +489,7 @@
   "sticker_keep": "Trends do mês"
 
 
-  
+
   },
 
   "did_you_know": {
@@ -456,7 +507,7 @@
   },
 
   "categories": {
-    "science": "Ciência",
+     "science": "Ciência",
     "history": "História",
     "nature": "Natureza",
     "psychology": "Psicologia",
@@ -465,10 +516,11 @@
     "pop_culture": "Cultura Pop",
     "geography": "Geografia",
     "universe": "Universo",
-    "mind_and_soul": "Bem-estar & Espiritualidade",
-    "behavior": "Comportamento",
+    "mind_and_soul": "Mente, Corpo & Espírito",
+    "behavior": "Comportamento Humano",
     "general": "Curiosidade Geral",
-    "general_curiosity": "Curiosidade Geral"
+    "general_curiosity": "Curiosidade Geral",
+    "literature": "Literatura"
     }
 
   },

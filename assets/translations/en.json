@@ -1,4 +1,21 @@
 {
+
+"january": "January",
+"february": "February",
+"march": "March",
+"april": "April",
+"may": "May",
+"june": "June",
+"july": "July",
+"august": "August",
+"september": "September",
+"october": "October",
+"november": "November",
+"december": "December",
+"months.december": "December",
+"month.december": "December",
+
+
   "splash": {
     "new_chapter": "A new chapter begins…",
     "subtitle": "Your digital memory diary 💕",
@@ -63,11 +80,13 @@
   "name": "Full Name",
   "email": "Email",
   "birth": "Birth Date",
-  "save": "Save Changes",
+  "save_button": "Save Changes",
   "your_sign": "Your sign",
   "years": "years",
   "email_change_alert": "To change the email of your account, please contact support.",
-  "app_name": "My Year, My Story"
+  "app_name": "My Year, My Story",
+  "free_plan": "Free Plan",
+  "premium_plan": "Premium Plan"
   
 
 
@@ -288,6 +307,36 @@
     "december": "December"
   },
 
+
+
+  "months": {
+  "january": "January",
+  "february": "February",
+  "march": "March",
+  "april": "April",
+  "may": "May",
+  "june": "June",
+  "july": "July",
+  "august": "August",
+  "september": "September",
+  "october": "October",
+  "november": "November",
+  "december": "December",
+
+  "1": "January",
+  "2": "February",
+  "3": "March",
+  "4": "April",
+  "5": "May",
+  "6": "June",
+  "7": "July",
+  "8": "August",
+  "9": "September",
+  "10": "October",
+  "11": "November",
+  "12": "December"
+},
+
   "quiz": {
     
     "description": "Answer this month's questions and discover a little more about yourself. Sometimes small answers reveal big things.",
@@ -441,19 +490,21 @@
   },
 
   "categories": {
-    "science": "Science",
-    "history": "History",
-    "nature": "Nature",
-    "psychology": "Psychology",
-    "art": "Art",
-    "culture": "Culture",
-    "pop_culture": "Pop Culture",
-    "geography": "Geography",
-    "universe": "Universe",
-    "mind_and_soul": "Mind, Body & Spirit",
-    "behavior": "Human Behavior",
-    "general": "General Curiosity",
-    "general_curiosity": "General Curiosity"
+    
+  "science": "Science",
+  "history": "History",
+  "nature": "Nature",
+  "psychology": "Psychology",
+  "art": "Art",
+  "culture": "Culture",
+  "pop_culture": "Pop Culture",
+  "geography": "Geography",
+  "universe": "Universe",
+  "mind_and_soul": "Mind, Body & Spirit",
+  "behavior": "Human Behavior",
+  "general": "General Curiosity",
+  "general_curiosity": "General Curiosity",
+  "literature": "Literature"
     
   }
 

@@ -47,7 +47,7 @@ class MonthHeader extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
+      padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 18),
       decoration: BoxDecoration(
         color: bannerColor,
         borderRadius: const BorderRadius.only(

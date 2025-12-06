@@ -37,18 +37,17 @@ class MonthMenu extends StatelessWidget {
     "month.november",
     "month.december",
   ];
+  
+// 🌎 Detecta o idioma atual via EasyLocalization
+final locale = context.locale.languageCode;
 
-    final lang = ui.PlatformDispatcher.instance.locale.languageCode;
-    final locale = lang == 'pt' ? const Locale('pt') : const Locale('en');
+// 🗓 Nome do mês via JSON (mais seguro que DateFormat)
+final String monthName = "months.$month".tr();
 
-    
-
-    // 📅 Nome e data formatados conforme idioma
-    final String monthName =
-    DateFormat.MMMM(locale.languageCode).format(DateTime(year, month)).capitalize();
-    final String formattedDate =
-    DateFormat("d 'de' MMMM 'de' y", locale.languageCode).format(DateTime.now());
-
+// 📅 Data formatada via JSON também
+final String formattedDate = locale == "pt"
+    ? DateFormat("d 'de' MMMM 'de' y", "pt_BR").format(DateTime.now())
+    : DateFormat("MMMM d, y", "en_US").format(DateTime.now());
 
     
 

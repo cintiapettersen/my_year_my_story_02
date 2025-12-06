@@ -1,102 +1,104 @@
-
+// ---------------------------------------------------------
+// 🌟 System & Core Imports
+// ---------------------------------------------------------
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+// ---------------------------------------------------------
+// 🌍 External Packages
+// ---------------------------------------------------------
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:myyearmystory/widgets/monthly/dailyluckpage.dart';
-import 'package:myyearmystory/services/auth_listener.dart';
-import 'package:myyearmystory/services/profile_service.dart';
-import 'package:myyearmystory/screens/premium/premium_page.dart';
-import 'package:myyearmystory/main.dart';
-import 'package:flutter/services.dart';
 
-
-// 🌸 Estilo e Configuração
+// ---------------------------------------------------------
+// 🎨 Theme & Config
+// ---------------------------------------------------------
 import 'package:myyearmystory/theme.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
 
-// 🌸 Telas principais
+// ---------------------------------------------------------
+// 📱 Core Screens
+// ---------------------------------------------------------
 import 'package:myyearmystory/screens/auth/auth_page_view.dart';
 import 'package:myyearmystory/screens/dashboard/dashboard_screen.dart';
 import 'package:myyearmystory/screens/splash/splash_transition.dart';
+import 'package:myyearmystory/screens/diary/diary_screen.dart';
+import 'package:myyearmystory/screens/premium/premium_page.dart';
 
-// 🌸 Widgets mensais
+// ---------------------------------------------------------
+// 🧭 Menu Screens
+// ---------------------------------------------------------
+import 'package:myyearmystory/screens/menus/profile_screen.dart';
+import 'package:myyearmystory/screens/menus/help_screen.dart';
+import 'package:myyearmystory/screens/notifications/notifications_page.dart';
 
-import 'package:myyearmystory/widgets/monthly/reflections_widget.dart';
+// ---------------------------------------------------------
+// 🗂️ Monthly Widgets
+// ---------------------------------------------------------
 import 'package:myyearmystory/widgets/monthly/curiosities_widget.dart';
+import 'package:myyearmystory/widgets/monthly/reflections_widget.dart';
 import 'package:myyearmystory/widgets/monthly/zodiac_widget.dart';
-import 'package:myyearmystory/widgets/monthly/skills_development_widget.dart';
 import 'package:myyearmystory/widgets/monthly/did_you_know_widget.dart';
 import 'package:myyearmystory/widgets/monthly/interview_widget.dart';
+import 'package:myyearmystory/widgets/monthly/skills_development_widget.dart';
 import 'package:myyearmystory/widgets/monthly/monthly_lists_widget.dart';
 import 'package:myyearmystory/widgets/monthly/photo_gallery_widget.dart';
 import 'package:myyearmystory/widgets/monthly/monthly_goals_widget.dart';
 import 'package:myyearmystory/widgets/monthly/gratitude_widget.dart';
 
-import 'package:myyearmystory/screens/diary/diary_screen.dart';
+// ---------------------------------------------------------
+// 🔐 Auth & Services
+// ---------------------------------------------------------
+import 'package:myyearmystory/services/auth_listener.dart';
+import 'package:myyearmystory/services/profile_service.dart';
 
-
-// 🌸 Telas do menu lateral (hambúrguer)
-import 'package:myyearmystory/screens/menus/profile_screen.dart';
-import 'package:myyearmystory/screens/menus/help_screen.dart';
-
-/// 🌎 Alertas de calendarios 
-
-import 'package:myyearmystory/screens/notifications/notifications_page.dart';
-
-
-
-/// 🌎 Chave global de navegação
+// ---------------------------------------------------------
+// 🧭 Global Navigation Key
+// ---------------------------------------------------------
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-
+// ---------------------------------------------------------
+// 🚀 MAIN FUNCTION
+// ---------------------------------------------------------
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  
+  // 🔒 Force portrait mode (clean UX + prevents layout overflow)
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
-  // 🌍 Inicializa localização e formatação
+  // 🌍 Localization initialization
   await EasyLocalization.ensureInitialized();
   await initializeDateFormatting('pt_BR', null);
   await initializeDateFormatting('en_US', null);
 
-  // 🕵️ Detecta o idioma e região do sistema
+  // 🌎 Detect system locale
   final systemLocale = ui.PlatformDispatcher.instance.locale;
   final countryCode = systemLocale.countryCode ?? 'BR';
   final languageCode = systemLocale.languageCode;
 
-  // 📅 Define formato de data padrão:
-  // - Se for EUA → usa en_US
-  // - Caso contrário → usa pt_BR
-  if (countryCode == 'US') {
-    Intl.defaultLocale = 'en_US';
-  } else {
-    Intl.defaultLocale = 'pt_BR';
-  }
+  // 📅 Choose default date formatting
+  Intl.defaultLocale = (countryCode == 'US') ? 'en_US' : 'pt_BR';
 
-
-
-    // 🚀 Inicializa Supabase
+  // 🔗 Initialize backend (Supabase)
   await SupabaseConfig.initialize();
 
-  // 🔐 Inicia listener global de autenticação (o CORRETO)
+  // 🔐 Start global auth listener
   AuthListener.initialize(navigatorKey);
 
-  
+  // 👤 Load user profile before app starts
+  await profileService.load();
 
-await profileService.load();
+  // 🌍 Determine initial app locale
+  final Locale initialLocale =
+      (countryCode == 'BR' || countryCode == 'PT') ? const Locale('pt') : const Locale('en');
 
-  // 🌎 Define locale inicial do app
-  Locale initialLocale;
-  if (countryCode == 'BR' || countryCode == 'PT') {
-    initialLocale = const Locale('pt');
-  } else {
-    initialLocale = const Locale('en');
-  }
-
-
+  // 🚀 Run Application
   runApp(
     EasyLocalization(
       supportedLocales: const [
@@ -109,14 +111,13 @@ await profileService.load();
       startLocale: initialLocale,
       saveLocale: true,
       child: const MyApp(),
-
-      
-
-
     ),
   );
 }
 
+// ---------------------------------------------------------
+// 🌟 APPLICATION ROOT
+// ---------------------------------------------------------
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -130,15 +131,17 @@ class MyApp extends StatelessWidget {
       darkTheme: darkTheme,
       themeMode: ThemeMode.system,
 
-      // 🌎 Localização
+      // 🌍 Localization setup
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,
 
-      // 🌸 Tela inicial
+      // 🏁 Initial screen
       home: const SplashTransitionScreen(),
 
-      // 🌸 Rotas nomeadas
+      // ---------------------------------------------------------
+      // 🧭 Named Routes
+      // ---------------------------------------------------------
       routes: {
         '/splash': (context) => const SplashTransitionScreen(),
         '/login': (context) => const AuthPageView(),
@@ -153,15 +156,10 @@ class MyApp extends StatelessWidget {
 
         '/profile': (context) => ProfileScreen(),
         '/help': (context) => HelpScreen(),
-
-        '/premium': (context) => _withArgs(
-              context,
-              (args) => const PremiumPage(),
-            ),
-
+        '/premium': (context) => const PremiumPage(),
         '/daily_notifications': (context) => const NotificationsPage(),
 
-        // Widgets Mensais
+        // ⭐ Monthly Widgets (all routed with month/year)
         '/monthly_goals': (context) => _withArgs(
               context,
               (args) => MonthlyGoalsWidget(
@@ -242,18 +240,18 @@ class MyApp extends StatelessWidget {
               ),
             ),
 
-        // ⭐ ROTA DO DIÁRIO COM DATE
+        // 📓 Diary Route
         '/diary': (context) {
           final arg = ModalRoute.of(context)?.settings.arguments;
-          final date = arg is DateTime ? arg : DateTime.now();
+          final date = (arg is DateTime) ? arg : DateTime.now();
           return DiaryScreen(date: date);
         },
       },
-    ); // 👈 FECHA O MaterialApp CORRETAMENTE
-  } // 👈 FECHA O MÉTODO build
+    );
+  }
 
   // ---------------------------------------------------------
-  // 🧭 Helper genérico para rotas com argumentos de mês/ano
+  // 🧩 Route Helper for month/year widgets
   // ---------------------------------------------------------
   Widget _withArgs(
     BuildContext context,
@@ -267,4 +265,4 @@ class MyApp extends StatelessWidget {
 
     return builder(args.cast<String, dynamic>());
   }
-} // 👈 FECHA A CLASSE MyApp
+}
