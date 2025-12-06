@@ -160,7 +160,7 @@ class AppBottomMenu extends StatelessWidget {
         child: Icon(
           isActive ? activeIcon : icon,
           size: isActive ? 28 : 24,
-          color: isActive ? const Color.fromARGB(255, 109, 30, 74) : Colors.white,
+          color: isActive ? const Color.fromARGB(255, 229, 213, 35) : Colors.white,
         ),
       ),
     );

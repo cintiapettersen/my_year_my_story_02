@@ -255,7 +255,7 @@ class _MoodScreenState extends State<MoodScreen> {
     };
 
     return MainScaffold(
-      currentIndex: 4,
+      currentIndex: 3,
       title: "My Year, My Story",
       body: SafeArea(
         child: SingleChildScrollView(

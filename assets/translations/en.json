@@ -460,53 +460,51 @@
   },
 
   "tips_categories": {
+  
   "autocuidado": "Self-care",
   "energia": "Energy",
-  "proposito": "Purpose",
+  "propósito": "Purpose",
   "leveza": "Lightness",
-  "reflexao": "Reflection",
-  "gratidao": "Gratitude",
+  "reflexão": "Reflection",
+  "gratidão": "Gratitude",
   "rotina": "Routine",
   "crescimento": "Growth",
-  "confianca": "Confidence",
-  "presenca": "Presence",
-  "intuicao": "Intuition",
-  "habitos": "Habits"
+  "confiança": "Confidence",
+  "presença": "Presence",
+  "intuição": "Intuition",
+  "hábitos": "Habits"
 
 
 },
 
   "lists": {
-    "page_label": "My Lists",
+  "page_label": "My Lists",
+  "description": "A space to collect what shaped your month — books, ideas, music, wishlist items and special memories. 💖",
 
-    "description": "A space to collect what shaped your month — books, ideas, music, wishlist items and special memories. 💖",
+  "read": "To Read",
+  "write": "Movies & Series",
+  "buy": "To Buy",
+  "listen": "To Listen",
+  "keep": "This Month's Trends",
 
-    "read": "To Read",
-    "write": "To Write",
-    "buy": "To Buy",
-    "listen": "To Listen",
-    "keep": "To Keep",
+  "read_label": "Reading of the month",
+  "write_label": "Movies & Series",
+  "buy_label": "Things I want to buy",
+  "listen_label": "Songs I loved",
+  "keep_label": "Trends I'm following",
 
-    "read_label": "Reading of the month",
-    "write_label": "Random thoughts",
-    "buy_label": "Little things I want",
-    "listen_label": "Songs I loved",
-    "keep_label": "Treasures to keep",
+  "item": "Item",
 
-    "item": "Item",
+  "add_more": "Add more",
+  "save": "Save List",
+  "saved": "List saved successfully! 💖",
+  "empty_warning": "Your list is empty! Add something before saving ✨",
 
-    "add_more": "Add more",
-    "save": "Save List",
-    "saved": "List saved successfully! 💖",
-    "empty_warning": "Your list is empty! Add something before saving ✨"
-  },
-
-  "stickers": {
-    "read": "Reading of the Month",
-    "write": "Free Thoughts",
-    "buy": "Things I Want",
-    "listen": "Songs I Loved",
-    "keep": "Things I Keep"
+  "sticker_read": "Reading of the Month",
+  "sticker_write": "Movies & Series",
+  "sticker_buy": "Wishlist",
+  "sticker_listen": "Songs I Loved",
+  "sticker_keep": "This Month’s Trends"
   },
 
   "tips": {

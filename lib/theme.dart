@@ -68,7 +68,6 @@ class FontSizes {
 ThemeData get lightTheme => ThemeData(
       useMaterial3: true,
 
-      // 🎀 SOLUÇÃO: fundo totalmente transparente
       scaffoldBackgroundColor: Colors.transparent,
       canvasColor: Colors.transparent,
       dialogBackgroundColor: Colors.transparent,
@@ -88,8 +87,9 @@ ThemeData get lightTheme => ThemeData(
         onErrorContainer: LightModeColors.lightOnErrorContainer,
         inversePrimary: LightModeColors.lightInversePrimary,
         shadow: LightModeColors.lightShadow,
-        surface: Colors.transparent, // <—— ESSENCIAL
-        onSurface: LightModeColors.lightOnSurface,
+
+        surface: const Color(0xFFFFFFFF),
+        onSurface: const Color(0xFF050505),
       ),
 
       brightness: Brightness.light,
@@ -98,6 +98,20 @@ ThemeData get lightTheme => ThemeData(
         backgroundColor: LightModeColors.lightAppBarBackground,
         foregroundColor: LightModeColors.lightOnPrimaryContainer,
         elevation: 0,
+      ),
+
+      // 🌸 SnackBar do modo claro
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: Color.fromARGB(255, 255, 193, 219),
+        contentTextStyle: const TextStyle(
+          color: Colors.black,
+          fontSize: 16,
+        ),
+        behavior: SnackBarBehavior.floating,
+        elevation: 6,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
 
       textTheme: _buildTextTheme(),
@@ -109,7 +123,6 @@ ThemeData get lightTheme => ThemeData(
 ThemeData get darkTheme => ThemeData(
       useMaterial3: true,
 
-      // 🎀 SOLUÇÃO: fundo totalmente transparente
       scaffoldBackgroundColor: Colors.transparent,
       canvasColor: Colors.transparent,
       dialogBackgroundColor: Colors.transparent,
@@ -129,7 +142,8 @@ ThemeData get darkTheme => ThemeData(
         onErrorContainer: DarkModeColors.darkOnErrorContainer,
         inversePrimary: DarkModeColors.darkInversePrimary,
         shadow: DarkModeColors.darkShadow,
-        surface: Colors.transparent, // <—— ESSENCIAL
+
+        surface: const Color(0xFF121212),
         onSurface: DarkModeColors.darkOnSurface,
       ),
 
@@ -139,6 +153,20 @@ ThemeData get darkTheme => ThemeData(
         backgroundColor: DarkModeColors.darkAppBarBackground,
         foregroundColor: DarkModeColors.darkOnPrimaryContainer,
         elevation: 0,
+      ),
+
+      // 🌙 SnackBar do modo escuro
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: const Color(0xFF2A2A2A),
+        contentTextStyle: const TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+        ),
+        behavior: SnackBarBehavior.floating,
+        elevation: 6,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
 
       textTheme: _buildTextTheme(),

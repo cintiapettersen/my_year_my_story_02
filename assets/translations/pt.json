@@ -410,27 +410,35 @@
 
   "lists": {
     "page_label": "Minhas Listas",
+  "description": "Um espaço para guardar o que marcou seu mês — livros, ideias, músicas, desejos e memórias especiais. 💖",
 
-    "description": "Um espaço para guardar o que marcou seu mês — livros, ideias, músicas, comprinhas e lembranças especiais. 💖",
+  "read": "Para ler",
+  "write": "Filmes & Séries",
+  "buy": "Para comprar",
+  "listen": "Para ouvir",
+  "keep": "Trends do mês",
 
-    "read": "Para Ler",
-    "write": "Para Anotar",
-    "buy": "Para Comprar",
-    "listen": "Para Ouvir",
-    "keep": "Para Guardar",
+  "read_label": "Leituras do mês",
+  "write_label": "Filmes & séries",
+  "buy_label": "Coisinhas que quero",
+  "listen_label": "Músicas que amei",
+  "keep_label": "Trends que estou seguindo",
 
-    "read_label": "Leitura do mês",
-    "write_label": "Pensamentos soltos",
-    "buy_label": "Coisinhas que quero",
-    "listen_label": "Músicas que amei",
-    "keep_label": "Essas eu guardo",
+  "item": "Item",
 
-    "item": "Item",
+  "add_more": "Adicionar mais",
+  "save": "Salvar lista",
+  "saved": "Lista salva com sucesso! 💖",
+  "empty_warning": "Sua lista está vazia! Adicione algo antes de salvar ✨",
 
-    "add_more": "Adicionar mais",
-    "save": "Salvar Lista",
-    "saved": "Lista salva com sucesso! 💖",
-    "empty_warning": "Sua lista está vazia! Adicione algo antes de salvar ✨"
+  "sticker_read": "Leituras do Mês",
+  "sticker_write": "Filmes & Séries",
+  "sticker_buy": "Wishlist",
+  "sticker_listen": "Músicas que amei",
+  "sticker_keep": "Trends do mês"
+
+
+  
   },
 
   "did_you_know": {
@@ -466,18 +474,18 @@
   },
 
   "tips_categories": {
-  "autocuidado": "Self-care",
-  "energia": "Energy",
-  "proposito": "Purpose",
-  "leveza": "Lightness",
-  "reflexao": "Reflection",
-  "gratidao": "Gratitude",
-  "rotina": "Routine",
-  "crescimento": "Growth",
-  "confianca": "Confidence",
-  "presenca": "Presence",
-  "intuicao": "Intuition",
-  "habitos": "Habits"
+   "autocuidado": "Autocuidado",
+  "energia": "Energia",
+  "propósito": "Propósito",
+  "leveza": "Leveza",
+  "reflexão": "Reflexão",
+  "gratidão": "Gratidão",
+  "rotina": "Rotina",
+  "crescimento": "Crescimento",
+  "confiança": "Confiança",
+  "presença": "Presença",
+  "intuição": "Intuição",
+  "hábitos": "Hábitos"
 },
 
 

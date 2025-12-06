@@ -262,7 +262,7 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
 
             ...List.generate(_questions.length, (index) {
   return Padding(
-    padding: const EdgeInsets.only(bottom: 14),
+    padding: const EdgeInsets.only(bottom: 46),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

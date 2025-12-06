@@ -243,6 +243,7 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        const SizedBox(height: 24), // <<< espaçamento entre descrição → bloco de dicas
                         Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 6),
@@ -260,7 +261,7 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
                             ),
                           ),
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 20),
                         Text(
                           text,
                           style: const TextStyle(
@@ -279,7 +280,7 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
                   );
                 }).toList(),
 
-                const SizedBox(height: 50),
+                const SizedBox(height: 60),
 
                 GestureDetector(
                   onTapDown: (_) => setState(() => isPressed = true),
