@@ -213,7 +213,7 @@
     "gratitude": "Gratitude",
     "reflections": "Reflections",
     "photos": "Monthly Photos",
-    "dates": "Dates to Remember",
+    "dates": "Calendar & Reminders",
     "choose_section": "What do you want to explore today?"
   },
 
@@ -427,6 +427,8 @@
 
     "hint": "I am grateful for...",
     "empty_state": "No entries yet.\nStart by adding something you're grateful for 💛",
+
+    "empty": "No entries yet.\nStart by adding something you're grateful for 💛",
 
     "added_success": "Gratitude added! 💖",
     "save_error": "Error while saving. 😞",

@@ -214,7 +214,7 @@
     "gratitude": "Gratidão",
     "reflections": "Reflexões",
     "photos": "Fotos do Mês",
-    "dates": "Datas pra lembrar",
+    "dates": "Calendário e Alertas",
     "choose_section": "O que você quer explorar hoje?"
   },
 
@@ -415,6 +415,7 @@
     "fixed_description": "A gratidão nos ajuda a enxergar o lado bom da vida e fortalecer o coração. Registre as coisas boas que aconteceram neste mês 💖",
     "hint": "Sou grato por...",
     "empty_state": "Nenhum registro ainda.\nComece adicionando algo pelo qual você é grato 💛",
+    "empty": "Nenhum registro ainda.\nComece adicionando algo pelo qual você é grato 💛",
 
     "added_success": "Gratidão adicionada! 💖",
     "save_error": "Erro ao salvar. 😞",

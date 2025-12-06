@@ -68,12 +68,12 @@ final String formattedDate = locale == "pt"
       {'title': 'month_menu.signs', 'icon': PhosphorIconsRegular.moonStars, 'color': const Color(0xFF7654a3)},
       {'title': 'month_menu.tips', 'icon': PhosphorIconsRegular.flower, 'color': const Color(0xFFb539bc)},
       {'title': 'month_menu.facts', 'icon': PhosphorIconsRegular.lightbulb, 'color': const Color(0xFFdbaf35)},
-      {'title': 'month_menu.interview', 'icon': PhosphorIconsRegular.microphone, 'color': const Color(0xFFa1a8f0)},
+      {'title': 'month_menu.interview', 'icon': PhosphorIconsRegular.microphone, 'color': const Color(0xFF7382D7)},
       {'title': 'month_menu.lists', 'icon': PhosphorIconsRegular.listChecks, 'color': const Color(0xFF776fb5)},
       {'title': 'month_menu.gratitude', 'icon': PhosphorIconsRegular.heart, 'color': const Color(0xFFE2377D)},
       {'title': 'month_menu.reflections', 'icon': PhosphorIconsRegular.quotes, 'color': const Color(0xFFcf78f7)},
       {'title': 'month_menu.photos', 'icon': PhosphorIconsRegular.camera, 'color': const Color(0xFFb71691)},
-      {'title': 'month_menu.dates', 'icon': PhosphorIconsRegular.calendarDots, 'color': const Color(0xFF627fdd)},
+      {'title': 'month_menu.dates', 'icon': PhosphorIconsRegular.calendarDots, 'color': const Color(0xFFbeb6f2)},
 
 
       

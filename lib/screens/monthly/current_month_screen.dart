@@ -54,13 +54,11 @@ class _CurrentMonthScreenState extends State<CurrentMonthScreen> {
   }
 
   void _nextPage() {
-    if (_currentPage < 11) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOutCubic,
-      );
-    }
-  }
+  _pageController.nextPage(
+    duration: const Duration(milliseconds: 400),
+    curve: Curves.easeInOutCubic,
+  );
+}
 
   void _previousPage() {
     if (_currentPage > 0) {

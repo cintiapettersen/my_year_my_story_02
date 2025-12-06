@@ -23,9 +23,6 @@ import 'package:myyearmystory/services/daily_quote_service.dart';
 import 'package:myyearmystory/utils/month_colors.dart';
 import 'package:myyearmystory/screens/quiz/standalone.dart';
 
-
-
-
 class DashboardScreen extends StatefulWidget {
   final int month;
   final int year;
@@ -50,113 +47,294 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int gratidaoCount = 0;
   int diarioCount = 0;
 
-  String? humorMaisComum;
-  String? quizResultado;
   String? curiosidadeAleatoria;
 
   final quoteService = DailyQuoteService();
 
   late int selectedMonth;
   late int selectedYear;
+
   bool isLoading = true;
 
-  // 🎨 TEMA DINÂMICO
+  // Tema
   Color currentThemeColor = const Color(0xFFE04CB7);
 
   final List<Color> themeOptions = const [
     Color(0xFFe04cb7),
-    Color(0xFFfbcce9),
+    Color.fromARGB(255, 234, 185, 215),
     Color(0xFFe2377d),
     Color(0xFFa0378c),
     Color(0xFFBEB6F2),
   ];
 
   @override
-void initState() {
-  super.initState();
+  void initState() {
+    super.initState();
 
-  selectedMonth = widget.month;
-  selectedYear = widget.year;
+    selectedMonth = widget.month;
+    selectedYear = widget.year;
 
-  _loadUserName();
-  _syncUserLanguage();
-  _loadDashboardData();
+    _loadUserName();
+    _syncUserLanguage();
+    _loadDashboardData();
 
-  // 👉 Adia para depois que o contexto estiver pronto
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    loadDailyQuote();
-  });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadDailyQuote();
+    });
 
-  Future.delayed(const Duration(seconds: 2), () {
-    if (mounted) checkAndShowDailyAlert();
-  });
-}
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) checkAndShowDailyAlert();
+    });
+  }
 
-  // ================================
-  // PUXAR NOME DO SUPABASE
-  // ================================
-  Future<void> _loadUserName() async {
+//______________________________________________________
+
+Future<void> checkAndShowDailyAlert() async {
   final user = supabase.auth.currentUser;
   if (user == null) return;
 
-  try {
-    final profile = await supabase
-        .from("profiles")
-        .select("full_name")
-        .eq("id", user.id)
-        .single();
+  final now = DateTime.now();
+  final weekday = DateFormat('EEE').format(now);
 
-    setState(() {
-      final fullName = profile["full_name"];
-      final firstName = fullName != null && fullName.isNotEmpty
-          ? fullName.split(" ").first
-          : tr("dashboard.guest_user");
+  final events = await supabase
+      .from('calendar_events')
+      .select()
+      .eq('user_id', user.id)
+      .eq('remind', true);
 
-      userName = firstName;
-    });
-  } catch (e) {
-    setState(() {
-      userName = tr("dashboard.guest_user");
-    });
+  if (events.isEmpty) return;
+
+  for (final event in events) {
+    final type = event['repeat_type'];
+    final daysBefore = event['days_before'] ?? 0;
+    final seenToday = event['seen_today'] ?? false;
+
+    if (seenToday) continue;
+
+    bool shouldShow = false;
+
+    final eventDate = DateTime(event['year'], event['month'], event['day']);
+    final triggerDate = eventDate.subtract(Duration(days: daysBefore));
+
+    if (type == "none" &&
+        now.year == triggerDate.year &&
+        now.month == triggerDate.month &&
+        now.day == triggerDate.day) {
+      shouldShow = true;
+    }
+
+    if (type == "daily") shouldShow = true;
+
+    if (type == "weekly") {
+      final repeatDays = List<String>.from(event['repeat_days'] ?? []);
+      if (repeatDays.contains(weekday)) shouldShow = true;
+    }
+
+    if (type == "monthly" && now.day == event['day']) shouldShow = true;
+
+    if (type == "yearly" &&
+        now.day == event['day'] &&
+        now.month == event['month']) {
+      shouldShow = true;
+    }
+
+    if (shouldShow) {
+      DailyPopup.show(context, event);
+      break;
+    }
   }
 }
 
 
-  
-  // =========================================
-// 🌙 FRASE DO DIA — VERSÃO CORRIGIDA COMPLETA
-// =========================================
-Future<void> loadDailyQuote() async {
-  print("🔥 loadDailyQuote() INICIADA");
 
-  try {
-    final lang = context.locale.languageCode;
-    print("🔥 Idioma detectado: $lang");
 
-    final quote = await quoteService.getRandomQuote(lang);
-    print("🔥 Retorno do quoteService: $quote");
 
-    setState(() {
-      final txt = quote?["text"]?.toString().trim();
-      print("🔥 Texto extraído: $txt");
+  // ======================
+  // Nome do usuário
+  // ======================
+  Future<void> _loadUserName() async {
+    final user = supabase.auth.currentUser;
+    if (user == null) return;
 
-      dailyInspiration = (txt != null && txt.isNotEmpty)
-          ? txt
-          : tr("dashboard.daily_inspiration");
+    try {
+      final profile = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", user.id)
+          .single();
 
-      print("🔥 dailyInspiration DEFINIDA COMO: $dailyInspiration");
-    });
+      setState(() {
+        final fullName = profile["full_name"];
+        final firstName = fullName != null && fullName.isNotEmpty
+            ? fullName.split(" ").first
+            : tr("dashboard.guest_user");
 
-  } catch (e) {
-    print("❌ ERRO NO loadDailyQuote(): $e");
-    setState(() {
-      dailyInspiration = tr("dashboard.daily_inspiration");
-    });
+        userName = firstName;
+      });
+    } catch (e) {
+      setState(() {
+        userName = tr("dashboard.guest_user");
+      });
+    }
   }
-}
-// =========================================
-// 🔹 Calendar Subtitle Label
-// =========================================
+
+  // ======================
+  // Frase do dia
+  // ======================
+  Future<void> loadDailyQuote() async {
+    try {
+      final lang = context.locale.languageCode;
+      final quote = await quoteService.getRandomQuote(lang);
+
+      setState(() {
+        final txt = quote?["text"]?.toString().trim();
+        dailyInspiration =
+            (txt != null && txt.isNotEmpty)
+                ? txt
+                : tr("dashboard.daily_inspiration");
+      });
+    } catch (_) {
+      setState(() {
+        dailyInspiration = tr("dashboard.daily_inspiration");
+      });
+    }
+  }
+
+  // ======================
+  // Sincronizar idioma
+  // ======================
+  Future<void> _syncUserLanguage() async {
+    final user = supabase.auth.currentUser;
+    if (user == null) return;
+
+    final lang = ui.PlatformDispatcher.instance.locale.languageCode;
+
+    try {
+      await supabase
+          .from("profiles")
+          .update({"language": lang})
+          .eq("id", user.id);
+    } catch (_) {}
+  }
+
+  // ======================
+  // Carregar dados do dashboard
+  // ======================
+  Future<void> _loadDashboardData() async {
+    if (!mounted) return;
+
+    setState(() => isLoading = true);
+
+    final user = supabase.auth.currentUser;
+    if (user == null) return;
+
+    try {
+      // metas concluídas
+      final metas = await supabase
+          .from("metas")
+          .select()
+          .eq("user_id", user.id)
+          .eq("mes", selectedMonth)
+          .eq("ano", selectedYear)
+          .eq("concluida", true);
+
+      metasConcluidas = metas.length;
+
+      // entries do mês
+      final entries = await supabase
+          .from("entries")
+          .select()
+          .eq("user_id", user.id)
+          .eq("month", selectedMonth)
+          .eq("year", selectedYear)
+          .maybeSingle();
+
+      if (entries != null) {
+        gratidaoCount =
+            (entries["gratitude_entries"] as List?)?.length ?? 0;
+
+        // ======================
+        // CURIOSIDADE (PERGUNTA + RESPOSTA)
+        // ======================
+        final answers = entries["curiosities_answers"];
+        List<String> questions = [];
+
+        // buscar perguntas traduzidas
+        final curiosityEntry = await supabase
+            .from("curiosities_entries")
+            .select("questions, questions_en")
+            .eq("month", selectedMonth)
+            .eq("year", selectedYear)
+            .maybeSingle();
+
+        if (curiosityEntry != null) {
+          final lang = context.locale.languageCode;
+
+          questions = lang == "en"
+              ? List<String>.from(curiosityEntry["questions_en"] ?? [])
+              : List<String>.from(curiosityEntry["questions"] ?? []);
+        }
+
+        if (answers != null &&
+            answers is List &&
+            answers.isNotEmpty &&
+            questions.isNotEmpty) {
+          final List<Map<String, String>> combined = [];
+
+          for (int i = 0; i < answers.length; i++) {
+            if (i < questions.length) {
+              combined.add({
+                "question": questions[i],
+                "answer": answers[i],
+                "month": entries["month"].toString(),
+                "year": entries["year"].toString(),
+              });
+            }
+          }
+
+          if (combined.isNotEmpty) {
+            combined.shuffle();
+            final selected = combined.first;
+
+            final mesFormatado =
+                _formatarMesAno(selected["month"]!, selected["year"]!);
+
+            curiosidadeAleatoria =
+                "${selected['question']}\n"
+                "${selected['answer']}\n"
+                "${tr('dashboard.answered_in', namedArgs: {
+                  'date': "$mesFormatado/${selected['year']}"
+                })}";
+          }
+        }
+      }
+
+      setState(() => isLoading = false);
+    } catch (_) {
+      setState(() => isLoading = false);
+    }
+  }
+
+  // ======================
+  // formatação "Mar 2024"
+  // ======================
+  String _formatarMesAno(String mes, String ano) {
+    final m = int.tryParse(mes) ?? 1;
+
+    final nomesMes = [
+      "",
+      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ];
+
+    return "${nomesMes[m]} $ano";
+  }
+
+
+
+// ======================
+// LABEL DO CALENDÁRIO
+// ======================
 Widget _calendarLabel() {
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -177,211 +355,12 @@ Widget _calendarLabel() {
 }
 
 
-  // ================================
-  // ALERTA DO CALENDÁRIO
-  // ================================
-  Future<void> checkAndShowDailyAlert() async {
-    final user = supabase.auth.currentUser;
-    if (user == null) return;
 
-    final now = DateTime.now();
-    final weekday = DateFormat('EEE').format(now);
 
-    final events = await supabase
-        .from('calendar_events')
-        .select()
-        .eq('user_id', user.id)
-        .eq('remind', true);
 
-    if (events.isEmpty) return;
 
-    for (final event in events) {
-      final type = event['repeat_type'];
-      final daysBefore = event['days_before'] ?? 0;
-      final seenToday = event['seen_today'] ?? false;
 
-      if (seenToday) continue;
 
-      bool shouldShow = false;
-
-      final eventDate =
-          DateTime(event['year'], event['month'], event['day']);
-
-      final triggerDate =
-          eventDate.subtract(Duration(days: daysBefore));
-
-      if (type == "none" &&
-          now.year == triggerDate.year &&
-          now.month == triggerDate.month &&
-          now.day == triggerDate.day) {
-        shouldShow = true;
-      }
-
-      if (type == "daily") shouldShow = true;
-
-      if (type == "weekly") {
-        final repeatDays =
-            List<String>.from(event['repeat_days'] ?? []);
-        if (repeatDays.contains(weekday)) shouldShow = true;
-      }
-
-      if (type == "monthly" && now.day == event['day']) shouldShow = true;
-
-      if (type == "yearly" &&
-          now.day == event['day'] &&
-          now.month == event['month']) {
-        shouldShow = true;
-      }
-
-      if (shouldShow) {
-        DailyPopup.show(context, event);
-        break;
-      }
-    }
-  }
-
-  // ================================
-  // IDIOMA → SUPABASE
-  // ================================
-  Future<void> _syncUserLanguage() async {
-    final user = supabase.auth.currentUser;
-    if (user == null) return;
-
-    final lang = ui.PlatformDispatcher.instance.locale.languageCode;
-
-    try {
-      await supabase
-          .from("profiles")
-          .update({"language": lang})
-          .eq("id", user.id);
-    } catch (_) {}
-  }
-
-  // ================================
- // ================================
-//  CARREGAR DADOS
-// ================================
-Future<void> _loadDashboardData() async {
-  if (!mounted) return;
-
-  setState(() => isLoading = true);
-
-  final user = supabase.auth.currentUser;
-  if (user == null) return;
-
-  try {
-    // METAS CONCLUÍDAS
-    final metas = await supabase
-        .from("metas")
-        .select()
-        .eq("user_id", user.id)
-        .eq("mes", selectedMonth)
-        .eq("ano", selectedYear)
-        .eq("concluida", true);
-
-    metasConcluidas = metas.length;
-
-    // ENTRIES DO MÊS
-    final entries = await supabase
-        .from("entries")
-        .select()
-        .eq("user_id", user.id)
-        .eq("month", selectedMonth)
-        .eq("year", selectedYear)
-        .maybeSingle();
-
-    if (entries != null) {
-      gratidaoCount =
-          (entries["gratitude_entries"] as List?)?.length ?? 0;
-
-    
-// =======================
-// 💡 CURIOSIDADE DO MÊS (PERGUNTA + RESPOSTA)
-// =======================
-final answers = entries["curiosities_answers"];
-
-List<String> questions = [];
-
-// 1️⃣ Buscar perguntas do mês na tabela curiosities_entries
-final curiosityEntry = await supabase
-    .from("curiosities_entries")
-    .select("questions, questions_en")
-    .eq("month", selectedMonth)
-    .eq("year", selectedYear)
-    .maybeSingle();
-
-if (curiosityEntry != null) {
-  final lang = context.locale.languageCode;
-
-  questions = lang == "en"
-      ? List<String>.from(curiosityEntry["questions_en"] ?? [])
-      : List<String>.from(curiosityEntry["questions"] ?? []);
-}
-
-// 2️⃣ Combinar pergunta + resposta
-if (answers != null &&
-    answers is List &&
-    answers.isNotEmpty &&
-    questions.isNotEmpty) {
-
-  final List<Map<String, String>> combined = [];
-
-  for (int i = 0; i < answers.length; i++) {
-    if (i < questions.length) {
-      combined.add({
-        "question": questions[i],
-        "answer": answers[i],
-        "month": entries["month"].toString(),
-        "year": entries["year"].toString(),
-      });
-    }
-  }
-
-  if (combined.isNotEmpty) {
-    combined.shuffle();
-    final selected = combined.first;
-
-    final mesFormatado =
-    _formatarMesAno(selected["month"]!, selected["year"]!);
-      curiosidadeAleatoria =
-    " ${selected['question']}\n"
-    " ${selected['answer']}\n"
-    
-    "${tr('dashboard.answered_in', namedArgs: {
-      'date': "$mesFormatado/${selected['year']}"
-    })}";
-
-  } else {
-    curiosidadeAleatoria = null;
-  }
-
-} else {
-  curiosidadeAleatoria = null;
-}
-
-    }
-
-    setState(() => isLoading = false);
-  } catch (_) {
-    setState(() => isLoading = false);
-  }
-}
-
-/// =======================================
-/// 📌 Função auxiliar para exibir "Mar 2024"
-/// =======================================
-String _formatarMesAno(String mes, String ano) {
-  final m = int.tryParse(mes) ?? 1;
-  final nomesMes = [
-    "",
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-  ];
-
-  return "${nomesMes[m]} $ano";
-}
-
-  // =========================================
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
@@ -420,8 +399,7 @@ String _formatarMesAno(String mes, String ano) {
               children: [
                 // 🌸 SAUDAÇÃO
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF5E1F7),
                     borderRadius: BorderRadius.circular(28),
@@ -451,7 +429,7 @@ String _formatarMesAno(String mes, String ano) {
 
                 const SizedBox(height: 32),
 
-                // 🎨 SELETOR DE CORES VOLTOU!
+                // 🎨 TEMA DO DIA
                 Column(
                   children: [
                     Text(
@@ -478,11 +456,11 @@ String _formatarMesAno(String mes, String ano) {
                               color: color,
                               shape: BoxShape.circle,
                               border: Border.all(
-  color: currentThemeColor == color
-      ? const Color.fromARGB(255, 231, 225, 230)
-      : Colors.transparent,
-  width: 2,
-),
+                                color: currentThemeColor == color
+                                    ? const Color.fromARGB(255, 231, 225, 230)
+                                    : Colors.transparent,
+                                width: 2,
+                              ),
                             ),
                           ),
                         );
@@ -495,14 +473,14 @@ String _formatarMesAno(String mes, String ano) {
 
                 // 🌈 CALENDÁRIO
                 _calendarLabel(),
+                
                 const SizedBox(height: 20),
 
                 GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: 12,
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 4,
                     mainAxisSpacing: 12,
                     crossAxisSpacing: 12,
@@ -527,8 +505,8 @@ String _formatarMesAno(String mes, String ano) {
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           color: isActive
-                              ? getMonthColor(index + 1)//.withOpacity(0.65)
-                              : const Color.fromARGB(255, 255, 253, 254),//troca o fundo dos meses no calendario
+                              ? getMonthColor(index + 1)
+                              : const Color.fromARGB(255, 255, 253, 254),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: isActive
@@ -543,8 +521,7 @@ String _formatarMesAno(String mes, String ano) {
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
                               fontSize: 15,
-                              color:
-                                  isActive ? Colors.white : Colors.black87,
+                              color: isActive ? Colors.white : Colors.black87,
                             ),
                           ),
                         ),
@@ -555,17 +532,14 @@ String _formatarMesAno(String mes, String ano) {
 
                 const SizedBox(height: 40),
 
+                // 🔎 BUSCAR DATA
+                _buildDateSearch(context),
 
-                // 🔎 Campo de busca de datas
-_buildDateSearch(context),
+                const SizedBox(height: 36),
 
-const SizedBox(height: 36),
-
-
-                // 🌸 ETIQUETA "Seu mês"
+                // 🌸 ETIQUETA SEU MÊS
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF3F3F3),
                     borderRadius: BorderRadius.circular(10),
@@ -581,47 +555,34 @@ const SizedBox(height: 36),
 
                 const SizedBox(height: 24),
 
-
-
-
-
-
-
                 // CARDS
                 _buildCards(context),
 
                 const SizedBox(height: 48),
-
-
-
-
-          
 
                 // 🍀 CURIOSIDADE SOBRE VOCÊ
                 _buildCuriosityBlock(),
 
                 const SizedBox(height: 30),
 
+                // 🌟 FRASE DO DIA
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(
+                    (dailyInspiration == null || dailyInspiration!.trim().isEmpty)
+                        ? tr('dashboard.daily_inspiration')
+                        : dailyInspiration!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontStyle: FontStyle.italic,
+                      color: Color(0xFF665C8E),
+                      fontSize: 14,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
 
-
-// 🌟 FRASE·DO·DIa
-Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 16),
-  child: Text(
-    (dailyInspiration == null || dailyInspiration!.trim().isEmpty)
-        ? tr('dashboard.daily_inspiration')
-        : dailyInspiration!,
-    textAlign: TextAlign.center,
-    style: const TextStyle(
-      fontStyle: FontStyle.italic,
-      color: Color(0xFF665C8E),
-      fontSize: 14,
-      height: 1.4,
-    ),
-  ),
-),
-const SizedBox(height: 20),
-
+                const SizedBox(height: 20),
               ],
             ),
           ),
@@ -635,110 +596,106 @@ const SizedBox(height: 20),
     );
   }
 
-
-
-
-  // =========================================
-  // BLOCOS / COMPONENTES
-  // =========================================
-
+  // =====================================================
+  // 🔸 BLOCO DE CURIOSIDADE
+  // =====================================================
   Widget _buildCuriosityBlock() {
-  return Align(
-    alignment: Alignment.center,
-    child: ConstrainedBox(
-      constraints: const BoxConstraints(
-        maxWidth: 300, // reduzido para ficar proporcional
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(32),
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => CuriositiesWidget(
-                month: selectedMonth,
-                year: selectedYear,
+    return Align(
+      alignment: Alignment.center,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 300),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(32),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => CuriositiesWidget(
+                  month: selectedMonth,
+                  year: selectedYear,
+                ),
               ),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF3D6E5),
+              borderRadius: BorderRadius.circular(40),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 5,
+                  offset: Offset(0, 2),
+                ),
+              ],
             ),
-          );
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF3D6E5),
-            borderRadius: BorderRadius.circular(40),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 5,
-                offset: Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Icon(Icons.favorite, size: 20, color: Color.fromARGB(221, 217, 60, 126)),
-              const SizedBox(height: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Icon(Icons.favorite,
+                    size: 20, color: Color.fromARGB(221, 217, 60, 126)),
+                const SizedBox(height: 8),
 
-              Text(
-                tr("dashboard.curiosity_title"),
-                style: GoogleFonts.courierPrime(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-                textAlign: TextAlign.center,
-              ),
-
-              const SizedBox(height: 12),
-              Divider(color: Colors.black26, thickness: 1),
-              const SizedBox(height: 8),
-
-              if (curiosidadeAleatoria != null)
                 Text(
-                  curiosidadeAleatoria!.split("\n")[0], // pergunta
+                  tr("dashboard.curiosity_title"),
                   style: GoogleFonts.courierPrime(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    height: 1.2,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
                   ),
                   textAlign: TextAlign.center,
                 ),
 
-              const SizedBox(height: 8),
-              Divider(color: Colors.black26, thickness: 1),
-              const SizedBox(height: 8),
+                const SizedBox(height: 12),
+                Divider(color: Colors.black26, thickness: 1),
+                const SizedBox(height: 8),
 
-              if (curiosidadeAleatoria != null)
-                Text(
-                  curiosidadeAleatoria!.split("\n")[1], // resposta
-                  style: GoogleFonts.courierPrime(
-                    fontSize: 14,
-                    height: 1.3,
+                if (curiosidadeAleatoria != null)
+                  Text(
+                    curiosidadeAleatoria!.split("\n")[0],
+                    style: GoogleFonts.courierPrime(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      height: 1.2,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
 
-              const SizedBox(height: 10),
+                const SizedBox(height: 8),
+                Divider(color: Colors.black26, thickness: 1),
+                const SizedBox(height: 8),
 
-              if (curiosidadeAleatoria != null)
-                Text(
-                  curiosidadeAleatoria!.split("\n")[2], // data
-                  style: GoogleFonts.courierPrime(
-                    fontSize: 11,
-                    color: Colors.black54,
+                if (curiosidadeAleatoria != null)
+                  Text(
+                    curiosidadeAleatoria!.split("\n")[1],
+                    style: GoogleFonts.courierPrime(
+                      fontSize: 14,
+                      height: 1.3,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                ),
-            ],
+
+                const SizedBox(height: 10),
+
+                if (curiosidadeAleatoria != null)
+                  Text(
+                    curiosidadeAleatoria!.split("\n")[2],
+                    style: GoogleFonts.courierPrime(
+                      fontSize: 11,
+                      color: Colors.black54,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
-
-
+  // =====================================================
+  // 🔸 CARDS DO DASHBOARD
+  // =====================================================
   Widget _buildCards(BuildContext context) {
     return GridView.count(
       shrinkWrap: true,
@@ -782,7 +739,7 @@ const SizedBox(height: 20),
         _buildCard(
           title: tr('dashboard.calendar_page'),
           icon: PhosphorIconsRegular.calendarDots,
-          color: const Color(0xFF627fdd),
+          color: const Color(0xFFbeb6f2),
           route: '/calendar_page',
         ),
         _buildCard(
@@ -824,45 +781,52 @@ const SizedBox(height: 20),
             target = MonthlyGoalsWidget(
                 month: selectedMonth, year: selectedYear);
             break;
+
           case '/mood_summary':
             target =
                 MoodScreen(month: selectedMonth, year: selectedYear);
             break;
+
           case '/diary_entries':
             target = DiaryScreen(date: DateTime.now());
-
             break;
+
           case '/interactive_quiz':
             target = InteractiveQuizStandalone(
               month: selectedMonth,
               year: selectedYear,
             );
             break;
+
           case '/gratitude':
             target = GratitudeWidget(
               month: selectedMonth,
               year: selectedYear,
             );
             break;
+
           case '/curiosities':
             target = CuriositiesWidget(
               month: selectedMonth,
               year: selectedYear,
             );
             break;
+
           case '/did_you_know':
             target = Builder(
-            builder: (context) {
-           return DidYouKnowWidget(
-           month: selectedMonth,
-           year: selectedYear,
-           );
-            },
-             );
+              builder: (context) {
+                return DidYouKnowWidget(
+                  month: selectedMonth,
+                  year: selectedYear,
+                );
+              },
+            );
             break;
+
           case '/daily_luck':
             target = const DailyLuckPage();
             break;
+
           case '/calendar_page':
             target = CalendarPage(
               month: selectedMonth,
@@ -909,199 +873,201 @@ const SizedBox(height: 20),
     );
   }
 
+  // =====================================================
+  // 🔎 BUSCA DE DATAS
+  // =====================================================
+  Widget _buildDateSearch(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (context) {
+            int selectedYear = DateTime.now().year.clamp(2025, 2100);
 
-  // ⬇️ PESQUISA DE DATAS
+            return StatefulBuilder(
+              builder: (context, setState) {
+                return Dialog(
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(28),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 26, 20, 26),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // ícone topo
+                        Container(
+                          padding: const EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.15),
+                                blurRadius: 6,
+                                offset: Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.favorite,
+                            color: Color(0xFFE04CB7),
+                            size: 22,
+                          ),
+                        ),
 
-Widget _buildDateSearch(BuildContext context) {
-  return GestureDetector(
-    onTap: () {
-      showDialog(
-        context: context,
-        builder: (context) {
-          int selectedYear = DateTime.now().year.clamp(2025, 2100);
+                        const SizedBox(height: 12),
 
-          return StatefulBuilder(
-            builder: (context, setState) {
-              return Dialog(
-                backgroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(28),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 26, 20, 26),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // ❤️ PIN NO TOPO
-                      Container(
-                        padding: const EdgeInsets.all(7),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.15),
-                              blurRadius: 6,
-                              offset: Offset(0, 3),
+                        Text(
+                          tr('dashboard.select_date'),
+                          style: GoogleFonts.courierPrime(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // ano com setas
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              onPressed: selectedYear > 2025
+                                  ? () => setState(() => selectedYear--)
+                                  : null,
+                              icon: Icon(
+                                Icons.chevron_left,
+                                color: selectedYear > 2025
+                                    ? Colors.black87
+                                    : Colors.black26,
+                              ),
+                            ),
+                            Text(
+                              "$selectedYear",
+                              style: GoogleFonts.courierPrime(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () => setState(() => selectedYear++),
+                              icon: const Icon(Icons.chevron_right,
+                                  color: Colors.black87),
                             ),
                           ],
                         ),
-                        child: const Icon(
-                          Icons.favorite,
-                          color: Color(0xFFE04CB7),
-                          size: 22,
-                        ),
-                      ),
 
-                      const SizedBox(height: 12),
+                        const SizedBox(height: 10),
 
-                      Text(
-                        tr('dashboard.select_date'),
-                        style: GoogleFonts.courierPrime(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-
-                      const SizedBox(height: 14),
-
-                      // ➖ ANO COM SETAS ➖
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            onPressed: selectedYear > 2025
-                                ? () => setState(() => selectedYear--)
-                                : null,
-                            icon: Icon(Icons.chevron_left,
-                                color: selectedYear > 2025
-                                    ? Colors.black87
-                                    : Colors.black26),
+                        // grid de meses
+                        GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: 12,
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            childAspectRatio: 1.6,
+                            mainAxisSpacing: 10,
+                            crossAxisSpacing: 10,
                           ),
-                          Text(
-                            "$selectedYear",
+                          itemBuilder: (_, index) {
+                            final shortNames = [
+                              "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+                            ];
+
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.pop(context);
+                                Navigator.of(context).push(
+                                  fadePageTransition(
+                                    CurrentMonthScreen(
+                                      month: index + 1,
+                                      year: selectedYear,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF8DFF0),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: const Color(0xFFE04CB7),
+                                    width: 1.3,
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    shortNames[index],
+                                    style: GoogleFonts.courierPrime(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFFB73C78),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text(
+                            tr("general.cancel"),
                             style: GoogleFonts.courierPrime(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                              color: Colors.black54,
                             ),
                           ),
-                          IconButton(
-                            onPressed: () => setState(() => selectedYear++),
-                            icon: const Icon(Icons.chevron_right,
-                                color: Colors.black87),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      // 🌸 GRID DE MESES (fofinho!)
-                      GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: 12,
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          childAspectRatio: 1.6,
-                          mainAxisSpacing: 10,
-                          crossAxisSpacing: 10,
                         ),
-                        itemBuilder: (_, index) {
-                          final shortNames = [
-                            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-                          ];
-
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.pop(context);
-                              Navigator.of(context).push(
-                                fadePageTransition(
-                                  CurrentMonthScreen(
-                                    month: index + 1,
-                                    year: selectedYear,
-                                  ),
-                                ),
-                              );
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF8DFF0),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: const Color(0xFFE04CB7),
-                                  width: 1.3,
-                                ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  shortNames[index],
-                                  style: GoogleFonts.courierPrime(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    color: const Color(0xFFB73C78),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      TextButton(
-  onPressed: () => Navigator.pop(context),
-  child: Text(
-    tr("general.cancel"),
-    style: GoogleFonts.courierPrime(
-      fontSize: 14,
-      color: Colors.black54,
-    ),
-  ),
-),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
-          );
-        },
-      );
-    },
+                );
+              },
+            );
+          },
+        );
+      },
 
-    // 🔍 BOTÃO DO DASHBOARD
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.black26),
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.search, color: Colors.black54, size: 20),
-          const SizedBox(width: 8),
-          Text(
-            tr('dashboard.search_previous_dates'),
-            style: const TextStyle(
-              color: Colors.black54,
-              fontSize: 15,
+      // botão que aparece no dashboard
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.black26),
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.search, color: Colors.black54, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              tr('dashboard.search_previous_dates'),
+              style: const TextStyle(
+                color: Colors.black54,
+                fontSize: 15,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
+  // =====================================================
+  // 🔸 NOMES DOS MESES
+  // =====================================================
 
-  // =========================
-  // Nomes dos meses
-  // =========================
   String getNomeMesAbreviado(int mes) {
     final mesesAbrev = [
       'dashboard.month_short.jan'.tr(),
