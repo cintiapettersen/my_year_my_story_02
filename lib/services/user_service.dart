@@ -1,66 +1,71 @@
 import 'package:myyearmystory/services/secure_storage_service.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class UserService {
   // -----------------------------------------------------------
-  // 🔐 1. CADASTRO (EMAIL + SENHA)
+  // 🔐 CADASTRO
   // -----------------------------------------------------------
   static Future<Map<String, dynamic>> signUp({
-    required String email,
-    required String password,
-    required String name,
-    String? birthDate,
-  }) async {
-    try {
-      final response = await SupabaseConfig.client.auth.signUp(
-        email: email.trim(),
-        password: password.trim(),
-      );
+  required String email,
+  required String password,
+  required String name,
+  String? birthDate,
+}) async {
+  try {
+    // 1. Cria o usuário no auth
+    final response = await SupabaseConfig.client.auth.signUp(
+      email: email.trim(),
+      password: password.trim(),
+    );
 
-      final user = response.user;
+    final user = response.user;
 
-      if (user == null) {
-        return {
-          'success': false,
-          'message': 'Erro ao criar conta. Tente novamente.',
-        };
-      }
-
-      // Cria o perfil na tabela
-      await SupabaseConfig.client.from('profiles').insert({
-        'id': user.id,
-        'full_name': name,
-        'birth_date': birthDate,
-        'created_at': DateTime.now().toIso8601String(),
-      });
-
-      await SecureStorageService.saveSession(response.session);
-
+    if (user == null) {
       return {
-        'success': true,
-        'message': 'Conta criada com sucesso!',
-        'user': user,
-        'session': response.session,
+        'success': false,
+        'message': 'signup.error_general',
       };
-    } catch (e) {
-      String msg = 'Erro de conexão. Verifique sua internet.';
-      final error = e.toString().toLowerCase();
-
-      if (error.contains('already registered')) {
-        msg = 'Este email já está cadastrado.';
-      } else if (error.contains('invalid email')) {
-        msg = 'Email inválido.';
-      } else if (error.contains('password') && error.contains('short')) {
-        msg = 'A senha deve ter pelo menos 6 caracteres.';
-      }
-
-      return {'success': false, 'message': msg};
     }
+
+    // 2. A TRIGGER já criou o registro em "profiles",
+    
+    await SupabaseConfig.client.from('profiles').update({
+  'full_name': name,
+  'birth_date': birthDate,
+  'email': email.trim(),
+  'avatar_emoji': "🌸",   // opcional, mas ele ama começar com um emoji
+   }).eq('id', user.id);
+
+    // 3. Salva a sessão para login automático
+    await SecureStorageService.saveSession(response.session);
+
+    return {
+      'success': true,
+      'message': 'signup.success',
+      'user': user,
+      'session': response.session,
+    };
+  } catch (e) {
+    String msg = 'signup.error_general';
+
+    final error = e.toString().toLowerCase();
+
+    if (error.contains('already registered')) {
+      msg = 'signup.error_email_exists';
+    } else if (error.contains('invalid email')) {
+      msg = 'signup.error_email_invalid';
+    } else if (error.contains('password') && error.contains('short')) {
+      msg = 'signup.error_password_short';
+    }
+
+    return {'success': false, 'message': msg};
   }
+}
 
   // -----------------------------------------------------------
-  // 🔑 2. LOGIN COM EMAIL + SENHA
+  // 🔑 LOGIN
   // -----------------------------------------------------------
   static Future<Map<String, dynamic>> signIn(
     String email,
@@ -78,7 +83,7 @@ class UserService {
       if (user == null || session == null) {
         return {
           'success': false,
-          'message': 'Credenciais inválidas.',
+          'message': 'auth.login.error_invalid_credentials'.tr(),
         };
       }
 
@@ -86,67 +91,41 @@ class UserService {
 
       return {
         'success': true,
-        'message': 'Login realizado com sucesso!',
+        'message': 'auth.login.success'.tr(),
         'user': user,
         'session': session,
       };
     } on AuthException catch (e) {
-      String msg = 'Erro de conexão.';
-      final error = e.message.toLowerCase();
+      String errorMessage = e.message.toLowerCase();
 
-      if (error.contains('invalid login credentials')) {
-        msg = 'Email ou senha incorretos.';
-      } else if (error.contains('email not confirmed')) {
-        msg = 'Email não confirmado.';
+      if (errorMessage.contains("invalid login credentials")) {
+        return {
+          'success': false,
+          'message': 'auth.login.error_invalid_credentials'.tr(),
+        };
       }
 
-      return {'success': false, 'message': msg};
+      if (errorMessage.contains("email not confirmed")) {
+        return {
+          'success': false,
+          'message': 'auth.login.error_email_not_confirmed'.tr(),
+        };
+      }
+
+      return {
+        'success': false,
+        'message': 'auth.login.error_general'.tr(),
+      };
     } catch (_) {
       return {
         'success': false,
-        'message': 'Erro inesperado. Tente novamente.',
+        'message': 'auth.login.error_general'.tr(),
       };
     }
   }
 
   // -----------------------------------------------------------
-  // 📄 3. BUSCAR PERFIL
-  // -----------------------------------------------------------
-  static Future<Map<String, dynamic>?> getUserProfile(String userId) async {
-    try {
-      return await SupabaseConfig.client
-          .from('profiles')
-          .select()
-          .eq('id', userId)
-          .single();
-    } catch (e) {
-      print('❌ [PERFIL] Erro ao buscar perfil: $e');
-      return null;
-    }
-  }
-
-  // -----------------------------------------------------------
-  // ✏️ 4. ATUALIZAR PERFIL
-  // -----------------------------------------------------------
-  static Future<bool> updateUserProfile(
-    String userId,
-    Map<String, dynamic> updates,
-  ) async {
-    try {
-      await SupabaseConfig.client
-          .from('profiles')
-          .update(updates)
-          .eq('id', userId);
-
-      return true;
-    } catch (e) {
-      print('❌ [PERFIL] Erro ao atualizar perfil: $e');
-      return false;
-    }
-  }
-
-  // -----------------------------------------------------------
-  // 🔄 5. RESET PASSWORD
+  // 🔄 RESET PASSWORD
   // -----------------------------------------------------------
   static Future<Map<String, dynamic>> resetPassword(String email) async {
     try {
@@ -154,18 +133,18 @@ class UserService {
 
       return {
         'success': true,
-        'message': 'Email de recuperação enviado!',
+        'message': 'auth.forgot.sent'.tr(),
       };
-    } catch (e) {
+    } catch (_) {
       return {
         'success': false,
-        'message': 'Erro ao enviar email de recuperação.',
+        'message': 'auth.forgot.error_general'.tr(),
       };
     }
   }
 
   // -----------------------------------------------------------
-  // 🚪 6. LOGOUT (SEGURO PARA BIOMETRIA)
+  // 🚪 LOGOUT
   // -----------------------------------------------------------
   static Future<void> signOut() async {
     await SupabaseConfig.client.auth.signOut(scope: SignOutScope.local);

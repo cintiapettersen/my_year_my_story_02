@@ -22,41 +22,67 @@
     "login_button": "Log in / Create account",
     "guest_button": "Explore as guest"
   },
+
   "auth": {
-    "welcome_title": "Welcome to My Year, My Story!",
-    "choose_start": "Choose how you want to begin:",
-    "login_google_email": "Sign in with Google or Email",
-    "login_guest": "Continue as guest",
-    "signup_button": "Create an account",
-    "login": {
-      "description": "Record your memories, track your mood and tell your unique story month by month.",
-      "sign_in": "Sign in",
-      "create_account": "Create Account",
-      "email": "Email",
-      "password": "Password",
-      "remember_me": "Remember me",
-      "forgot_password": "Forgot password?",
-      "button": "Sign in",
-      "or": "OR",
-      "or_biometric": "or with biometrics",
-      "magic_link_button": "Sign in with magic link",
-      "magic_link_title": "Prefer a magic link?",
-      "magic_link_description": "Enter your email and we’ll send you a secure login link.",
-      "magic_link_confirm": "Send magic link",
-      "magic_link_sent": "Magic link sent to {{0}}! Check your inbox ✨",
-      "magic_link_error": "Error sending magic link: {{0}}",
-      "error_email_empty": "Enter your email",
-      "error_email_invalid": "Enter a valid email",
-      "error_password_empty": "Enter your password",
-      "error_password_short": "Password must be at least 6 characters",
-      "success": "Login successful!",
-      "error_general": "Error signing in",
-      "signup_title": "Create Account",
-      "welcome_subtitle": "Choose how you want to begin:",
-      "login_google_email": "Sign in with Google or Email",
-      "enter_guest": "Enter as guest"
-    }
+  "login": {
+    "description": "Record your memories, track your mood and tell your unique story month by month.",
+    "sign_in": "Sign in",
+    "create_account": "Create Account",
+    "email": "Email",
+    "password": "Password",
+    "remember_me": "Remember me",
+    "forgot_password": "Forgot password?",
+    "button": "Sign in",
+
+    "error_email_empty": "Enter your email",
+    "error_email_invalid": "Enter a valid email",
+    "error_password_empty": "Enter your password",
+    "error_password_short": "Password must be at least 6 characters",
+
+    "success": "Login successful!",
+    "error_general": "Error signing in",
+    "or_biometric": "or with biometrics",
+
+    "error_invalid_credentials": "Incorrect email or password.",
+    
+    "magic_link_button": "Sign in with magic link",
+    "magic_link_title": "Prefer a magic link?",
+    "magic_link_description": "Enter your email and we’ll send you a secure login link.",
+    "magic_link_confirm": "Send magic link",
+    "magic_link_sent": "Magic link sent to {{0}}! Check your inbox ✨",
+    "magic_link_error": "Error sending magic link: {{0}}",
+
+    "enter_guest": "Enter as guest"
+
+
+
   },
+  
+  "biometric": {
+    "reason": "Confirm your identity to continue",
+    "loading": "Checking your info...",
+    "try_again": "Tap to try again"
+ 
+  },
+
+  "forgot": {
+    "title": "Forgot your password?",
+    "subtitle": "Enter your e-mail and we will send a link to reset your password.",
+    "email": "Email",
+    "button": "Send recovery link",
+    "validate_empty": "Please enter your email",
+    "validate_invalid": "Please enter a valid email",
+    "sent": "Recovery email sent!",
+    "not_found": "This email is not registered.",
+    "error": "Could not send the email.",
+    "error_general": "Unexpected error",
+    "success_title": "Email sent!",
+    "success_desc": "Check your inbox and follow the instructions to reset your password.",
+    "back": "Back to login"
+  }
+},
+
+
   "drawer": {
   "user": "Your Name",
   "email": "Your Email",
@@ -85,8 +111,9 @@
   "years": "years",
   "email_change_alert": "To change the email of your account, please contact support.",
   "app_name": "My Year, My Story",
-  "free_plan": "Free Plan",
+  "free_plan": "Standard Plan",
   "premium_plan": "Premium Plan"
+  
   
 
 
@@ -118,30 +145,57 @@
 
 
   },
-
   "signup": {
-    "subtitle": "Create your account and start your journey of self-discovery and memories.",
-    "full_name": "Full name",
-    "birth_date": "Birth date",
-    "email": "Email",
-    "password": "Password",
-    "confirm_password": "Confirm password",
-    "button_create": "Create Account",
-    "magic_link_button": "Access with Magic Link ✉️",
-    "magic_link_title": "Already have an account?",
-    "magic_link_description": "Enter your email and we’ll send a link to enter directly.",
-    "magic_link_confirm": "Send magic link",
-    "or": "OR",
-    "have_account": "Already have an account",
-    "success": "Account created successfully!",
-    "error": "Error creating account: {0}",
-    "error_name": "Enter your name",
-    "error_birth": "Select your birth date",
-    "error_email_empty": "Enter your email",
-    "error_email_invalid": "Invalid email",
-    "error_password": "Password must be at least 6 characters",
-    "error_confirm": "Passwords do not match",
-    "biometric_hint": "🔒 After creating your account, you can enable biometric login for quick and secure access."
+ 
+  "error_general": "Error creating account. Please try again.",
+  
+  "subtitle": "Create your account and start your journey.",
+  "full_name": "Full name",
+  "birth_date": "Birth date",
+  "email": "Email",
+  "password": "Password",
+  "confirm_password": "Confirm password",
+
+  "button_create": "Create account",
+  "or": "or",
+  "have_account": "I already have an account",
+
+  "success": "Account created successfully!",
+  "error": "Error creating account: {0}",
+
+  "error_name": "Enter your name",
+  "error_birth": "Select your birth date",
+  "error_email_empty": "Enter your email",
+  "error_email_invalid": "Enter a valid email",
+  "error_password": "Password must be at least 6 characters",
+  "error_confirm": "Passwords do not match",
+  "error_confirm_empty": "Confirm your password",
+
+  "error_email_exists": "This email is already registered.",
+
+  "bio_info": "🔒 After creating your account, you will be able to activate biometric login for quick and secure access."
+
+
+},
+
+"reset": {
+  "success": "Recovery email sent!",
+  "error": "Error sending recovery email."
+
+},
+"error": {
+  "connection": "Connection error. Check your internet.",
+  "invalid_email": "Invalid email.",
+  "password_short": "Password must be at least 6 characters.",
+  "unexpected": "Unexpected error. Try again."
+
+},
+"login": {
+  "error_invalid_credentials": "Incorrect email or password.",
+  "error_email_not_confirmed": "Email not confirmed.",
+  "success": "Login successful!"
+
+
   },
 
   "bottom": {
@@ -239,7 +293,12 @@
    "fallback2": "Take a deep breath and trust — your day will be light.",
    "fallback3": "Your inner glow is stronger than ever."
 
+   },
 
+    "test_screen": {
+    "hello_name": "Hello, Cintia PADUA!",
+    "language_pt": "PT-BR",
+    "language_en": "EN"
 
   },
 
@@ -252,6 +311,7 @@
   "navigate_months": "Browse the months",
   "answered_in": "answered in {{date}}",
   "cancel": "Cancel",
+ 
 
 
   "goals": "Goals",

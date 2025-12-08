@@ -7,7 +7,6 @@ import 'dart:ui' as ui;
 
 import 'package:myyearmystory/screens/diary/diary_screen.dart';
 import 'package:myyearmystory/screens/mood/mood_screen.dart';
-
 import 'package:myyearmystory/widgets/monthly/monthly_goals_widget.dart';
 import 'package:myyearmystory/widgets/monthly/gratitude_widget.dart';
 import 'package:myyearmystory/screens/monthly/current_month_screen.dart';
@@ -22,6 +21,8 @@ import 'package:myyearmystory/screens/notifications/daily_popup.dart';
 import 'package:myyearmystory/services/daily_quote_service.dart';
 import 'package:myyearmystory/utils/month_colors.dart';
 import 'package:myyearmystory/screens/quiz/standalone.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
+
 
 class DashboardScreen extends StatefulWidget {
   final int month;
@@ -43,11 +44,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String userName = "";
   String? dailyInspiration;
 
+  String? curiosityQuestion;
+  String? curiosityAnswer;
+  String? curiosityDate;
+
   int metasConcluidas = 0;
   int gratidaoCount = 0;
   int diarioCount = 0;
-
-  String? curiosidadeAleatoria;
 
   final quoteService = DailyQuoteService();
 
@@ -55,8 +58,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   late int selectedYear;
 
   bool isLoading = true;
+  Locale? _lastLocale;
+  
 
-  // Tema
   Color currentThemeColor = const Color(0xFFE04CB7);
 
   final List<Color> themeOptions = const [
@@ -67,131 +71,152 @@ class _DashboardScreenState extends State<DashboardScreen> {
     Color(0xFFBEB6F2),
   ];
 
-  @override
-  void initState() {
-    super.initState();
+@override
+void initState() {
+  super.initState();
 
-    selectedMonth = widget.month;
-    selectedYear = widget.year;
+  selectedMonth = widget.month;
+  selectedYear = widget.year;
 
-    _loadUserName();
-    _syncUserLanguage();
-    _loadDashboardData();
+  _loadUserName();
+  _syncUserLanguage();
+  _loadDashboardData();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      loadDailyQuote();
-    });
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    loadDailyQuote();
+  });
 
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) checkAndShowDailyAlert();
-    });
+  Future.delayed(const Duration(seconds: 2), () {
+    if (mounted) checkAndShowDailyAlert();
+  });
+}
+
+
+@override
+void didChangeDependencies() {   // ✅ fora do initState
+  super.didChangeDependencies();
+
+  final currentLocale = context.locale;
+
+  if (_lastLocale != currentLocale) {
+    _lastLocale = currentLocale;
+    _loadDashboardData();  
+    loadDailyQuote();
+  }
+}
+
+  // ==============================
+  //     ALERTA DIÁRIO
+  // ==============================
+  Future<void> checkAndShowDailyAlert() async {
+    final user = supabase.auth.currentUser;
+    if (user == null) return;
+
+    final now = DateTime.now();
+    final weekday = DateFormat('EEE').format(now);
+
+    final events = await supabase
+        .from('calendar_events')
+        .select()
+        .eq('user_id', user.id)
+        .eq('remind', true);
+
+    if (events.isEmpty) return;
+
+    for (final event in events) {
+      final type = event['repeat_type'];
+      final daysBefore = event['days_before'] ?? 0;
+      final seenToday = event['seen_today'] ?? false;
+
+      if (seenToday) continue;
+
+      bool shouldShow = false;
+
+      final eventDate = DateTime(event['year'], event['month'], event['day']);
+      final triggerDate = eventDate.subtract(Duration(days: daysBefore));
+
+      if (type == "none" &&
+          now.year == triggerDate.year &&
+          now.month == triggerDate.month &&
+          now.day == triggerDate.day) {
+        shouldShow = true;
+      }
+
+      if (type == "daily") shouldShow = true;
+
+      if (type == "weekly") {
+        final repeatDays = List<String>.from(event['repeat_days'] ?? []);
+        if (repeatDays.contains(weekday)) shouldShow = true;
+      }
+
+      if (type == "monthly" && now.day == event['day']) shouldShow = true;
+
+      if (type == "yearly" &&
+          now.day == event['day'] &&
+          now.month == event['month']) {
+        shouldShow = true;
+      }
+
+      if (shouldShow) {
+        DailyPopup.show(context, event);
+        break;
+      }
+    }
   }
 
-//______________________________________________________
-
-Future<void> checkAndShowDailyAlert() async {
+  // ==============================
+  //     NOME DO USUÁRIO
+  // ==============================
+  // ============================
+//       NOME DO USUÁRIO
+// ============================
+Future<void> _loadUserName() async {
+  final supabase = Supabase.instance.client;
   final user = supabase.auth.currentUser;
+
   if (user == null) return;
 
-  final now = DateTime.now();
-  final weekday = DateFormat('EEE').format(now);
+  try {
+    // Consulta segura ao Supabase
+    final profile = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .single();
 
-  final events = await supabase
-      .from('calendar_events')
-      .select()
-      .eq('user_id', user.id)
-      .eq('remind', true);
+    setState(() {
+      final fullName = profile["full_name"];
 
-  if (events.isEmpty) return;
+      final firstName = (fullName != null && fullName.toString().trim().isNotEmpty)
+          ? fullName.split(" ").first
+          : tr("dashboard.guest_user");
 
-  for (final event in events) {
-    final type = event['repeat_type'];
-    final daysBefore = event['days_before'] ?? 0;
-    final seenToday = event['seen_today'] ?? false;
+      userName = firstName;
+    });
 
-    if (seenToday) continue;
-
-    bool shouldShow = false;
-
-    final eventDate = DateTime(event['year'], event['month'], event['day']);
-    final triggerDate = eventDate.subtract(Duration(days: daysBefore));
-
-    if (type == "none" &&
-        now.year == triggerDate.year &&
-        now.month == triggerDate.month &&
-        now.day == triggerDate.day) {
-      shouldShow = true;
-    }
-
-    if (type == "daily") shouldShow = true;
-
-    if (type == "weekly") {
-      final repeatDays = List<String>.from(event['repeat_days'] ?? []);
-      if (repeatDays.contains(weekday)) shouldShow = true;
-    }
-
-    if (type == "monthly" && now.day == event['day']) shouldShow = true;
-
-    if (type == "yearly" &&
-        now.day == event['day'] &&
-        now.month == event['month']) {
-      shouldShow = true;
-    }
-
-    if (shouldShow) {
-      DailyPopup.show(context, event);
-      break;
-    }
+  } catch (e) {
+    // Fallback em caso de erro
+    setState(() {
+      userName = tr("dashboard.guest_user");
+    });
   }
 }
 
 
-
-
-
-  // ======================
-  // Nome do usuário
-  // ======================
-  Future<void> _loadUserName() async {
-    final user = supabase.auth.currentUser;
-    if (user == null) return;
-
-    try {
-      final profile = await supabase
-          .from("profiles")
-          .select("full_name")
-          .eq("id", user.id)
-          .single();
-
-      setState(() {
-        final fullName = profile["full_name"];
-        final firstName = fullName != null && fullName.isNotEmpty
-            ? fullName.split(" ").first
-            : tr("dashboard.guest_user");
-
-        userName = firstName;
-      });
-    } catch (e) {
-      setState(() {
-        userName = tr("dashboard.guest_user");
-      });
-    }
-  }
-
-  // ======================
-  // Frase do dia
-  // ======================
+  // ==============================
+  //     FRASE DO DIA
+  // ==============================
   Future<void> loadDailyQuote() async {
     try {
       final lang = context.locale.languageCode;
       final quote = await quoteService.getRandomQuote(lang);
 
+      final text = quote?["text"]?.toString().trim();
+
       setState(() {
-        final txt = quote?["text"]?.toString().trim();
-        dailyInspiration =
-            (txt != null && txt.isNotEmpty)
-                ? txt
-                : tr("dashboard.daily_inspiration");
+        dailyInspiration = (text != null && text.isNotEmpty)
+            ? text
+            : tr("dashboard.daily_inspiration");
       });
     } catch (_) {
       setState(() {
@@ -200,9 +225,9 @@ Future<void> checkAndShowDailyAlert() async {
     }
   }
 
-  // ======================
-  // Sincronizar idioma
-  // ======================
+  // ==============================
+  //     SINCRONIZAR IDIOMA
+  // ==============================
   Future<void> _syncUserLanguage() async {
     final user = supabase.auth.currentUser;
     if (user == null) return;
@@ -216,10 +241,9 @@ Future<void> checkAndShowDailyAlert() async {
           .eq("id", user.id);
     } catch (_) {}
   }
-
-  // ======================
-  // Carregar dados do dashboard
-  // ======================
+  // ==============================
+  //     CARREGAR DADOS DO DASHBOARD
+  // ==============================
   Future<void> _loadDashboardData() async {
     if (!mounted) return;
 
@@ -229,7 +253,7 @@ Future<void> checkAndShowDailyAlert() async {
     if (user == null) return;
 
     try {
-      // metas concluídas
+      // --- Metas concluídas ---
       final metas = await supabase
           .from("metas")
           .select()
@@ -240,7 +264,7 @@ Future<void> checkAndShowDailyAlert() async {
 
       metasConcluidas = metas.length;
 
-      // entries do mês
+      // --- ENTRIES DO MÊS ---
       final entries = await supabase
           .from("entries")
           .select()
@@ -253,18 +277,19 @@ Future<void> checkAndShowDailyAlert() async {
         gratidaoCount =
             (entries["gratitude_entries"] as List?)?.length ?? 0;
 
-        // ======================
-        // CURIOSIDADE (PERGUNTA + RESPOSTA)
-        // ======================
+        // ---------- CURIOSIDADES ----------
         final answers = entries["curiosities_answers"];
         List<String> questions = [];
 
-        // buscar perguntas traduzidas
+        // ⚠️ SEMPRE usar o mês/ano da resposta
+        final answeredMonth = entries["month"];
+        final answeredYear = entries["year"];
+
         final curiosityEntry = await supabase
             .from("curiosities_entries")
             .select("questions, questions_en")
-            .eq("month", selectedMonth)
-            .eq("year", selectedYear)
+            .eq("month", answeredMonth)
+            .eq("year", answeredYear)
             .maybeSingle();
 
         if (curiosityEntry != null) {
@@ -286,8 +311,8 @@ Future<void> checkAndShowDailyAlert() async {
               combined.add({
                 "question": questions[i],
                 "answer": answers[i],
-                "month": entries["month"].toString(),
-                "year": entries["year"].toString(),
+                "month": answeredMonth.toString(),
+                "year": answeredYear.toString(),
               });
             }
           }
@@ -296,15 +321,15 @@ Future<void> checkAndShowDailyAlert() async {
             combined.shuffle();
             final selected = combined.first;
 
-            final mesFormatado =
+            final formattedMonth =
                 _formatarMesAno(selected["month"]!, selected["year"]!);
 
-            curiosidadeAleatoria =
-                "${selected['question']}\n"
-                "${selected['answer']}\n"
-                "${tr('dashboard.answered_in', namedArgs: {
-                  'date': "$mesFormatado/${selected['year']}"
-                })}";
+            curiosityQuestion = selected['question'];
+            curiosityAnswer = selected['answer'];
+            curiosityDate = tr(
+              'dashboard.answered_in',
+              namedArgs: {'date': formattedMonth},
+            );
           }
         }
       }
@@ -315,9 +340,9 @@ Future<void> checkAndShowDailyAlert() async {
     }
   }
 
-  // ======================
-  // formatação "Mar 2024"
-  // ======================
+  // ==============================
+  //    FORMATAÇÃO DO MÊS (ex: Mar 2024)
+  // ==============================
   String _formatarMesAno(String mes, String ano) {
     final m = int.tryParse(mes) ?? 1;
 
@@ -330,40 +355,34 @@ Future<void> checkAndShowDailyAlert() async {
     return "${nomesMes[m]} $ano";
   }
 
-
-
-// ======================
-// LABEL DO CALENDÁRIO
-// ======================
-Widget _calendarLabel() {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-    decoration: BoxDecoration(
-      color: const Color(0xFFF3F3F3),
-      borderRadius: BorderRadius.circular(10),
-    ),
-    child: Text(
-      tr("dashboard.navigate_months"),
-      style: GoogleFonts.courierPrime(
-        fontSize: 16,
-        fontWeight: FontWeight.w500,
-        color: Colors.black87,
-        letterSpacing: 0.5,
+  // ==============================
+  //      LABEL DO CALENDÁRIO
+  // ==============================
+  Widget _calendarLabel() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF3F3F3),
+        borderRadius: BorderRadius.circular(10),
       ),
-    ),
-  );
-}
-
-
-
-
-
-
-
-
+      child: Text(
+        tr("dashboard.navigate_months"),
+        style: GoogleFonts.courierPrime(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          color: Colors.black87,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+  // ==============================
+  //              BUILD
+  // ==============================
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
+
     final diaSemana =
         DateFormat.EEEE(context.locale.languageCode).format(now);
 
@@ -386,6 +405,11 @@ Widget _calendarLabel() {
             color: Colors.white,
           ),
         ),
+      ),
+
+      bottomNavigationBar: AppBottomMenu(
+        currentIndex: 0,
+        themeColor: currentThemeColor,
       ),
 
       body: RefreshIndicator(
@@ -429,7 +453,7 @@ Widget _calendarLabel() {
 
                 const SizedBox(height: 32),
 
-                // 🎨 TEMA DO DIA
+                // 🎨 CORES DO TEMA
                 Column(
                   children: [
                     Text(
@@ -473,7 +497,6 @@ Widget _calendarLabel() {
 
                 // 🌈 CALENDÁRIO
                 _calendarLabel(),
-                
                 const SizedBox(height: 20),
 
                 GridView.builder(
@@ -555,7 +578,7 @@ Widget _calendarLabel() {
 
                 const SizedBox(height: 24),
 
-                // CARDS
+                // ⭐ CARDS
                 _buildCards(context),
 
                 const SizedBox(height: 48),
@@ -588,14 +611,8 @@ Widget _calendarLabel() {
           ),
         ),
       ),
-
-      bottomNavigationBar: AppBottomMenu(
-        currentIndex: 0,
-        themeColor: currentThemeColor,
-      ),
     );
   }
-
   // =====================================================
   // 🔸 BLOCO DE CURIOSIDADE
   // =====================================================
@@ -650,9 +667,10 @@ Widget _calendarLabel() {
                 Divider(color: Colors.black26, thickness: 1),
                 const SizedBox(height: 8),
 
-                if (curiosidadeAleatoria != null)
+                // ❓ PERGUNTA
+                if (curiosityQuestion != null)
                   Text(
-                    curiosidadeAleatoria!.split("\n")[0],
+                    curiosityQuestion!,
                     style: GoogleFonts.courierPrime(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -665,9 +683,10 @@ Widget _calendarLabel() {
                 Divider(color: Colors.black26, thickness: 1),
                 const SizedBox(height: 8),
 
-                if (curiosidadeAleatoria != null)
+                // 💬 RESPOSTA
+                if (curiosityAnswer != null)
                   Text(
-                    curiosidadeAleatoria!.split("\n")[1],
+                    curiosityAnswer!,
                     style: GoogleFonts.courierPrime(
                       fontSize: 14,
                       height: 1.3,
@@ -677,13 +696,15 @@ Widget _calendarLabel() {
 
                 const SizedBox(height: 10),
 
-                if (curiosidadeAleatoria != null)
+                // 📅 DATA
+                if (curiosityDate != null)
                   Text(
-                    curiosidadeAleatoria!.split("\n")[2],
+                    curiosityDate!,
                     style: GoogleFonts.courierPrime(
                       fontSize: 11,
                       color: Colors.black54,
                     ),
+                    textAlign: TextAlign.center,
                   ),
               ],
             ),
@@ -783,8 +804,7 @@ Widget _calendarLabel() {
             break;
 
           case '/mood_summary':
-            target =
-                MoodScreen(month: selectedMonth, year: selectedYear);
+            target = MoodScreen(month: selectedMonth, year: selectedYear);
             break;
 
           case '/diary_entries':
@@ -813,13 +833,9 @@ Widget _calendarLabel() {
             break;
 
           case '/did_you_know':
-            target = Builder(
-              builder: (context) {
-                return DidYouKnowWidget(
-                  month: selectedMonth,
-                  year: selectedYear,
-                );
-              },
+            target = DidYouKnowWidget(
+              month: selectedMonth,
+              year: selectedYear,
             );
             break;
 
@@ -885,7 +901,7 @@ Widget _calendarLabel() {
             int selectedYear = DateTime.now().year.clamp(2025, 2100);
 
             return StatefulBuilder(
-              builder: (context, setState) {
+              builder: (context, setStateSB) {
                 return Dialog(
                   backgroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
@@ -936,7 +952,7 @@ Widget _calendarLabel() {
                           children: [
                             IconButton(
                               onPressed: selectedYear > 2025
-                                  ? () => setState(() => selectedYear--)
+                                  ? () => setStateSB(() => selectedYear--)
                                   : null,
                               icon: Icon(
                                 Icons.chevron_left,
@@ -953,7 +969,7 @@ Widget _calendarLabel() {
                               ),
                             ),
                             IconButton(
-                              onPressed: () => setState(() => selectedYear++),
+                              onPressed: () => setStateSB(() => selectedYear++),
                               icon: const Icon(Icons.chevron_right,
                                   color: Colors.black87),
                             ),
@@ -962,7 +978,7 @@ Widget _calendarLabel() {
 
                         const SizedBox(height: 10),
 
-                        // grid de meses
+                        // GRID DE MESES PARA NAVEGAR
                         GridView.builder(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
@@ -1039,7 +1055,6 @@ Widget _calendarLabel() {
         );
       },
 
-      // botão que aparece no dashboard
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
@@ -1067,7 +1082,6 @@ Widget _calendarLabel() {
   // =====================================================
   // 🔸 NOMES DOS MESES
   // =====================================================
-
   String getNomeMesAbreviado(int mes) {
     final mesesAbrev = [
       'dashboard.month_short.jan'.tr(),

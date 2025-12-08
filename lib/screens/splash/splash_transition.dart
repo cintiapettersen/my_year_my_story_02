@@ -6,6 +6,10 @@ import 'package:myyearmystory/screens/auth/auth_page_view.dart';
 import 'package:myyearmystory/screens/splash/fade_page_transition.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:myyearmystory/widgets/auth/biometric_login_page.dart';
+
+import 'package:myyearmystory/services/secure_storage_service.dart';
+
 
 
 class SplashTransitionScreen extends StatefulWidget {
@@ -48,30 +52,37 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
   }
 
   Future<void> _checkSession() async {
-    await Future.delayed(const Duration(seconds: 4));
+  await Future.delayed(const Duration(seconds: 2));
 
-    try {
-      print('🔎 Verificando sessão existente...');
+  try {
+    print('🔎 Verificando sessão persistida...');
 
-      
-      final client = SupabaseConfig.client;
-      final session = client.auth.currentSession;
-      final user = client.auth.currentUser;
+    // 1️⃣ Lê sessão salva no SecureStorage
+    final persisted = await SecureStorageService.readSessionJson();
 
-      if (session != null && user != null) {
-        print('🔐 Sessão ativa detectada (${user.email}) → Dashboard');
-        _goToDashboard();
-      } else {
-        print('🚫 Nenhum usuário ativo. Mostrando botões.');
-        if (!mounted) return;
-        setState(() => _showButtons = true);
-      }
-    } catch (e) {
-      print('⚠️ Erro ao verificar sessão: $e');
-      if (!mounted) return;
-      setState(() => _showButtons = true);
+    if (persisted != null && persisted.isNotEmpty) {
+      print('🔐 Sessão encontrada → iniciar biometria');
+      _goToBiometricLogin();
+      return;
     }
+
+    // 2️⃣ Se não houver sessão → mostrar botões
+    print('🚫 Nenhuma sessão. Mostrar opções.');
+    if (!mounted) return;
+    setState(() => _showButtons = true);
+
+  } catch (e) {
+    print('⚠️ Erro ao verificar sessão: $e');
+    if (!mounted) return;
+    setState(() => _showButtons = true);
   }
+}
+
+void _goToBiometricLogin() {
+  Navigator.of(context).pushReplacement(
+    fadePageTransition(const BiometricLoginPage()),
+  );
+}
 
   @override
   void dispose() {

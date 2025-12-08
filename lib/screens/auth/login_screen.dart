@@ -1,12 +1,10 @@
 // lib/screens/auth/login_screen.dart
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:myyearmystory/theme.dart';
 import 'package:myyearmystory/widgets/auth/custom_text_field.dart';
 import 'package:myyearmystory/widgets/auth/auth_button.dart';
-import 'package:myyearmystory/widgets/auth/divider_with_text.dart';
 import 'package:myyearmystory/services/user_service.dart';
 import 'package:myyearmystory/screens/auth/forgot_password_screen.dart';
 import 'package:myyearmystory/screens/dashboard/dashboard_screen.dart';
@@ -14,7 +12,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:myyearmystory/screens/splash/fade_page_transition.dart';
 import 'package:myyearmystory/screens/auth/signup_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:myyearmystory/widgets/auth/biometric_login_page.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -36,10 +33,11 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
     _loadRememberedEmail();
 
-    if (!kReleaseMode) {
-      _emailController.text = 'email@myyear.com';
-      _passwordController.text = '123456';
-    }
+    // ❌ remover textos modelo
+    // if (!kReleaseMode) {
+    //   _emailController.text = 'email@myyear.com';
+    //   _passwordController.text = '123456';
+    // }
   }
 
   @override
@@ -80,7 +78,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // 🔄 Sincroniza o idioma atual do app com o Supabase
   Future<void> syncUserLanguage() async {
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) return;
@@ -95,79 +92,65 @@ class _LoginScreenState extends State<LoginScreen> {
           .maybeSingle();
 
       final dbLang = profile?['language'];
-
       if (dbLang != currentLang) {
         await Supabase.instance.client
             .from('profiles')
             .update({'language': currentLang})
             .eq('id', user.id);
       }
-    } catch (e) {
-      debugPrint('Erro ao sincronizar idioma: $e');
-    }
+    } catch (_) {}
   }
 
-  // ✅ Login normal
   Future<void> _signIn() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
-      FocusScope.of(context).unfocus();
+  if (_formKey.currentState!.validate()) {
+    setState(() => _isLoading = true);
+    FocusScope.of(context).unfocus();
 
-      try {
-        await Supabase.instance.client.auth
-            .signOut(scope: SignOutScope.local);
+    final response = await UserService.signIn(
+      _emailController.text.trim(),
+      _passwordController.text,
+    );
 
-        final response = await UserService.signIn(
-          _emailController.text.trim(),
-          _passwordController.text,
-        );
+    if (!mounted) return;
 
-        if (!mounted) return;
+    if (response['success']) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('auth.login.success'.tr()),
+      backgroundColor: Colors.green,
+      duration: const Duration(seconds: 1),
+    ),
+  );
 
-        if (response['success']) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('auth.login.success'.tr()),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 1),
-            ),
-          );
+  await _saveRememberedCredentials();
+  await syncUserLanguage();
 
-          await _saveRememberedCredentials();
-          await Future.delayed(const Duration(milliseconds: 500));
+  Navigator.of(context).pushReplacement(
+    fadePageTransition(
+      DashboardScreen(
+        month: DateTime.now().month,
+        year: DateTime.now().year,
+      ),
+    ),
+  );
+} else {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        response['message'].toString().tr(),
+      ),
+      backgroundColor: Colors.red,
+    ),
+  );
+}
 
-          await syncUserLanguage();
+if (mounted) setState(() => _isLoading = false);
 
-          Navigator.of(context).pushReplacement(
-            fadePageTransition(
-              DashboardScreen(
-                month: DateTime.now().month,
-                year: DateTime.now().year,
-              ),
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(response['message']),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('${'auth.login.error_general'.tr()}: $e'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      } finally {
-        if (mounted) setState(() => _isLoading = false);
-      }
-    }
   }
+}
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -229,7 +212,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 48),
 
-                    // 🌸 Toggle Entrar / Criar Conta
+                    // Toggle Entrar / Criar Conta
                     Container(
                       height: 55,
                       decoration: BoxDecoration(
@@ -251,13 +234,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               decoration: BoxDecoration(
                                 color: LightModeColors.lightSecondary,
                                 borderRadius: BorderRadius.circular(40),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.15),
-                                    blurRadius: 5,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
                               ),
                             ),
                           ),
@@ -265,9 +241,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             children: [
                               Expanded(
                                 child: GestureDetector(
-                                  onTap: () {
-                                    setState(() => _isLoginSelected = true);
-                                  },
+                                  onTap: () =>
+                                      setState(() => _isLoginSelected = true),
                                   child: Center(
                                     child: Text(
                                       'auth.login.sign_in'.tr(),
@@ -288,8 +263,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     setState(() => _isLoginSelected = false);
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
-                                        builder: (context) =>
-                                            const SignupScreen(),
+                                        builder: (_) => const SignupScreen(),
                                       ),
                                     );
                                   },
@@ -315,7 +289,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 40),
 
-                    // Campos de login
+                    // Campos
                     CustomTextField(
                       controller: _emailController,
                       labelText: 'auth.login.email'.tr(),
@@ -360,7 +334,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           onChanged: (value) =>
                               setState(() => _rememberMe = value ?? false),
                           activeColor: LightModeColors.lightSecondary,
-                          visualDensity: VisualDensity.compact,
                         ),
                         Text(
                           'auth.login.remember_me'.tr(),
@@ -377,20 +350,16 @@ class _LoginScreenState extends State<LoginScreen> {
                           onTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  const ForgotPasswordScreen(),
+                              builder: (_) => const ForgotPasswordScreen(),
                             ),
                           ),
                           child: Text(
                             'auth.login.forgot_password'.tr(),
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium!
-                                .copyWith(
-                                  color: LightModeColors.lightSecondary,
-                                  fontWeight: FontWeight.w600,
-                                  decoration: TextDecoration.underline,
-                                ),
+                            style: TextStyle(
+                              color: LightModeColors.lightSecondary,
+                              fontWeight: FontWeight.w600,
+                              decoration: TextDecoration.underline,
+                            ),
                           ),
                         ),
                       ],
@@ -405,16 +374,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       backgroundColor: LightModeColors.lightSecondary,
                     ),
 
-                    const SizedBox(height: 24),
-
-                    DividerWithText(text: 'auth.login.or_biometric'.tr()),
-
-                    const SizedBox(height: 16),
-
-                    // 🔐 Botão de login com biometria/PIN
-                    const BiometricLoginPage(),
-
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 40),
                   ],
                 ),
               ),

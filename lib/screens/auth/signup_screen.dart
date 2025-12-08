@@ -22,13 +22,14 @@ class SignupScreen extends StatefulWidget {
 
 class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
+
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _birthDateController = TextEditingController();
-  DateTime? _selectedDate;
 
+  DateTime? _selectedDate;
   bool _isLoading = false;
 
   @override
@@ -41,13 +42,14 @@ class _SignupScreenState extends State<SignupScreen> {
     super.dispose();
   }
 
+  // 📅 Seleção da data de nascimento
   Future<void> _pickDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
+    final picked = await showDatePicker(
       context: context,
       initialDate: DateTime(2000, 1, 1),
       firstDate: DateTime(1950),
       lastDate: DateTime.now(),
-      locale: const Locale('pt', 'BR'),
+      locale: context.locale,
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -63,7 +65,7 @@ class _SignupScreenState extends State<SignupScreen> {
       },
     );
 
-    if (picked != null && picked != _selectedDate) {
+    if (picked != null) {
       setState(() {
         _selectedDate = picked;
         _birthDateController.text = DateFormat('dd/MM/yyyy').format(picked);
@@ -71,47 +73,54 @@ class _SignupScreenState extends State<SignupScreen> {
     }
   }
 
+  // 📝 Cadastro
   Future<void> _signUp() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
-      try {
-        final response = await UserService.signUp(
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
-          name: _nameController.text.trim(),
-          birthDate: _selectedDate != null
-              ? DateFormat('yyyy-MM-dd').format(_selectedDate!)
-              : null,
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final response = await UserService.signUp(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        name: _nameController.text.trim(),
+        birthDate: _selectedDate != null
+            ? DateFormat('yyyy-MM-dd').format(_selectedDate!)
+            : null,
+      );
+
+      if (!mounted) return;
+
+      if (response['success']) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('signup.success'.tr()),
+            backgroundColor: Colors.green,
+          ),
         );
 
-        if (!mounted) return;
+        await Future.delayed(const Duration(milliseconds: 600));
 
-        if (response['success']) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('signup.success'.tr()),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-          await Future.delayed(const Duration(milliseconds: 800));
-          Navigator.of(context).pushReplacement(
-            fadePageTransition(const AuthPageView()),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(response['message'])),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('signup.error'.tr(args: [e.toString()]))),
-          );
-        }
-      } finally {
-        if (mounted) setState(() => _isLoading = false);
+        Navigator.of(context).pushReplacement(
+          fadePageTransition(const AuthPageView()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response['message'].tr()),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('signup.error'.tr(args: [e.toString()])),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -121,16 +130,11 @@ class _SignupScreenState extends State<SignupScreen> {
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: Container(
-          width: double.infinity,
-          height: double.infinity,
           decoration: const BoxDecoration(
             gradient: LinearGradient(
+              colors: [Color(0xFFFDE7EA), Color(0xFFF8DCE0)],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFFFDE7EA),
-                Color(0xFFF8DCE0),
-              ],
             ),
           ),
           child: SafeArea(
@@ -139,25 +143,27 @@ class _SignupScreenState extends State<SignupScreen> {
               child: Form(
                 key: _formKey,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const SizedBox(height: 40),
 
+                    // ⬅️ Botão voltar
                     Align(
                       alignment: Alignment.centerLeft,
                       child: IconButton(
                         icon: const Icon(Icons.arrow_back_ios, color: Color(0xFFA66ABD)),
-                        onPressed: widget.onLoginTap ?? () {
-                          Navigator.pushReplacement(
-                            context,
-                            fadePageTransition(const AuthPageView()),
-                          );
-                        },
+                        onPressed: widget.onLoginTap ??
+                            () {
+                              Navigator.pushReplacement(
+                                context,
+                                fadePageTransition(const AuthPageView()),
+                              );
+                            },
                       ),
                     ),
 
                     const SizedBox(height: 16),
 
+                    // Logo
                     Text(
                       'MY YEAR',
                       style: GoogleFonts.cinzel(
@@ -185,21 +191,21 @@ class _SignupScreenState extends State<SignupScreen> {
 
                     Text(
                       'signup.subtitle'.tr(),
-                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                        color: Colors.black87,
-                        height: 1.4,
-                      ),
                       textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                            color: Colors.black87,
+                            height: 1.4,
+                          ),
                     ),
 
                     const SizedBox(height: 40),
 
+                    // Campos ✏️
                     CustomTextField(
                       controller: _nameController,
                       labelText: 'signup.full_name'.tr(),
                       prefixIcon: Icons.person_outline,
-                      validator: (value) =>
-                          value == null || value.isEmpty ? 'signup.error_name'.tr() : null,
+                      validator: (v) => v == null || v.isEmpty ? 'signup.error_name'.tr() : null,
                     ),
 
                     const SizedBox(height: 16),
@@ -210,7 +216,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       onTap: () => _pickDate(context),
                       decoration: InputDecoration(
                         labelText: 'signup.birth_date'.tr(),
-                        prefixIcon: const Icon(Icons.cake, color: Color(0xFFE06B8B)),
+                        prefixIcon: const Icon(Icons.cake, color: Color(0xFFA66ABD)),
                         filled: true,
                         fillColor: Colors.white,
                         border: OutlineInputBorder(
@@ -218,12 +224,8 @@ class _SignupScreenState extends State<SignupScreen> {
                           borderSide: BorderSide.none,
                         ),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'signup.error_birth'.tr();
-                        }
-                        return null;
-                      },
+                      validator: (_) =>
+                          _selectedDate == null ? 'signup.error_birth'.tr() : null,
                     ),
 
                     const SizedBox(height: 16),
@@ -233,11 +235,9 @@ class _SignupScreenState extends State<SignupScreen> {
                       labelText: 'signup.email'.tr(),
                       prefixIcon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'signup.error_email_empty'.tr();
-                        }
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'signup.error_email_empty'.tr();
+                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) {
                           return 'signup.error_email_invalid'.tr();
                         }
                         return null;
@@ -251,12 +251,8 @@ class _SignupScreenState extends State<SignupScreen> {
                       labelText: 'signup.password'.tr(),
                       prefixIcon: Icons.lock_outline,
                       obscureText: true,
-                      validator: (value) {
-                        if (value == null || value.length < 6) {
-                          return 'signup.error_password'.tr();
-                        }
-                        return null;
-                      },
+                      validator: (v) =>
+                          v == null || v.length < 6 ? 'signup.error_password'.tr() : null,
                     ),
 
                     const SizedBox(height: 16),
@@ -266,10 +262,9 @@ class _SignupScreenState extends State<SignupScreen> {
                       labelText: 'signup.confirm_password'.tr(),
                       prefixIcon: Icons.lock_outline,
                       obscureText: true,
-                      validator: (value) {
-                        if (value != _passwordController.text) {
-                          return 'signup.error_confirm'.tr();
-                        }
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'signup.error_confirm_empty'.tr();
+                        if (v != _passwordController.text) return 'signup.error_confirm'.tr();
                         return null;
                       },
                     ),
@@ -287,23 +282,25 @@ class _SignupScreenState extends State<SignupScreen> {
                     DividerWithText(text: 'signup.or'.tr()),
                     const SizedBox(height: 24),
 
-                    // 🩵 Texto substituindo o antigo botão de Magic Link
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
-                        '🔒 Após criar sua conta, você poderá ativar o login por biometria para acessar de forma rápida e segura.',
-                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                              color: Colors.black54,
-                              height: 1.5,
-                            ),
+                        'signup.bio_info'.tr(),
                         textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.black54, height: 1.5),
                       ),
                     ),
 
                     const SizedBox(height: 32),
 
                     TextButton(
-                      onPressed: widget.onLoginTap,
+                      onPressed: widget.onLoginTap ??
+                          () {
+                            Navigator.pushReplacement(
+                              context,
+                              fadePageTransition(const AuthPageView()),
+                            );
+                          },
                       child: Text(
                         'signup.have_account'.tr(),
                         style: const TextStyle(

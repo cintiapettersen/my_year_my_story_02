@@ -54,6 +54,7 @@ import 'package:myyearmystory/widgets/monthly/gratitude_widget.dart';
 // ---------------------------------------------------------
 import 'package:myyearmystory/services/auth_listener.dart';
 import 'package:myyearmystory/services/profile_service.dart';
+import 'package:myyearmystory/services/auth_service.dart'; // <-- IMPORTANTE!!
 
 // ---------------------------------------------------------
 // 🧭 Global Navigation Key
@@ -66,7 +67,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 🔒 Force portrait mode (clean UX + prevents layout overflow)
+  // 🔒 Force portrait mode
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -80,25 +81,28 @@ Future<void> main() async {
   // 🌎 Detect system locale
   final systemLocale = ui.PlatformDispatcher.instance.locale;
   final countryCode = systemLocale.countryCode ?? 'BR';
-  final languageCode = systemLocale.languageCode;
 
-  // 📅 Choose default date formatting
+  // 📅 Default locale fallback
   Intl.defaultLocale = (countryCode == 'US') ? 'en_US' : 'pt_BR';
 
   // 🔗 Initialize backend (Supabase)
   await SupabaseConfig.initialize();
 
-  // 🔐 Start global auth listener
+  // 🔥 Restore saved session (biometry depends on this!)
+  final sessionRestored = await AuthService.restoreSession();
+  print("RESTORED SESSION? → $sessionRestored");
+
+  // 🔐 Global auth listener
   AuthListener.initialize(navigatorKey);
 
-  // 👤 Load user profile before app starts
+  // 👤 Load user profile in background
   await profileService.load();
 
-  // 🌍 Determine initial app locale
+  // 🌍 Pick initial app locale
   final Locale initialLocale =
       (countryCode == 'BR' || countryCode == 'PT') ? const Locale('pt') : const Locale('en');
 
-  // 🚀 Run Application
+  // 🚀 Run application
   runApp(
     EasyLocalization(
       supportedLocales: const [
@@ -110,7 +114,7 @@ Future<void> main() async {
       fallbackLocale: const Locale('pt'),
       startLocale: initialLocale,
       saveLocale: true,
-      child: const MyApp(),
+      child: MyApp(sessionRestored: sessionRestored),
     ),
   );
 }
@@ -119,7 +123,9 @@ Future<void> main() async {
 // 🌟 APPLICATION ROOT
 // ---------------------------------------------------------
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool sessionRestored;
+
+  const MyApp({super.key, required this.sessionRestored});
 
   @override
   Widget build(BuildContext context) {
@@ -136,8 +142,13 @@ class MyApp extends StatelessWidget {
       supportedLocales: context.supportedLocales,
       locale: context.locale,
 
-      // 🏁 Initial screen
-      home: const SplashTransitionScreen(),
+      // ⭐ DECIDE WHICH SCREEN TO OPEN ⭐
+      home: sessionRestored
+          ? DashboardScreen(
+              month: DateTime.now().month,
+              year: DateTime.now().year,
+            )
+          : const SplashTransitionScreen(),
 
       // ---------------------------------------------------------
       // 🧭 Named Routes
@@ -146,12 +157,9 @@ class MyApp extends StatelessWidget {
         '/splash': (context) => const SplashTransitionScreen(),
         '/login': (context) => const AuthPageView(),
 
-        '/dashboard': (context) => _withArgs(
-              context,
-              (args) => DashboardScreen(
-                month: args['month'] ?? DateTime.now().month,
-                year: args['year'] ?? DateTime.now().year,
-              ),
+        '/dashboard': (context) => DashboardScreen(
+              month: DateTime.now().month,
+              year: DateTime.now().year,
             ),
 
         '/profile': (context) => ProfileScreen(),
@@ -159,7 +167,6 @@ class MyApp extends StatelessWidget {
         '/premium': (context) => const PremiumPage(),
         '/daily_notifications': (context) => const NotificationsPage(),
 
-        // ⭐ Monthly Widgets (all routed with month/year)
         '/monthly_goals': (context) => _withArgs(
               context,
               (args) => MonthlyGoalsWidget(
@@ -240,7 +247,6 @@ class MyApp extends StatelessWidget {
               ),
             ),
 
-        // 📓 Diary Route
         '/diary': (context) {
           final arg = ModalRoute.of(context)?.settings.arguments;
           final date = (arg is DateTime) ? arg : DateTime.now();
@@ -251,7 +257,7 @@ class MyApp extends StatelessWidget {
   }
 
   // ---------------------------------------------------------
-  // 🧩 Route Helper for month/year widgets
+  // 🧩 Route Helper (month/year)
   // ---------------------------------------------------------
   Widget _withArgs(
     BuildContext context,
