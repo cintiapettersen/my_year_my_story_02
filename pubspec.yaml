@@ -19,7 +19,7 @@ dependencies:
   smooth_page_indicator: 1.1.0
 
   # 🎙️ Áudio e gravação
-  record: 5.0.4
+  
   just_audio: 0.9.36
   path_provider: 2.1.3
 
@@ -66,9 +66,6 @@ dev_dependencies:
   flutter_lints: 6.0.0
   flutter_launcher_icons: 0.13.1
 
-dependency_overrides:
-  record_linux:
-    path: ./fake_plugins/record_linux
 
 flutter:
   uses-material-design: true

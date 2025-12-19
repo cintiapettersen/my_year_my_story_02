@@ -7,13 +7,13 @@ plugins {
 android {
     namespace = "com.myyear.myyearmystory"
 
-    // 🔥 FIX IMPORTANTE: compileSdk precisa ser 35+
-    compileSdk = 35
+    // 🔥 FIX IMPORTANTE: compileSdk precisa ser 36+
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.myyear.myyearmystory"
         minSdk = flutter.minSdkVersion
-        targetSdk = 35
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

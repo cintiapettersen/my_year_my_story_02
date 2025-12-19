@@ -1,9 +1,0 @@
-name: record_linux
-description: Fake override for record_linux to bypass build on non-Linux systems
-version: 0.0.1
-
-environment:
-sdk: ">=2.12.0 <4.0.0"
-
-dependencies:
-record_platform_interface: ^1.4.0
