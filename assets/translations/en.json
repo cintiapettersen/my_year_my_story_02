@@ -112,10 +112,15 @@
   "email_change_alert": "To change the email of your account, please contact support.",
   "app_name": "My Year, My Story",
   "free_plan": "Standard Plan",
-  "premium_plan": "Premium Plan"
-  
-  
+  "premium_plan": "Premium Plan",
+  "completed": "Profile updated successfully!",
+  "error": "An error occurred while saving your profile: {{0}}"
 
+  },
+  "complete_profile": {
+    "subtitle": "Before you start, complete your profile quickly!",
+    "button": "Save and continue"
+  
 
   },
 
@@ -331,7 +336,7 @@
   "choose_your_color_today": "Choose your color today:",
   "your_month_space": "Your month space!",
   "curiosity_title": "A curiosity about you",
-  "no_curiosity": "You haven't shared anything about yourself this month.",
+  "no_curiosity_message": "You haven't shared anything about yourself this month.",
 
 
 

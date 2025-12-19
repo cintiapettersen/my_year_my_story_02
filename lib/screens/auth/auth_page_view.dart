@@ -43,50 +43,74 @@ class _AuthPageViewState extends State<AuthPageView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: PageView(
-          controller: _pageController,
-          physics: const NeverScrollableScrollPhysics(),
-          children: [
-            const LoginScreen(),
-            SignupScreen(onLoginTap: _goToLogin),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isTablet = constraints.maxWidth > 600;
 
-            // Opcional: tela de boas-vindas
-            // _buildWelcomeScreen(),
-          ],
-        ),
-      ),
+        return Scaffold(
+          body: SafeArea(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: isTablet ? 600 : constraints.maxWidth,
+                ),
+                child: PageView(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: [
+                    const LoginScreen(),
+                    SignupScreen(onLoginTap: _goToLogin),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildWelcomeScreen() {
+  /// Opcional: tela extra inicial (não está sendo usada, mas já deixei responsiva)
+  Widget _buildWelcomeScreen(bool isTablet) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+        padding: EdgeInsets.symmetric(
+          horizontal: isTablet ? 80 : 32,
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Spacer(),
-            const Icon(
+
+            Icon(
               Icons.auto_stories_rounded,
-              size: 80,
+              size: isTablet ? 120 : 80,
               color: Colors.pinkAccent,
             ),
-            const SizedBox(height: 20),
+
+            SizedBox(height: isTablet ? 30 : 20),
+
             Text(
               'auth.welcome_title'.tr(),
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              style: TextStyle(
+                fontSize: isTablet ? 28 : 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
+
             const SizedBox(height: 16),
+
             Text(
               'auth.welcome_subtitle'.tr(),
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: TextStyle(
+                fontSize: isTablet ? 20 : 16,
+              ),
+              textAlign: TextAlign.center,
             ),
+
             const Spacer(),
+
             ElevatedButton.icon(
               onPressed: _goToLogin,
               icon: const Icon(Icons.login),
@@ -95,7 +119,9 @@ class _AuthPageViewState extends State<AuthPageView> {
                 minimumSize: const Size(double.infinity, 50),
               ),
             ),
+
             const SizedBox(height: 12),
+
             OutlinedButton.icon(
               onPressed: _enterAsGuest,
               icon: const Icon(Icons.person_outline),
@@ -104,11 +130,14 @@ class _AuthPageViewState extends State<AuthPageView> {
                 minimumSize: const Size(double.infinity, 50),
               ),
             ),
+
             const Spacer(),
+
             TextButton(
               onPressed: _goToSignup,
               child: Text('auth.create_account'.tr()),
             ),
+
             const SizedBox(height: 30),
           ],
         ),

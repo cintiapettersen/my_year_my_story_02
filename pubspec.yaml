@@ -73,3 +73,4 @@ flutter:
     - assets/translations/
     - assets/imagens/logo.png
     - assets/imagens/logo_512px.png
+    - assets/icons/google_icon.png

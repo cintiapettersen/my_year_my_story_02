@@ -125,200 +125,233 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFFFDE7EA), Color(0xFFF8DCE0)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
+Widget build(BuildContext context) {
+  return Scaffold(
+    body: GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isTablet = constraints.maxWidth >= 600;
+          final maxWidth = isTablet ? 520.0 : double.infinity;
+
+          return Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFFFDE7EA), Color(0xFFF8DCE0)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
             ),
-          ),
-          child: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    const SizedBox(height: 40),
+            child: SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 40 : 24,
+                    vertical: 20,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: maxWidth),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          SizedBox(height: isTablet ? 60 : 40),
 
-                    // ⬅️ Botão voltar
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: IconButton(
-                        icon: const Icon(Icons.arrow_back_ios, color: Color(0xFFA66ABD)),
-                        onPressed: widget.onLoginTap ??
-                            () {
-                              Navigator.pushReplacement(
-                                context,
-                                fadePageTransition(const AuthPageView()),
-                              );
-                            },
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Logo
-                    Text(
-                      'MY YEAR',
-                      style: GoogleFonts.cinzel(
-                        fontSize: 42,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFFA66ABD),
-                        height: 1.1,
-                        letterSpacing: 1.5,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    Text(
-                      'MY STORY',
-                      style: GoogleFonts.cinzel(
-                        fontSize: 42,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFFA66ABD),
-                        height: 1.1,
-                        letterSpacing: 1.5,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    Text(
-                      'signup.subtitle'.tr(),
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                            color: Colors.black87,
-                            height: 1.4,
+                          // -----------------------------------------------------
+                          // BOTÃO VOLTAR
+                          // -----------------------------------------------------
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: IconButton(
+                              icon: Icon(
+                                Icons.arrow_back_ios,
+                                color: const Color(0xFFA66ABD),
+                                size: isTablet ? 30 : 22,
+                              ),
+                              onPressed: widget.onLoginTap ??
+                                  () {
+                                    Navigator.pushReplacement(
+                                      context,
+                                      fadePageTransition(
+                                          const AuthPageView()),
+                                    );
+                                  },
+                            ),
                           ),
-                    ),
 
-                    const SizedBox(height: 40),
+                          SizedBox(height: isTablet ? 30 : 16),
 
-                    // Campos ✏️
-                    CustomTextField(
-                      controller: _nameController,
-                      labelText: 'signup.full_name'.tr(),
-                      prefixIcon: Icons.person_outline,
-                      validator: (v) => v == null || v.isEmpty ? 'signup.error_name'.tr() : null,
-                    ),
+                          // -----------------------------------------------------
+                          // LOGO
+                          // -----------------------------------------------------
+                          Text(
+                            'MY YEAR',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.cinzel(
+                              fontSize: isTablet ? 70 : 42,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFFA66ABD),
+                              height: 1.05,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                          Text(
+                            'MY STORY',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.cinzel(
+                              fontSize: isTablet ? 70 : 42,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFFA66ABD),
+                              height: 1.05,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
 
-                    const SizedBox(height: 16),
+                          SizedBox(height: isTablet ? 30 : 16),
 
-                    TextFormField(
-                      controller: _birthDateController,
-                      readOnly: true,
-                      onTap: () => _pickDate(context),
-                      decoration: InputDecoration(
-                        labelText: 'signup.birth_date'.tr(),
-                        prefixIcon: const Icon(Icons.cake, color: Color(0xFFA66ABD)),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide.none,
-                        ),
+                          Text(
+                            'signup.subtitle'.tr(),
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyLarge!
+                                .copyWith(
+                                  color: Colors.black87,
+                                  height: 1.4,
+                                  fontSize: isTablet ? 20 : 16,
+                                ),
+                          ),
+
+                          SizedBox(height: isTablet ? 60 : 40),
+
+                          // -----------------------------------------------------
+                          // CAMPOS
+                          // -----------------------------------------------------
+                          CustomTextField(
+                            controller: _nameController,
+                            labelText: 'signup.full_name'.tr(),
+                            prefixIcon: Icons.person_outline,
+                          ),
+
+                          SizedBox(height: isTablet ? 24 : 16),
+
+                          TextFormField(
+                            controller: _birthDateController,
+                            readOnly: true,
+                            onTap: () => _pickDate(context),
+                            style: TextStyle(
+                              fontSize: isTablet ? 20 : 16,
+                            ),
+                            decoration: InputDecoration(
+                              labelText: 'signup.birth_date'.tr(),
+                              labelStyle:
+                                  TextStyle(fontSize: isTablet ? 20 : 16),
+                              prefixIcon: Icon(
+                                Icons.cake,
+                                color: Color(0xFFA66ABD),
+                                size: isTablet ? 28 : 22,
+                              ),
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                            validator: (_) => _selectedDate == null
+                                ? 'signup.error_birth'.tr()
+                                : null,
+                          ),
+
+                          SizedBox(height: isTablet ? 24 : 16),
+
+                          CustomTextField(
+                            controller: _emailController,
+                            labelText: 'signup.email'.tr(),
+                            prefixIcon: Icons.email_outlined,
+                          ),
+
+                          SizedBox(height: isTablet ? 24 : 16),
+
+                          CustomTextField(
+                            controller: _passwordController,
+                            labelText: 'signup.password'.tr(),
+                            prefixIcon: Icons.lock_outline,
+                            obscureText: true,
+                          ),
+
+                          SizedBox(height: isTablet ? 24 : 16),
+
+                          CustomTextField(
+                            controller: _confirmPasswordController,
+                            labelText: 'signup.confirm_password'.tr(),
+                            prefixIcon: Icons.lock_outline,
+                            obscureText: true,
+                          ),
+
+                          SizedBox(height: isTablet ? 36 : 24),
+
+                          AuthButton(
+                            text: 'signup.button_create'.tr(),
+                            isLoading: _isLoading,
+                            onPressed: _signUp,
+                            backgroundColor: const Color(0xFFA66ABD),
+                          ),
+
+                          SizedBox(height: isTablet ? 36 : 24),
+
+                          DividerWithText(text: 'signup.or'.tr()),
+
+                          SizedBox(height: isTablet ? 36 : 24),
+
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(
+                              'signup.bio_info'.tr(),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.black54,
+                                height: 1.5,
+                                fontSize: isTablet ? 18 : 14,
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(height: isTablet ? 40 : 32),
+
+                          TextButton(
+                            onPressed: widget.onLoginTap ??
+                                () {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    fadePageTransition(
+                                        const AuthPageView()),
+                                  );
+                                },
+                            child: Text(
+                              'signup.have_account'.tr(),
+                              style: TextStyle(
+                                color: Color(0xFFA66ABD),
+                                fontWeight: FontWeight.w600,
+                                fontSize: isTablet ? 20 : 16,
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(height: isTablet ? 60 : 32),
+                        ],
                       ),
-                      validator: (_) =>
-                          _selectedDate == null ? 'signup.error_birth'.tr() : null,
                     ),
-
-                    const SizedBox(height: 16),
-
-                    CustomTextField(
-                      controller: _emailController,
-                      labelText: 'signup.email'.tr(),
-                      prefixIcon: Icons.email_outlined,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return 'signup.error_email_empty'.tr();
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) {
-                          return 'signup.error_email_invalid'.tr();
-                        }
-                        return null;
-                      },
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    CustomTextField(
-                      controller: _passwordController,
-                      labelText: 'signup.password'.tr(),
-                      prefixIcon: Icons.lock_outline,
-                      obscureText: true,
-                      validator: (v) =>
-                          v == null || v.length < 6 ? 'signup.error_password'.tr() : null,
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    CustomTextField(
-                      controller: _confirmPasswordController,
-                      labelText: 'signup.confirm_password'.tr(),
-                      prefixIcon: Icons.lock_outline,
-                      obscureText: true,
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return 'signup.error_confirm_empty'.tr();
-                        if (v != _passwordController.text) return 'signup.error_confirm'.tr();
-                        return null;
-                      },
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    AuthButton(
-                      text: 'signup.button_create'.tr(),
-                      isLoading: _isLoading,
-                      onPressed: _signUp,
-                      backgroundColor: const Color(0xFFA66ABD),
-                    ),
-
-                    const SizedBox(height: 24),
-                    DividerWithText(text: 'signup.or'.tr()),
-                    const SizedBox(height: 24),
-
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        'signup.bio_info'.tr(),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.black54, height: 1.5),
-                      ),
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    TextButton(
-                      onPressed: widget.onLoginTap ??
-                          () {
-                            Navigator.pushReplacement(
-                              context,
-                              fadePageTransition(const AuthPageView()),
-                            );
-                          },
-                      child: Text(
-                        'signup.have_account'.tr(),
-                        style: const TextStyle(
-                          color: Color(0xFFA66ABD),
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 32),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       ),
-    );
-  }
+    ),
+  );
+}
 }

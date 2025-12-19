@@ -109,9 +109,17 @@
   "email_change_alert": "Para alterar o e-mail da sua conta, entre em contato com o suporte.",
   "app_name": "My Year, My Story",
   "free_plan": "Plano Standard",
-  "premium_plan": "Plano Premium"
+  "premium_plan": "Plano Premium",
+  "completed": "Profile updated successfully!",
+  "error": "An error occurred while saving your profile: {{0}}"
 
   },
+
+  "complete_profile": {
+    "subtitle": "Antes de começar, complete seu perfil rapidamente!",
+    "button": "Salvar e continuar"
+
+    },
 
   "date_picker": {
   "ok": "OK",
@@ -323,7 +331,7 @@
   "about_you_empty": "Você ainda não compartilhou nada sobre você este mês",
    "navigate_months": "Navegue pelos meses",
    "curiosity_title": "Uma curiosidade sobre você",
-   "no_curiosity": "Você ainda não compartilhou nada sobre você este mês.",
+   "no_curiosity_message": "Você ainda não compartilhou nada sobre você este mês.",
    "cancel": "Cancelar",
 
 

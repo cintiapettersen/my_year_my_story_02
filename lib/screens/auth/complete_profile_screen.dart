@@ -1,4 +1,3 @@
-// lib/screens/auth/complete_profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -101,7 +100,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
             year: DateTime.now().year,
           ),
         ),
-        (route) => false,
+        (_) => false,
       );
     } catch (e) {
       if (!mounted) return;
@@ -130,98 +129,115 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
             ),
           ),
           child: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    const SizedBox(height: 40),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isTablet = constraints.maxWidth > 600;
+                final maxWidth = isTablet ? 600.0 : double.infinity;
 
-                    // Título
-                    Text(
-                      'MY YEAR',
-                      style: GoogleFonts.cinzel(
-                        fontSize: 42,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFFA66ABD),
-                        height: 1.1,
-                        letterSpacing: 1.5,
-                      ),
-                      textAlign: TextAlign.center,
+                return Center(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 40 : 24,
+                      vertical: 24,
                     ),
-                    Text(
-                      'MY STORY',
-                      style: GoogleFonts.cinzel(
-                        fontSize: 42,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFFA66ABD),
-                        height: 1.1,
-                        letterSpacing: 1.5,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: maxWidth),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            const SizedBox(height: 40),
 
-                    const SizedBox(height: 20),
+                            // Título
+                            Text(
+                              'MY YEAR',
+                              style: GoogleFonts.cinzel(
+                                fontSize: isTablet ? 60 : 42,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFFA66ABD),
+                                height: 1.1,
+                                letterSpacing: 1.5,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            Text(
+                              'MY STORY',
+                              style: GoogleFonts.cinzel(
+                                fontSize: isTablet ? 60 : 42,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFFA66ABD),
+                                height: 1.1,
+                                letterSpacing: 1.5,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
 
-                    Text(
-                      "complete_profile.subtitle".tr(),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontSize: 16,
-                        height: 1.4,
-                      ),
-                    ),
+                            const SizedBox(height: 20),
 
-                    const SizedBox(height: 40),
+                            Text(
+                              "complete_profile.subtitle".tr(),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.black87,
+                                fontSize: isTablet ? 20 : 16,
+                                height: 1.4,
+                              ),
+                            ),
 
-                    // Nome
-                    CustomTextField(
-                      controller: _nameController,
-                      labelText: "signup.full_name".tr(),
-                      prefixIcon: Icons.person_outline,
-                      validator: (v) =>
-                          v == null || v.trim().isEmpty
-                              ? "signup.error_name".tr()
-                              : null,
-                    ),
+                            const SizedBox(height: 40),
 
-                    const SizedBox(height: 16),
+                            // Nome
+                            CustomTextField(
+                              controller: _nameController,
+                              labelText: "signup.full_name".tr(),
+                              prefixIcon: Icons.person_outline,
+                              validator: (v) =>
+                                  v == null || v.trim().isEmpty
+                                      ? "signup.error_name".tr()
+                                      : null,
+                            ),
 
-                    // Data de nascimento
-                    TextFormField(
-                      controller: _birthDateController,
-                      readOnly: true,
-                      onTap: _pickDate,
-                      decoration: InputDecoration(
-                        labelText: "signup.birth_date".tr(),
-                        prefixIcon: const Icon(Icons.cake, color: Color(0xFFA66ABD)),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide.none,
+                            const SizedBox(height: 16),
+
+                            // Data de nascimento
+                            TextFormField(
+                              controller: _birthDateController,
+                              readOnly: true,
+                              onTap: _pickDate,
+                              decoration: InputDecoration(
+                                labelText: "signup.birth_date".tr(),
+                                prefixIcon: const Icon(Icons.cake,
+                                    color: Color(0xFFA66ABD)),
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide.none,
+                                ),
+                              ),
+                              validator: (_) => _selectedDate == null
+                                  ? "signup.error_birth".tr()
+                                  : null,
+                            ),
+
+                            const SizedBox(height: 32),
+
+                            AuthButton(
+                              text: "complete_profile.button".tr(),
+                              isLoading: _isLoading,
+                              onPressed: _saveProfile,
+                              backgroundColor: const Color(0xFFA66ABD),
+                            ),
+
+                            const SizedBox(height: 32),
+                          ],
                         ),
                       ),
-                      validator: (_) => _selectedDate == null
-                          ? "signup.error_birth".tr()
-                          : null,
                     ),
-
-                    const SizedBox(height: 32),
-
-                    AuthButton(
-                      text: "complete_profile.button".tr(),
-                      isLoading: _isLoading,
-                      onPressed: _saveProfile,
-                      backgroundColor: const Color(0xFFA66ABD),
-                    ),
-
-                    const SizedBox(height: 32),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             ),
           ),
         ),
