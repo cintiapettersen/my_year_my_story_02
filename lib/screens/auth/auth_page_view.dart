@@ -1,7 +1,12 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import 'login_screen.dart';
 import 'signup_screen.dart';
+
+import 'package:myyearmystory/services/app_session.dart';
 
 class AuthPageView extends StatefulWidget {
   const AuthPageView({super.key});
@@ -11,7 +16,35 @@ class AuthPageView extends StatefulWidget {
 }
 
 class _AuthPageViewState extends State<AuthPageView> {
-  final PageController _pageController = PageController(initialPage: 0);
+  late final PageController _pageController;
+  StreamSubscription<AuthState>? _authSub;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _pageController = PageController(initialPage: 0);
+
+    // 🔑 Escuta auth para sair da tela quando logar
+    _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      if (!mounted) return;
+
+      if (data.event == AuthChangeEvent.signedIn &&
+          !AppSession.isGuest) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/dashboard',
+          (_) => false,
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
 
   void _goToLogin() {
     FocusScope.of(context).unfocus();
@@ -31,14 +64,20 @@ class _AuthPageViewState extends State<AuthPageView> {
     );
   }
 
-  void _enterAsGuest() {
-    Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
-  }
+  void _enterAsGuest() async {
+    // 1️⃣ Marca guest
+    AppSession.flow = AppAuthFlow.guest;
 
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
+    // 2️⃣ Garante Supabase limpo
+    await Supabase.instance.client.auth.signOut();
+
+    if (!mounted) return;
+
+    // 3️⃣ Vai direto pro dashboard
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      '/dashboard',
+      (_) => false,
+    );
   }
 
   @override
@@ -58,8 +97,13 @@ class _AuthPageViewState extends State<AuthPageView> {
                   controller: _pageController,
                   physics: const NeverScrollableScrollPhysics(),
                   children: [
-                    const LoginScreen(),
-                    SignupScreen(onLoginTap: _goToLogin),
+                    LoginScreen(
+                      onCreateAccountTap: _goToSignup,
+                    
+                    ),
+                    SignupScreen(
+                      onLoginTap: _goToLogin,
+                    ),
                   ],
                 ),
               ),
@@ -67,81 +111,6 @@ class _AuthPageViewState extends State<AuthPageView> {
           ),
         );
       },
-    );
-  }
-
-  /// Opcional: tela extra inicial (não está sendo usada, mas já deixei responsiva)
-  Widget _buildWelcomeScreen(bool isTablet) {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: isTablet ? 80 : 32,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Spacer(),
-
-            Icon(
-              Icons.auto_stories_rounded,
-              size: isTablet ? 120 : 80,
-              color: Colors.pinkAccent,
-            ),
-
-            SizedBox(height: isTablet ? 30 : 20),
-
-            Text(
-              'auth.welcome_title'.tr(),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: isTablet ? 28 : 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            Text(
-              'auth.welcome_subtitle'.tr(),
-              style: TextStyle(
-                fontSize: isTablet ? 20 : 16,
-              ),
-              textAlign: TextAlign.center,
-            ),
-
-            const Spacer(),
-
-            ElevatedButton.icon(
-              onPressed: _goToLogin,
-              icon: const Icon(Icons.login),
-              label: Text('auth.login_google_email'.tr()),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            OutlinedButton.icon(
-              onPressed: _enterAsGuest,
-              icon: const Icon(Icons.person_outline),
-              label: Text('auth.enter_guest'.tr()),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
-              ),
-            ),
-
-            const Spacer(),
-
-            TextButton(
-              onPressed: _goToSignup,
-              child: Text('auth.create_account'.tr()),
-            ),
-
-            const SizedBox(height: 30),
-          ],
-        ),
-      ),
     );
   }
 }

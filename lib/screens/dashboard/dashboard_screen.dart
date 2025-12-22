@@ -164,9 +164,7 @@ void didChangeDependencies() {   // ✅ fora do initState
     }
   }
 
-  // ==============================
-  //     NOME DO USUÁRIO
-  // ==============================
+ 
   // ============================
 //       NOME DO USUÁRIO
 // ============================
@@ -174,28 +172,36 @@ Future<void> _loadUserName() async {
   final supabase = Supabase.instance.client;
   final user = supabase.auth.currentUser;
 
-  if (user == null) return;
+  // 🔸 Se não estiver logada -> Guest
+  if (user == null) {
+    if (!mounted) return;
+    setState(() {
+      userName = tr("dashboard.guest_user");
+    });
+    return;
+  }
 
   try {
-    // Consulta segura ao Supabase
     final profile = await supabase
         .from("profiles")
         .select("full_name")
         .eq("id", user.id)
         .single();
 
+    if (!mounted) return;
+
+    final fullName = profile["full_name"];
+
+    final firstName =
+        (fullName != null && fullName.toString().trim().isNotEmpty)
+            ? fullName.split(" ").first
+            : tr("dashboard.guest_user");
+
     setState(() {
-      final fullName = profile["full_name"];
-
-      final firstName = (fullName != null && fullName.toString().trim().isNotEmpty)
-          ? fullName.split(" ").first
-          : tr("dashboard.guest_user");
-
       userName = firstName;
     });
-
   } catch (e) {
-    // Fallback em caso de erro
+    if (!mounted) return;
     setState(() {
       userName = tr("dashboard.guest_user");
     });
@@ -203,27 +209,32 @@ Future<void> _loadUserName() async {
 }
 
 
+
   // ==============================
   //     FRASE DO DIA
   // ==============================
   Future<void> loadDailyQuote() async {
-    try {
-      final lang = context.locale.languageCode;
-      final quote = await quoteService.getRandomQuote(lang);
+  try {
+    final lang = context.locale.languageCode;
+    final quote = await quoteService.getRandomQuote(lang);
 
-      final text = quote?["text"]?.toString().trim();
+    if (!mounted) return;
 
-      setState(() {
-        dailyInspiration = (text != null && text.isNotEmpty)
-            ? text
-            : tr("dashboard.daily_inspiration");
-      });
-    } catch (_) {
-      setState(() {
-        dailyInspiration = tr("dashboard.daily_inspiration");
-      });
-    }
+    final text = quote?["text"]?.toString().trim();
+
+    setState(() {
+      dailyInspiration = (text != null && text.isNotEmpty)
+          ? text
+          : tr("dashboard.daily_inspiration");
+    });
+  } catch (_) {
+    if (!mounted) return;
+    setState(() {
+      dailyInspiration = tr("dashboard.daily_inspiration");
+    });
   }
+}
+
 
   // ==============================
   //     SINCRONIZAR IDIOMA
@@ -245,100 +256,111 @@ Future<void> _loadUserName() async {
   //     CARREGAR DADOS DO DASHBOARD
   // ==============================
   Future<void> _loadDashboardData() async {
+  if (!mounted) return;
+
+  setState(() => isLoading = true);
+
+  final user = supabase.auth.currentUser;
+  if (user == null) {
+    if (!mounted) return;
+    setState(() => isLoading = false);
+    return;
+  }
+
+  try {
+    // --- Metas concluídas ---
+    final metas = await supabase
+        .from("metas")
+        .select()
+        .eq("user_id", user.id)
+        .eq("mes", selectedMonth)
+        .eq("ano", selectedYear)
+        .eq("concluida", true);
+
+    if (!mounted) return;
+    metasConcluidas = metas.length;
+
+    // --- ENTRIES DO MÊS ---
+    final entries = await supabase
+        .from("entries")
+        .select()
+        .eq("user_id", user.id)
+        .eq("month", selectedMonth)
+        .eq("year", selectedYear)
+        .maybeSingle();
+
     if (!mounted) return;
 
-    setState(() => isLoading = true);
+    if (entries != null) {
+      gratidaoCount =
+          (entries["gratitude_entries"] as List?)?.length ?? 0;
 
-    final user = supabase.auth.currentUser;
-    if (user == null) return;
+      // ---------- CURIOSIDADES ----------
+      final answers = entries["curiosities_answers"];
+      List<String> questions = [];
 
-    try {
-      // --- Metas concluídas ---
-      final metas = await supabase
-          .from("metas")
-          .select()
-          .eq("user_id", user.id)
-          .eq("mes", selectedMonth)
-          .eq("ano", selectedYear)
-          .eq("concluida", true);
+      final answeredMonth = entries["month"];
+      final answeredYear = entries["year"];
 
-      metasConcluidas = metas.length;
-
-      // --- ENTRIES DO MÊS ---
-      final entries = await supabase
-          .from("entries")
-          .select()
-          .eq("user_id", user.id)
-          .eq("month", selectedMonth)
-          .eq("year", selectedYear)
+      final curiosityEntry = await supabase
+          .from("curiosities_entries")
+          .select("questions, questions_en")
+          .eq("month", answeredMonth)
+          .eq("year", answeredYear)
           .maybeSingle();
 
-      if (entries != null) {
-        gratidaoCount =
-            (entries["gratitude_entries"] as List?)?.length ?? 0;
+      if (!mounted) return;
 
-        // ---------- CURIOSIDADES ----------
-        final answers = entries["curiosities_answers"];
-        List<String> questions = [];
+      if (curiosityEntry != null) {
+        final lang = context.locale.languageCode;
 
-        // ⚠️ SEMPRE usar o mês/ano da resposta
-        final answeredMonth = entries["month"];
-        final answeredYear = entries["year"];
-
-        final curiosityEntry = await supabase
-            .from("curiosities_entries")
-            .select("questions, questions_en")
-            .eq("month", answeredMonth)
-            .eq("year", answeredYear)
-            .maybeSingle();
-
-        if (curiosityEntry != null) {
-          final lang = context.locale.languageCode;
-
-          questions = lang == "en"
-              ? List<String>.from(curiosityEntry["questions_en"] ?? [])
-              : List<String>.from(curiosityEntry["questions"] ?? []);
-        }
-
-        if (answers != null &&
-            answers is List &&
-            answers.isNotEmpty &&
-            questions.isNotEmpty) {
-          final List<Map<String, String>> combined = [];
-
-          for (int i = 0; i < answers.length; i++) {
-            if (i < questions.length) {
-              combined.add({
-                "question": questions[i],
-                "answer": answers[i],
-                "month": answeredMonth.toString(),
-                "year": answeredYear.toString(),
-              });
-            }
-          }
-
-          if (combined.isNotEmpty) {
-            combined.shuffle();
-            final selected = combined.first;
-
-            final formattedMonth =
-                _formatarMesAno(selected["month"]!, selected["year"]!);
-
-            curiosityQuestion = selected['question'];
-            curiosityAnswer = selected['answer'];
-            curiosityDate = tr(
-              'dashboard.answered_in',
-              namedArgs: {'date': formattedMonth},
-            );
-          }
-        }
+        questions = lang == "en"
+            ? List<String>.from(curiosityEntry["questions_en"] ?? [])
+            : List<String>.from(curiosityEntry["questions"] ?? []);
       }
 
-      setState(() => isLoading = false);
-    } catch (_) {
-      setState(() => isLoading = false);
+      if (answers != null &&
+          answers is List &&
+          answers.isNotEmpty &&
+          questions.isNotEmpty) {
+        final List<Map<String, String>> combined = [];
+
+        for (int i = 0; i < answers.length; i++) {
+          if (i < questions.length) {
+            combined.add({
+              "question": questions[i],
+              "answer": answers[i],
+              "month": answeredMonth.toString(),
+              "year": answeredYear.toString(),
+            });
+          }
+        }
+
+        if (combined.isNotEmpty) {
+          combined.shuffle();
+          final selected = combined.first;
+
+          final formattedMonth =
+              _formatarMesAno(selected["month"]!, selected["year"]!);
+
+          curiosityQuestion = selected['question'];
+          curiosityAnswer = selected['answer'];
+          curiosityDate = tr(
+            'dashboard.answered_in',
+            namedArgs: {'date': formattedMonth},
+          );
+        }
+      }
     }
+
+    if (!mounted) return;
+    setState(() => isLoading = false);
+
+  } catch (e) {
+    if (!mounted) return;
+    setState(() => isLoading = false);
   }
+}
 
   // ==============================
   //    FORMATAÇÃO DO MÊS (ex: Mar 2024)
@@ -617,86 +639,88 @@ Future<void> _loadUserName() async {
   // 🔸 BLOCO DE CURIOSIDADE
   // =====================================================
   Widget _buildCuriosityBlock() {
-    return Align(
-      alignment: Alignment.center,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 300),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(32),
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => CuriositiesWidget(
-                  month: selectedMonth,
-                  year: selectedYear,
-                ),
-              ),
-            );
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF3D6E5),
-              borderRadius: BorderRadius.circular(40),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 5,
-                  offset: Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Icon(Icons.favorite,
-                    size: 20, color: Color.fromARGB(221, 217, 60, 126)),
-                const SizedBox(height: 8),
+  final hasCuriosity = curiosityQuestion != null && curiosityAnswer != null;
 
+  final screenWidth = MediaQuery.of(context).size.width;
+  final isTablet = screenWidth > 600;
+
+  final double cardWidth = isTablet ? screenWidth * 0.85 : 300;
+
+  return Align(
+    alignment: Alignment.center,
+    child: ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: cardWidth),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(32),
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => CuriositiesWidget(
+                month: selectedMonth,
+                year: selectedYear,
+              ),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF3D6E5),
+            borderRadius: BorderRadius.circular(40),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 5,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Icon(Icons.favorite,
+                  size: 20, color: Color.fromARGB(221, 217, 60, 126)),
+              const SizedBox(height: 8),
+
+              Text(
+                tr("dashboard.curiosity_title"),
+                style: GoogleFonts.courierPrime(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 12),
+              Divider(color: Colors.black26, thickness: 1),
+              const SizedBox(height: 8),
+
+              //
+              // 🔸 CASO TENHA CURIOSIDADE
+              //
+              if (hasCuriosity) ...[
                 Text(
-                  tr("dashboard.curiosity_title"),
+                  curiosityQuestion!,
                   style: GoogleFonts.courierPrime(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    height: 1.2,
                   ),
                   textAlign: TextAlign.center,
                 ),
-
-                const SizedBox(height: 12),
-                Divider(color: Colors.black26, thickness: 1),
-                const SizedBox(height: 8),
-
-                // ❓ PERGUNTA
-                if (curiosityQuestion != null)
-                  Text(
-                    curiosityQuestion!,
-                    style: GoogleFonts.courierPrime(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      height: 1.2,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-
                 const SizedBox(height: 8),
                 Divider(color: Colors.black26, thickness: 1),
                 const SizedBox(height: 8),
-
-                // 💬 RESPOSTA
-                if (curiosityAnswer != null)
-                  Text(
-                    curiosityAnswer!,
-                    style: GoogleFonts.courierPrime(
-                      fontSize: 14,
-                      height: 1.3,
-                    ),
-                    textAlign: TextAlign.center,
+                Text(
+                  curiosityAnswer!,
+                  style: GoogleFonts.courierPrime(
+                    fontSize: 14,
+                    height: 1.3,
                   ),
-
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 10),
-
-                // 📅 DATA
                 if (curiosityDate != null)
                   Text(
                     curiosityDate!,
@@ -707,12 +731,31 @@ Future<void> _loadUserName() async {
                     textAlign: TextAlign.center,
                   ),
               ],
-            ),
+
+              //
+              // 🔸 CASO NÃO TENHA CURIOSIDADE
+              //
+              if (!hasCuriosity)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    tr("dashboard.no_curiosity_message"),
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.courierPrime(
+                      fontSize: 13,
+                      color: Colors.black87,
+                      height: 1.3,
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   // =====================================================
   // 🔸 CARDS DO DASHBOARD

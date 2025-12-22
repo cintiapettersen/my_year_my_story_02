@@ -72,9 +72,15 @@ class _InterviewScreenState extends State<InterviewScreen>
     );
 
     _questions = List<String>.from(interviewData['questions'] ?? []);
-    _description = "interview.fixed_description".tr();
+_description = "interview.fixed_description".tr();
 
-    await _loadSavedAnswers();
+/// ✅ cria controllers mesmo sem login
+_controllers.clear();
+for (int i = 0; i < _questions.length; i++) {
+  _controllers.add(TextEditingController());
+}
+
+await _loadSavedAnswers();
 
     setState(() => _isLoading = false);
   }
@@ -93,29 +99,28 @@ class _InterviewScreenState extends State<InterviewScreen>
   }
 
   Future<void> _loadSavedAnswers() async {
-    if (_currentUserId == null) return;
+  if (_currentUserId == null) return;
 
-    final data = await InterviewService.getInterviewDataFromEntries(
-      widget.month ?? DateTime.now().month,
-      widget.year ?? DateTime.now().year,
-      _currentUserId!,
-    );
+  final data = await InterviewService.getInterviewDataFromEntries(
+    widget.month ?? DateTime.now().month,
+    widget.year ?? DateTime.now().year,
+    _currentUserId!,
+  );
 
-    final person = data['person'] ?? {};
-    final questionsData =
-        List<Map<String, dynamic>>.from(data['questions'] ?? []);
+  final person = data['person'] ?? {};
+  final questionsData =
+      List<Map<String, dynamic>>.from(data['questions'] ?? []);
 
-    _nameController.text = person['name'] ?? '';
-    _relationController.text = person['relation'] ?? '';
-    _ageController.text = person['age'] ?? '';
+  _nameController.text = person['name'] ?? '';
+  _relationController.text = person['relation'] ?? '';
+  _ageController.text = person['age'] ?? '';
 
-    _controllers.clear();
-    for (int i = 0; i < _questions.length; i++) {
-      final answer =
-          i < questionsData.length ? (questionsData[i]['a'] ?? '') : '';
-      _controllers.add(TextEditingController(text: answer));
+  for (int i = 0; i < _controllers.length; i++) {
+    if (i < questionsData.length) {
+      _controllers[i].text = questionsData[i]['a'] ?? '';
     }
   }
+}
 
   Future<void> _saveInterview() async {
     final user = supabase.auth.currentUser;

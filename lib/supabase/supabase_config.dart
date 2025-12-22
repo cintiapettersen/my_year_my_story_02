@@ -31,14 +31,15 @@ class SupabaseConfig {
     print('🚀 Inicializando Supabase...');
     try {
       await Supabase.initialize(
-        url: supabaseUrl,
-        anonKey: supabaseAnonKey,
-        debug: true,
-        authOptions: const FlutterAuthClientOptions(
-          autoRefreshToken: true,
-          detectSessionInUri: false, // ❌ Não precisamos mais de Magic Link
-        ),
-      );
+  url: supabaseUrl,
+  anonKey: supabaseAnonKey,
+  debug: true,
+  authOptions: const FlutterAuthClientOptions(
+    autoRefreshToken: true,
+    detectSessionInUri: true, // ✅ ESSENCIAL
+  ),
+);
+
 
       _initialized = true;
       print('✅ Supabase inicializado com sucesso!');

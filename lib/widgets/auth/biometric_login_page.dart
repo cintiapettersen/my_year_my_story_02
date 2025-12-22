@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:easy_localization/easy_localization.dart';
+
 import 'package:myyearmystory/screens/auth/login_screen.dart';
 import 'package:myyearmystory/screens/dashboard/dashboard_screen.dart';
 import 'package:myyearmystory/screens/splash/fade_page_transition.dart';
+
 import 'package:myyearmystory/services/secure_storage_service.dart';
-import 'package:myyearmystory/supabase/supabase_config.dart';
-import 'package:easy_localization/easy_localization.dart';
+import 'package:myyearmystory/services/app_session.dart';
 
 class BiometricLoginPage extends StatefulWidget {
   const BiometricLoginPage({super.key});
@@ -16,6 +18,7 @@ class BiometricLoginPage extends StatefulWidget {
 
 class _BiometricLoginPageState extends State<BiometricLoginPage> {
   final LocalAuthentication _auth = LocalAuthentication();
+
   bool _isLoading = true;
   bool _failedOnce = false;
 
@@ -27,15 +30,22 @@ class _BiometricLoginPageState extends State<BiometricLoginPage> {
 
   Future<void> _authenticate() async {
     try {
-      final persistedSession = await SecureStorageService.readSessionJson();
+      // 🚫 Guest NUNCA passa por biometria
+      if (AppSession.isGuest) {
+        _goToLogin();
+        return;
+      }
 
-      // ❌ Nenhuma sessão persistida → Volta para Login
+      // 🔍 Precisa existir sessão salva (pré-condição)
+      final persistedSession =
+          await SecureStorageService.readSessionJson();
+
       if (persistedSession == null || persistedSession.isEmpty) {
         _goToLogin();
         return;
       }
 
-      // 🔍 Verifica se dispositivo permite biometria / PIN
+      // 🔐 Verifica se o dispositivo suporta biometria ou PIN
       final canCheck =
           await _auth.canCheckBiometrics || await _auth.isDeviceSupported();
 
@@ -44,8 +54,8 @@ class _BiometricLoginPageState extends State<BiometricLoginPage> {
         return;
       }
 
-      // 🔑 Inicia autenticação
-      final ok = await _auth.authenticate(
+      // 🧠 Autenticação local (SEM Supabase aqui)
+      final authenticated = await _auth.authenticate(
         localizedReason: 'auth.biometric.reason'.tr(),
         options: const AuthenticationOptions(
           biometricOnly: false,
@@ -54,28 +64,16 @@ class _BiometricLoginPageState extends State<BiometricLoginPage> {
         ),
       );
 
-      if (!ok) {
+      if (!authenticated) {
         setState(() => _failedOnce = true);
         return;
       }
 
-      // 🔄 Recupera sessão a partir do JSON salvo
-      final response =
-          await SupabaseConfig.client.auth.recoverSession(persistedSession);
+      // ✅ Biometria OK → marca fluxo como autenticado
+      AppSession.flow = AppAuthFlow.authenticated;
 
-      final session = response.session;
-
-      if (session == null) {
-        await SecureStorageService.clearSession();
-        _goToLogin();
-        return;
-      }
-
-      // 💾 Salva sessão atualizada
-      await SecureStorageService.saveSession(session);
-
-      // 🎉 Entra no dashboard
       if (!mounted) return;
+
       Navigator.pushReplacement(
         context,
         fadePageTransition(
@@ -85,7 +83,7 @@ class _BiometricLoginPageState extends State<BiometricLoginPage> {
           ),
         ),
       );
-    } catch (e) {
+    } catch (_) {
       setState(() => _failedOnce = true);
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -94,10 +92,11 @@ class _BiometricLoginPageState extends State<BiometricLoginPage> {
 
   void _goToLogin() {
     if (!mounted) return;
-    Navigator.pushReplacement(
-      context,
-      fadePageTransition(const LoginScreen()),
-    );
+
+    //Navigator.pushReplacement(
+      //context,
+    //  fadePageTransition(const LoginScreen()),
+   // );
   }
 
   @override
@@ -125,7 +124,10 @@ class _BiometricLoginPageState extends State<BiometricLoginPage> {
                     : (_failedOnce
                         ? 'auth.biometric.try_again'.tr()
                         : 'auth.biometric.reason'.tr()),
-                style: const TextStyle(fontSize: 18, color: Colors.black87),
+                style: const TextStyle(
+                  fontSize: 18,
+                  color: Colors.black87,
+                ),
               ),
             ],
           ),

@@ -17,6 +17,7 @@ import '../menus/help_screen.dart';
 import '../premium/premium_page.dart';
 import '../menus/language_screen.dart';
 
+import 'package:myyearmystory/services/app_session.dart';
 
 
 final storage = const FlutterSecureStorage();
@@ -157,7 +158,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      profile?['full_name'] ?? "Seu nome",
+                      profile?['full_name'] ?? "drawer.guest_name".tr(),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 19,
@@ -302,8 +303,19 @@ class _AppDrawerState extends State<AppDrawer> {
     Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
   }
 
-  Future<void> _logout(BuildContext context) async {
-    await storage.deleteAll();
-    Navigator.pushNamedAndRemoveUntil(context, "/login", (_) => false);
-  }
+ Future<void> _logout(BuildContext context) async {
+  // 1. Marca que estamos saindo
+  AppSession.flow = AppAuthFlow.loggingOut;
+
+  // 2. Fecha o drawer
+  Navigator.pop(context);
+
+  // 3. Chama o logout REAL
+  await Supabase.instance.client.auth.signOut();
+
+  // ❌ NÃO navega
+  // ❌ NÃO chama /login
+  // ❌ NÃO limpa storage aqui
+}
+
 }

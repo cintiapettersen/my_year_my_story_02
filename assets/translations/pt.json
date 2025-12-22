@@ -57,7 +57,14 @@
     "enter_guest": "Entrar como convidado"
   },
 
-    
+     "login_prompt": {
+      "title": "Faça login 💫",
+      "description": "Para salvar e continuar acompanhando suas conquistas, entre ou crie uma conta.",
+      "not_now": "Agora não",
+      "login_button": "Fazer login"
+
+
+    },
     "biometric": {
     "reason": "Confirme sua identidade para entrar",
     "loading": "Verificando dados...",
@@ -91,7 +98,8 @@
   "logout": "Sair",
   "go_premium": "Quero ser Premium",
   "choose_icon":" Escolha seu ícone de hoje",
-  "language": "Idioma"
+  "language": "Idioma",
+  "guest_name": "Visitante"
   
   
 },

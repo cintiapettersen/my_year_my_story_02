@@ -1,38 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
+
 import 'package:myyearmystory/screens/auth/login_screen.dart';
 import 'package:myyearmystory/screens/splash/fade_page_transition.dart';
 
-/// 🌸 Mostra um aviso gentil pedindo login ao tentar usar recursos do banco.
+/// 🌸 Mostra um aviso pedindo login ao tentar usar recursos protegidos.
 /// Pode ser chamado em qualquer lugar:
 /// `showLoginPrompt(context);`
 Future<void> showLoginPrompt(BuildContext context) async {
-  // 🔒 Garante que o contexto usado tenha um MaterialApp acima
+  // 🔒 Garante um contexto seguro com Navigator
   BuildContext safeContext = context;
   try {
     safeContext = Navigator.of(context, rootNavigator: true).context;
-  } catch (_) {
-    // fallback, se o contexto não tiver Navigator ainda
-  }
+  } catch (_) {}
 
   await showDialog(
     context: safeContext,
     barrierDismissible: true,
-    builder: (context) {
+    builder: (dialogContext) {
       return AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'Faça login 💫',
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text(
+          'auth.login_prompt.title'.tr(),
           textAlign: TextAlign.center,
-          style: TextStyle(
+          style: const TextStyle(
             fontFamily: 'Poppins',
             fontWeight: FontWeight.w600,
             color: Color(0xFF665C8E),
           ),
         ),
-        content: const Text(
-          'Para salvar suas metas e continuar acompanhando suas conquistas, entre ou crie uma conta.',
+        content: Text(
+          'auth.login_prompt.description'.tr(),
           textAlign: TextAlign.center,
-          style: TextStyle(
+          style: const TextStyle(
             fontFamily: 'Poppins',
             fontSize: 15,
           ),
@@ -40,10 +42,10 @@ Future<void> showLoginPrompt(BuildContext context) async {
         actionsAlignment: MainAxisAlignment.center,
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text(
-              'Agora não',
-              style: TextStyle(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(
+              'auth.login_prompt.not_now'.tr(),
+              style: const TextStyle(
                 color: Colors.grey,
                 fontFamily: 'Poppins',
               ),
@@ -51,9 +53,16 @@ Future<void> showLoginPrompt(BuildContext context) async {
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.of(context).pop(); // fecha o diálogo
+              Navigator.of(dialogContext).pop(); // fecha o diálogo
+
               Navigator.of(context).pushReplacement(
-                fadePageTransition(const LoginScreen()),
+                fadePageTransition(
+                  LoginScreen(
+                    onCreateAccountTap: () {
+                      Navigator.of(context).pushNamed('/signup');
+                    },
+                  ),
+                ),
               );
             },
             style: ElevatedButton.styleFrom(
@@ -61,11 +70,14 @@ Future<void> showLoginPrompt(BuildContext context) async {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 12,
+              ),
             ),
-            child: const Text(
-              'Fazer login',
-              style: TextStyle(
+            child: Text(
+              'auth.login_prompt.login_button'.tr(),
+              style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
                 fontFamily: 'Poppins',

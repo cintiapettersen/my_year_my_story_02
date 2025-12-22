@@ -599,7 +599,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 // Navegar para tela de login
                 if (mounted) {
                   Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    MaterialPageRoute(
+  builder: (context) => LoginScreen(
+    onCreateAccountTap: () {
+      Navigator.of(context).pushNamed('/signup');
+    },
+  ),
+),
+
                     (route) => false,
                   );
                 }

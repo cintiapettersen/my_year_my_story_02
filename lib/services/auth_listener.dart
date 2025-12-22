@@ -1,75 +1,90 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:myyearmystory/supabase/supabase_config.dart';
-import 'package:myyearmystory/services/secure_storage_service.dart';
+import 'package:myyearmystory/services/app_session.dart';
 
 class AuthListener {
   static StreamSubscription<AuthState>? _subscription;
-  static DateTime? _lastSignOutTime;
 
   static void initialize(GlobalKey<NavigatorState> navigatorKey) {
     if (_subscription != null) return;
 
-    _subscription = SupabaseConfig.client.auth.onAuthStateChange.listen(
-      (data) {
-        final event = data.event;
-        final session = data.session;
-        final navigator = navigatorKey.currentState;
+    _subscription =
+        Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      final event = data.event;
+      final session = data.session;
+      final navigator = navigatorKey.currentState;
 
-        if (navigator == null) return;
+      if (navigator == null) return;
 
-        debugPrint('📡 AuthListener → Evento: $event | Sessão ativa: ${session != null}');
+      debugPrint(
+        '📡 AuthListener → event=$event | flow=${AppSession.flow}',
+      );
 
-        switch (event) {
-          case AuthChangeEvent.signedIn:
-            // Evita redirecionamento duplicado após logout
-            if (_lastSignOutTime != null &&
-                DateTime.now().difference(_lastSignOutTime!).inMilliseconds < 1200) {
-              debugPrint('⏳ Ignorando signedIn muito próximo ao logout');
-              return;
-            }
+      // --------------------------------------------------
+      // 🔒 GUEST MODE — ignora tudo
+      // --------------------------------------------------
+      if (AppSession.isGuest) {
+        debugPrint('🧭 Guest ativo — evento ignorado');
+        return;
+      }
 
-            if (session != null) {
-              unawaited(SecureStorageService.saveSession(session));
-              final current = navigator.context.widget.toString();
+      // --------------------------------------------------
+      // 🔄 RESTORE SESSION (app reaberto)
+      // --------------------------------------------------
+      if (event == AuthChangeEvent.initialSession &&
+          session != null &&
+          AppSession.isSplash) {
+        AppSession.flow = AppAuthFlow.authenticated;
 
-              // Evita abrir dashboard se já estamos nele
-              if (!current.contains('DashboardScreen')) {
-                navigator.pushNamedAndRemoveUntil('/dashboard', (route) => false);
-              }
+        navigator.pushNamedAndRemoveUntil(
+          '/dashboard',
+          (_) => false,
+        );
 
-              debugPrint('✅ Usuário logado — listener navegou');
-            }
-            break;
+        debugPrint('🔄 Sessão restaurada — dashboard');
+        return;
+      }
 
-          case AuthChangeEvent.signedOut:
-            _lastSignOutTime = DateTime.now();
+      // --------------------------------------------------
+      // ✅ LOGIN (email ou Google)
+      // --------------------------------------------------
+      if (event == AuthChangeEvent.signedIn && session != null) {
+        AppSession.flow = AppAuthFlow.authenticated;
 
-            final current = navigator.context.widget.toString();
+        navigator.pushNamedAndRemoveUntil(
+          '/dashboard',
+          (_) => false,
+        );
 
-            // Evita redirecionamento caso já esteja na tela de login
-            if (!current.contains('LoginScreen') &&
-                !current.contains('AuthPageView')) {
-              navigator.pushNamedAndRemoveUntil('/login', (route) => false);
-            }
+        debugPrint('✅ Login concluído — dashboard');
+        return;
+      }
 
-            debugPrint('👋 Usuário deslogado — listener navegou');
-            break;
+      // --------------------------------------------------
+      // 🚪 LOGOUT (FINALMENTE FUNCIONANDO)
+      // --------------------------------------------------
+      if (event == AuthChangeEvent.signedOut) {
+        debugPrint('👋 signedOut recebido');
 
-          case AuthChangeEvent.tokenRefreshed:
-            if (session != null) {
-              unawaited(SecureStorageService.saveSession(session));
-            }
-            debugPrint('🔄 Token atualizado automaticamente');
-            break;
+        if (AppSession.isLoggingOut || AppSession.isAuthenticated) {
+          AppSession.reset();
 
-          default:
-            debugPrint('ℹ️ Evento não tratado: $event');
-            break;
+          navigator.pushNamedAndRemoveUntil(
+            '/login',
+            (_) => false,
+          );
+
+          debugPrint('👋 Logout concluído — login');
+          return;
         }
-      },
-    );
+      }
+
+      // --------------------------------------------------
+      // 💤 OUTROS EVENTOS
+      // --------------------------------------------------
+      debugPrint('🛑 Evento ignorado');
+    });
   }
 
   static Future<void> dispose() async {

@@ -53,7 +53,12 @@
     "magic_link_error": "Error sending magic link: {{0}}",
 
     "enter_guest": "Enter as guest"
-
+ },
+      "login_prompt": {
+      "title": "Sign in 💫",
+      "description": "To save and keep tracking your achievements, please sign in or create an account.",
+      "not_now": "Not now",
+      "login_button": "Sign in"
 
 
   },
@@ -93,7 +98,8 @@
   "logout": "Logout",
   "go_premium": "Go Premium",
   "choose_icon":" Pick your icon",
-  "language": "Language"
+  "language": "Language",
+  "guest_name": "Guest"
   
 
 

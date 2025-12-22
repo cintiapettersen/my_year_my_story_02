@@ -11,6 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # 🔐 Auth / Deep link
   webview_flutter: ^4.7.0
 
   # 📊 Gráficos e UI
@@ -65,7 +66,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: 6.0.0
   flutter_launcher_icons: 0.13.1
-
+  
 
 flutter:
   uses-material-design: true
