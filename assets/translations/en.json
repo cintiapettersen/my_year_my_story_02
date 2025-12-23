@@ -271,7 +271,7 @@
     "about_me": "About Me",
     "quiz": "Interactive Quiz",
     "signs": "Zodiac of the Month",
-    "tips": "Tips of the Month",
+    "tips": "My Moment",
     "facts": "Did You Know?",
     "interview": "Connections",
     "lists": "My Lists",
@@ -427,7 +427,11 @@
     "description": "Answer fun questions and discover more about yourself!",
     "answer_hint": "Your answer...",
     "save": "Save answers",
-    "description_fixed": "A space just for you, to observe yourself with kindness and discover new little pieces of who you are. Here, you can reflect, listen to yourself, and allow yourself to feel — without hurry, without rules, just you."
+    "description_fixed": "A space just for you, to observe yourself with kindness and discover new little pieces of who you are. Here, you can reflect, listen to yourself, and allow yourself to feel — without hurry, without rules, just you.",
+  
+    "saved_success": "Your answers have been saved successfully 💖",
+    "save_error": "We couldn't save your answers right now. Please try again."
+  
   },
 
   "zodiac": {
@@ -632,9 +636,8 @@
   },
 
   "tips": {
-  "page_label": "Tips",
-  "description": "A soft selection of tips to inspire, balance and lighten your month. New reflections every day ✨",
-
+  "page_label": "My Moment",
+  "description": "A space to organize your thoughts, take care of yourself, and move forward with more ease.",
   "seen_all_today": "You've seen all the tips for today. Come back tomorrow 💛",
 
   "refresh_title": "Come back tomorrow ✨",

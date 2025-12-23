@@ -151,7 +151,7 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: const Color(0xFFE086CC),
+        backgroundColor: const Color.fromARGB(255, 250, 214, 242),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -164,19 +164,31 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFFC03B66),
+                color: Color.fromARGB(255, 136, 23, 60),
               ),
             ),
             const SizedBox(height: 8),
             Text("quiz.missing_message".tr(),
                 textAlign: TextAlign.center),
             const SizedBox(height: 20),
+           
             ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFC03B66)),
-              onPressed: () => Navigator.pop(context),
-              child: Text("quiz.missing_button".tr()),
-            ),
+  style: ElevatedButton.styleFrom(
+    backgroundColor: const Color(0xFFC03B66),
+    foregroundColor: Colors.white, // 👈 cor do texto
+  ),
+  onPressed: () => Navigator.pop(context),
+  child: Text(
+    "quiz.missing_button".tr(),
+    style: const TextStyle(
+      fontWeight: FontWeight.w600,
+      fontSize: 15,
+    ),
+  ),
+),
+
+              
+            
           ],
         ),
       ),

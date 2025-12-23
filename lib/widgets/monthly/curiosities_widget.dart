@@ -7,6 +7,7 @@ import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/screens/premium/premium_protected_page.dart';
 import 'package:myyearmystory/utils/access_control.dart';
 import 'package:myyearmystory/utils/app_config.dart';
+import 'package:myyearmystory/screens/popups/popup_login.dart';
 
 class CuriositiesWidget extends StatefulWidget {
   final int month;
@@ -131,37 +132,58 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
   // ❤️ SALVA RESPOSTAS
   // ------------------------------------------------------------
   Future<void> _saveAnswers() async {
-    final user = SupabaseConfig.client.auth.currentUser;
+  final user = SupabaseConfig.client.auth.currentUser;
 
-    if (!_isPremiumUser) {
+  // 🔐 Convidado → login
+  if (user == null) {
+    showLoginPrompt(context);
+    return;
+  }
+
+  // 🔓 Free → só 1 save por mês
+  if (!_isPremiumUser) {
+    final existing = await SupabaseConfig.client
+        .from('entries')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('year', widget.year)
+        .eq('month', widget.month)
+        .maybeSingle();
+
+    if (existing != null) {
       showPremiumPopup(context);
       return;
     }
-
-    try {
-      final answers =
-          _controllers.map((c) => c.text.trim()).toList(growable: false);
-
-      await SupabaseConfig.client.from('entries').upsert(
-        {
-          'user_id': user!.id,
-          'year': widget.year,
-          'month': widget.month,
-          'curiosities_answers': answers,
-        },
-        onConflict: 'user_id, year, month',
-      );
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Respostas salvas com sucesso!")),
-      );
-    } catch (e) {
-      debugPrint('Erro ao salvar: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Erro ao salvar: $e")),
-      );
-    }
   }
+
+  try {
+    final answers =
+        _controllers.map((c) => c.text.trim()).toList(growable: false);
+
+    await SupabaseConfig.client.from('entries').upsert(
+      {
+        'user_id': user.id,
+        'year': widget.year,
+        'month': widget.month,
+        'curiosities_answers': answers,
+      },
+      onConflict: 'user_id, year, month',
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('curiosities.saved_success'.tr()),
+      ),
+    );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('curiosities.save_error'.tr()),
+      ),
+    );
+  }
+}
+
 
   // ------------------------------------------------------------
   // 🎁 CURIOSIDADE ALEATÓRIA DE MESES PASSADOS

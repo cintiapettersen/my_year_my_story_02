@@ -8,6 +8,9 @@ import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 
 import 'package:myyearmystory/utils/access_control.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
+import 'package:myyearmystory/screens/popups/popup_login.dart';
+
+
 
 class MonthlyGoalsWidget extends StatefulWidget {
   final int? month;
@@ -101,50 +104,58 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
 
   // ➕ Adicionar meta
   Future<void> _addGoal() async {
-    final user = SupabaseConfig.client.auth.currentUser;
+  final user = SupabaseConfig.client.auth.currentUser;
 
-    if (user == null) {
-      showPremiumPopup(context);
-      return;
-    }
-
-    // Free user bateu o limite
-    if (!_isPremiumUser && _goals.length >= freeLimit) {
-      showPremiumPopup(context);
-      return;
-    }
-
-    final text = _goalController.text.trim();
-    if (text.isEmpty) return;
-
-    setState(() => _isLoading = true);
-
-    try {
-      await MonthlyGoalService.createGoal(
-        user.id,
-        currentMonth,
-        currentYear,
-        text,
-        false,
-        DateTime.now(),
-      );
-
-      _goalController.clear();
-      await _loadGoals();
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('monthly_goals.goal_added'.tr())),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('monthly_goals.error_add_goal'.tr())),
-      );
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+  // 🚪 Convidado → precisa logar
+  if (user == null) {
+    showLoginPrompt(context);
+    return;
   }
+
+  // 🔒 Free user bateu o limite
+  if (!_isPremiumUser && _goals.length >= freeLimit) {
+    showPremiumPopup(context);
+    return;
+  }
+
+  final text = _goalController.text.trim();
+  if (text.isEmpty) return;
+
+  setState(() => _isLoading = true);
+
+  try {
+    await MonthlyGoalService.createGoal(
+      user.id,
+      currentMonth,
+      currentYear,
+      text,
+      false,
+      DateTime.now(),
+    );
+
+    _goalController.clear();
+    await _loadGoals();
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('monthly_goals.goal_added'.tr()),
+        ),
+      );
+    }
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('monthly_goals.error_add_goal'.tr()),
+        ),
+      );
+    }
+  } finally {
+    if (mounted) setState(() => _isLoading = false);
+  }
+}
+
 
   // ✔️ Marcar meta concluída
   Future<void> _toggleGoal(MonthlyGoal goal) async {

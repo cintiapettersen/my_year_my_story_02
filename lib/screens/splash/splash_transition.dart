@@ -114,15 +114,20 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
                           'assets/imagens/logo.png',
                           height: isTablet ? 180 : 120,
                         ),
-                        const SizedBox(height: 24),
-                        Text(
-                          'splash.new_chapter'.tr(),
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.satisfy(
-                            fontSize: isTablet ? 32 : 22,
-                            color: const Color(0xFFC03B66),
-                          ),
-                        ),
+                        ConstrainedBox(
+  constraints: BoxConstraints(
+    maxWidth: isTablet ? 500 : double.infinity,
+  ),
+  child: Text(
+    'splash.new_chapter'.tr(),
+    textAlign: TextAlign.center,
+    style: GoogleFonts.satisfy(
+      fontSize: isTablet ? 40 : 24,
+      height: isTablet ? 1.2 : 1.1,
+      color: const Color(0xFFC03B66),
+    ),
+  ),
+),
                         const SizedBox(height: 30),
                         const CircularProgressIndicator(
                           strokeWidth: 2.5,
@@ -155,9 +160,10 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
             'splash.subtitle'.tr(),
             textAlign: TextAlign.center,
             style: GoogleFonts.satisfy(
-              fontSize: isTablet ? 24 : 17,
-              color: Colors.black87,
-            ),
+  fontSize: isTablet ? 32 : 17,
+  height: isTablet ? 1.3 : 1.1,
+  color: Colors.black87,
+),
           ),
           const SizedBox(height: 60),
           SizedBox(

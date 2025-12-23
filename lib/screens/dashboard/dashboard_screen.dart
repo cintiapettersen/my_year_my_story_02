@@ -22,6 +22,7 @@ import 'package:myyearmystory/services/daily_quote_service.dart';
 import 'package:myyearmystory/utils/month_colors.dart';
 import 'package:myyearmystory/screens/quiz/standalone.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
+import 'package:myyearmystory/services/app_session.dart';
 
 
 class DashboardScreen extends StatefulWidget {
@@ -214,6 +215,14 @@ Future<void> _loadUserName() async {
   //     FRASE DO DIA
   // ==============================
   Future<void> loadDailyQuote() async {
+  // 🟡 Convidado: não tenta buscar no serviço
+  if (AppSession.isGuest) {
+    setState(() {
+      dailyInspiration = tr("dashboard.daily_inspiration_guest");
+    });
+    return;
+  }
+
   try {
     final lang = context.locale.languageCode;
     final quote = await quoteService.getRandomQuote(lang);
@@ -223,12 +232,14 @@ Future<void> _loadUserName() async {
     final text = quote?["text"]?.toString().trim();
 
     setState(() {
-      dailyInspiration = (text != null && text.isNotEmpty)
-          ? text
-          : tr("dashboard.daily_inspiration");
+      dailyInspiration =
+          (text != null && text.isNotEmpty)
+              ? text
+              : tr("dashboard.daily_inspiration");
     });
   } catch (_) {
     if (!mounted) return;
+
     setState(() {
       dailyInspiration = tr("dashboard.daily_inspiration");
     });
@@ -761,176 +772,204 @@ Future<void> _loadUserName() async {
   // 🔸 CARDS DO DASHBOARD
   // =====================================================
   Widget _buildCards(BuildContext context) {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 3,
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 14,
-      children: [
-        _buildCard(
-          title: tr('dashboard.goals'),
-          icon: PhosphorIconsRegular.target,
-          color: const Color(0xFFe04cb7),
-          route: '/monthly_goals',
-        ),
-        _buildCard(
-          title: tr('dashboard.mood'),
-          icon: PhosphorIconsRegular.smiley,
-          color: const Color(0xFFfbcce9),
-          iconColor: const Color(0xFF943482),
-          textColor: const Color(0xFF943482),
-          route: '/mood_summary',
-        ),
-        _buildCard(
-          title: tr('dashboard.diary'),
-          icon: PhosphorIconsRegular.notebook,
-          color: const Color(0xFFa0378c),
-          route: '/diary_entries',
-        ),
-        _buildCard(
-          title: tr('dashboard.did_you_know.'),
-          icon: PhosphorIconsRegular.lightbulb,
-          color: const Color(0xFFdbaf35),
-          route: '/did_you_know',
-        ),
-        _buildCard(
-          title: tr('dashboard.dailyluckpage'),
-          icon: PhosphorIconsRegular.clover,
-          color: const Color(0xFF74a192),
-          route: '/daily_luck',
-        ),
-        _buildCard(
-          title: tr('dashboard.calendar_page'),
-          icon: PhosphorIconsRegular.calendarDots,
-          color: const Color(0xFFbeb6f2),
-          route: '/calendar_page',
-        ),
-        _buildCard(
-          title: tr('dashboard.monthly_quiz'),
-          icon: PhosphorIconsRegular.star,
-          color: const Color(0xFFdd97b7),
-          route: '/interactive_quiz',
-        ),
-        _buildCard(
-          title: tr('dashboard.gratitude'),
-          icon: PhosphorIconsRegular.heart,
-          color: const Color(0xFFe2377d),
-          route: '/gratitude',
-        ),
-        _buildCard(
-          title: tr('dashboard.about_me'),
-          icon: PhosphorIconsRegular.userCircle,
-          color: const Color(0xFFcf8ee8),
-          route: '/curiosities',
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCard({
-    required String title,
-    required IconData icon,
-    required Color color,
-    required String route,
-    Color iconColor = Colors.white,
-    Color textColor = Colors.white,
-  }) {
-    return GestureDetector(
-      onTap: () {
-        Widget target;
-
-        switch (route) {
-          case '/monthly_goals':
-            target = MonthlyGoalsWidget(
-                month: selectedMonth, year: selectedYear);
-            break;
-
-          case '/mood_summary':
-            target = MoodScreen(month: selectedMonth, year: selectedYear);
-            break;
-
-          case '/diary_entries':
-            target = DiaryScreen(date: DateTime.now());
-            break;
-
-          case '/interactive_quiz':
-            target = InteractiveQuizStandalone(
-              month: selectedMonth,
-              year: selectedYear,
-            );
-            break;
-
-          case '/gratitude':
-            target = GratitudeWidget(
-              month: selectedMonth,
-              year: selectedYear,
-            );
-            break;
-
-          case '/curiosities':
-            target = CuriositiesWidget(
-              month: selectedMonth,
-              year: selectedYear,
-            );
-            break;
-
-          case '/did_you_know':
-            target = DidYouKnowWidget(
-              month: selectedMonth,
-              year: selectedYear,
-            );
-            break;
-
-          case '/daily_luck':
-            target = const DailyLuckPage();
-            break;
-
-          case '/calendar_page':
-            target = CalendarPage(
-              month: selectedMonth,
-              year: selectedYear,
-            );
-            break;
-
-          default:
-            return;
-        }
-
-        Navigator.of(context).push(fadePageTransition(target));
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 32, color: iconColor),
-            const SizedBox(height: 6),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: textColor,
-              ),
-            ),
-          ],
-        ),
+  return GridView.count(
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(),
+    crossAxisCount: 3,
+    crossAxisSpacing: 12,
+    mainAxisSpacing: 14,
+    children: [
+      _buildCard(
+        context: context,
+        title: tr('dashboard.goals'),
+        icon: PhosphorIconsRegular.target,
+        color: const Color(0xFFe04cb7),
+        route: '/monthly_goals',
       ),
-    );
-  }
+      _buildCard(
+        context: context,
+        title: tr('dashboard.mood'),
+        icon: PhosphorIconsRegular.smiley,
+        color: const Color(0xFFfbcce9),
+        iconColor: const Color(0xFF943482),
+        textColor: const Color(0xFF943482),
+        route: '/mood_summary',
+      ),
+      _buildCard(
+        context: context,
+        title: tr('dashboard.diary'),
+        icon: PhosphorIconsRegular.notebook,
+        color: const Color(0xFFa0378c),
+        route: '/diary_entries',
+      ),
+      _buildCard(
+        context: context,
+        title: tr('dashboard.did_you_know'),
+        icon: PhosphorIconsRegular.lightbulb,
+        color: const Color(0xFFdbaf35),
+        route: '/did_you_know',
+      ),
+      _buildCard(
+        context: context,
+        title: tr('dashboard.dailyluckpage'),
+        icon: PhosphorIconsRegular.clover,
+        color: const Color(0xFF74a192),
+        route: '/daily_luck',
+      ),
+      _buildCard(
+        context: context,
+        title: tr('dashboard.calendar_page'),
+        icon: PhosphorIconsRegular.calendarDots,
+        color: const Color(0xFFbeb6f2),
+        route: '/calendar_page',
+      ),
+      _buildCard(
+        context: context,
+        title: tr('dashboard.monthly_quiz'),
+        icon: PhosphorIconsRegular.star,
+        color: const Color(0xFFdd97b7),
+        route: '/interactive_quiz',
+      ),
+      _buildCard(
+        context: context,
+        title: tr('dashboard.gratitude'),
+        icon: PhosphorIconsRegular.heart,
+        color: const Color(0xFFe2377d),
+        route: '/gratitude',
+      ),
+      _buildCard(
+        context: context,
+        title: tr('dashboard.about_me'),
+        icon: PhosphorIconsRegular.userCircle,
+        color: const Color(0xFFcf8ee8),
+        route: '/curiosities',
+      ),
+    ],
+  );
+}
+
+
+Widget _buildCard({
+  required BuildContext context,
+  required String title,
+  required IconData icon,
+  required Color color,
+  Color? iconColor,
+  Color? textColor,
+  required String route,
+}) {
+  // 🔹 Responsividade
+  final double iconSize =
+      (MediaQuery.of(context).size.width * 0.06).clamp(28, 42);
+
+  final double textSize =
+      (MediaQuery.of(context).size.width * 0.028).clamp(14, 16);
+
+  return GestureDetector(
+    onTap: () {
+      Widget target;
+
+      switch (route) {
+        case '/monthly_goals':
+          target = MonthlyGoalsWidget(
+            month: selectedMonth,
+            year: selectedYear,
+          );
+          break;
+
+        case '/mood_summary':
+          target = MoodScreen(
+            month: selectedMonth,
+            year: selectedYear,
+          );
+          break;
+
+        case '/diary_entries':
+          target = DiaryScreen(date: DateTime.now());
+          break;
+
+        case '/interactive_quiz':
+          target = InteractiveQuizStandalone(
+            month: selectedMonth,
+            year: selectedYear,
+          );
+          break;
+
+        case '/gratitude':
+          target = GratitudeWidget(
+            month: selectedMonth,
+            year: selectedYear,
+          );
+          break;
+
+        case '/curiosities':
+          target = CuriositiesWidget(
+            month: selectedMonth,
+            year: selectedYear,
+          );
+          break;
+
+        case '/did_you_know':
+          target = DidYouKnowWidget(
+            month: selectedMonth,
+            year: selectedYear,
+          );
+          break;
+
+        case '/daily_luck':
+          target = const DailyLuckPage();
+          break;
+
+        case '/calendar_page':
+          target = CalendarPage(
+            month: selectedMonth,
+            year: selectedYear,
+          );
+          break;
+
+        default:
+          return;
+      }
+
+      Navigator.of(context).push(fadePageTransition(target));
+    },
+    child: Container(
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            size: iconSize,
+            color: iconColor ?? Colors.white,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: textSize,
+              fontWeight: FontWeight.w600,
+              color: textColor ?? Colors.white,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 
   // =====================================================
   // 🔎 BUSCA DE DATAS

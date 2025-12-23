@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'dart:ui' as ui;
-import 'package:myyearmystory/utils/month_colors.dart'; // 🌈 cores mensais
+import 'package:myyearmystory/utils/month_colors.dart';
 import 'package:myyearmystory/widgets/monthly/dailyluckpage.dart';
 
 class MonthMenu extends StatelessWidget {
@@ -20,47 +20,61 @@ class MonthMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 📱 Detecta idioma automaticamente
+    // 📐 Responsividade base
+    final double screenWidth = MediaQuery.of(context).size.width;
 
-      // 🔤 chaves existentes no JSON
-  final List<String> monthKeys = [
-    "month.january",
-    "month.february",
-    "month.march",
-    "month.april",
-    "month.may",
-    "month.june",
-    "month.july",
-    "month.august",
-    "month.september",
-    "month.october",
-    "month.november",
-    "month.december",
-  ];
-  
-// 🌎 Detecta o idioma atual via EasyLocalization
-final locale = context.locale.languageCode;
+    final double gridIconSize =
+        (screenWidth * 0.08).clamp(32, 48);
 
-// 🗓 Nome do mês via JSON (mais seguro que DateFormat)
-final String monthName = "months.$month".tr();
+    final double gridTextSize =
+        (screenWidth * 0.032).clamp(14, 18);
 
-// 📅 Data formatada via JSON também
-final String formattedDate = locale == "pt"
-    ? DateFormat("d 'de' MMMM 'de' y", "pt_BR").format(DateTime.now())
-    : DateFormat("MMMM d, y", "en_US").format(DateTime.now());
+    final double titleSize =
+        (screenWidth * 0.055).clamp(20, 26);
 
-    
+    final double subtitleSize =
+        (screenWidth * 0.032).clamp(13, 16);
+
+    final double sectionTitleSize =
+        (screenWidth * 0.036).clamp(15, 18);
+
+    // 🔤 chaves existentes no JSON
+    final List<String> monthKeys = [
+      "month.january",
+      "month.february",
+      "month.march",
+      "month.april",
+      "month.may",
+      "month.june",
+      "month.july",
+      "month.august",
+      "month.september",
+      "month.october",
+      "month.november",
+      "month.december",
+    ];
+
+    // 🌎 Detecta o idioma atual via EasyLocalization
+    final locale = context.locale.languageCode;
+
+    // 🗓 Nome do mês via JSON
+    final String monthName = "months.$month".tr();
+
+    // 📅 Data formatada
+    final String formattedDate = locale == "pt"
+        ? DateFormat("d 'de' MMMM 'de' y", "pt_BR")
+            .format(DateTime.now())
+        : DateFormat("MMMM d, y", "en_US")
+            .format(DateTime.now());
 
     // 🌈 Cor dinâmica do mês
     final Color bannerColor = getMonthColor(month);
 
     // 💕 Janeiro mantém texto rosa
-    final Color textColor = (month == 1) ? const Color(0xFFE2377D) : Colors.black;
+    final Color textColor =
+        (month == 1) ? const Color(0xFFE2377D) : Colors.black;
 
-
-    
-
-    // 🌸 Itens do menu com chaves de tradução
+    // 🌸 Itens do menu
     final List<Map<String, dynamic>> menuItems = [
       {'title': 'month_menu.goals', 'icon': PhosphorIconsRegular.target, 'color': const Color(0xFFe04cb7)},
       {'title': 'month_menu.about_me', 'icon': PhosphorIconsRegular.userCircle, 'color': const Color(0xFFc79fe2)},
@@ -74,21 +88,17 @@ final String formattedDate = locale == "pt"
       {'title': 'month_menu.reflections', 'icon': PhosphorIconsRegular.quotes, 'color': const Color(0xFFcf78f7)},
       {'title': 'month_menu.photos', 'icon': PhosphorIconsRegular.camera, 'color': const Color(0xFFb71691)},
       {'title': 'month_menu.dates', 'icon': PhosphorIconsRegular.calendarDots, 'color': const Color(0xFFbeb6f2)},
-
-
-      
-
     ];
 
     return Container(
-      color: const Color(0xFFFFF7FA), 
+      color: const Color(0xFFFFF7FA),
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const SizedBox(height: 8),
 
-          // 🌸 Banner colorido
+          // 🌸 Banner
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(14),
@@ -114,7 +124,7 @@ final String formattedDate = locale == "pt"
                   Text(
                     "$monthName $year",
                     style: TextStyle(
-                      fontSize: 22,
+                      fontSize: titleSize,
                       fontWeight: FontWeight.bold,
                       color: textColor,
                       letterSpacing: 0.5,
@@ -124,7 +134,7 @@ final String formattedDate = locale == "pt"
                   Text(
                     formattedDate,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: subtitleSize,
                       color: textColor.withOpacity(0.8),
                     ),
                   ),
@@ -134,21 +144,23 @@ final String formattedDate = locale == "pt"
           ),
 
           const SizedBox(height: 20),
+
           Center(
             child: Text(
-              '✨ ${'month_menu.choose_section'.tr()}', // chave de tradução da frase principal
+              '✨ ${'month_menu.choose_section'.tr()}',
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
+              style: TextStyle(
+                fontSize: sectionTitleSize,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF120D0D),
+                color: const Color(0xFF120D0D),
                 height: 1.3,
               ),
             ),
           ),
+
           const SizedBox(height: 16),
 
-          // 🟪 Grade dos botões
+          // 🟪 Grid
           Expanded(
             child: GridView.builder(
               itemCount: menuItems.length,
@@ -160,16 +172,12 @@ final String formattedDate = locale == "pt"
               ),
               itemBuilder: (context, index) {
                 final item = menuItems[index];
+
                 return GestureDetector(
                   onTap: () {
-                    final String titleKey = item['title'];
-
-                   
-                    // navegação normal das páginas mensais
-                      if (onNavigateToPage != null) {
-                       onNavigateToPage!(index + 1);
-                         }
-
+                    if (onNavigateToPage != null) {
+                      onNavigateToPage!(index + 1);
+                    }
                   },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
@@ -187,15 +195,19 @@ final String formattedDate = locale == "pt"
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(item['icon'] as IconData, color: Colors.white, size: 36),
+                        Icon(
+                          item['icon'] as IconData,
+                          size: gridIconSize,
+                          color: Colors.white,
+                        ),
                         const SizedBox(height: 10),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 6),
                           child: Text(
                             (item['title'] as String).tr(),
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 14,
+                            style: TextStyle(
+                              fontSize: gridTextSize,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
                             ),
@@ -219,9 +231,5 @@ extension StringCasing on String {
   String capitalize() {
     if (isEmpty) return this;
     return this[0].toUpperCase() + substring(1);
-
-
-
-    
   }
 }

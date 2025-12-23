@@ -53,14 +53,16 @@ Future<void> showLoginPrompt(BuildContext context) async {
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.of(dialogContext).pop(); // fecha o diálogo
+  // 🔒 Fecha o diálogo usando o root navigator
+  Navigator.of(context, rootNavigator: true).pop();
 
-              Navigator.of(context).pushReplacement(
-                fadePageTransition(
-                  LoginScreen(
-                    onCreateAccountTap: () {
-                      Navigator.of(context).pushNamed('/signup');
-                    },
+  // ➡️ Navega direto para o login
+  Navigator.of(context).pushReplacement(
+    fadePageTransition(
+      LoginScreen(
+        onCreateAccountTap: () {
+          Navigator.of(context).pushNamed('/signup');
+        },
                   ),
                 ),
               );

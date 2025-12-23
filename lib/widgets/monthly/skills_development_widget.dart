@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'dart:math';
 import 'package:easy_localization/easy_localization.dart';
 
 import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/utils/month_colors.dart';
-import 'package:myyearmystory/utils/label_colors.dart';
+import 'package:myyearmystory/utils/responsive.dart';
+import 'package:myyearmystory/utils/localized_tip.dart';
 import 'package:myyearmystory/utils/access_control.dart';
 import 'package:myyearmystory/utils/app_config.dart';
 
-// 🎨 Categorias oficiais (SEM ENCERRAMENTO)
+/// 🎨 Categorias oficiais
 final Map<String, Color> skillCategoryColors = {
   "autocuidado": Color(0xFFFAD4D8),
   "energia": Color(0xFFE9B9C9),
@@ -27,7 +27,7 @@ final Map<String, Color> skillCategoryColors = {
   "hábitos": Color.fromARGB(255, 216, 216, 181),
 };
 
-// 🔎 Fallback opcional (caso category_mapped esteja vazio)
+/// 🔎 Fallback de categoria
 String fallbackCategory(String text) {
   text = text.toLowerCase();
 
@@ -84,54 +84,38 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
     _loadData();
   }
 
-  // 🔑 CHECAGEM PREMIUM / ADMIN
+  /// 🔑 CHECA PREMIUM / ADMIN
   Future<void> _checkPremiumStatus() async {
     final user = supabase.auth.currentUser;
-    final email = user?.email;
+
+    if (user == null || user.isAnonymous == true) {
+      setState(() => isPremiumUser = false);
+      return;
+    }
 
     final premium = await AccessControl.isPremium();
-    final admin = AppConfig.isAdmin(email);
+    final admin = AppConfig.isAdmin(user.email);
 
     setState(() => isPremiumUser = premium || admin);
   }
 
-  // 🌎 TRADUÇÃO
-  String getLocalizedText(Map<String, dynamic> tip) {
-    final locale = context.locale.languageCode;
-
-    if (locale == "en" &&
-        tip["text_en"] != null &&
-        tip["text_en"].toString().trim().isNotEmpty) {
-      return tip["text_en"];
-    }
-
-    return tip["text"];
-  }
-
-  // 📥 CARREGAR DADOS
+  /// 📥 CARREGA DICAS
   Future<void> _loadData() async {
     setState(() => isLoading = true);
 
     try {
       final response = await supabase.from('skills_tips').select();
 
-      if (response.isEmpty) {
-        setState(() => skills = []);
-        return;
-      }
-
       final allTips = List<Map<String, dynamic>>.from(response);
       allTips.shuffle();
 
       final Map<String, List<Map<String, dynamic>>> grouped = {};
 
-      // ✔ usa category_mapped corretamente
       for (var tip in allTips) {
-        final localized = getLocalizedText(tip);
+        final localized = getLocalizedTipText(context, tip);
 
-        final dbCategory = (tip["category_mapped"] as String?)
-            ?.toLowerCase()
-            .trim();
+        final dbCategory =
+            (tip["category_mapped"] as String?)?.toLowerCase().trim();
 
         final category = dbCategory?.isNotEmpty == true
             ? dbCategory!
@@ -141,33 +125,27 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
         grouped[category]!.add(tip);
       }
 
-      // ➤ pega 1 por categoria
-      final List<Map<String, dynamic>> onePerCategory = [];
-      grouped.forEach((cat, list) {
-        if (list.isNotEmpty) onePerCategory.add(list.first);
+      final List<Map<String, dynamic>> selected = [];
+      grouped.forEach((_, list) {
+        if (list.isNotEmpty) selected.add(list.first);
       });
 
-      onePerCategory.shuffle();
-
-      // ➤ seleciona 5 diferentes
-      final selected = onePerCategory.take(5).toList();
+      selected.shuffle();
 
       setState(() {
-        skills = selected;
+        skills = selected.take(5).toList();
         isLoading = false;
       });
     } catch (e) {
-      print("Erro ao carregar dicas: $e");
       setState(() => isLoading = false);
     }
   }
 
-  // 🔄 REFRESH
+  /// 🔄 REFRESH (COM BLOQUEIO PREMIUM)
   Future<void> _handleRefresh() async {
     final prefs = await SharedPreferences.getInstance();
     final key =
         "refresh_${widget.year}_${widget.month}_${DateTime.now().day}";
-
     final count = prefs.getInt(key) ?? 0;
 
     if (!isPremiumUser) {
@@ -179,8 +157,10 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
-          title: Text("tips.refresh_title".tr(),
-              style: const TextStyle(fontWeight: FontWeight.bold)),
+          title: Text(
+            "tips.refresh_title".tr(),
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
           content: Text("tips.refresh_message".tr()),
           actions: [
             TextButton(
@@ -210,123 +190,127 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
       pageLabel: "tips.page_label".tr(),
       labelColor: const Color(0xFFb539bc),
       description: "tips.description".tr(),
-
       child: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                ...skills.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final tip = entry.value;
-                  final text = getLocalizedText(tip);
-
-                  final category = (tip["category_mapped"] as String?)
-                          ?.toLowerCase()
-                          .trim() ??
-                      fallbackCategory(text);
-
-                  final categoryColor = skillCategoryColors[category] ??
-                      Colors.purple.shade100;
-
-                  return TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0, end: 1),
-                    duration: Duration(milliseconds: 600 + index * 150),
-                    builder: (context, value, child) {
-                      return Opacity(
-                        opacity: value,
-                        child: Transform.translate(
-                          offset: Offset(0, (1 - value) * 20),
-                          child: child,
-                        ),
-                      );
-                    },
+          : ResponsiveLayout(
+              builder: (context, constraints, isTablet) {
+                return Align(
+                  alignment: Alignment.topCenter,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: isTablet ? 600 : constraints.maxWidth,
+                    ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 24), // <<< espaçamento entre descrição → bloco de dicas
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: categoryColor,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            "♡ ${'tips_categories.$category'.tr()} ♡",
+                        ...skills.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final tip = entry.value;
+                          final text =
+                              getLocalizedTipText(context, tip);
 
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 13,
-                              letterSpacing: .2,
+                          final category =
+                              (tip["category_mapped"] as String?)
+                                      ?.toLowerCase()
+                                      .trim() ??
+                                  fallbackCategory(text);
+
+                          final color =
+                              skillCategoryColors[category] ??
+                                  Colors.purple.shade100;
+
+                          return Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(height: isTablet ? 32 : 24),
+                              Container(
+                                padding:
+                                    const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: color,
+                                  borderRadius:
+                                      BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  "♡ ${'tips_categories.$category'.tr()} ♡",
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: isTablet ? 24 : 20),
+                              Text(
+                                text,
+                                style: TextStyle(
+                                  fontSize:
+                                      isTablet ? 17 : 16,
+                                  height:
+                                      isTablet ? 1.65 : 1.5,
+                                ),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(
+                                        vertical: 18),
+                                child: Divider(
+                                  color: index <
+                                          skills.length - 1
+                                      ? Colors.black26
+                                      : Colors.transparent,
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                        const SizedBox(height: 60),
+                        
+                                                GestureDetector(
+                          onTapDown: (_) =>
+                              setState(() => isPressed = true),
+                          onTapUp: (_) async {
+                            setState(() => isPressed = false);
+                            await Future.delayed(
+                                const Duration(milliseconds: 120));
+                            _handleRefresh();
+                          },
+                          onTapCancel: () =>
+                              setState(() => isPressed = false),
+                          child: Transform.scale(
+                            scale: isPressed ? 0.93 : 1.0,
+                            child: AnimatedContainer(
+                              duration:
+                                  const Duration(milliseconds: 250),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 28,
+                                vertical: 14,
+                              ),
+                              decoration: BoxDecoration(
+                                color: currentButtonColor,
+                                borderRadius:
+                                    BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                !isPremiumUser
+                                    ? "tips.refresh_premium_button"
+                                        .tr()
+                                    : "tips.refresh_see_more".tr(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 20),
-                        Text(
-                          text,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            height: 1.5,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        if (index < skills.length - 1)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 18),
-                            child: Divider(color: Colors.black26),
-                          ),
                       ],
-                    ),
-                  );
-                }).toList(),
-
-                const SizedBox(height: 60),
-
-                GestureDetector(
-                  onTapDown: (_) => setState(() => isPressed = true),
-                  onTapUp: (_) async {
-                    setState(() => isPressed = false);
-                    await Future.delayed(const Duration(milliseconds: 120));
-                    _handleRefresh();
-                  },
-                  onTapCancel: () => setState(() => isPressed = false),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
-                    transform:
-                        Matrix4.identity()..scale(isPressed ? 0.93 : 1.0),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 28, vertical: 14),
-                    decoration: BoxDecoration(
-                      color: currentButtonColor,
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                          color: currentButtonColor.withOpacity(0.4),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Text(
-                      !isPremiumUser
-                          ? "tips.refresh_premium_button".tr()
-                          : (refreshCount >= 3
-                              ? "tips.refresh_come_back_tomorrow".tr()
-                              : "tips.refresh_see_more".tr(namedArgs: {
-                                  "remaining":
-                                      (3 - refreshCount).toString()
-                                })),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
                     ),
                   ),
-                ),
-              ],
+                );
+              },
             ),
     );
-  }
-}
+  } // build
+} // _Skills

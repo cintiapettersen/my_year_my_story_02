@@ -420,7 +420,10 @@
     "description": "Responda perguntas divertidas e descubra mais sobre você!",
     "answer_hint": "Sua resposta...",
     "save": "Salvar respostas",
-    "description_fixed": "Um espaço só seu, para se observar com carinho e descobrir novos pedacinhos de quem você é. Aqui, você pode refletir, se ouvir e se permitir sentir — sem pressa, sem regras, só você."
+    "description_fixed": "Um espaço só seu, para se observar com carinho e descobrir novos pedacinhos de quem você é. Aqui, você pode refletir, se ouvir e se permitir sentir — sem pressa, sem regras, só você.",
+    "saved_success": "Suas respostas foram salvas com sucesso 💖",
+    "save_error": "Não foi possível salvar agora. Tente novamente."
+  
   },
 
   "zodiac": {
