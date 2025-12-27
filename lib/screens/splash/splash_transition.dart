@@ -5,10 +5,17 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:myyearmystory/screens/auth/auth_page_view.dart';
 import 'package:myyearmystory/screens/dashboard/dashboard_screen.dart';
 import 'package:myyearmystory/screens/splash/fade_page_transition.dart';
+
 import 'package:myyearmystory/services/app_session.dart';
+import 'package:myyearmystory/services/secure_storage_service.dart';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:myyearmystory/widgets/auth/biometric_login_page.dart';
 
+// ======================================================
+//  SPLASH TRANSITION SCREEN — FINAL VERSION
+// ======================================================
 class SplashTransitionScreen extends StatefulWidget {
   const SplashTransitionScreen({super.key});
 
@@ -48,30 +55,35 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
 
     _controller.forward();
 
-    // ⏳ apenas tempo visual do splash
-    Future.delayed(const Duration(seconds: 2), () {
-      if (!mounted) return;
-      setState(() => _showButtons = true);
-    });
+    // Agora chamamos o checkSession REAL
+    _checkSession();
   }
 
-  void _goToLogin() {
-    AppSession.reset();
+  // ======================================================
+  // CHECK SESSION (versão final, sem piscadas)
+  // ======================================================
+  Future<void> _checkSession() async {
+    await Future.delayed(const Duration(milliseconds: 700));
 
-    Navigator.of(context).pushReplacement(
-      fadePageTransition(const AuthPageView()),
-    );
-  }
+    try {
+      final storedSession = await SecureStorageService.readSessionJson();
+      final supabaseSession =
+          Supabase.instance.client.auth.currentSession;
 
- void _enterAsGuest() async {
-  // 1️⃣ Primeiro marca como guest
-  AppSession.flow = AppAuthFlow.guest;
+      // 1️⃣ SE TEM SESSÃO NO SECURE STORAGE → LOGIN BIOMÉTRICO
+if (storedSession != null && storedSession.isNotEmpty) {
+  if (!mounted) return;
+  Navigator.of(context).pushReplacement(
+    fadePageTransition(const BiometricLoginPage()),
+  );
+  return;
+}
 
-  // 2️⃣ Depois limpa a sessão real do Supabase
-  await Supabase.instance.client.auth.signOut();
+// 2️⃣ SE SUPABASE ACHA SESSÃO ATIVA → VAI DIRETO PARA DASHBOARD
+if (supabaseSession != null) {
+  AppSession.flow = AppAuthFlow.authenticated;
 
   if (!mounted) return;
-
   Navigator.of(context).pushReplacement(
     fadePageTransition(
       DashboardScreen(
@@ -80,9 +92,46 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
       ),
     ),
   );
+  return;
 }
 
 
+      // 3️⃣ SE NADA DISSO → MOSTRA OS BOTÕES
+      if (!mounted) return;
+      setState(() => _showButtons = true);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _showButtons = true);
+    }
+  }
+
+  // ======================================================
+  // NAVIGATION
+  // ======================================================
+  void _goToLogin() {
+    AppSession.reset();
+
+    Navigator.of(context).pushReplacement(
+      fadePageTransition(const AuthPageView()),
+    );
+  }
+
+  void _enterAsGuest() async {
+    AppSession.flow = AppAuthFlow.guest;
+
+    // Limpa sessão real
+    await Supabase.instance.client.auth.signOut();
+
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(
+      fadePageTransition(
+        DashboardScreen(
+          month: DateTime.now().month,
+          year: DateTime.now().year,
+        ),
+      ),
+    );
+  }
 
   @override
   void dispose() {
@@ -90,9 +139,9 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
     super.dispose();
   }
 
-  // --------------------------------------------------
-  // 🎨 UI
-  // --------------------------------------------------
+  // ======================================================
+  // UI
+  // ======================================================
   @override
   Widget build(BuildContext context) {
     final isTablet = MediaQuery.of(context).size.width > 600;
@@ -103,49 +152,66 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 600),
           child: !_showButtons
-              ? FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: ScaleTransition(
-                    scale: _scaleAnimation,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.asset(
-                          'assets/imagens/logo.png',
-                          height: isTablet ? 180 : 120,
-                        ),
-                        ConstrainedBox(
-  constraints: BoxConstraints(
-    maxWidth: isTablet ? 500 : double.infinity,
-  ),
-  child: Text(
-    'splash.new_chapter'.tr(),
-    textAlign: TextAlign.center,
-    style: GoogleFonts.satisfy(
-      fontSize: isTablet ? 40 : 24,
-      height: isTablet ? 1.2 : 1.1,
-      color: const Color(0xFFC03B66),
-    ),
-  ),
-),
-                        const SizedBox(height: 30),
-                        const CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          valueColor: AlwaysStoppedAnimation(
-                            Color(0xFFC03B66),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              : _buildButtons(context, isTablet),
+              ? _buildAnimatedSplash(isTablet)
+              : _buildButtons(isTablet),
         ),
       ),
     );
   }
 
-  Widget _buildButtons(BuildContext context, bool isTablet) {
+  // ======================================================
+  // SPLASH ANIMATION
+  // ======================================================
+  Widget _buildAnimatedSplash(bool isTablet) {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/imagens/logo.png',
+              height: isTablet ? 180 : 120,
+            ),
+            const SizedBox(height: 20),
+
+            // Texto principal — agora mais bonito, grande e responsivo
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: isTablet ? 500 : 300,
+              ),
+              child: Text(
+                'splash.new_chapter'.tr(),
+                textAlign: TextAlign.center,
+                softWrap: true,
+                maxLines: 2,
+                style: GoogleFonts.satisfy(
+                  fontSize: isTablet ? 46 : 28,
+                  height: 1.2,
+                  color: const Color(0xFFC03B66),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 30),
+
+            const CircularProgressIndicator(
+              strokeWidth: 2.5,
+              valueColor: AlwaysStoppedAnimation(
+                Color(0xFFC03B66),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ======================================================
+  // BUTTONS SCREEN
+  // ======================================================
+  Widget _buildButtons(bool isTablet) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: isTablet ? 80 : 40),
       child: Column(
@@ -156,16 +222,23 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
             height: isTablet ? 180 : 120,
           ),
           const SizedBox(height: 30),
+
+          // ✨ Subtítulo agora mais forte, mais alinhado e responsivo
           Text(
             'splash.subtitle'.tr(),
             textAlign: TextAlign.center,
+            softWrap: true,
+            maxLines: 2,
             style: GoogleFonts.satisfy(
-  fontSize: isTablet ? 32 : 17,
-  height: isTablet ? 1.3 : 1.1,
-  color: Colors.black87,
-),
+              fontSize: isTablet ? 40 : 22,
+              height: 1.25,
+              color: Colors.black87,
+            ),
           ),
+
           const SizedBox(height: 60),
+
+          // LOGIN BUTTON
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -187,7 +260,10 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
               ),
             ),
           ),
+
           const SizedBox(height: 16),
+
+          // GUEST BUTTON
           SizedBox(
             width: double.infinity,
             child: OutlinedButton(

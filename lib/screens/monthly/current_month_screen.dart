@@ -19,7 +19,7 @@ import 'package:myyearmystory/widgets/monthly/monthly_lists_widget.dart';
 import 'package:myyearmystory/widgets/monthly/gratitude_widget.dart';
 import 'package:myyearmystory/widgets/monthly/reflections_widget.dart';
 import 'package:myyearmystory/widgets/monthly/photo_gallery_widget.dart';
-import 'package:myyearmystory/widgets/monthly/calendar_page.dart';
+import 'package:myyearmystory/widgets/monthly/calender/calendar_page.dart';
 import 'package:myyearmystory/screens/quiz/standalone.dart';
 
 

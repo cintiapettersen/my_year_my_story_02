@@ -18,7 +18,7 @@
 
   "splash": {
     "new_chapter": "A new chapter begins…",
-    "subtitle": "Your digital memory diary 💕",
+    "subtitle": "Your story. Your way.",
     "login_button": "Log in / Create account",
     "guest_button": "Explore as guest"
   },
@@ -323,8 +323,6 @@
   "answered_in": "answered in {{date}}",
   "cancel": "Cancel",
  
-
-
   "goals": "Goals",
   "mood": "Mood",
   "diary": "Diary",
@@ -334,7 +332,6 @@
   "did_you_know": "Did you know?",
   "dailyluckpage": "Today's Message",
   "calendar_page": "Calendar & Reminders",
-
 
   "daily_inspiration": "🌙 Fetching today’s inspiration...",
   "search_previous_dates": "Search previous dates",
@@ -408,18 +405,36 @@
   "12": "December"
 },
 
+
+
+ "general": {
+   "cancel": "cancel"
+
+
+},
+
   "quiz": {
     
-    "description": "Answer this month's questions and discover a little more about yourself. Sometimes small answers reveal big things.",
-    "button_result": "See my result ✨",
-    "page_label": "Interactive Quiz",
-    
-    "button_retry": "Retry quiz",
-    "missing_title": "Oops!",
-    "missing_message": "You left one or more questions unanswered.",
-    "missing_button": "Got it",
-    "missing_answers_barrier": "missing_answers_popup",
-    "result_close": "Close"
+    "description": "Answer this month's questions and discover a little more about yourself. Sometimes, small answers reveal big things.",
+  "page_label": "Interactive Quiz",
+  "button_result": "See my result ✨",
+  "button_retry": "Retry quiz",
+
+  "next": "Next",
+  "question_counter": "Question {}/{}",
+  
+
+  "ready_title": "All set ✨",
+  "ready_desc": "Now it’s time to see your result 💖",
+
+  "answers_title": "Your answers 💬",
+
+  "missing_title": "Oops!",
+  "missing_message": "You left one or more questions unanswered.",
+  "missing_button": "Got it",
+  "missing_answers_barrier": "missing_answers_popup",
+
+  "result_close": "Close"
   },
 
   "curiosities": {
@@ -654,9 +669,19 @@
   "calendar": {
     "page_label": "Calendar & Alerts",
     "description": "Mark your important moments, reminders and colorful highlights throughout the month.",
+    "describe": "Describe your reminder or note for the day",
 
     "add_event": "add event",
     "edit_event": "edit event",
+     "add_alert": "Add alert",
+     "remove_alert": "Remove alert",
+     
+    "login_to_save": "You can try it freely, but to save your reminders you need to be logged in.",
+    "your_notes": "Your notes for the day",
+    "repeat": "Repeat",
+    
+    "limit_reached": "You have reached the reminder limit for this month.",
+    "premium_required": "Full access to reminders is available for premium users only.",
 
     "event_hint": "describe your reminder",
 
@@ -735,6 +760,25 @@
   "12": "December"
 
  
+},
+
+
+  "agenda": {
+
+    "tap_to_add_note": "Tap to add a note",
+    "note_hint": "Write a note (this does not create an alert)",
+    "save_note": "Save note",
+    "create_alert": "Create alert for this time",
+    "default_alert_title": "Reminder"
+  
+},
+
+"common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "close": "Close"
+
 },
 
  "mood": {
@@ -855,7 +899,8 @@
 
   "dates": {
     "title": "Calendar & Reminder",
-    "description": "Check your important days and highlight your favorite moments."
+    "description": "Save moments, check your important days and highlight your favorite moments.",
+    "insight": "You have saved {0} reminders this month."
   },
 
   "week": {

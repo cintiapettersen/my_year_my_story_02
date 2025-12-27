@@ -17,7 +17,7 @@
 
   "splash": {
     "new_chapter": "Um novo capítulo começa…",
-    "subtitle": "Seu diário digital de memórias 💕",
+    "subtitle": "Sua história. Do seu jeito.",
     "login_button": "Entrar / Criar conta",
     "guest_button": "Explorar sem login"
     
@@ -270,7 +270,7 @@
     "about_me": "Sobre Mim",
     "quiz": "Quiz Interativo",
     "signs": "Signos do Mês",
-    "tips": "Dicas do Mês",
+    "tips": "Meu Momento",
     "facts": "Você Sabia?",
     "interview": "Conexões",
     "lists": "Minhas Listas",
@@ -319,7 +319,7 @@
   "track_your_activities": "Acompanhe suas atividades 👋",
   "answered_in": "respondido em {{date}}",
   
-   
+  
   "goals": "Metas",
   "mood": "Humor",
   "diary": "Diário",
@@ -357,8 +357,9 @@
     "nov": "Nov",
     "dec": "Dez"
   }
-},
 
+
+},
   "month": {
     "january": "Janeiro",
     "february": "Fevereiro",
@@ -403,16 +404,29 @@
   "12": "Dezembro"
 },
 
+
+
+ "general": {
+   "cancel": "cancelar"
+  },
+
+
   "quiz": {
-    "description": "Responda às perguntas do mês e descubra um pouquinho mais sobre você. Às vezes, pequenas respostas revelam grandes coisas.",
-    "page_label": "Quiz Interativo",
-    "button_result": "Ver meu resultado ✨",
-    "button_retry": "Refazer quiz",
-    "missing_title": "Ops!",
-    "missing_message": "Você deixou uma ou mais perguntas sem responder.",
-    "missing_button": "Entendi",
-    "missing_answers_barrier": "popup_faltando_respostas",
-    "result_close": "Fechar"
+  "description": "Responda às perguntas do mês e descubra um pouquinho mais sobre você. Às vezes, pequenas respostas revelam grandes coisas.",
+  "page_label": "Quiz Interativo",
+  "button_result": "Ver meu resultado ✨",
+  "button_retry": "Refazer quiz",
+  "next": "Próxima",
+  "question_counter": "Pergunta {}/{}",
+  "ready_title": "Prontinho ✨",
+  "ready_desc": "Agora é só ver o seu resultado 💖",
+  "answers_title": "Suas respostas 💬",
+  "missing_title": "Ops!",
+  "missing_message": "Você deixou uma ou mais perguntas sem responder.",
+  "missing_button": "Entendi",
+  "missing_answers_barrier": "popup_faltando_respostas",
+  "result_close": "Fechar"
+  
   },
 
   "curiosities": {
@@ -626,8 +640,8 @@
   },
 
   "tips": {
-   "page_label": "Dicas",
-  "description": "Uma seleção suave de dicas para inspirar, equilibrar e deixar seu mês mais leve. Novas reflexões todos os dias ✨",
+  "page_label": "Meu Momento",
+  "description": "Um espaço para organizar pensamentos, cuidar de você e seguir com mais leveza.",
 
   "seen_all_today": "Você viu todas as dicas de hoje. Volte amanhã 💛",
 
@@ -645,9 +659,20 @@
   "calendar": {
     "page_label": "Calendário e Alertas",
     "description": "Marque seus momentos importantes, lembretes e destaques coloridos ao longo do mês.",
+    "describe": "Descreva seu lembrete ou anotação do dia",
 
     "add_event": "adicionar evento",
     "edit_event": "editar evento",
+    "add_alert": "Adicionar alerta",
+    "remove_alert": "Remover alerta",
+    
+    "login_to_save": "Você pode testar livremente, mas para salvar seus lembretes é preciso estar logada.",
+    "your_notes": "Suas anotações do dia",
+    "repeat": "Repetição",
+    
+    
+    "limit_reached": "Você atingiu o limite de lembretes deste mês.",
+    "premium_required": "O acesso completo aos lembretes é exclusivo para usuárias premium.",
 
     "event_hint": "descreva seu lembrete",
 
@@ -709,6 +734,21 @@
 "month.11": "novembro",
 "month.12": "dezembro"
 
+},
+
+  "agenda": {
+    "tap_to_add_note": "Toque para adicionar uma anotação",
+    "note_hint": "Escreva uma anotação (não gera alerta)",
+    "save_note": "Salvar anotação",
+    "create_alert": "Criar alerta para este horário",
+    "default_alert_title": "Lembrete"
+},
+
+ "common": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "delete": "Apagar",
+    "close": "Fechar"
 
 },
  "mood": {
