@@ -187,7 +187,7 @@ if (supabaseSession != null) {
                 softWrap: true,
                 maxLines: 2,
                 style: GoogleFonts.satisfy(
-                  fontSize: isTablet ? 46 : 28,
+                  fontSize: isTablet ? 30 : 28,
                   height: 1.2,
                   color: const Color(0xFFC03B66),
                 ),

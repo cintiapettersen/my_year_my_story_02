@@ -318,6 +318,7 @@
   "guest_user": "Convidado",
   "track_your_activities": "Acompanhe suas atividades 👋",
   "answered_in": "respondido em {{date}}",
+  "daily_inspiration_guest": "🌙 Procurando a inspiração pro dia de hoje...",
   
   
   "goals": "Metas",
@@ -331,7 +332,7 @@
   "calendar_page": "Calendário & Alertas",
 
   "daily_inspiration": "Buscando inspiração para hoje...",
-  "search_previous_dates": "Buscar datas anteriores",
+  "search_previous_dates": "Buscar datas",
   "select_date": "Selecione uma data",
   "choose_your_color_today": "Escolha sua cor hoje:",
   "your_month_space": "Seu espaço do mês!",
@@ -454,7 +455,25 @@
     "number": "Número",
     "element": "Elemento",
     "stone": "Pedra",
-    "flower": "Flor"
+    "flower": "Flor",
+    "personal_year_title": "seu número pessoal",
+
+
+    "personal_year_color_label": "cor do ano:",
+    "personal_year_no_birthdate_title": "Data de nascimento não encontrada",
+    "personal_year_no_birthdate_text": "Para calcular seu Ano Pessoal, precisamos da sua data de nascimento.",
+    "personal_year_edit_birthdate_button": "Editar data de nascimento",
+    "personal_year_go_to_login": "Fazer login",
+    "personal_year_header_year": "Ano",
+    "personal_year_error": "Não foi possível calcular seu Ano Pessoal. Faça o login ou edite sua data de nascimento.",
+    "discover_personal_year_button": "Descubra seu Ano Pessoal",
+    "login_required_title": "Faça login para continuar",
+    "login_required_text": "Entre na sua conta para descobrir seu Ano Pessoal ✨",
+    "login_required_button": "Fazer login"
+
+
+
+
   },
 
   "my_moment": {
@@ -779,7 +798,10 @@
 
 
   "calendar_description": "Esse é o seu calendário de humor.\nTodo dia você pode registrar como está se sentindo e, aos poucos, as carinhas vão aparecendo aqui.",
-  "calendar_register_hint": "Clique nos botões abaixo e registre seu humor do dia"
+  "calendar_register_hint": "Clique nos botões abaixo e registre seu humor do dia",
+  "guest_saved": "Humor salvo para hoje 💜",
+  "guest_title": "Modo convidado",
+  "guest_description": "Você pode marcar seus humores, mas eles não serão salvos."
 
 
   },

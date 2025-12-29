@@ -6,6 +6,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:myyearmystory/widgets/shared/main_scaffold.dart';
 import 'package:myyearmystory/screens/mood/mood_calendar.dart';
+import 'package:myyearmystory/screens/premium/premium_popup.dart';
+
 
 class MoodScreen extends StatefulWidget {
   final int month;
@@ -21,12 +23,18 @@ class MoodScreen extends StatefulWidget {
   State<MoodScreen> createState() => _MoodScreenState();
 }
 
+
 class _MoodScreenState extends State<MoodScreen> {
   final supabase = Supabase.instance.client;
 
   bool isSaving = false;
   int? selectedDay;
+
   List<Map<String, dynamic>> topMoods = [];
+
+  // 👤 GUEST CONTROL
+  int guestMoodCount = 0;
+  static const int guestMoodLimit = 3;
 
   String trMood(String key) => "mood.$key".tr();
 
@@ -68,12 +76,18 @@ class _MoodScreenState extends State<MoodScreen> {
     {'emoji': '😕', 'key': 'confused'},
   ];
 
-  // -----------------------------------------------------------
-  // 📊 BUSCAR RESUMO DO MÊS (Top 4 humores + porcentagens)
-  // -----------------------------------------------------------
+  // 🌈 divisão visual
+  List<Map<String, dynamic>> get mainMoods => moods.take(12).toList();
+  List<Map<String, dynamic>> get extraMoods => moods.skip(12).toList();
+
+
   Future<void> fetchMonthlySummary() async {
     final user = supabase.auth.currentUser;
-    if (user == null) return;
+
+    if (user == null) {
+      setState(() => topMoods = []);
+      return;
+    }
 
     final result = await supabase
         .from("mood_entries")
@@ -110,7 +124,6 @@ class _MoodScreenState extends State<MoodScreen> {
     }).toList();
 
     list.sort((a, b) => b['percent'].compareTo(a['percent']));
-
     setState(() => topMoods = list.take(4).toList());
   }
 
@@ -120,20 +133,39 @@ class _MoodScreenState extends State<MoodScreen> {
     fetchMonthlySummary();
   }
 
-  // -----------------------------------------------------------
-  // 💾 SALVAR HUMOR (responsabilidade do MoodScreen)
-  // -----------------------------------------------------------
+
+
   Future<void> _saveMood(String moodKey) async {
-    if (selectedDay == null) return;
+    final day = selectedDay;
+    if (day == null) return;
+
+    final user = supabase.auth.currentUser;
+
+    // 👤 GUEST
+    if (user == null) {
+      guestMoodCount++;
+
+      MoodCalendar.globalKey.currentState
+          ?.setGuestMood(day, moodKey);
+
+      _showSnack(
+        "mood.guest_saved".tr(),
+        moodColors[moodKey]!,
+      );
+
+      if (guestMoodCount >= guestMoodLimit) {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          showPremiumPopup(context);
+        });
+      }
+      return;
+    }
 
     if (isSaving) return;
     setState(() => isSaving = true);
 
-    final user = supabase.auth.currentUser!;
-    final day = selectedDay!;
     final now = DateTime(widget.year, widget.month, day);
 
-    // apaga a entrada anterior do dia
     await supabase
         .from('mood_entries')
         .delete()
@@ -142,7 +174,6 @@ class _MoodScreenState extends State<MoodScreen> {
         .eq('month', widget.month)
         .eq('year', widget.year);
 
-    // insere nova entrada
     await supabase.from('mood_entries').insert({
       'user_id': user.id,
       'mood': moodKey,
@@ -154,20 +185,16 @@ class _MoodScreenState extends State<MoodScreen> {
     });
 
     await fetchMonthlySummary();
-    MoodCalendar.refresh();
 
-    // mensagem motivacional
-    final msg = "motivation.$moodKey".tr();
-    final color = moodColors[moodKey]!;
-
-    _showSnack(msg, color);
+    _showSnack(
+      "motivation.$moodKey".tr(),
+      moodColors[moodKey]!,
+    );
 
     setState(() => isSaving = false);
   }
 
-  // -----------------------------------------------------------
-  // 🔔 SNACK
-  // -----------------------------------------------------------
+
   void _showSnack(String text, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -175,20 +202,37 @@ class _MoodScreenState extends State<MoodScreen> {
             style: const TextStyle(color: Colors.white, fontSize: 16)),
         backgroundColor: color,
         duration: const Duration(seconds: 3),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
     );
   }
 
-  // -----------------------------------------------------------
-  // 🌈 BOTÕES
-  // -----------------------------------------------------------
-  Widget _buildMoodGrid() {
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE6BDEA),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        "mood.how_are_you_feeling".tr().toUpperCase(),
+        textAlign: TextAlign.center,
+        style: GoogleFonts.courierPrime(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMoodGrid(List<Map<String, dynamic>> moodList) {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: moods.length,
+      itemCount: moodList.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 16,
@@ -196,13 +240,13 @@ class _MoodScreenState extends State<MoodScreen> {
         childAspectRatio: 2.3,
       ),
       itemBuilder: (context, index) {
-        final mood = moods[index];
+        final mood = moodList[index];
         final emoji = mood['emoji'];
         final moodKey = mood['key'];
         final color = moodColors[moodKey]!;
 
         return GestureDetector(
-          onTap: () async => _saveMood(moodKey),
+          onTap: () => _saveMood(moodKey),
           child: Stack(
             clipBehavior: Clip.none,
             children: [
@@ -243,16 +287,119 @@ class _MoodScreenState extends State<MoodScreen> {
     );
   }
 
-  // -----------------------------------------------------------
-  // UI
-  // -----------------------------------------------------------
+
+
+Widget _buildHighlightCard() {
+  final top = topMoods.first;
+  final others = topMoods.skip(1).toList();
+  final monthName = "calendar_month.${widget.month}".tr();
+
+  return Container(
+    margin: const EdgeInsets.only(top: 40),
+    padding: const EdgeInsets.all(28),
+    decoration: BoxDecoration(
+      color: const Color(0xFFF2D8F4),
+      borderRadius: BorderRadius.circular(24),
+    ),
+    child: Column(
+      children: [
+        Text(
+          "mood.other_marked".tr(),
+          style: GoogleFonts.courierPrime(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          "$monthName ${widget.year}",
+          style: GoogleFonts.courierPrime(
+            fontSize: 15,
+            color: Colors.black54,
+          ),
+        ),
+        const SizedBox(height: 20),
+        Text(top['emoji'], style: const TextStyle(fontSize: 45)),
+        const SizedBox(height: 10),
+        Text(
+          "${top['percent'].toStringAsFixed(0)}%",
+          style: GoogleFonts.poppins(
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        Text(
+          trMood(top['key']),
+          style: GoogleFonts.courierPrime(
+            fontSize: 30,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 18),
+        const Divider(),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: others.map((item) {
+            return Column(
+              children: [
+                Text(item['emoji'], style: const TextStyle(fontSize: 28)),
+                Text("${item['percent'].toStringAsFixed(0)}%"),
+                Text(
+                  trMood(item['key']),
+                  style: GoogleFonts.courierPrime(fontSize: 14),
+                ),
+              ],
+            );
+          }).toList(),
+        ),
+      ],
+    ),
+  );
+}
+
+
+
+
+Widget _buildGuestStatsCard() {
+  return Container(
+    padding: const EdgeInsets.all(24),
+    decoration: BoxDecoration(
+      color: const Color(0xFFF2D8F4),
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: Column(
+      children: [
+        Text(
+          "mood.guest_title".tr(),
+          style: GoogleFonts.courierPrime(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          "mood.guest_description".tr(),
+          textAlign: TextAlign.center,
+          style: GoogleFonts.poppins(fontSize: 14),
+        ),
+      ],
+    ),
+  );
+}
+
+
+
+
+
   @override
   Widget build(BuildContext context) {
-    final user = supabase.auth.currentUser!;
+    final user = supabase.auth.currentUser;
 
     final Map<String, String> moodEmojiMap = {
-      for (var m in moods) m['key']: m['emoji'],
-    };
+  for (var m in moods)
+    m['key'] as String: m['emoji'] as String,
+};
 
     return MainScaffold(
       currentIndex: 3,
@@ -266,10 +413,9 @@ class _MoodScreenState extends State<MoodScreen> {
                 _buildHeader(),
                 const SizedBox(height: 20),
 
-                // CALENDÁRIO
                 MoodCalendar(
                   key: MoodCalendar.globalKey,
-                  userId: user.id,
+                  userId: user?.id,
                   month: widget.month,
                   year: widget.year,
                   moodEmojis: moodEmojiMap,
@@ -281,109 +427,20 @@ class _MoodScreenState extends State<MoodScreen> {
 
                 const SizedBox(height: 30),
 
-                _buildMoodGrid(),
-
+                _buildMoodGrid(mainMoods),
+                const SizedBox(height: 20),
+                _buildMoodGrid(extraMoods),
                 const SizedBox(height: 30),
 
-                if (topMoods.isNotEmpty) _buildHighlightCard(),
+                if (topMoods.isNotEmpty) ...[
+                  _buildHighlightCard(),
+                ] else if (user == null) ...[
+                  _buildGuestStatsCard(),
+                ],
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE6BDEA),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        "mood.how_are_you_feeling".tr().toUpperCase(),
-        textAlign: TextAlign.center,
-        style: GoogleFonts.courierPrime(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHighlightCard() {
-    final top = topMoods.first;
-    final others = topMoods.skip(1).toList();
-    final monthName = "calendar_month.${widget.month}".tr();
-
-    return Container(
-      margin: const EdgeInsets.only(top: 40),
-      padding: const EdgeInsets.all(28),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF2D8F4),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        children: [
-          Text(
-            "mood.other_marked".tr(),
-
-            style: GoogleFonts.courierPrime(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            "$monthName ${widget.year}",
-            style: GoogleFonts.courierPrime(
-              fontSize: 15,
-              color: Colors.black54,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(top['emoji'], style: const TextStyle(fontSize: 45)),
-          const SizedBox(height: 10),
-          Text(
-            "${top['percent'].toStringAsFixed(0)}%",
-            style: GoogleFonts.poppins(
-              fontSize: 22,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          Text(
-            trMood(top['key']),
-            style: GoogleFonts.courierPrime(
-              fontSize: 30,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 18),
-          Divider(color: Colors.black38),
-          const SizedBox(height: 16),
-          Text(
-            "mood.other_top_moods".tr(),
-            style: GoogleFonts.courierPrime(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 14),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: others.map((item) {
-              return Column(
-                children: [
-                  Text(item['emoji'], style: const TextStyle(fontSize: 28)),
-                  Text("${item['percent'].toStringAsFixed(0)}%"),
-                  Text(trMood(item['key']),
-                      style: GoogleFonts.courierPrime(fontSize: 14)),
-                ],
-              );
-            }).toList(),
-          ),
-        ],
       ),
     );
   }

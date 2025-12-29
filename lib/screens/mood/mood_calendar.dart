@@ -5,7 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:intl/intl.dart';
 
 class MoodCalendar extends StatefulWidget {
-  final String userId;
+  final String? userId;
   final int month;
   final int year;
 
@@ -47,50 +47,74 @@ class _MoodCalendarState extends State<MoodCalendar> {
     loadMoods();
   }
 
-  Future<void> loadMoods() async {
-    final result = await supabase
-        .from('mood_entries')
-        .select()
-        .eq('user_id', widget.userId)
-        .eq('month', widget.month)
-        .eq('year', widget.year);
-
-    final map = <int, String>{};
-
-    for (var entry in result) {
-      map[entry['day']] = entry['mood'];
-    }
-
-    setState(() => moodByDay = map);
+  void setGuestMood(int day, String moodKey) {
+    setState(() {
+      moodByDay[day] = moodKey;
+    });
   }
+
+
+  Future<void> loadMoods() async {
+  // 👤 Guest não carrega do Supabase
+  if (widget.userId == null) {
+  // Guest NÃO carrega do Supabase
+  // mas também NÃO apaga estado local
+  return;
+}
+
+  final result = await supabase
+      .from('mood_entries')
+      .select()
+      .eq('user_id', widget.userId!) 
+      .eq('month', widget.month)
+      .eq('year', widget.year);
+
+  final map = <int, String>{};
+
+  for (var entry in result) {
+    map[entry['day']] = entry['mood'];
+  }
+
+  if (!mounted) return;
+  setState(() => moodByDay = map);
+}
+
 
   // -------------------------------------------------------
   // 🌸 POPUP DE AÇÕES DO HUMOR DO DIA
   // -------------------------------------------------------
+  
+  
   void _showMoodActionsPopup(int day, String moodKey) async {
-    final userId = widget.userId;
-    final currentContext = context;
+  final userId = widget.userId;
+  final currentContext = context;
 
-    final result = await Supabase.instance.client
-        .from("diary_entries")
-        .select()
-        .eq("user_id", userId)
-        .gte(
-          "entry_date",
-          DateTime(widget.year, widget.month, 1).toIso8601String(),
-        )
-        .lte(
-          "entry_date",
-          DateTime(widget.year, widget.month + 1, 0).toIso8601String(),
-        );
+  // 👤 Guest não consulta Supabase
+  if (userId == null) {
+    // aqui você pode:
+    // - retornar direto
+    // - ou mostrar popup premium
+    return;
+  }
 
-    final bool hasEntry = result.any((entry) {
-      final date = DateTime.parse(entry["entry_date"]);
-      return date.day == day &&
-          date.month == widget.month &&
-          date.year == widget.year;
-    });
+  final startDate =
+      DateTime(widget.year, widget.month, 1).toIso8601String();
+  final endDate =
+      DateTime(widget.year, widget.month + 1, 0).toIso8601String();
 
+  final result = await Supabase.instance.client
+      .from("diary_entries")
+      .select("entry_date")
+      .eq("user_id", userId)
+      .gte("entry_date", startDate)
+      .lte("entry_date", endDate);
+
+  final bool hasEntry = result.any((entry) {
+    final date = DateTime.parse(entry["entry_date"]);
+    return date.day == day &&
+        date.month == widget.month &&
+        date.year == widget.year;
+  });
     if (!mounted) return;
 
     final fullDate = DateFormat(

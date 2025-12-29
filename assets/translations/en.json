@@ -334,12 +334,13 @@
   "calendar_page": "Calendar & Reminders",
 
   "daily_inspiration": "🌙 Fetching today’s inspiration...",
-  "search_previous_dates": "Search previous dates",
+  "search_previous_dates": "Search dates",
   "select_date": "Select a date",
   "choose_your_color_today": "Choose your color today:",
   "your_month_space": "Your month space!",
   "curiosity_title": "A curiosity about you",
   "no_curiosity_message": "You haven't shared anything about yourself this month.",
+  "daily_inspiration_guest": "🌙 Fetching today’s inspiration...",
 
 
 
@@ -464,7 +465,24 @@
     "number": "Number",
     "element": "Element",
     "stone": "Stone",
-    "flower": "Flower"
+    "flower": "Flower",
+
+    "discover_personal_year_button": "Descubra seu Ano Pessoal",
+    "personal_year_title": "seu número pessoal",
+    "personal_year_color_label": "cor do ano:",
+    "personal_year_no_birthdate_title": "Data de nascimento não encontrada",
+    "personal_year_no_birthdate_text": "Para calcular seu Ano Pessoal, precisamos da sua data de nascimento.",
+    "personal_year_edit_birthdate_button": "Editar data de nascimento",
+    "personal_year_go_to_login": "Fazer login",
+    "personal_year_header_year": "Ano",
+    "personal_year_error": "Não foi possível calcular seu Ano Pessoal. Tente novamente.",
+    "login_required_title": "Log in to continue",
+    "login_required_text": "Log in to discover your Personal Year ✨",
+    "login_required_button": "Log in"
+
+
+
+
   },
 
   "my_moment": {
@@ -808,7 +826,9 @@
 
 
  "calendar_description": "This is your mood calendar.\nEvery day you can record how you feel, and little by little, your emojis will appear here.",
- "calendar_register_hint": "Click the buttons below to record your mood for the day"
+ "calendar_register_hint": "Click the buttons below to record your mood for the day",
+
+ "guest_saved": "Mood saved for today 💜"
 
 
  },
