@@ -90,12 +90,17 @@ class _DayEntryModalState extends State<DayEntryModal> {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
 
-    // 👤 guest → salva fake
+    // 👤 GUEST → retorna dados
     if (user == null) {
-      Navigator.pop(context, true);
+      Navigator.pop(context, {
+        'day': widget.day,
+        'title': text,
+        'color': _hasAlert ? _selectedColorHex : "FFe04cb7",
+      });
       return;
     }
 
+    // 👤 LOGADO → salva no banco
     await CalendarEventService.saveOrUpdateEvent(
       existingId: widget.existing?['id'],
       userId: user.id,
@@ -113,10 +118,20 @@ class _DayEntryModalState extends State<DayEntryModal> {
     Navigator.pop(context, true);
   }
 
-  Future<void> _deleteEvent(String id) async {
-    await CalendarEventService.deleteEvent(id);
-    await _loadEvents();
+ Future<void> _deleteEvent(String id) async {
+  await CalendarEventService.deleteEvent(id);
+
+  // Recarrega os eventos do dia
+  await _loadEvents();
+
+  if (!mounted) return;
+
+  // 🔑 Se não sobrou nenhum evento, fecha o modal
+  // avisando a tela de trás para atualizar o calendário
+  if (_events.isEmpty) {
+    Navigator.pop(context, true);
   }
+}
 
   // ───────── UI ─────────
   @override
@@ -178,7 +193,8 @@ class _DayEntryModalState extends State<DayEntryModal> {
                             "${i.toString().padLeft(2, '0')}:00"),
                       ),
                     ),
-                    onChanged: (v) => setState(() => _hour = v!),
+                    onChanged: (v) =>
+                        setState(() => _hour = v!),
                   ),
 
                   const SizedBox(height: 12),
@@ -199,45 +215,11 @@ class _DayEntryModalState extends State<DayEntryModal> {
 
                   const SizedBox(height: 12),
 
-
-
-/// 🔁 BADGE DE REPETIÇÃO
-if (_repeatType != 'none')
-  Container(
-    margin: const EdgeInsets.only(top: 8),
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: Colors.grey.shade300),
-    ),
-    child: Row(
-      children: [
-        const Icon(Icons.repeat, size: 18),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            _repeatType == 'daily'
-                ? tr("calendar.repeat_daily")
-                : _repeatType == 'weekly'
-                    ? tr("calendar.repeat_weekly")
-                    : _repeatType == 'monthly'
-                        ? tr("calendar.repeat_monthly")
-                        : tr("calendar.repeat_yearly"),
-            style: const TextStyle(fontSize: 13),
-          ),
-        ),
-      ],
-    ),
-  ),
-
-const SizedBox(height: 12),
-
-
                   // ALERT
                   SwitchListTile(
                     value: _hasAlert,
-                    onChanged: (v) => setState(() => _hasAlert = v),
+                    onChanged: (v) =>
+                        setState(() => _hasAlert = v),
                     title: Text(tr("calendar.add_alert")),
                   ),
 
@@ -262,51 +244,51 @@ const SizedBox(height: 12),
                       }).toList(),
                     ),
 
-                  const SizedBox(height: 16),
-
-
-
                   const SizedBox(height: 12),
 
-DropdownButtonFormField<String>(
-  value: _repeatType,
-  dropdownColor: Colors.white,
-  decoration: InputDecoration(
-    filled: true,
-    fillColor: Colors.white,
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-    ),
-    contentPadding: const EdgeInsets.symmetric(
-      horizontal: 12,
-      vertical: 14,
-    ),
-  ),
-  items: [
-    DropdownMenuItem(
-      value: 'none',
-      child: Text(tr("calendar.repeat_none")),
-    ),
-    DropdownMenuItem(
-      value: 'daily',
-      child: Text(tr("calendar.repeat_daily")),
-    ),
-    DropdownMenuItem(
-      value: 'weekly',
-      child: Text(tr("calendar.repeat_weekly")),
-    ),
-    DropdownMenuItem(
-      value: 'monthly',
-      child: Text(tr("calendar.repeat_monthly")),
-    ),
-    DropdownMenuItem(
-      value: 'yearly',
-      child: Text(tr("calendar.repeat_yearly")),
-    ),
-  ],
-  onChanged: (v) => setState(() => _repeatType = v!),
-),
+                  // REPEAT
+                  DropdownButtonFormField<String>(
+                    value: _repeatType,
+                    dropdownColor: Colors.white,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    items: [
+                      DropdownMenuItem(
+                        value: 'none',
+                        child:
+                            Text(tr("calendar.repeat_none")),
+                      ),
+                      DropdownMenuItem(
+                        value: 'daily',
+                        child:
+                            Text(tr("calendar.repeat_daily")),
+                      ),
+                      DropdownMenuItem(
+                        value: 'weekly',
+                        child:
+                            Text(tr("calendar.repeat_weekly")),
+                      ),
+                      DropdownMenuItem(
+                        value: 'monthly',
+                        child:
+                            Text(tr("calendar.repeat_monthly")),
+                      ),
+                      DropdownMenuItem(
+                        value: 'yearly',
+                        child:
+                            Text(tr("calendar.repeat_yearly")),
+                      ),
+                    ],
+                    onChanged: (v) =>
+                        setState(() => _repeatType = v!),
+                  ),
 
+                  const SizedBox(height: 16),
 
                   // GUEST WARNING
                   if (user == null)
@@ -320,7 +302,8 @@ DropdownButtonFormField<String>(
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.lock_outline, size: 18),
+                          const Icon(Icons.lock_outline,
+                              size: 18),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -333,9 +316,9 @@ DropdownButtonFormField<String>(
                       ),
                     ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
-                  // EVENTS LIST
+                  // EVENTS LIST (logado)
                   if (_events.isNotEmpty) ...[
                     Text(
                       tr("calendar.your_notes"),
@@ -345,41 +328,25 @@ DropdownButtonFormField<String>(
                     ),
                     const SizedBox(height: 8),
                     ..._events.map((e) => Card(
-  child: ListTile(
-    leading: Icon(
-      Icons.favorite,
-      color: Color(int.parse(e['color'], radix: 16)),
-    ),
-    title: Text(e['title']),
-    
-    subtitle: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text("${e['hour']}:00"),
-
-        if (e['repeat_type'] != 'none')
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Text(
-              tr("calendar.repeats_${e['repeat_type']}"),
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.grey,
-              ),
-            ),
-          ),
-      ],
-    ),
-    trailing: IconButton(
-      icon: const Icon(
-        Icons.delete_outline,
-        color: Colors.redAccent,
-      ),
-      onPressed: () => _deleteEvent(e['id'].toString()),
-    ),
-  ),
-)),
-
+                          child: ListTile(
+                            leading: Icon(
+                              Icons.favorite,
+                              color: Color(int.parse(
+                                  e['color'],
+                                  radix: 16)),
+                            ),
+                            title: Text(e['title']),
+                            subtitle: Text("${e['hour']}:00"),
+                            trailing: IconButton(
+                              icon: const Icon(
+                                  Icons.delete_outline,
+                                  color: Colors.redAccent),
+                              onPressed: () =>
+                                  _deleteEvent(e['id']
+                                      .toString()),
+                            ),
+                          ),
+                        )),
                   ],
 
                   const SizedBox(height: 20),

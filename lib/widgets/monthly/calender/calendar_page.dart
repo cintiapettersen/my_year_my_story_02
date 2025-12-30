@@ -1,4 +1,3 @@
-// calendar_page.dart
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 
@@ -13,7 +12,7 @@ class CalendarPage extends StatefulWidget {
   final int month;
   final int year;
 
-  CalendarPage({
+  const CalendarPage({
     super.key,
     required this.month,
     required this.year,
@@ -21,14 +20,10 @@ class CalendarPage extends StatefulWidget {
 
   @override
   State<CalendarPage> createState() => _CalendarPageState();
-
-  
-
 }
 
 class _CalendarPageState extends State<CalendarPage> {
-
-   /// 👤 guest — eventos fake (não persistem)
+  /// 👤 guest — eventos fake (não persistem)
   final List<Map<String, dynamic>> _guestEvents = [];
 
   bool _isLoading = true;
@@ -41,11 +36,11 @@ class _CalendarPageState extends State<CalendarPage> {
   void initState() {
     super.initState();
     _initPage();
-
-  
-
   }
 
+  // ======================
+  // INIT
+  // ======================
   Future<void> _initPage() async {
     final user = SupabaseConfig.client.auth.currentUser;
 
@@ -55,35 +50,42 @@ class _CalendarPageState extends State<CalendarPage> {
     }
 
     if (mounted) {
-      setState(() => _isLoading = false);
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
+  // ======================
+  // LOAD EVENTS (REAL)
+  // ======================
   Future<void> _loadMonthEvents() async {
-  final user = SupabaseConfig.client.auth.currentUser;
-  if (user == null) return;
+    final user = SupabaseConfig.client.auth.currentUser;
+    if (user == null) return;
 
-  final events = await CalendarEventService.getEventsForMonth(
-    userId: user.id,
-    year: widget.year,
-    month: widget.month,
-  );
+    final events = await CalendarEventService.getEventsForMonth(
+      userId: user.id,
+      year: widget.year,
+      month: widget.month,
+    );
 
-  _monthEvents = events;
+    _monthEvents = events;
 
-  // ❤️ SOMENTE o dia real do evento
-  _eventColors.clear();
-  for (final e in events) {
-    final int day = e['day'];
-    final String color = e['color'];
+    /// 🔥 SEMPRE limpa antes de reconstruir
+    _eventColors.clear();
 
-    _eventColors[day] = color;
+    for (final e in events) {
+      final int day = e['day'];
+      final String color = e['color'];
+      _eventColors[day] = color;
+    }
+
+    if (mounted) setState(() {});
   }
 
-  if (mounted) setState(() {});
-}
-
-
+  // ======================
+  // HELPERS
+  // ======================
   bool _isToday(int day) {
     final now = DateTime.now();
     return now.year == widget.year &&
@@ -96,9 +98,11 @@ class _CalendarPageState extends State<CalendarPage> {
     return firstDay.weekday % 7;
   }
 
+  // ======================
+  // OPEN DAY MODAL
+  // ======================
   Future<void> _openDayEntry(int day) async {
   final user = SupabaseConfig.client.auth.currentUser;
-
   Map<String, dynamic>? existing;
 
   // =========================
@@ -107,14 +111,13 @@ class _CalendarPageState extends State<CalendarPage> {
   if (user == null) {
     final dayEvents =
         _guestEvents.where((e) => e['day'] == day).toList();
-
     if (dayEvents.isNotEmpty) {
       existing = dayEvents.last;
     }
   }
 
   // =========================
-  // 👤 USER LOGADO → banco
+  // 👤 LOGADO → busca no banco
   // =========================
   if (user != null) {
     final events = await CalendarEventService.getEventsForDay(
@@ -147,7 +150,10 @@ class _CalendarPageState extends State<CalendarPage> {
 
   if (!mounted) return;
 
-  final result = await showDialog<bool>(
+  // =========================
+  // 📅 ABRE MODAL (guest + logado)
+  // =========================
+  final result = await showDialog<dynamic>(
     context: context,
     builder: (_) => DayEntryModal(
       year: widget.year,
@@ -157,17 +163,39 @@ class _CalendarPageState extends State<CalendarPage> {
     ),
   );
 
-  if (result == true) {
-    if (user != null) {
-      await _loadMonthEvents();
-    } else {
-      // 🔥 fake save para guest
-      setState(() {});
-    }
+  if (!mounted || result == null) return;
+
+  // =========================
+  // 👤 LOGADO → recarrega do banco
+  // =========================
+  if (user != null) {
+    await _loadMonthEvents();
+    return;
   }
+
+  // =========================
+  // 👤 GUEST → salva fake com dados do modal
+  // =========================
+  final resultDay = result['day'] as int;
+  final title = result['title'] as String;
+  final color = result['color'] as String;
+
+  _guestEvents.removeWhere((e) => e['day'] == resultDay);
+
+  _guestEvents.add({
+    'day': resultDay,
+    'title': title,
+    'color': color,
+  });
+
+  _eventColors[resultDay] = color;
+
+  setState(() {});
 }
 
-
+  // ======================
+  // UI
+  // ======================
   @override
   Widget build(BuildContext context) {
     return MonthPageTemplate(
@@ -176,36 +204,36 @@ class _CalendarPageState extends State<CalendarPage> {
       title: '',
       pageLabel: tr("dates.title"),
       description: tr("dates.description"),
-      
-      
       child: _isLoading
-    ? const Center(child: CircularProgressIndicator())
-    : SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            /// 📝 DESCRIÇÃO DO CALENDÁRIO
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-              child: Text(
-                tr("calendar.description"),
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.black87,
-                  height: 1.4,
-                ),
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding:
+                        const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                    child: Text(
+                      tr("calendar.description"),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black87,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                  _buildCalendar(),
+                  _buildMonthInsight(),
+                  _buildEventList(),
+                ],
               ),
             ),
-
-            _buildCalendar(),
-            _buildMonthInsight(),
-            _buildEventList(),
-          ],
-        ),
-      ),
     );
   }
 
+  // ======================
+  // CALENDAR GRID
+  // ======================
   Widget _buildCalendar() {
     final daysInMonth =
         DateTime(widget.year, widget.month + 1, 0).day;
@@ -247,7 +275,6 @@ class _CalendarPageState extends State<CalendarPage> {
                 ? Icon(Icons.favorite,
                     color: heartColor, size: 26)
                 : Text('$day'),
-
             if (isToday)
               Positioned(
                 bottom: 6,
@@ -266,6 +293,9 @@ class _CalendarPageState extends State<CalendarPage> {
     );
   }
 
+  // ======================
+  // INSIGHT + LIST
+  // ======================
   Widget _buildMonthInsight() {
     if (_monthEvents.isEmpty) return const SizedBox();
 
@@ -279,20 +309,65 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   Widget _buildEventList() {
+  final user = SupabaseConfig.client.auth.currentUser;
+
+  /// 👤 GUEST → usa eventos fake
+  if (user == null) {
+    if (_guestEvents.isEmpty) return const SizedBox();
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            tr("calendar.your_notes"),
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          ..._guestEvents.map((e) {
+            final color =
+                Color(int.parse(e['color'], radix: 16));
+            return Card(
+              child: ListTile(
+                leading:
+                    Icon(Icons.favorite, color: color),
+                title: Text(e['title']),
+                subtitle:
+                    Text('${e['day']}/${widget.month}'),
+                onTap: () => _openDayEntry(e['day']),
+              ),
+            );
+          }).toList(),
+
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              tr("calendar.guest_hint"),
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 👤 USER LOGADO → comportamento atual
   if (_monthEvents.isEmpty) return const SizedBox();
 
-  List<Map<String, dynamic>> events;
-
-  if (_isPremiumUser) {
-    // 👑 premium vê tudo
-    events = _monthEvents;
-  } else {
-    // 👤 free vê só eventos base (sem repetição)
-    events = _monthEvents
-        .where((e) => e['repeat_type'] == 'none')
-        .take(5)
-        .toList();
-  }
+  final events = _isPremiumUser
+      ? _monthEvents
+      : _monthEvents
+          .where((e) => e['repeat_type'] == 'none')
+          .take(5)
+          .toList();
 
   if (events.isEmpty) return const SizedBox();
 
@@ -311,12 +386,15 @@ class _CalendarPageState extends State<CalendarPage> {
         const SizedBox(height: 12),
 
         ...events.map((e) {
-          final color = Color(int.parse(e['color'], radix: 16));
+          final color =
+              Color(int.parse(e['color'], radix: 16));
           return Card(
             child: ListTile(
-              leading: Icon(Icons.favorite, color: color),
+              leading:
+                  Icon(Icons.favorite, color: color),
               title: Text(e['title']),
-              subtitle: Text('${e['day']}/${widget.month}'),
+              subtitle:
+                  Text('${e['day']}/${widget.month}'),
               onTap: () => _openDayEntry(e['day']),
             ),
           );
