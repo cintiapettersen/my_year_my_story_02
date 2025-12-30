@@ -708,6 +708,7 @@
     "no_entries_day": "Nenhuma entrada feita neste dia",
     "write_diary": "Escrever no diário",
     "edit_mood": "Editar humor do dia",
+    "delete_mood": "Excluir humor do dia",
 
     "weekdays": "Dias da semana",
 
@@ -772,6 +773,9 @@
 },
  "mood": {
   "how_are_you_feeling": "Como você está se sentindo?",
+  "page_description": "Registre seu humor todos os dias, complete seu calendário com carinhas e use esse momento para refletir sobre como foi o seu mês.",
+
+
   "highlight_title": "HUMOR DESTAQUE",
   "other_marked": "HUMOR DESTAQUE",
   "highlight_mood": "HUMOR DESTAQUE",
@@ -793,6 +797,11 @@
   "proud": "Orgulhosa",
   "surprised": "Surpresa",
   "confused": "Confusa",
+  "sick": "Doente",
+  "lucky": "Sortudo(a)",
+  "productive": "Produtivo(a)",
+  "disappointed": "Decepcionado(a)",
+
 
   "limit_message": "💗 Você já registrou seu humor! Tente novamente em 1 hora.",
 
@@ -801,7 +810,7 @@
   "calendar_register_hint": "Clique nos botões abaixo e registre seu humor do dia",
   "guest_saved": "Humor salvo para hoje 💜",
   "guest_title": "Modo convidado",
-  "guest_description": "Você pode marcar seus humores, mas eles não serão salvos."
+  "guest_description": "Você pode marcar seus humores, mas eles não serão salvos sem uma conta."
 
 
   },
@@ -822,7 +831,11 @@
   "overwhelmed": "Pausa. Você está fazendo seu melhor.",
   "proud": "Orgulhe-se mesmo!",
   "surprised": "Uau! Coisas boas acontecem!",
-  "confused": "Tudo vai fazer mais sentido em breve."
+  "confused": "Tudo vai fazer mais sentido em breve.",
+  "sick": "Descanse e cuide de você. Amanhã pode ser um dia melhor.",
+  "lucky": "Aproveite esse momento! Pequenas alegrias fazem diferença.",
+  "productive": "Que bom ver seu esforço render. Continue assim!",
+  "disappointed": "Nem todos os dias são fáceis. Seja gentil com você."
 },
 
 

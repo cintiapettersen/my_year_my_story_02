@@ -43,9 +43,9 @@ class _MoodScreenState extends State<MoodScreen> {
     "calm": Color(0xFFC79FE2),
     "loving": Color(0xFFDD97B7),
     "thoughtful": Color(0xFF7654A3),
-    "anxious": Color(0xFF686DAD),
+    "anxious": Color.fromARGB(255, 183, 105, 32),
     "tired": Color(0xFFA1A8F0),
-    "sad": Color(0xFF627FDD),
+    "sad": Color.fromARGB(255, 78, 97, 161),
     "irritated": Color(0xFFE2377D),
     "embarrassed": Color(0xFFB71691),
     "comforted": Color(0xFFDBAF35),
@@ -55,6 +55,10 @@ class _MoodScreenState extends State<MoodScreen> {
     "proud": Color(0xFFDD97B7),
     "surprised": Color(0xFFC79FE2),
     "confused": Color(0xFFB539BC),
+    "sick": Color.fromARGB(255, 228, 104, 120),
+    "lucky": Color.fromARGB(255, 92, 143, 123),
+   "productive": Color.fromARGB(255, 190, 174, 239),
+   "disappointed": Color.fromARGB(255, 235, 194, 194),
   };
 
   final List<Map<String, dynamic>> moods = [
@@ -74,8 +78,12 @@ class _MoodScreenState extends State<MoodScreen> {
     {'emoji': '😇', 'key': 'proud'},
     {'emoji': '🤯', 'key': 'surprised'},
     {'emoji': '😕', 'key': 'confused'},
+    {'emoji': '🤒', 'key': 'sick'},          // doente
+    {'emoji': '🍀', 'key': 'lucky'},         // sortudo
+    {'emoji': '🚀', 'key': 'productive'},    // produtivo
+    {'emoji': '😞', 'key': 'disappointed'},  // decepcionado
+     
   ];
-
   // 🌈 divisão visual
   List<Map<String, dynamic>> get mainMoods => moods.take(12).toList();
   List<Map<String, dynamic>> get extraMoods => moods.skip(12).toList();
@@ -141,25 +149,36 @@ class _MoodScreenState extends State<MoodScreen> {
 
     final user = supabase.auth.currentUser;
 
+   
     // 👤 GUEST
-    if (user == null) {
-      guestMoodCount++;
+if (user == null) {
+  // 🚫 já atingiu o limite → bloqueia
+  if (guestMoodCount >= guestMoodLimit) {
+    showPremiumPopup(context);
+    return;
+  }
 
-      MoodCalendar.globalKey.currentState
-          ?.setGuestMood(day, moodKey);
+  // ✅ ainda pode registrar
+  guestMoodCount++;
 
-      _showSnack(
-        "mood.guest_saved".tr(),
-        moodColors[moodKey]!,
-      );
+  MoodCalendar.globalKey.currentState
+      ?.setGuestMood(day, moodKey);
 
-      if (guestMoodCount >= guestMoodLimit) {
-        Future.delayed(const Duration(milliseconds: 300), () {
-          showPremiumPopup(context);
-        });
-      }
-      return;
-    }
+  _showSnack(
+    "mood.guest_saved".tr(),
+    moodColors[moodKey]!,
+  );
+
+  // 🧠 se acabou de atingir o limite agora, mostra popup
+  if (guestMoodCount >= guestMoodLimit) {
+    Future.delayed(const Duration(milliseconds: 300), () {
+      showPremiumPopup(context);
+    });
+  }
+
+  return;
+}
+
 
     if (isSaving) return;
     setState(() => isSaving = true);
@@ -183,6 +202,11 @@ class _MoodScreenState extends State<MoodScreen> {
       'year': widget.year,
       'created_at': DateTime.now().toIso8601String(),
     });
+
+
+    MoodCalendar.globalKey.currentState
+    ?.setGuestMood(day, moodKey);
+
 
     await fetchMonthlySummary();
 
@@ -211,22 +235,77 @@ class _MoodScreenState extends State<MoodScreen> {
   }
 
   Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE6BDEA),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        "mood.how_are_you_feeling".tr().toUpperCase(),
-        textAlign: TextAlign.center,
-        style: GoogleFonts.courierPrime(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
+  return Stack(
+    clipBehavior: Clip.none,
+    children: [
+      Container(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE6BDEA).withOpacity(0.85),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 26), // espaço pro emoji
+
+            Text(
+              "mood.how_are_you_feeling".tr().toUpperCase(),
+              textAlign: TextAlign.center,
+              style: GoogleFonts.courierPrime(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // linha separadora 90%
+            FractionallySizedBox(
+              widthFactor: 0.9,
+              child: Container(
+                height: 1,
+                color: Colors.black.withOpacity(0.25),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            Text(
+              "mood.page_description".tr(),
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                color: Colors.black54,
+                height: 1.45,
+              ),
+            ),
+          ],
         ),
       ),
-    );
-  }
+
+      // 📌 EMOJI PIN
+      Positioned(
+        top: -12,
+        left: 0,
+        right: 0,
+        child: CircleAvatar(
+          radius: 24,
+          backgroundColor: Colors.white.withOpacity(0.7),
+          child: CircleAvatar(
+            radius: 20,
+            backgroundColor: const Color(0xFFE6BDEA),
+            child: const Text(
+              "😊", // ou 😊 💜 📖 ✨
+              style: TextStyle(fontSize: 22),
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+
 
   Widget _buildMoodGrid(List<Map<String, dynamic>> moodList) {
     return GridView.builder(
@@ -310,6 +389,7 @@ Widget _buildHighlightCard() {
             fontWeight: FontWeight.bold,
           ),
         ),
+        
         const SizedBox(height: 10),
         Text(
           "$monthName ${widget.year}",
@@ -425,7 +505,7 @@ Widget _buildGuestStatsCard() {
                   },
                 ),
 
-                const SizedBox(height: 30),
+                const SizedBox(height: 40),
 
                 _buildMoodGrid(mainMoods),
                 const SizedBox(height: 20),

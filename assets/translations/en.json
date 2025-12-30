@@ -693,6 +693,7 @@
     "edit_event": "edit event",
      "add_alert": "Add alert",
      "remove_alert": "Remove alert",
+     "delete_mood": "Remove mood for this day",
      
     "login_to_save": "You can try it freely, but to save your reminders you need to be logged in.",
     "your_notes": "Your notes for the day",
@@ -801,6 +802,9 @@
 
  "mood": {
   "how_are_you_feeling": "How are you feeling?",
+  "page_description": "Track your mood every day, fill your calendar with little faces, and take a moment to reflect on how your month has been.",
+
+
   "highlight_title": "HIGHLIGHT MOOD",
   "other_marked": "HIGHLIGHT MOOD",
   "other_top_moods": "Other moods of the month",
@@ -821,14 +825,22 @@
   "proud": "Proud",
   "surprised": "Surprised",
   "confused": "Confused",
+  "sick": "Sick",
+  "lucky": "Lucky",
+  "productive": "Productive",
+  "disappointed": "Disappointed",
+
 
   "limit_message": "💗 You already recorded your mood! Try again in 1 hour.",
 
 
  "calendar_description": "This is your mood calendar.\nEvery day you can record how you feel, and little by little, your emojis will appear here.",
  "calendar_register_hint": "Click the buttons below to record your mood for the day",
+ "guest_saved": "Mood saved for today 💜",
+ "guest_title": "Guest mode",
+ "guest_description": "You can track your moods here, but they won’t be saved without an account."
 
- "guest_saved": "Mood saved for today 💜"
+
 
 
  },
@@ -850,7 +862,12 @@
   "overwhelmed": "Pause. You're doing your best.",
   "proud": "Be proud — you earned it!",
   "surprised": "Wow! Good things are happening!",
-  "confused": "Everything will make sense soon."
+  "confused": "Everything will make sense soon.",
+  "sick": "Take some time to rest and take care of yourself. Tomorrow can be better.",
+  "lucky": "Enjoy this moment! Small joys make a difference.",
+  "productive": "It’s great to see your effort paying off. Keep going!",
+  "disappointed": "Not every day is easy. Be gentle with yourself."
+
 },
 
 

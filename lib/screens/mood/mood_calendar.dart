@@ -80,6 +80,35 @@ class _MoodCalendarState extends State<MoodCalendar> {
 }
 
 
+Future<void> _deleteMood(int day) async {
+  final userId = widget.userId;
+
+  // 👤 Guest: remove só local
+  if (userId == null) {
+    if (!mounted) return;
+    setState(() {
+      moodByDay.remove(day);
+    });
+    return;
+  }
+
+  // 👑 Premium: remove do Supabase
+  await supabase
+      .from('mood_entries')
+      .delete()
+      .eq('user_id', userId)
+      .eq('day', day)
+      .eq('month', widget.month)
+      .eq('year', widget.year);
+
+  if (!mounted) return;
+
+  setState(() {
+    moodByDay.remove(day);
+  });
+}
+
+
   // -------------------------------------------------------
   // 🌸 POPUP DE AÇÕES DO HUMOR DO DIA
   // -------------------------------------------------------
@@ -218,6 +247,28 @@ class _MoodCalendarState extends State<MoodCalendar> {
                     setState(() => selectedDay = day);
                   },
                 ),
+
+                // 🗑️ Excluir humor
+  ListTile(
+  leading: const Icon(Icons.delete_outline, color: Colors.redAccent),
+  title: Text(
+    'calendar.delete_mood'.tr(),
+    style: GoogleFonts.poppins(
+      fontSize: 15,
+      color: Colors.redAccent,
+    ),
+  ),
+  onTap: () {
+    final parentContext = context;
+
+    Navigator.pop(parentContext);
+
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _deleteMood(day);
+    });
+  },
+),
+
               ],
             ),
           ),
@@ -225,6 +276,9 @@ class _MoodCalendarState extends State<MoodCalendar> {
       },
     );
   } //  👈👈👈 FECHAMENTO DO MÉTODO (O QUE FALTAVA!)
+
+
+  
 
   // -------------------------------------------------------
   // 🏗️ BUILD
@@ -304,7 +358,7 @@ class _MoodCalendarState extends State<MoodCalendar> {
           ),
         ),
 
-        const SizedBox(height: 12),
+        const SizedBox(height: 30),
 
         GridView.count(
           crossAxisCount: 7,
