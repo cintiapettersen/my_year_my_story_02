@@ -142,19 +142,19 @@
   "app_name": "My Year, my Story",
   "title": "Experiência Premium",
   "main_phrase": "Crie memórias para levar pra vida inteira.",
-  "sub_phrase": "Desbloqueie recursos especiais e deixe seu diário ainda mais mágico.",
+  "sub_phrase": "Desbloqueie recursos especiais e torne sua experiência ainda mais mágica.",
 
-  "benefit1": "Acesso ilimitado aos widgets mensais",
-  "benefit2": "Experiência aprimorada na Mensagem do Dia",
-  "benefit3": "Salve memórias ilimitadas",
-  "benefit4": "Listas, metas e Gratidão ilimitadas",
-  "benefit5": "Quizzes especiais com resultado",
-  "benefit6": "Dicas diárias exclusivas",
-  "benefit7": "Diário liberado",
-  "benefit8": "Calendário do humor completo",
-
-  "button": "QUERO SER PREMIUM ✨",
-  "later": "Talvez depois"
+"benefit1": "Acesso ilimitado aos conteúdos mensais",
+"benefit2": "Experiência aprimorada na Mensagem do Dia",
+"benefit3": "Guarde memórias sem limite",
+"benefit4": "Listas, metas e gratidão sem restrições",
+"benefit5": "Mais quizzes por mês",
+"benefit6": "Mais dicas e curiosidades exclusivas",
+"benefit7": "Espaço livre para escrever e refletir",
+"benefit8": "Calendário do humor com estatística mensal",
+"benefit9": "Calendário com notas e alertas",
+"button": "QUERO SER PREMIUM ✨",
+"later": "Talvez depois"
 
   },
 
@@ -408,10 +408,28 @@
   "12": "Dezembro"
 },
 
+"calendar_month_short": {
+    "1": "Jan",
+    "2": "Fev",
+    "3": "Mar",
+    "4": "Abr",
+    "5": "Mai",
+    "6": "Jun",
+    "7": "Jul",
+    "8": "Ago",
+    "9": "Set",
+    "10": "Out",
+    "11": "Nov",
+    "12": "Dez"
+  },
 
 
  "general": {
    "cancel": "cancelar"
+
+ 
+ 
+
   },
 
 
@@ -761,7 +779,8 @@
     "save": "Salvar",
     "cancel": "Cancelar",
     "delete": "Apagar",
-    "close": "Fechar"
+    "close": "Fechar",
+    "open": "Abrir"
 
 },
  "mood": {
@@ -775,26 +794,25 @@
   "other_top_moods": "Outros humores do mês",
 
   "happy": "Feliz",
-  "calm": "Calma",
+  "calm": "Calmo(a)",
   "loving": "Amando",
-  "thoughtful": "Pensativa",
-  "anxious": "Ansiosa",
-  "tired": "Cansada",
+  "thoughtful": "Pensativo(a)",
+  "anxious": "Ansioso(a)",
+  "tired": "Cansado(a)",
   "sad": "Triste",
-  "irritated": "Irritada",
-  "embarrassed": "Envergonhada",
-  "comforted": "Acolhida",
-  "bored": "Entediada",
-  "excited": "Empolgada",
-  "overwhelmed": "Sobrecarregada",
-  "proud": "Orgulhosa",
-  "surprised": "Surpresa",
-  "confused": "Confusa",
+  "irritated": "Irritado(a)",
+  "embarrassed": "Envergonhado(a)",
+  "comforted": "Acolhido(a)",
+  "bored": "Entediado(a)",
+  "excited": "Empolgado(a)",
+  "overwhelmed": "Sobrecarregado(a)",
+  "proud": "Orgulhoso(a)",
+  "surprised": "Surpreso(a)",
+  "confused": "Confuso(a)",
   "sick": "Doente",
   "lucky": "Sortudo(a)",
   "productive": "Produtivo(a)",
   "disappointed": "Decepcionado(a)",
-
 
   "limit_message": "💗 Você já registrou seu humor! Tente novamente em 1 hora.",
 
@@ -803,7 +821,12 @@
   "calendar_register_hint": "Clique nos botões abaixo e registre seu humor do dia",
   "guest_saved": "Humor salvo para hoje 💜",
   "guest_title": "Modo convidado",
-  "guest_description": "Você pode marcar seus humores, mas eles não serão salvos sem uma conta."
+  "guest_description": "Você pode marcar seus humores, mas eles não serão salvos sem uma conta.",
+
+  "search_other_dates": "Pesquisar outras datas",
+    "choose_period": "Escolher período",
+    "choose_period_desc": "Selecione o mês e o ano que você deseja visualizar.",
+    "select_day_first": "Escolha um dia no calendário primeiro 😊"
 
 
   },

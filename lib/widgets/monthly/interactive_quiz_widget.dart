@@ -34,6 +34,7 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
   String? resultDescOnPage;
 
   late PageController _pageController;
+  int currentPage = 0; // 👈 contador
 
   String get _quizStoragePrefix =>
       _isPremiumUser ? "premium" : "guest";
@@ -77,6 +78,10 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
     await _loadQuiz();
     await _loadSavedAnswers();
     await _loadSavedResult();
+
+      if (resultTitleOnPage != null) {
+      currentPage = quizData?["questions"]?.length ?? 0;
+    }
     setState(() => loading = false);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -105,18 +110,15 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
 
     if (data == null) return;
 
-    setState(() {
-      quizData = data;
-      quizTitle = _getLocalized(
-        data["title"],
-        data["title_en"],
-      );
-    });
+     quizData = data;
+    quizTitle = _getLocalized(
+      data["title"],
+      data["title_en"],
+    );
   }
 
   String _getLocalized(String? pt, String? en) {
     final lang = context.locale.languageCode;
-
     if (lang == "en" && en != null && en.isNotEmpty) return en;
     return pt ?? "";
   }
@@ -223,6 +225,7 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
   setState(() {
     resultTitleOnPage = title;
     resultDescOnPage = desc;
+    currentPage = quizData?["questions"]?.length ?? 0;
   });
 
   final qLen = quizData?["questions"]?.length ?? 0;
@@ -280,7 +283,7 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
     );
   }
 
-  Widget _buildOption(
+ Widget _buildOption(
   int qIndex,
   int opt,
   List<String> options,
@@ -344,6 +347,10 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
               if (isLastQuestion) {
                 _submit();
               } else {
+                setState(() {
+                  currentPage++;
+                });
+
                 _pageController.nextPage(
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeOut,
@@ -364,6 +371,7 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
     ],
   );
 }
+
 
   Widget _buildResultPage() {
   return FutureBuilder<bool>(
@@ -502,10 +510,11 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
                 );
 
                 setState(() {
-                  selectedOptions.clear();
-                  resultTitleOnPage = null;
-                  resultDescOnPage = null;
-                });
+  selectedOptions.clear();
+  resultTitleOnPage = null;
+  resultDescOnPage = null;
+  currentPage = 0;
+});
 
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   if (_pageController.hasClients) {
@@ -573,21 +582,39 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
     ),
   ),
 
-        SizedBox(
-          height: 420,
-          child: PageView.builder(
-            controller: _pageController,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: totalPages,
-            itemBuilder: (context, index) {
-              final qLen =
-                  quizData?["questions"].length ?? 0;
-              return index < qLen
-                  ? _buildQuestionPage(index)
-                  : _buildResultPage();
-            },
+       Column(
+  children: [
+    if (!hasResult &&
+        currentPage < (quizData?["questions"]?.length ?? 0))
+      Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Text(
+          "${currentPage + 1}/${quizData?["questions"]?.length ?? 0}",
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF9E4A6E),
           ),
         ),
+      ),
+
+    SizedBox(
+      height: 420,
+      child: PageView.builder(
+        controller: _pageController,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: totalPages,
+        itemBuilder: (context, index) {
+          final qLen =
+              quizData?["questions"]?.length ?? 0;
+          return index < qLen
+              ? _buildQuestionPage(index)
+              : _buildResultPage();
+        },
+      ),
+    ),
+  ],
+),
       ],
     );
   }

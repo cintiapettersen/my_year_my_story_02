@@ -171,6 +171,7 @@ _benefit(Icons.favorite_rounded, "premium.benefit5".tr(), Color.fromARGB(255, 19
 _benefit(Icons.favorite_rounded, "premium.benefit6".tr(), Color.fromARGB(255, 224, 129, 175)),
 _benefit(Icons.favorite_rounded, "premium.benefit7".tr(), Color.fromARGB(255, 209, 86, 183)),
 _benefit(Icons.favorite_rounded, "premium.benefit8".tr(), Color.fromARGB(255, 162, 139, 226)),
+_benefit(Icons.favorite_rounded, "premium.benefit9".tr(), Color.fromARGB(255, 234, 90, 138)),
                         const SizedBox(height: 36),
 
                         // 🌟 BOTÃO PREMIUM

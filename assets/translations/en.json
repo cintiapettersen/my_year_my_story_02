@@ -151,17 +151,17 @@
   "app_name": "My Year, My Story",
   "title": "Premium Experience",
   "main_phrase": "Create memories to carry for life.",
-  "sub_phrase": "Unlock special features and make your journal even more magical.",
+  "sub_phrase": "Unlock special features and make your experience even more magical.",
 
-  "benefit1": "Unlimited access to monthly widgets",
-  "benefit2": "Enhanced Daily Message experience",
-  "benefit3": "Save unlimited memories",
-  "benefit4": "Unlimited Lists, Goals and Gratitude",
-  "benefit5": "Special quizzes with results",
-  "benefit6": "Exclusive daily tips",
-  "benefit7": "Journal always unlocked",
-  "benefit8": "Complete mood calendar",
-
+  "benefit1": "Unlimited access to monthly content",
+"benefit2": "Enhanced experience in the Daily Message",
+"benefit3": "Save unlimited memories",
+"benefit4": "Unlimited lists, goals, and gratitude",
+"benefit5": "More quizzes per month",
+"benefit6": "More exclusive tips and curiosities",
+"benefit7": "A free space to write and reflect",
+"benefit8": "Mood calendar with monthly statistics",
+"benefit9": "Calendar with notes and reminders",
   "button": "BECOME PREMIUM ✨",
   "later": "Maybe later"
 
@@ -418,12 +418,29 @@
 },
 
 
+  "calendar_month_short": {
+    "1": "Jan",
+    "2": "Feb",
+    "3": "Mar",
+    "4": "Apr",
+    "5": "May",
+    "6": "Jun",
+    "7": "Jul",
+    "8": "Aug",
+    "9": "Sep",
+    "10": "Oct",
+    "11": "Nov",
+    "12": "Dec"
+  },
+
+  
 
  "general": {
    "cancel": "cancel"
 
 
 },
+
 
   "quiz": {
     
@@ -801,7 +818,9 @@
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
-    "close": "Close"
+    "close": "Close",
+    "open": "Abrir"
+    
 
 },
 
@@ -843,7 +862,11 @@
  "calendar_register_hint": "Click the buttons below to record your mood for the day",
  "guest_saved": "Mood saved for today 💜",
  "guest_title": "Guest mode",
- "guest_description": "You can track your moods here, but they won’t be saved without an account."
+ "guest_description": "You can track your moods here, but they won’t be saved without an account.",
+  "search_other_dates": "Search other dates",
+  "choose_period": "Choose period",
+  "choose_period_desc": "Select the month and year you want to view.",
+   "select_day_first": "Please select a day on the calendar first 😊"
 
 
 
