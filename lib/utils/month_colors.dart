@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 Color getMonthColor(int month) {
   const monthColors = [
-    Color(0xFFe04cb7), // Janeiro
+    Color.fromARGB(255, 249, 114, 211), // Janeiro
     Color.fromARGB(255, 175, 133, 203), // Fevereiro
     Color.fromARGB(255, 207, 135, 167), // Março
     Color.fromARGB(255, 151, 111, 208), // Abril

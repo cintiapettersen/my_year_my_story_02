@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:myyearmystory/services/calendar_event_service.dart';
+import 'package:intl/intl.dart';
+
 
 class DayEntryModal extends StatefulWidget {
   final int year;
@@ -137,6 +139,7 @@ class _DayEntryModalState extends State<DayEntryModal> {
   @override
   Widget build(BuildContext context) {
     final user = SupabaseConfig.client.auth.currentUser;
+     final date = DateTime(widget.year, widget.month, widget.day);
 
     return Center(
       child: BackdropFilter(
@@ -148,29 +151,55 @@ class _DayEntryModalState extends State<DayEntryModal> {
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(26),
-              color: const Color(0xFFFFF1F7),
+              color: const Color(0xFFFFF1F7).withOpacity(0.9),
+  border: Border.all(
+    color: Colors.white.withOpacity(0.4),
+    width: 1,
+            ),
             ),
             child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // HEADER
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "${widget.day}",
-                        style: const TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
+Row(
+  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          DateFormat('d', context.locale.toString()).format(date),
+          style: const TextStyle(
+            fontSize: 40,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          DateFormat('MMM', context.locale.toString()).format(date),
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        Text(
+          DateFormat('yyyy', context.locale.toString()).format(date),
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.black54,
+          ),
+        ),
+      ],
+    ),
+    IconButton(
+      icon: const Icon(Icons.close),
+      onPressed: () => Navigator.pop(context),
+    ),
+  ],
+),
+
 
                   const SizedBox(height: 16),
 

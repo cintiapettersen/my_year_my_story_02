@@ -73,28 +73,48 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
   // ------------------------------------------------------------
   Future<void> _loadThemeAndQuestions() async {
   try {
-    final res = await SupabaseConfig.client
+    // ⚠️ Captura o idioma ANTES do await
+    final String language = context.locale.languageCode;
+
+    final List<dynamic> res = await SupabaseConfig.client
         .from('curiosities_entries')
-        .select('theme_title, questions, questions_en')
+        .select(
+          'theme_title, questions, questions_en, group_number, is_premium',
+        )
         .eq('month', widget.month)
-        .eq('year', widget.year)
-        .maybeSingle();
+        .order('group_number');
 
-    if (res != null) {
-      _themeTitle = res['theme_title'] ?? '';
-
-      final String language = context.locale.languageCode;
-
-      // 🔥 CARREGA A COLUNA CERTA CONFORME O IDIOMA DO APP
-      _questions = language == 'en'
-          ? List<String>.from(res['questions_en'] ?? [])
-          : List<String>.from(res['questions'] ?? []);
-
-      _controllers =
-          List.generate(_questions.length, (_) => TextEditingController());
+    if (res.isEmpty) {
+      _questions = [];
+      _controllers = [];
+      return;
     }
+
+    // 🟣 Título vem sempre do primeiro grupo
+    _themeTitle = res.first['theme_title'] ?? '';
+
+    final List<String> allQuestions = [];
+
+    for (final row in res) {
+      final bool isPremiumGroup = row['is_premium'] == true;
+
+      // 🔐 Usuário free → ignora grupos premium
+      if (!_isPremiumUser && isPremiumGroup) continue;
+
+      final List<String> questions = language == 'en'
+          ? List<String>.from(row['questions_en'] ?? [])
+          : List<String>.from(row['questions'] ?? []);
+
+      allQuestions.addAll(questions);
+    }
+
+    _questions = allQuestions;
+    _controllers =
+        List.generate(_questions.length, (_) => TextEditingController());
   } catch (e) {
     debugPrint('Erro ao carregar curiosities_entries: $e');
+    _questions = [];
+    _controllers = [];
   }
 }
 

@@ -12,12 +12,14 @@ import 'glass_drawer_item.dart';
 import 'premium_button_glass.dart';
 import 'about_modal.dart';
 
-import '../menus/profile_screen.dart';
 import '../menus/help_screen.dart';
 import '../premium/premium_page.dart';
 import '../menus/language_screen.dart';
 
 import 'package:myyearmystory/services/app_session.dart';
+import 'package:myyearmystory/screens/auth/login_screen.dart';
+import 'package:myyearmystory/screens/auth/signup_screen.dart';
+import '../menus/profile_screen.dart';
 
 
 final storage = const FlutterSecureStorage();
@@ -115,6 +117,9 @@ class _AppDrawerState extends State<AppDrawer> {
   // ------------------------------------------------------
   @override
   Widget build(BuildContext context) {
+    final user = Supabase.instance.client.auth.currentUser;
+    final bool isGuest = user == null;
+
     return GlassDrawer(
       children: [
         const SizedBox(height: 54),
@@ -249,12 +254,13 @@ class _AppDrawerState extends State<AppDrawer> {
         // ------------------------------------------------------
         // MENU ITEMS
         // ------------------------------------------------------
-        GlassDrawerItem(
-          icon: Icons.person_outline,
-          color: Colors.white,
-          text: "drawer.profile".tr(),
-          onTap: () => _open(context, const ProfileScreen()),
-        ),
+        if (!isGuest)
+       GlassDrawerItem(
+      icon: Icons.person_outline,
+       color: Colors.white,
+       text: "drawer.profile".tr(),
+         onTap: () => _open(context, const ProfileScreen()),
+  ),
 
         GlassDrawerItem(
            icon:  Icons.translate,
@@ -281,16 +287,45 @@ class _AppDrawerState extends State<AppDrawer> {
         
         
 
-          const SizedBox(height: 240),
+      
 
-          GlassDrawerItem(
-          icon: Icons.logout,
-          color: Colors.pinkAccent,
-          text: "drawer.logout".tr(),
-          onTap: () => _logout(context),
+         const SizedBox(height: 240),
 
+if (isGuest)
+  GlassDrawerItem(
+    icon: Icons.login,
+    color: Colors.white,
+    text: "drawer.login_or_create".tr(),
+    onTap: () {
+      Navigator.pop(context);
 
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => LoginScreen(
+            onCreateAccountTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const SignupScreen(),
+                ),
+              );
+            },
+          ),
         ),
+      );
+    },
+  )
+else
+  GlassDrawerItem(
+    icon: Icons.logout,
+    color: Colors.pinkAccent,
+    text: "drawer.logout".tr(),
+    onTap: () => _logout(context),
+  ),
+
+
+        
       ],
     );
   }

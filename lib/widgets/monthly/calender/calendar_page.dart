@@ -32,6 +32,33 @@ class _CalendarPageState extends State<CalendarPage> {
   final Map<int, String?> _eventColors = {};
   List<Map<String, dynamic>> _monthEvents = [];
 
+  // ======================
+  // CONSTANTES (WEEK HEADER)
+  // ======================
+  
+  List<String> _getWeekDays(BuildContext context) {
+  return [
+    tr('week.mon'),
+    tr('week.tue'),
+    tr('week.wed'),
+    tr('week.thu'),
+    tr('week.fri'),
+    tr('week.sat'),
+    tr('week.sun'),
+  ];
+}
+
+
+  static const List<Color> _weekDayColors = [
+    Color(0xFFE9A3B8),
+    Color(0xFFC7C6F7),
+    Color(0xFFD6B44C),
+    Color(0xFFD35BB8),
+    Color(0xFF86A99B),
+    Color(0xFF8E3A82),
+    Color(0xFFD3487A),
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -71,7 +98,6 @@ class _CalendarPageState extends State<CalendarPage> {
 
     _monthEvents = events;
 
-    /// 🔥 SEMPRE limpa antes de reconstruir
     _eventColors.clear();
 
     for (final e in events) {
@@ -93,105 +119,137 @@ class _CalendarPageState extends State<CalendarPage> {
         now.day == day;
   }
 
+  // 🔁 helper substituído
   int _getStartingWeekday() {
     final firstDay = DateTime(widget.year, widget.month, 1);
-    return firstDay.weekday % 7;
+    return firstDay.weekday - 1; // semana começa na SEG
+  }
+
+  // ======================
+  // HEADER FOFINHO
+  // ======================
+  Widget _buildCuteWeekdayHeader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Row(
+        children: List.generate(7, (index) {
+          final isWeekend = index >= 5;
+
+          return Expanded(
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 2),
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: isWeekend
+                    ? _weekDayColors[index].withOpacity(0.85)
+                    : _weekDayColors[index],
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: isWeekend
+                    ? [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.12),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        )
+                      ]
+                    : [],
+              ),
+              child: Center(
+                child: Text(
+                  _getWeekDays(context)[index],
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
   }
 
   // ======================
   // OPEN DAY MODAL
   // ======================
   Future<void> _openDayEntry(int day) async {
-  final user = SupabaseConfig.client.auth.currentUser;
-  Map<String, dynamic>? existing;
+    final user = SupabaseConfig.client.auth.currentUser;
+    Map<String, dynamic>? existing;
 
-  // =========================
-  // 👤 GUEST → usa fake list
-  // =========================
-  if (user == null) {
-    final dayEvents =
-        _guestEvents.where((e) => e['day'] == day).toList();
-    if (dayEvents.isNotEmpty) {
-      existing = dayEvents.last;
-    }
-  }
-
-  // =========================
-  // 👤 LOGADO → busca no banco
-  // =========================
-  if (user != null) {
-    final events = await CalendarEventService.getEventsForDay(
-      userId: user.id,
-      year: widget.year,
-      month: widget.month,
-      day: day,
-    );
-
-    if (events.isNotEmpty) {
-      existing = events.last;
-    }
-
-    if (!_isPremiumUser && existing == null) {
-      final count =
-          await CalendarEventService.countUserEventsForMonth(
-        user.id,
-        widget.year,
-        widget.month,
-      );
-
-      if (!mounted) return;
-
-      if (count >= 3) {
-        showPremiumPopup(context);
-        return;
+    if (user == null) {
+      final dayEvents =
+          _guestEvents.where((e) => e['day'] == day).toList();
+      if (dayEvents.isNotEmpty) {
+        existing = dayEvents.last;
       }
     }
+
+    if (user != null) {
+      final events = await CalendarEventService.getEventsForDay(
+        userId: user.id,
+        year: widget.year,
+        month: widget.month,
+        day: day,
+      );
+
+      if (events.isNotEmpty) {
+        existing = events.last;
+      }
+
+      if (!_isPremiumUser && existing == null) {
+        final count =
+            await CalendarEventService.countUserEventsForMonth(
+          user.id,
+          widget.year,
+          widget.month,
+        );
+
+        if (!mounted) return;
+
+        if (count >= 3) {
+          showPremiumPopup(context);
+          return;
+        }
+      }
+    }
+
+    if (!mounted) return;
+
+    final result = await showDialog<dynamic>(
+      context: context,
+      builder: (_) => DayEntryModal(
+        year: widget.year,
+        month: widget.month,
+        day: day,
+        existing: existing,
+      ),
+    );
+
+    if (!mounted || result == null) return;
+
+    if (user != null) {
+      await _loadMonthEvents();
+      return;
+    }
+
+    final resultDay = result['day'] as int;
+    final title = result['title'] as String;
+    final color = result['color'] as String;
+
+    _guestEvents.removeWhere((e) => e['day'] == resultDay);
+
+    _guestEvents.add({
+      'day': resultDay,
+      'title': title,
+      'color': color,
+    });
+
+    _eventColors[resultDay] = color;
+
+    setState(() {});
   }
-
-  if (!mounted) return;
-
-  // =========================
-  // 📅 ABRE MODAL (guest + logado)
-  // =========================
-  final result = await showDialog<dynamic>(
-    context: context,
-    builder: (_) => DayEntryModal(
-      year: widget.year,
-      month: widget.month,
-      day: day,
-      existing: existing,
-    ),
-  );
-
-  if (!mounted || result == null) return;
-
-  // =========================
-  // 👤 LOGADO → recarrega do banco
-  // =========================
-  if (user != null) {
-    await _loadMonthEvents();
-    return;
-  }
-
-  // =========================
-  // 👤 GUEST → salva fake com dados do modal
-  // =========================
-  final resultDay = result['day'] as int;
-  final title = result['title'] as String;
-  final color = result['color'] as String;
-
-  _guestEvents.removeWhere((e) => e['day'] == resultDay);
-
-  _guestEvents.add({
-    'day': resultDay,
-    'title': title,
-    'color': color,
-  });
-
-  _eventColors[resultDay] = color;
-
-  setState(() {});
-}
 
   // ======================
   // UI
@@ -222,7 +280,13 @@ class _CalendarPageState extends State<CalendarPage> {
                       ),
                     ),
                   ),
+
+                  const SizedBox(height: 26),
+
+                  _buildCuteWeekdayHeader(),
+                  const SizedBox(height: 8),
                   _buildCalendar(),
+
                   _buildMonthInsight(),
                   _buildEventList(),
                 ],
@@ -244,7 +308,8 @@ class _CalendarPageState extends State<CalendarPage> {
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 7,
       children: [
-        for (int i = 0; i < startingWeekday; i++) const SizedBox(),
+        for (int i = 0; i < startingWeekday; i++)
+          const SizedBox(),
         for (int day = 1; day <= daysInMonth; day++)
           _buildDayTile(day),
       ],
@@ -256,8 +321,10 @@ class _CalendarPageState extends State<CalendarPage> {
     final hasEntry = hex != null;
     final isToday = _isToday(day);
 
-    final heartColor =
-        Color(int.parse(hex ?? 'FFe04cb7', radix: 16));
+    final weekdayIndex =
+        DateTime(widget.year, widget.month, day).weekday - 1;
+
+    final dayColor = _weekDayColors[weekdayIndex];
 
     return GestureDetector(
       onTap: () => _openDayEntry(day),
@@ -266,28 +333,28 @@ class _CalendarPageState extends State<CalendarPage> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.grey.shade300),
+          border: Border.all(
+            color: isToday ? dayColor : Colors.grey.shade300,
+            width: isToday ? 2 : 1,
+          ),
+          boxShadow: weekdayIndex >= 5
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  )
+                ]
+              : [],
         ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            hasEntry
-                ? Icon(Icons.favorite,
-                    color: heartColor, size: 26)
-                : Text('$day'),
-            if (isToday)
-              Positioned(
-                bottom: 6,
-                child: Container(
-                  width: 6,
-                  height: 6,
-                  decoration: const BoxDecoration(
-                    color: Colors.black,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-          ],
+        child: Center(
+          child: hasEntry
+              ? Icon(
+                  Icons.favorite,
+                  color: Color(int.parse(hex, radix: 16)),
+                  size: 26,
+                )
+              : Text('$day'),
         ),
       ),
     );
@@ -309,11 +376,53 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   Widget _buildEventList() {
-  final user = SupabaseConfig.client.auth.currentUser;
+    final user = SupabaseConfig.client.auth.currentUser;
 
-  /// 👤 GUEST → usa eventos fake
-  if (user == null) {
-    if (_guestEvents.isEmpty) return const SizedBox();
+    if (user == null) {
+      if (_guestEvents.isEmpty) return const SizedBox();
+
+      return Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              tr("calendar.your_notes"),
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ..._guestEvents.map((e) {
+              final color =
+                  Color(int.parse(e['color'], radix: 16));
+              return Card(
+                child: ListTile(
+                  leading:
+                      Icon(Icons.favorite, color: color),
+                  title: Text(e['title']),
+                  subtitle:
+                      Text('${e['day']}/${widget.month}'),
+                  onTap: () => _openDayEntry(e['day']),
+                ),
+              );
+            }).toList(),
+          ],
+        ),
+      );
+    }
+
+    if (_monthEvents.isEmpty) return const SizedBox();
+
+    final events = _isPremiumUser
+        ? _monthEvents
+        : _monthEvents
+            .where((e) => e['repeat_type'] == 'none')
+            .take(5)
+            .toList();
+
+    if (events.isEmpty) return const SizedBox();
 
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -328,8 +437,7 @@ class _CalendarPageState extends State<CalendarPage> {
             ),
           ),
           const SizedBox(height: 12),
-
-          ..._guestEvents.map((e) {
+          ...events.map((e) {
             final color =
                 Color(int.parse(e['color'], radix: 16));
             return Card(
@@ -343,76 +451,8 @@ class _CalendarPageState extends State<CalendarPage> {
               ),
             );
           }).toList(),
-
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Text(
-              tr("calendar.guest_hint"),
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade600,
-              ),
-            ),
-          ),
         ],
       ),
     );
   }
-
-  /// 👤 USER LOGADO → comportamento atual
-  if (_monthEvents.isEmpty) return const SizedBox();
-
-  final events = _isPremiumUser
-      ? _monthEvents
-      : _monthEvents
-          .where((e) => e['repeat_type'] == 'none')
-          .take(5)
-          .toList();
-
-  if (events.isEmpty) return const SizedBox();
-
-  return Padding(
-    padding: const EdgeInsets.all(16),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          tr("calendar.your_notes"),
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-          ),
-        ),
-        const SizedBox(height: 12),
-
-        ...events.map((e) {
-          final color =
-              Color(int.parse(e['color'], radix: 16));
-          return Card(
-            child: ListTile(
-              leading:
-                  Icon(Icons.favorite, color: color),
-              title: Text(e['title']),
-              subtitle:
-                  Text('${e['day']}/${widget.month}'),
-              onTap: () => _openDayEntry(e['day']),
-            ),
-          );
-        }).toList(),
-
-        if (!_isPremiumUser)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Text(
-              tr("calendar.limit_reached"),
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade600,
-              ),
-            ),
-          ),
-      ],
-    ),
-  );
-}
 }

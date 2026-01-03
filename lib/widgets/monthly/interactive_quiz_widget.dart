@@ -1,10 +1,8 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/utils/access_control.dart';
@@ -23,6 +21,7 @@ class MonthlyQuizWidget extends StatefulWidget {
   @override
   State<MonthlyQuizWidget> createState() => _MonthlyQuizWidgetState();
 }
+
 class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
   Map<int, int> selectedOptions = {};
   Map<String, dynamic>? quizData;
@@ -30,19 +29,35 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
   bool loading = true;
   bool _isPremiumUser = false;
 
-String get _quizStoragePrefix {
-  return _isPremiumUser ? "premium" : "guest";
-}
-
-
+  String? quizTitle;
   String? resultTitleOnPage;
   String? resultDescOnPage;
 
   late PageController _pageController;
-  //int _currentPage = 0;
-  
 
+  String get _quizStoragePrefix =>
+      _isPremiumUser ? "premium" : "guest";
 
+  /* ---------------- FREE MONTH LOGIC ---------------- */
+
+  Future<bool> _isWithinFreeMonth() async {
+    final prefs = await SharedPreferences.getInstance();
+    final stored = prefs.getString("first_quiz_date");
+
+    if (stored == null) {
+      await prefs.setString(
+        "first_quiz_date",
+        DateTime.now().toIso8601String(),
+      );
+      return true;
+    }
+
+    final first = DateTime.parse(stored);
+    return DateTime.now()
+        .isBefore(first.add(const Duration(days: 30)));
+  }
+
+  /* ---------------- INIT ---------------- */
 
   @override
   void initState() {
@@ -56,21 +71,23 @@ String get _quizStoragePrefix {
     _pageController.dispose();
     super.dispose();
   }
+
   Future<void> _initializePage() async {
     await _checkPremiumStatus();
     await _loadQuiz();
     await _loadSavedAnswers();
     await _loadSavedResult();
     setState(() => loading = false);
-    
-     WidgetsBinding.instance.addPostFrameCallback((_) {
-    if (resultTitleOnPage != null) {
-      final qLen = quizData?["questions"]?.length ?? 0;
-      _pageController.jumpToPage(qLen);
-    }
-  });
-}
-  
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (resultTitleOnPage != null) {
+        final qLen = quizData?["questions"]?.length ?? 0;
+        _pageController.jumpToPage(qLen);
+      }
+    });
+  }
+
+  /* ---------------- DATA ---------------- */
 
   Future<void> _checkPremiumStatus() async {
     final user = Supabase.instance.client.auth.currentUser;
@@ -86,39 +103,113 @@ String get _quizStoragePrefix {
         .eq("month", widget.month)
         .maybeSingle();
 
-    quizData = data;
+    if (data == null) return;
+
+    setState(() {
+      quizData = data;
+      quizTitle = _getLocalized(
+        data["title"],
+        data["title_en"],
+      );
+    });
   }
 
-  String getLocalized(String? pt, String? en) {
-    final lang = Localizations.localeOf(context).languageCode;
-    if (lang == "en" && en != null && en.trim().isNotEmpty) {
-      return en;
-    }
+  String _getLocalized(String? pt, String? en) {
+    final lang = context.locale.languageCode;
+
+    if (lang == "en" && en != null && en.isNotEmpty) return en;
     return pt ?? "";
   }
 
-  Future<void> _saveAnswers() async {
-  final prefs = await SharedPreferences.getInstance();
-  prefs.setString(
-    "quiz_${_quizStoragePrefix}_${widget.month}_${widget.year}_answers",
-    jsonEncode(selectedOptions),
-  );
-}
+  /* ---------------- STORAGE ---------------- */
 
+  Future<void> _saveAnswers() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString(
+      "quiz_${_quizStoragePrefix}_${widget.month}_${widget.year}_answers",
+      jsonEncode(selectedOptions),
+    );
+  }
 
   Future<void> _loadSavedAnswers() async {
-  final prefs = await SharedPreferences.getInstance();
-  final saved = prefs.getString(
-    "quiz_${_quizStoragePrefix}_${widget.month}_${widget.year}_answers",
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getString(
+      "quiz_${_quizStoragePrefix}_${widget.month}_${widget.year}_answers",
+    );
+
+    if (saved != null) {
+      selectedOptions =
+          Map<int, int>.from(jsonDecode(saved));
+    }
+  }
+
+  Future<void> _loadSavedResult() async {
+    final prefs = await SharedPreferences.getInstance();
+    resultTitleOnPage = prefs.getString(
+      "quiz_${_quizStoragePrefix}_${widget.month}_${widget.year}_result_title",
+    );
+    resultDescOnPage = prefs.getString(
+      "quiz_${_quizStoragePrefix}_${widget.month}_${widget.year}_result_desc",
+    );
+  }
+
+  /* ---------------- SUBMIT ---------------- */
+
+  void _submit() async {
+  final results = quizData?["results"];
+  if (results == null || results.isEmpty) return;
+
+  final Map<String, int> typeCount = {};
+
+  for (final entry in selectedOptions.entries) {
+    final int q = entry.key;
+    final int o = entry.value;
+
+    final String? tipo =
+        quizData?["questions"][q]["options"][o]["tipo"];
+
+    if (tipo != null) {
+      typeCount[tipo] = (typeCount[tipo] ?? 0) + 1;
+    }
+  }
+
+  if (typeCount.isEmpty) return;
+
+  final sorted = typeCount.entries.toList()
+    ..sort((a, b) => b.value.compareTo(a.value));
+
+  final int maxValue = sorted.first.value;
+
+  final tied =
+      sorted.where((e) => e.value == maxValue).toList();
+
+  String winningType;
+
+  if (tied.length == 1) {
+    winningType = tied.first.key;
+  } else {
+    // empate → usa a última resposta
+    final lastQuestionIndex =
+        selectedOptions.keys.reduce((a, b) => a > b ? a : b);
+
+    final lastOptionIndex =
+        selectedOptions[lastQuestionIndex]!;
+
+    winningType = quizData?["questions"]
+        [lastQuestionIndex]["options"]
+        [lastOptionIndex]["tipo"];
+  }
+
+  // 🔎 agora TEM que existir
+  final result = results.firstWhere(
+    (r) => r["tipo"] == winningType,
   );
 
-  if (saved != null) {
-    selectedOptions = Map<int, int>.from(jsonDecode(saved));
-  }
-}
+  final title =
+      _getLocalized(result["title"], result["title_en"]);
+  final desc =
+      _getLocalized(result["desc"], result["desc_en"]);
 
-
-  Future<void> _saveResult(String title, String desc) async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.setString(
     "quiz_${_quizStoragePrefix}_${widget.month}_${widget.year}_result_title",
@@ -128,467 +219,376 @@ String get _quizStoragePrefix {
     "quiz_${_quizStoragePrefix}_${widget.month}_${widget.year}_result_desc",
     desc,
   );
-}
 
-Future<void> _loadSavedResult() async {
-  if (!_isPremiumUser) {
-    resultTitleOnPage = null;
-    resultDescOnPage = null;
-    return;
-  }
+  setState(() {
+    resultTitleOnPage = title;
+    resultDescOnPage = desc;
+  });
 
-  final prefs = await SharedPreferences.getInstance();
-
-  resultTitleOnPage = prefs.getString(
-    "quiz_${_quizStoragePrefix}_${widget.month}_${widget.year}_result_title",
-  );
-
-  resultDescOnPage = prefs.getString(
-    "quiz_${_quizStoragePrefix}_${widget.month}_${widget.year}_result_desc",
-  );
+  final qLen = quizData?["questions"]?.length ?? 0;
+  _pageController.jumpToPage(qLen);
 }
 
 
+  /* ---------------- UI ---------------- */
 
- 
+  int get totalPages =>
+      (quizData?["questions"]?.length ?? 0) + 1;
 
-  int get totalPages {
-    final q = quizData?["questions"]?.length ?? 0;
-    return q + 1;
-  }
   Widget _buildQuestionPage(int i) {
-    final questions = quizData?["questions"];
-    if (questions == null) return const SizedBox();
-
-    final question = getLocalized(
-      questions[i]["text"],
-      questions[i]["text_en"],
-    );
-
-
+    final q = quizData?["questions"][i];
+    if (q == null) return const SizedBox();
 
     final options = List<String>.from(
-      questions[i]["options"].map(
-        (o) => getLocalized(o["text"], o["text_en"]),
+      q["options"].map(
+        (o) => _getLocalized(o["text"], o["text_en"]),
       ),
     );
 
     return Padding(
       padding: const EdgeInsets.all(12),
       child: Card(
-        color: const Color(0xFFFDE6EF),
+        color: const Color(0xFFF8DFF0),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
         child: Padding(
           padding: const EdgeInsets.all(18),
           child: SingleChildScrollView(
-         child: Column(
-         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-              Text(
-                "quiz.question_counter".tr(
-                  args: ["${i + 1}", "${questions.length}"],
-                ),
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF9E4A6E),
-                ),
-              ),
-              const SizedBox(height: 12),
+            padding: const EdgeInsets.only(bottom: 80),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+  _getLocalized(q["text"], q["text_en"]),
+  style: const TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+  ),
+),
 
-              Text(
-                question,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFFBD3A70),
+                const SizedBox(height: 16),
+                ...List.generate(
+                  options.length,
+                  (opt) => _buildOption(i, opt, options),
                 ),
-              ),
-              const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
-              ...List.generate(
-                options.length,
-                (optIdx) => _buildOption(i, optIdx, options),
+  Widget _buildOption(
+  int qIndex,
+  int opt,
+  List<String> options,
+) {
+  final isSelected = selectedOptions[qIndex] == opt;
+
+  final totalQuestions = quizData?["questions"]?.length ?? 0;
+  final isLastQuestion = qIndex == totalQuestions - 1;
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      GestureDetector(
+        onTap: () {
+          setState(() {
+            selectedOptions[qIndex] = opt;
+          });
+          _saveAnswers();
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? const Color(0xFFE2377D).withOpacity(0.12)
+                : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isSelected
+                  ? const Color(0xFFE2377D)
+                  : Colors.grey.shade300,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.favorite,
+                size: 18,
+                color: isSelected
+                    ? const Color(0xFFE2377D)
+                    : Colors.grey.shade400,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  options[opt],
+                  style: const TextStyle(fontSize: 14),
+                ),
               ),
             ],
           ),
         ),
       ),
-    ),
+
+      if (isSelected)
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: () {
+              if (isLastQuestion) {
+                _submit();
+              } else {
+                _pageController.nextPage(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOut,
+                );
+              }
+            },
+            child: Text(
+              isLastQuestion
+                  ? "quiz.button_result".tr()
+                  : "quiz.next".tr(),
+              style: const TextStyle(
+                color: Color(0xFFE2377D),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+    ],
   );
 }
 
-
-Widget _buildAnswersSummary() {
-  final questions = quizData?["questions"];
-  if (questions == null) return const SizedBox();
-
-  return Column(
-    children: List.generate(questions.length, (i) {
-      final selected = selectedOptions[i];
-      if (selected == null) return const SizedBox();
-
-      final question = getLocalized(
-        questions[i]["text"],
-        questions[i]["text_en"],
-      );
-
-      final answer = getLocalized(
-        questions[i]["options"][selected]["text"],
-        questions[i]["options"][selected]["text_en"],
-      );
-
-      return Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: const Color(0xFFE2377D).withOpacity(0.06),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: const Color(0xFFE2377D).withOpacity(0.3),
+  Widget _buildResultPage() {
+  return FutureBuilder<bool>(
+    future: _isWithinFreeMonth(),
+    builder: (context, snap) {
+      if (!snap.hasData) {
+        return const Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFFE2377D),
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              question,
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Color(0xFFBD3A70),
+        );
+      }
+
+      final canSeeResult = _isPremiumUser || snap.data!;
+
+      // 🔒 BLOQUEADO (fim do mês grátis)
+      if (!canSeeResult) {
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: Card(
+            elevation: 4,
+            color: const Color(0xFFF8DFF0),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(22),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.lock,
+                    size: 36,
+                    color: Color(0xFFE2377D),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    "quiz.premium_only".tr(),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFFE2377D),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    "quiz.premium_desc".tr(),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () => showPremiumPopup(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE2377D),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: Text("quiz.unlock".tr()),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 6),
-            Text(answer),
+          ),
+        );
+      }
+
+      // ✨ RESULTADO LIBERADO
+      return Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Card(
+              elevation: 4,
+              color: const Color(0xFFFDE6EF),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(22),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 28,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.favorite,
+                      size: 40,
+                      color: Color(0xFFE2377D),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      resultTitleOnPage ?? "",
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontFamily: 'mono',
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.6,
+                        color: Color(0xFFE2377D),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    Text(
+                      resultDescOnPage ?? "",
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        height: 1.6,
+                        color: Color(0xFF4F4F4F),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // 🔁 refazer quiz (se quiser manter)
+            TextButton(
+              onPressed: () async {
+                final prefs = await SharedPreferences.getInstance();
+
+                await prefs.remove(
+                  "quiz_${_quizStoragePrefix}_${widget.month}_${widget.year}_answers",
+                );
+                await prefs.remove(
+                  "quiz_${_quizStoragePrefix}_${widget.month}_${widget.year}_result_title",
+                );
+                await prefs.remove(
+                  "quiz_${_quizStoragePrefix}_${widget.month}_${widget.year}_result_desc",
+                );
+
+                setState(() {
+                  selectedOptions.clear();
+                  resultTitleOnPage = null;
+                  resultDescOnPage = null;
+                });
+
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (_pageController.hasClients) {
+                    _pageController.jumpToPage(0);
+                  }
+                });
+              },
+              child: Text(
+                "quiz.button_retry".tr(),
+                style: const TextStyle(
+                  color: Color(0xFFE2377D),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
           ],
         ),
       );
-    }),
+    },
   );
 }
 
 
+  @override
+  Widget build(BuildContext context) {
+    if (loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
+    final hasResult = resultTitleOnPage != null;
 
-  Widget _buildOption(int questionIndex, int optIdx, List<String> options) {
-    final isSelected = selectedOptions[questionIndex] == optIdx;
+    if (hasResult) {
+      return _buildResultPage();
+    }
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        GestureDetector(
-          onTap: () {
-            setState(() {
-              selectedOptions[questionIndex] = optIdx;
-            });
-            _saveAnswers();
-          },
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? const Color(0xFFE2377D).withValues(alpha: 0.12)
-                  : Colors.white,
-              border: Border.all(
-                color: isSelected
-                    ? const Color(0xFFE2377D)
-                    : Colors.grey[300]!,
-              ),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.favorite,
-                  size: 18,
-                  color: isSelected
-                      ? const Color(0xFFE2377D)
-                      : Colors.grey[400],
-                ),
-                const SizedBox(width: 10),
-                Expanded(child: Text(options[optIdx])),
-              ],
-            ),
-          ),
-        ),
-
-        if (isSelected)
-  Align(
-    alignment: Alignment.centerRight,
-    child: TextButton(
-      onPressed: () {
-        final totalQuestions = quizData?["questions"]?.length ?? 0;
-
-        if (questionIndex == totalQuestions - 1) {
-          // 🏁 ÚLTIMA PERGUNTA → calcula resultado
-          _submit();
-        } else {
-          // ➡️ Próxima pergunta
-          _pageController.nextPage(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          );
-        }
-      },
+        if (quizTitle != null)
+  Padding(
+    padding: const EdgeInsets.only(
+      top: 4,
+      bottom: 12,
+      left: 16,
+      right: 16,
+    ),
+    child: Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 10,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8DFF0), // 💗 rosa clarinho
+        borderRadius: BorderRadius.circular(20),
+      ),
       child: Text(
-        questionIndex == (quizData?["questions"]?.length ?? 1) - 1
-            ? "quiz.button_result".tr()
-            : "quiz.next".tr(),
+        quizTitle!,
+        textAlign: TextAlign.center,
         style: const TextStyle(
-          color: Color(0xFFE2377D),
+          fontSize: 18,
           fontWeight: FontWeight.w600,
+          color: Color(0xFF9E4A6E),
+          letterSpacing: 0.6,
         ),
       ),
     ),
   ),
 
-      ],
-    );
-  }
-
-  void _submit() async {
-  // 🔒 bloqueia resultado para não premium
-  if (!_isPremiumUser) {
-    showPremiumPopup(context);
-    return;
-  }
-
-  final results = quizData?["results"];
-  if (results == null || results.isEmpty) return;
-
-  // 🔢 soma das respostas selecionadas
-  // 🧠 conta quantas vezes cada opção foi escolhida
-final Map<int, int> optionCount = {};
-
-for (final opt in selectedOptions.values) {
-  optionCount[opt] = (optionCount[opt] ?? 0) + 1;
-}
-
-// 🎯 pega a opção mais escolhida
-final sorted = optionCount.entries.toList()
-  ..sort((a, b) => b.value.compareTo(a.value));
-
-final resultIndex = sorted.first.key;
-
-final result = results[resultIndex];
-
-  final title = getLocalized(result["title"], result["title_en"]);
-  final desc = getLocalized(result["desc"], result["desc_en"]);
-
-  // 💾 salva resultado
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setString(
-    "quiz_${_quizStoragePrefix}_${widget.month}_${widget.year}_result_title",
-    title,
-  );
-  await prefs.setString(
-    "quiz_${_quizStoragePrefix}_${widget.month}_${widget.year}_result_desc",
-    desc,
-  );
-
-  // 🧠 atualiza estado
-  setState(() {
-    resultTitleOnPage = title;
-    resultDescOnPage = desc;
-  });
-
-  // 👉 pula para a página final (resultado)
-  final qLen = quizData?["questions"]?.length ?? 0;
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    if (_pageController.hasClients) {
-      _pageController.jumpToPage(qLen);
-    }
-  });
-}
-
-
-
-Widget _buildResultPage() {
-  // 🔒 VISÃO PARA NÃO PREMIUM
-  if (!_isPremiumUser) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Card(
-        elevation: 4,
-        color: const Color(0xFFFDE6EF),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(22),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.lock,
-                size: 36,
-                color: Color(0xFFE2377D),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                "quiz.premium_only".tr(),
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFFE2377D),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                "quiz.premium_desc".tr(),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () => showPremiumPopup(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE2377D),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                child: Text("quiz.unlock".tr()),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ✨ VISÃO PARA PREMIUM (RESULTADO)
-  return Padding(
-    padding: const EdgeInsets.all(16),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Card(
-          elevation: 4,
-          color: const Color(0xFFFDE6EF), // 💗 rosinha suave
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(22),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              children: [
-                const Icon(
-                  Icons.favorite, // ❤️ coração sólido
-                  size: 36,
-                  color: Color(0xFFE2377D),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  resultTitleOnPage ?? "",
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontFamily: 'mono',
-                    fontSize: 22,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.4,
-                    color: Color(0xFFE2377D),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  resultDescOnPage ?? "",
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 24),
-
-        // 🔁 REFAZER QUIZ (premium)
-        TextButton(
-          onPressed: () async {
-            final prefs = await SharedPreferences.getInstance();
-
-            await prefs.remove(
-              "quiz_${_quizStoragePrefix}_${widget.month}_${widget.year}_answers",
-            );
-            await prefs.remove(
-              "quiz_${_quizStoragePrefix}_${widget.month}_${widget.year}_result_title",
-            );
-            await prefs.remove(
-              "quiz_${_quizStoragePrefix}_${widget.month}_${widget.year}_result_desc",
-            );
-
-            setState(() {
-              selectedOptions.clear();
-              resultTitleOnPage = null;
-              resultDescOnPage = null;
-            });
-
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (_pageController.hasClients) {
-                _pageController.jumpToPage(0);
-              }
-            });
-          },
-          child: Text(
-            "quiz.button_retry".tr(),
-            style: const TextStyle(
-              color: Color(0xFFE2377D),
-              fontWeight: FontWeight.w600,
-            ),
+        SizedBox(
+          height: 420,
+          child: PageView.builder(
+            controller: _pageController,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: totalPages,
+            itemBuilder: (context, index) {
+              final qLen =
+                  quizData?["questions"].length ?? 0;
+              return index < qLen
+                  ? _buildQuestionPage(index)
+                  : _buildResultPage();
+            },
           ),
         ),
       ],
-    ),
-  );
-}
-
-  
-
-  @override
-Widget build(BuildContext context) {
-  // 🔹 1. loading sempre vem primeiro
-  if (loading) {
-    return const Center(
-      child: CircularProgressIndicator(
-        color: Color(0xFFE2377D),
-      ),
     );
   }
-
-  // 🔹 2. estado do resultado (somente premium)
-  final hasResult = _isPremiumUser && resultTitleOnPage != null;
-
-  // 🔹 3. se já tem resultado → mostra só o card final
-  // (libera o swipe da página do mês)
-  if (hasResult) {
-    return _buildResultPage();
-  }
-
-  // 🔹 4. se ainda está respondendo → PageView do quiz
-  return SizedBox(
-    height: 420, // altura fixa pro PageView existir
-    child: PageView.builder(
-      controller: _pageController,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: totalPages,
-      itemBuilder: (context, index) {
-        final qLen = quizData?["questions"]?.length ?? 0;
-
-        if (index < qLen) {
-          return _buildQuestionPage(index);
-        }
-
-        return _buildResultPage();
-      },
-    ),
-  );
-}
-
 }

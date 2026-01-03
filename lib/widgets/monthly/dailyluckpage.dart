@@ -14,6 +14,7 @@ import 'package:myyearmystory/screens/premium/free_limit_popup.dart';
 
 import 'package:myyearmystory/utils/app_config.dart';
 import 'package:myyearmystory/utils/access_control.dart';
+import 'package:flutter/foundation.dart';
 
 class DailyLuckPage extends StatefulWidget {
   const DailyLuckPage({Key? key}) : super(key: key);
@@ -92,10 +93,15 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
       a.year == b.year && a.month == b.month && a.day == b.day;
 
   Future<bool> _canTurnCard() async {
-    if (AppConfig.devMode) return true;  // 🔥 dev nunca tem limite
-    if (_isPremium) return _turnsToday < 3;
-    return _turnsToday < 1;
+  // 🔓 ilimitado SOMENTE no debug local
+  if (kDebugMode) return true;
+
+  if (_isPremium) {
+    return _turnsToday < 3;
   }
+
+  return _turnsToday < 1;
+}
 
   Future<void> _registerTurn() async {
     final prefs = await SharedPreferences.getInstance();
@@ -112,49 +118,61 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
   }
 
   Future<void> _loadDailyLuck() async {
-    setState(() {
-      _isLoading = true;
-      _luckMessage = null;
-    });
+  setState(() {
+    _isLoading = true;
+    _luckMessage = null;
+  });
 
-    try {
-      await Future.delayed(const Duration(milliseconds: 800));
+  try {
+    await Future.delayed(const Duration(milliseconds: 800));
 
-      final col = context.locale.languageCode == 'en'
-          ? 'phrase_en'
-          : 'phrase';
+    final col = context.locale.languageCode == 'en'
+        ? 'phrase_en'
+        : 'phrase';
 
-      final response = await supabase
-          .from('daily_luck')
-          .select(col)
-          .eq('active', true);
+    final response = await supabase
+        .from('daily_luck')
+        .select(col)
+        .eq('active', true);
 
-      if (response.isNotEmpty) {
-        final randomIndex = Random().nextInt(response.length);
-        _luckMessage = response[randomIndex][col];
+    if (response.isNotEmpty) {
+      // 🔮 sorteia mensagem
+      final randomIndex = Random().nextInt(response.length);
+      _luckMessage = response[randomIndex][col];
 
-        final newColorIndex = Random().nextInt(_cardColors.length);
-        _cardColor = _cardColors[newColorIndex];
+      // 🎨 sorteia cor sem repetir a anterior
+      final prefs = await SharedPreferences.getInstance();
+      final lastColorIndex = prefs.getInt("luck_last_color");
 
-        final prefs = await SharedPreferences.getInstance();
-        prefs.setString("luck_last_message", _luckMessage!);
-        prefs.setInt("luck_last_color", newColorIndex);
-      } else {
-        // fallback local
-        final fallbackLocal = [
-  "dailyLuck.fallback1".tr(),
-  "dailyLuck.fallback2".tr(),
-  "dailyLuck.fallback3".tr(),
-];
+      int newColorIndex;
+      do {
+        newColorIndex = Random().nextInt(_cardColors.length);
+      } while (newColorIndex == lastColorIndex && _cardColors.length > 1);
 
-        _luckMessage = fallbackLocal[Random().nextInt(fallbackLocal.length)];
-      }
-    } catch (_) {
-      _luckMessage = "dailyLuck.consultingUniverse".tr();
+      _cardColor = _cardColors[newColorIndex];
+
+      // 💾 salva estado
+      prefs.setString("luck_last_message", _luckMessage!);
+      prefs.setInt("luck_last_color", newColorIndex);
+    } else {
+      // fallback local
+      final fallbackLocal = [
+        "dailyLuck.fallback1".tr(),
+        "dailyLuck.fallback2".tr(),
+        "dailyLuck.fallback3".tr(),
+      ];
+
+      _luckMessage =
+          fallbackLocal[Random().nextInt(fallbackLocal.length)];
     }
-
-    setState(() => _isLoading = false);
+  } catch (_) {
+    _luckMessage = "dailyLuck.consultingUniverse".tr();
   }
+
+  setState(() {
+    _isLoading = false;
+  });
+}
 
   Widget _pulseHeart(Color color, int delay) {
     return Icon(Icons.favorite, color: color, size: 28)

@@ -235,7 +235,7 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
       year: year,
       title: '',
       pageLabel: 'lists.page_label'.tr(),
-      labelColor: const Color.fromARGB(255, 78, 83, 150),
+      labelColor: const Color.fromARGB(255, 95, 101, 178),
       description: 'lists.description'.tr(),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),

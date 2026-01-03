@@ -99,7 +99,8 @@
   "go_premium": "Quero ser Premium",
   "choose_icon":" Escolha seu ícone de hoje",
   "language": "Idioma",
-  "guest_name": "Visitante"
+  "guest_name": "Visitante",
+  "login_or_create": "Sign in or create account"
   
   
 },
@@ -122,6 +123,8 @@
   "error": "An error occurred while saving your profile: {{0}}"
 
   },
+
+
 
   "complete_profile": {
     "subtitle": "Antes de começar, complete seu perfil rapidamente!",
@@ -457,8 +460,6 @@
     "stone": "Pedra",
     "flower": "Flor",
     "personal_year_title": "seu número pessoal",
-
-
     "personal_year_color_label": "cor do ano:",
     "personal_year_no_birthdate_title": "Data de nascimento não encontrada",
     "personal_year_no_birthdate_text": "Para calcular seu Ano Pessoal, precisamos da sua data de nascimento.",
@@ -604,9 +605,9 @@
   "did_you_know": {
   "title": "Você Sabia?",
   "desc": {
-    "fixed": "Aqui você encontra pequenas curiosidades do dia para se inspirar, aprender e descobrir algo novo!"
+    "fixed": "Um espaço com curiosidades selecionadas que unem ciência, cultura e comportamento, pensadas para inspirar reflexões, ampliar o olhar e aprender algo novo a cada dia."
   },
-  "daily_message": "Essas são as curiosidades escolhidas para o seu dia ✨",
+  "daily_message": "Essas são as curiosidades escolhidas para o seu dia",
   "updated_at": "Atualizado em",
   "empty": "Nenhuma curiosidade encontrada para hoje.",
 
@@ -616,20 +617,12 @@
   },
 
   "categories": {
-     "science": "Ciência",
-    "history": "História",
-    "nature": "Natureza",
-    "psychology": "Psicologia",
-    "art": "Arte",
-    "culture": "Cultura",
-    "pop_culture": "Cultura Pop",
-    "geography": "Geografia",
-    "universe": "Universo",
-    "mind_and_soul": "Mente, Corpo & Espírito",
-    "behavior": "Comportamento Humano",
-    "general": "Curiosidade Geral",
-    "general_curiosity": "Curiosidade Geral",
-    "literature": "Literatura"
+   "ciencia": "Ciência",
+  "cultura": "Cultura",
+  "mente_e_alma": "Mente, Corpo & Espírito",
+  "vida_pratica": "Vida Cotidiana",
+  "general": "Curiosidade Geral",
+  "historias_do_mundo": "Histórias que Moldaram o Mundo"
     }
 
   },
@@ -858,7 +851,15 @@
     "delete_title": "Excluir entrada",
     "delete_confirm": "Tem certeza de que deseja excluir esta entrada?",
     "delete_success": "Entrada excluída com sucesso!",
-    "saved_success": "Entrada salva com sucesso!"
+    "saved_success": "Entrada salva com sucesso!",
+    "no_entries": "Sem entradas ainda.\nComece escrevendo algo especial hoje!",
+    "no_entries_day": "Sem entradas ainda.\nComece escrevendo algo especial hoje!",
+
+
+    "guest_info_title": "✨ Só um aviso rápido",
+    "guest_info_message": "Você pode escrever à vontade, mas suas entradas só ficam salvas se você criar uma conta.",
+    "guest_login": "Criar conta / Login",
+    "guest_continue": "Continuar escrevendo"
   
 
 },
@@ -885,11 +886,12 @@
   "title": "Central de Ajuda",
   "subtitle": "Se algo não funcionar como esperado, chama a gente",
 
-  "faq": "FAQ (breve)",
-  "contact": "Contato: email@sonhodepapel.com",
+  "faq": "FAQ — Coming soon",
+  "contact": " email@sonhodepapel.com",
 
   "button": "Voltar",
   "app_name": "My Year, My Story"
+  
 
 },
   "about": {

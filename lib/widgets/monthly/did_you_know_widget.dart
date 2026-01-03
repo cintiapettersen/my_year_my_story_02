@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:intl/intl.dart';
 
 import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
@@ -51,26 +49,49 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
   @override
   void initState() {
     super.initState();
-    _checkPremiumStatus();
-    _loadCuriositiesForToday();
+    debugPrint(
+        '🔥 DidYouKnowWidget INIT — month=${widget.month} year=${widget.year}');
+    _initPage();
+  }
+
+  /// 🔹 inicialização organizada (PONTO ÚNICO)
+  Future<void> _initPage() async {
+    await _checkPremiumStatus();
+    await _loadRefreshCount();
+    await _loadCuriosities();
   }
 
   Future<void> _checkPremiumStatus() async {
     final isPrem = await AccessControl.isPremium();
+    if (!mounted) return;
     setState(() => isPremiumUser = isPrem);
   }
 
-  Future<void> _loadCuriositiesForToday() async {
+  /// 🔹 carrega contador salvo
+  Future<void> _loadRefreshCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    final now = DateTime.now();
+    final key = "refresh_did_you_know_${now.year}_${now.month}_${now.day}";
+    if (!mounted) return;
+    setState(() => refreshCount = prefs.getInt(key) ?? 0);
+  }
+
+  Future<void> _loadCuriosities() async {
+    if (!mounted) return;
     setState(() => isLoading = true);
 
     try {
-      final result = await _service.fetchDailyCuriosities(widget.month, widget.year);
+     
+          final result = await _service.fetchDailyCuriosities();
 
+      if (!mounted) return;
       setState(() {
-        curiosities = result.take(5).toList();
+        curiosities = result;
         isLoading = false;
       });
-    } catch (_) {
+    } catch (e) {
+      debugPrint('❌ Erro ao carregar curiosidades: $e');
+      if (!mounted) return;
       setState(() => isLoading = false);
     }
   }
@@ -81,22 +102,17 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
       return;
     }
 
+    if (refreshCount >= maxRefresh) return;
+
     final prefs = await SharedPreferences.getInstance();
     final now = DateTime.now();
-    final key = "refresh_curiosities_${now.year}_${now.month}_${now.day}";
+    final key = "refresh_did_you_know_${now.year}_${now.month}_${now.day}";
 
+    await _loadCuriosities();
+    await prefs.setInt(key, refreshCount + 1);
 
-    final count = prefs.getInt(key) ?? 0;
-
-    if (count >= maxRefresh) {
-      setState(() => refreshCount = maxRefresh);
-      return;
-    }
-
-    await _loadCuriositiesForToday();
-    await prefs.setInt(key, count + 1);
-
-    setState(() => refreshCount = count + 1);
+    if (!mounted) return;
+    setState(() => refreshCount++);
   }
 
   @override
@@ -105,8 +121,6 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
 
     final locale = context.locale.languageCode;
     final currentButtonColor = getMonthColor(widget.month);
-
-    /// Traduz o mês usando `months.<key>`
     final translatedMonth = "months.${widget.month}".tr();
 
     return MonthPageTemplate(
@@ -122,7 +136,11 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
               ? Center(
                   child: Text(
                     "did_you_know.empty".tr(),
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Color(0xFF444444)),
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF444444),
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 )
@@ -131,153 +149,126 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
                   children: [
                     const SizedBox(height: 10),
 
-                    Center(
-                      child: Text(
-                        "did_you_know.daily_message".tr(),
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFFB84E79),
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
+                    
 
-                    const SizedBox(height: 6),
-
-                    Center(
-                      child: Text(
-                        "${"did_you_know.updated_at".tr()} $translatedMonth",
-                        style: TextStyle(fontSize: 13, color: Colors.grey[700]),
-                      ),
-                    ),
-
-                    const SizedBox(height: 18),
 
                     ...curiosities.asMap().entries.map((entry) {
                       final index = entry.key;
                       final item = entry.value;
 
-                      final color = categoryColors[index % categoryColors.length];
+                      final color =
+                          categoryColors[index % categoryColors.length];
 
-                      // normaliza categoria
                       final rawCategory =
-    item["category"]?.toString().trim().toLowerCase() ?? "general";
+                          item['category']?.toString().toLowerCase() ??
+                              'general';
 
-final normalizedKey = rawCategory
-    .replaceAll(" ", "_")
-    .replaceAll("ç", "c")
-    .replaceAll("ã", "a")
-    .replaceAll("á", "a")
-    .replaceAll("é", "e")
-    .replaceAll("í", "i")
-    .replaceAll("ó", "o")
-    .replaceAll("ú", "u");
+                      final normalizedKey = rawCategory
+                          .replaceAll(' ', '_')
+                          .replaceAll('ç', 'c')
+                          .replaceAll('ã', 'a')
+                          .replaceAll('á', 'a')
+                          .replaceAll('é', 'e')
+                          .replaceAll('í', 'i')
+                          .replaceAll('ó', 'o')
+                          .replaceAll('ú', 'u');
 
-final categoryTr = "did_you_know.categories.$normalizedKey".tr();
+                      final categoryTr =
+                          "did_you_know.categories.$normalizedKey".tr();
 
+                      final contentPt = item['content'];
+                      final contentEn = item['text_en'];
 
-                      // traduz texto corretamente
-                      final contentPt = item['content'];      // sempre aparece em português
-final contentEn = item['text_en'];      // coluna de inglês
-final curiosityText = locale == 'pt'
-    ? (contentPt ?? "Sem conteúdo")
-    : (contentEn ?? contentPt ?? "No content");
+                      final curiosityText = locale == 'pt'
+                          ? (contentPt ?? '')
+                          : (contentEn ?? contentPt ?? '');
 
-
-                      return TweenAnimationBuilder<double>(
-                        tween: Tween(begin: 0, end: 1),
-                        duration: Duration(milliseconds: 600 + index * 130),
-                        builder: (context, value, child) {
-                          return Opacity(
-                            opacity: value,
-                            child: Transform.translate(
-                              offset: Offset(0, (1 - value) * 20),
-                              child: child,
-                            ),
-                          );
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 16),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFFF2D7E0), width: 1),
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: const Color(0xFFF2D7E0),
+                            width: 1,
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                                decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(6)),
-                                child: Text(
-                                  categoryTr,
-                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-                                ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 4, horizontal: 8),
+                              decoration: BoxDecoration(
+                                color: color,
+                                borderRadius: BorderRadius.circular(6),
                               ),
-
-                              const SizedBox(height: 8),
-
-                              Text(
-                                curiosityText,
+                              child: Text(
+                                categoryTr,
                                 style: const TextStyle(
-                                  fontSize: 15,
-                                  color: Colors.black87,
-                                  height: 1.5,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
                                 ),
-                                textAlign: TextAlign.left,
                               ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              curiosityText,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                color: Colors.black87,
+                                height: 1.5,
+                              ),
+                            ),
+                          ],
                         ),
                       );
                     }),
 
                     const SizedBox(height: 24),
 
-                    /// Refresh button
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        GestureDetector(
-                          onTapDown: (_) => setState(() => isPressed = true),
-                          onTapUp: (_) async {
-                            setState(() => isPressed = false);
-                            await Future.delayed(const Duration(milliseconds: 120));
-                            _handleRefresh();
-                          },
-                          onTapCancel: () => setState(() => isPressed = false),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 180),
-                            //transform: Matrix4.identity()..scale(isPressed ? 0.93 : 1),
-                            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
-                            decoration: BoxDecoration(
-                              color: currentButtonColor,
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: currentButtonColor.withOpacity(0.4),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Text(
-                              isPremiumUser
-                                  ? (refreshCount >= maxRefresh
-                                      ? "did_you_know.button.come_back_tomorrow".tr()
-                                      : "did_you_know.button.discover_more".tr())
-                                  : "did_you_know.button.discover_more".tr(),
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
+                    Center(
+                      child: GestureDetector(
+                        onTapDown: (_) =>
+                            setState(() => isPressed = true),
+                        onTapUp: (_) async {
+                          setState(() => isPressed = false);
+                          await Future.delayed(
+                              const Duration(milliseconds: 120));
+                          _handleRefresh();
+                        },
+                        onTapCancel: () =>
+                            setState(() => isPressed = false),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 28, vertical: 14),
+                          decoration: BoxDecoration(
+                            color: currentButtonColor,
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color:
+                                    currentButtonColor.withOpacity(0.4),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
                               ),
+                            ],
+                          ),
+                          child: Text(
+                            isPremiumUser && refreshCount < maxRefresh
+                                ? "did_you_know.button.discover_more".tr()
+                                : "did_you_know.button.come_back_tomorrow".tr(),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
                             ),
                           ),
                         ),
-                      ],
+                      ),
                     ),
 
                     const SizedBox(height: 40),

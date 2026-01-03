@@ -1,91 +1,129 @@
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DidYouKnowService {
   final SupabaseClient _supabase = Supabase.instance.client;
 
-  /// CARREGA curiosidades do mês + ano
-  Future<List<Map<String, dynamic>>> fetchCuriositiesForMonth(int month, int year) async {
+  // --------------------------------------------------
+  // UTIL: normaliza categorias (segurança total)
+  // --------------------------------------------------
+  String _normalizeCategory(dynamic value) {
+    return value
+            ?.toString()
+            .toLowerCase()
+            .trim()
+            .replaceAll(' ', '_')
+            .replaceAll('ç', 'c')
+            .replaceAll('ã', 'a')
+            .replaceAll('á', 'a')
+            .replaceAll('é', 'e')
+            .replaceAll('í', 'i')
+            .replaceAll('ó', 'o')
+            .replaceAll('ú', 'u') ??
+        'general';
+  }
+
+  // --------------------------------------------------
+  // CARREGA TODAS as curiosidades (sem filtro)
+  // --------------------------------------------------
+  Future<List<Map<String, dynamic>>> fetchAllCuriosities() async {
     try {
       final result = await _supabase
-          .from('monthly_curiosities')
-          .select('id, category, content, text_en, created_at, month, year')
-          .eq('month', month)
-          .eq('year', year)
+          .from('did_you_know')
+          .select('id, category, content, text_en, created_at')
           .order('created_at', ascending: true);
 
       if (result.isEmpty) return [];
 
       return List<Map<String, dynamic>>.from(result);
     } catch (e) {
-      print('Erro ao carregar curiosidades do mês: $e');
+      debugPrint('❌ Erro ao carregar curiosidades: $e');
       return [];
     }
   }
 
-  /// --------------------------
-  /// MÉTODO DE SELEÇÃO INTELIGENTE
-  /// --------------------------
-  List<Map<String, dynamic>> _smartBalancedSelection(List<Map<String, dynamic>> list) {
+  // --------------------------------------------------
+  // SELEÇÃO INTELIGENTE (balanceada por categoria)
+  // --------------------------------------------------
+  List<Map<String, dynamic>> _smartBalancedSelection(
+    List<Map<String, dynamic>> list,
+  ) {
     if (list.isEmpty) return [];
 
-    // 1. separar general das outras
-    final general = list.where((c) => c["category"]?.toString().toLowerCase() == "general").toList();
-    final nonGeneral = list.where((c) => c["category"]?.toString().toLowerCase() != "general").toList();
+    final normalizedList = list.map((item) {
+      return {
+        ...item,
+        'normalized_category': _normalizeCategory(item['category']),
+      };
+    }).toList();
+
+    final general = normalizedList
+        .where((c) => c['normalized_category'] == 'general')
+        .toList();
+
+    final nonGeneral = normalizedList
+        .where((c) => c['normalized_category'] != 'general')
+        .toList();
 
     nonGeneral.shuffle(Random());
     general.shuffle(Random());
 
     List<Map<String, dynamic>> selected = [];
 
-    // 2. pegar primeiro as categorias não-general (PRIORIDADE)
-    for (var item in nonGeneral) {
+    // 1️⃣ prioriza categorias diferentes
+    for (final item in nonGeneral) {
       if (selected.length == 5) break;
 
-      final category = item["category"] ?? "";
-      // evita repetição de categoria
-      if (!selected.any((s) => s["category"] == category)) {
+      final category = item['normalized_category'];
+      final alreadyUsed =
+          selected.any((s) => s['normalized_category'] == category);
+
+      if (!alreadyUsed) {
         selected.add(item);
       }
     }
 
-    // 3. se ainda não deu 5, permitir *no máximo 1 general*
+    // 2️⃣ permite no máximo 1 general
     if (selected.length < 5 && general.isNotEmpty) {
       selected.add(general.first);
     }
 
-    // 4. se ainda faltar, repetimos categorias não-general se necessário
+    // 3️⃣ completa se ainda faltar
     int index = 0;
     while (selected.length < 5 && index < nonGeneral.length) {
       selected.add(nonGeneral[index]);
       index++;
     }
 
-    // 5. embaralhar a lista final
-    selected.shuffle();
+    selected.shuffle(Random());
 
-    return selected;
+    // remove campo interno
+    return selected.map((item) {
+      final clean = Map<String, dynamic>.from(item);
+      clean.remove('normalized_category');
+      return clean;
+    }).toList();
   }
 
-  /// --------------------------
-  /// MODO DIÁRIO — versão inteligente
-  /// --------------------------
-  Future<List<Map<String, dynamic>>> fetchDailyCuriosities(int month, int year) async {
+  // --------------------------------------------------
+  // MODO DIÁRIO (USADO PELO WIDGET)
+  // --------------------------------------------------
+  Future<List<Map<String, dynamic>>> fetchDailyCuriosities() async {
+    debugPrint('🧠 DidYouKnowService.fetchDailyCuriosities CALLED');
+
     try {
       final result = await _supabase
-          .from('monthly_curiosities')
-          .select('id, category, content, text_en, created_at')
-          .eq('month', month)
-          .eq('year', year)
-          .order('created_at', ascending: false);
+          .from('did_you_know')
+          .select('id, category, content, text_en, created_at');
 
       if (result.isEmpty) return [];
 
       final list = List<Map<String, dynamic>>.from(result);
 
       return _smartBalancedSelection(list);
-    } catch (error) {
-      print('Erro ao carregar curiosidades diárias: $error');
+    } catch (e) {
+      debugPrint('❌ Erro ao carregar curiosidades diárias: $e');
       return [];
     }
   }

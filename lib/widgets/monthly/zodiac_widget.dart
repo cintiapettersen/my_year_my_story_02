@@ -222,8 +222,8 @@ class _ZodiacWidgetState extends State<ZodiacWidget> {
                   children: [
                     Text(
                       year.toString(),
-                      style: GoogleFonts.satisfy(
-                        fontSize: 42,
+                      style: GoogleFonts.sacramento(
+                        fontSize: 40,
                         color: parsedColor,
                       ),
                     ),
