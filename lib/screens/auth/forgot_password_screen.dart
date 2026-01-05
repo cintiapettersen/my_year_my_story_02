@@ -109,10 +109,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         backgroundColor: const Color(0xFFF8DCE0),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios,
-              color: LightModeColors.lightOnSurface),
-          onPressed: () => Navigator.pop(context),
-        ),
+  icon: const Icon(
+    Icons.arrow_back_ios,
+    color: Colors.black,
+  ),
+  onPressed: () => Navigator.pop(context),
+),
       ),
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
@@ -129,16 +131,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   Icon(
                     Icons.lock_reset,
                     size: 80,
-                    color:
-                        LightModeColors.lightSecondary.withValues(alpha: 0.8),
+                    color: Theme.of(context).colorScheme.primary.withOpacity(0.8),
                   ),
+
+                  
 
                   const SizedBox(height: 24),
 
                   Text(
                     'auth.forgot.title'.tr(),
                     style: Theme.of(context).textTheme.headlineSmall!.copyWith(
-                          color: LightModeColors.lightOnSurface,
+                          color: Colors.black,
+
                           fontWeight: FontWeight.bold,
                         ),
                     textAlign: TextAlign.center,
@@ -153,9 +157,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           .textTheme
                           .bodyMedium!
                           .copyWith(
-                            color: LightModeColors.lightOnSurface
-                                .withValues(alpha: 0.7),
-                          ),
+  color: Colors.black.withOpacity(0.7),
+),
+
                       textAlign: TextAlign.center,
                     ),
 
@@ -184,7 +188,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       text: 'auth.forgot.button'.tr(),
                       isLoading: _isLoading,
                       onPressed: _resetPassword,
-                      backgroundColor: LightModeColors.lightSecondary,
+                      backgroundColor: const Color(0xFFE2377D),
                     ),
                   ],
 

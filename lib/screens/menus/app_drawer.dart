@@ -20,6 +20,9 @@ import 'package:myyearmystory/services/app_session.dart';
 import 'package:myyearmystory/screens/auth/login_screen.dart';
 import 'package:myyearmystory/screens/auth/signup_screen.dart';
 import '../menus/profile_screen.dart';
+import 'package:myyearmystory/screens/auth/auth_page_view.dart';
+
+
 
 
 final storage = const FlutterSecureStorage();
@@ -42,6 +45,15 @@ class _AppDrawerState extends State<AppDrawer> {
     super.initState();
     _loadProfile();
   }
+
+  void _open(BuildContext context, Widget screen) {
+  Navigator.pop(context); // fecha o drawer
+  Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => screen),
+  );
+}
+
 
   // ------------------------------------------------------
   // LOAD PROFILE
@@ -284,36 +296,31 @@ class _AppDrawerState extends State<AppDrawer> {
 
         ),
 
-        
-        
-
       
+       const SizedBox(height: 240),
 
-         const SizedBox(height: 240),
-
+// ------------------------------------------------------
+// LOGIN / LOGOUT
+// ------------------------------------------------------
 if (isGuest)
   GlassDrawerItem(
     icon: Icons.login,
     color: Colors.white,
     text: "drawer.login_or_create".tr(),
     onTap: () {
+      // Fecha o drawer
       Navigator.pop(context);
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => LoginScreen(
-            onCreateAccountTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const SignupScreen(),
-                ),
-              );
-            },
-          ),
-        ),
-      );
+      // Sai explicitamente do modo guest
+      AppSession.flow = AppAuthFlow.splash;
+
+      // Força ida ao fluxo de autenticação
+      Navigator.of(context).pushAndRemoveUntil(
+  MaterialPageRoute(
+    builder: (_) => const AuthPageView(),
+  ),
+  (_) => false,
+);
     },
   )
 else
@@ -324,7 +331,6 @@ else
     onTap: () => _logout(context),
   ),
 
-
         
       ],
     );
@@ -333,24 +339,17 @@ else
   // ------------------------------------------------------
   // Navegação
   // ------------------------------------------------------
-  void _open(BuildContext context, Widget screen) {
-    Navigator.pop(context);
-    Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
-  }
-
  Future<void> _logout(BuildContext context) async {
-  // 1. Marca que estamos saindo
+  // 1. Marca intenção de logout
   AppSession.flow = AppAuthFlow.loggingOut;
 
-  // 2. Fecha o drawer
-  Navigator.pop(context);
-
-  // 3. Chama o logout REAL
+  // 2. Chama logout REAL
   await Supabase.instance.client.auth.signOut();
 
   // ❌ NÃO navega
-  // ❌ NÃO chama /login
-  // ❌ NÃO limpa storage aqui
+  // ❌ NÃO fecha drawer aqui
+  // ❌ NÃO limpa storage
 }
+
 
 }

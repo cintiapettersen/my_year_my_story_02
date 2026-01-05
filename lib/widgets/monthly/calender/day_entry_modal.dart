@@ -381,21 +381,46 @@ Row(
                   const SizedBox(height: 20),
 
                   // ACTIONS
-                  Center(
-                    child: Column(
-                      children: [
-                        ElevatedButton(
-                          onPressed: _save,
-                          child: Text(tr("common.save")),
-                        ),
-                        TextButton(
-                          onPressed: () =>
-                              Navigator.pop(context),
-                          child: Text(tr("common.cancel")),
-                        ),
-                      ],
-                    ),
-                  ),
+Center(
+  child: Column(
+    children: [
+      ElevatedButton(
+        onPressed: _save,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFE2377D),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 28,
+            vertical: 14,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+        child: Text(
+          tr("common.save"),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+
+      const SizedBox(height: 8),
+
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: Text(
+          tr("common.cancel"),
+          style: const TextStyle(
+            color: Color(0xFFE2377D),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    ],
+  ),
+),
+
                 ],
               ),
             ),

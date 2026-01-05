@@ -91,7 +91,7 @@ class MyApp extends StatelessWidget {
       navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       theme: lightTheme,
-      darkTheme: darkTheme,
+     
       themeMode: ThemeMode.system,
 
       localizationsDelegates: context.localizationDelegates,

@@ -64,22 +64,7 @@ class _AuthPageViewState extends State<AuthPageView> {
     );
   }
 
-  void _enterAsGuest() async {
-    // 1️⃣ Marca guest
-    AppSession.flow = AppAuthFlow.guest;
-
-    // 2️⃣ Garante Supabase limpo
-    await Supabase.instance.client.auth.signOut();
-
-    if (!mounted) return;
-
-    // 3️⃣ Vai direto pro dashboard
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      '/dashboard',
-      (_) => false,
-    );
-  }
-
+  
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(

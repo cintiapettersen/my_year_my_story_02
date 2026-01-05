@@ -7,88 +7,71 @@ class AuthListener {
   static StreamSubscription<AuthState>? _subscription;
 
   static void initialize(GlobalKey<NavigatorState> navigatorKey) {
-    if (_subscription != null) return;
+  if (_subscription != null) return;
 
-    _subscription =
-        Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-      final event = data.event;
-      final session = data.session;
-      final navigator = navigatorKey.currentState;
+  _subscription =
+      Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+    final event = data.event;
+    final session = data.session;
+    final navigator = navigatorKey.currentState;
 
-      if (navigator == null) return;
+    if (navigator == null) return;
 
-      debugPrint(
-        '📡 AuthListener → event=$event | flow=${AppSession.flow}',
+    debugPrint(
+      '📡 AuthListener → event=$event | flow=${AppSession.flow}',
+    );
+
+    
+
+    // ✅ LOGIN REAL (email ou Google)
+    if (event == AuthChangeEvent.signedIn && session != null) {
+      AppSession.flow = AppAuthFlow.authenticated;
+
+      navigator.pushNamedAndRemoveUntil(
+        '/dashboard',
+        (_) => false,
       );
 
-      // --------------------------------------------------
-      // 🔒 GUEST MODE — ignora tudo
-      // --------------------------------------------------
-      if (AppSession.isGuest) {
-        debugPrint('🧭 Guest ativo — evento ignorado');
-        return;
-      }
+      debugPrint('✅ signedIn → dashboard');
+      return;
+    }
 
-      // --------------------------------------------------
-      // 🔄 RESTORE SESSION (app reaberto)
-      // --------------------------------------------------
-      if (event == AuthChangeEvent.initialSession &&
-          session != null &&
-          AppSession.isSplash) {
-        AppSession.flow = AppAuthFlow.authenticated;
-
-        navigator.pushNamedAndRemoveUntil(
-          '/dashboard',
-          (_) => false,
-        );
-
-        debugPrint('🔄 Sessão restaurada — dashboard');
-        return;
-      }
-
-      // --------------------------------------------------
-      // ✅ LOGIN (email ou Google)
-      // --------------------------------------------------
-      if (event == AuthChangeEvent.signedIn && session != null) {
-        AppSession.flow = AppAuthFlow.authenticated;
-
-        navigator.pushNamedAndRemoveUntil(
-          '/dashboard',
-          (_) => false,
-        );
-
-        debugPrint('✅ Login concluído — dashboard');
-        return;
-      }
-
-      // --------------------------------------------------
-      // 🚪 LOGOUT (FINALMENTE FUNCIONANDO)
-      // --------------------------------------------------
-      if (event == AuthChangeEvent.signedOut) {
-        debugPrint('👋 signedOut recebido');
-
-        if (AppSession.isLoggingOut || AppSession.isAuthenticated) {
-          AppSession.reset();
-
-          navigator.pushNamedAndRemoveUntil(
-            '/login',
-            (_) => false,
-          );
-
-          debugPrint('👋 Logout concluído — login');
-          return;
-        }
-      }
-
-      // --------------------------------------------------
-      // 💤 OUTROS EVENTOS
-      // --------------------------------------------------
-      debugPrint('🛑 Evento ignorado');
-    });
+    // --------------------------------------------------
+// ✅ LOGIN (email ou Google)
+// --------------------------------------------------
+if (event == AuthChangeEvent.signedIn && session != null) {
+  // ⛔️ evita navegação duplicada (Google dispara 2x)
+  if (AppSession.flow == AppAuthFlow.authenticated) {
+    debugPrint('⏭️ signedIn ignorado (já autenticado)');
+    return;
   }
 
-  static Future<void> dispose() async {
-    await _subscription?.cancel();
-    _subscription = null;
+  AppSession.flow = AppAuthFlow.authenticated;
+
+  navigator.pushNamedAndRemoveUntil(
+    '/dashboard',
+    (_) => false,
+  );
+
+  debugPrint('✅ signedIn → dashboard');
+  return;
+}
+
+
+    // 📦 LOGOUT REAL (apenas se estava autenticado ou saindo)
+    if (event == AuthChangeEvent.signedOut &&
+        (AppSession.flow == AppAuthFlow.authenticated ||
+         AppSession.flow == AppAuthFlow.loggingOut)) {
+
+      AppSession.flow = AppAuthFlow.splash;
+
+      navigator.pushNamedAndRemoveUntil(
+        '/login',
+        (_) => false,
+      );
+debugPrint('👋 signedOut → login');
+      return;
+    }
+  });
   }
 }

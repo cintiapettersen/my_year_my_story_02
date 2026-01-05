@@ -227,7 +227,7 @@ Widget build(BuildContext context) {
                           text: 'auth.login.button'.tr(),
                           isLoading: _isLoading,
                           onPressed: _signIn,
-                          backgroundColor: LightModeColors.lightSecondary,
+                          backgroundColor: const Color(0xFFE2377D),
                         ),
 
                         const SizedBox(height: 20),
@@ -273,7 +273,7 @@ Widget build(BuildContext context) {
                   width: itemWidth,
                   margin: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    color: LightModeColors.lightSecondary,
+                    color: const Color(0xFFE2377D),
                     borderRadius: BorderRadius.circular(40),
                   ),
                 ),
@@ -299,7 +299,10 @@ Widget build(BuildContext context) {
                   ),
                   Expanded(
                     child: GestureDetector(
-                      onTap: () {
+                  onTap: () {
+  // 🔥 Sai explicitamente do modo guest
+  AppSession.flow = AppAuthFlow.splash;
+
   setState(() => _isLoginSelected = false);
   widget.onCreateAccountTap();
 },
@@ -336,7 +339,7 @@ Widget build(BuildContext context) {
         Checkbox(
           value: _rememberMe,
           onChanged: (v) => setState(() => _rememberMe = v ?? false),
-          activeColor: LightModeColors.lightSecondary,
+          activeColor: const Color(0xFFE2377D),
         ),
         Text('auth.login.remember_me'.tr()),
         const Spacer(),

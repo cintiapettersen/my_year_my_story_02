@@ -24,7 +24,7 @@ class DividerWithText extends StatelessWidget {
           child: Text(
             text,
             style: Theme.of(context).textTheme.bodySmall!.copyWith(
-              color: LightModeColors.lightOnSurface.withValues(alpha: 0.6),
+              color: Colors.black.withOpacity(0.6),
               fontWeight: FontWeight.w500,
             ),
           ),

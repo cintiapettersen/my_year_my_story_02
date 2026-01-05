@@ -265,9 +265,11 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
                 Text(
   _getLocalized(q["text"], q["text_en"]),
   style: const TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
-  ),
+  fontFamily: 'poppins',
+  fontSize: 16,
+  fontWeight: FontWeight.w600,
+  color: Color.fromARGB(255, 143, 46, 88), // 👈 troca aqui se quiser outro tom
+),
 ),
 
                 const SizedBox(height: 16),
@@ -380,7 +382,7 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
       if (!snap.hasData) {
         return const Center(
           child: CircularProgressIndicator(
-            color: Color(0xFFE2377D),
+            color: Color.fromARGB(255, 183, 66, 114),
           ),
         );
       }
@@ -411,11 +413,14 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
                   Text(
                     "quiz.premium_only".tr(),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFFE2377D),
-                    ),
+                   style: const TextStyle(
+  fontFamily: 'Inter',
+  fontSize: 18,
+  fontWeight: FontWeight.w600,
+  color: Color(0xFF9E4A6E),
+  letterSpacing: 0.6,
+),
+
                   ),
                   const SizedBox(height: 12),
                   Text(
@@ -463,7 +468,7 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
                     const Icon(
                       Icons.favorite,
                       size: 40,
-                      color: Color(0xFFE2377D),
+                      color: Color.fromARGB(255, 223, 50, 122),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -474,7 +479,7 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
                         fontSize: 24,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.6,
-                        color: Color(0xFFE2377D),
+                        color: Color.fromARGB(255, 191, 50, 109),
                       ),
                     ),
                     const SizedBox(height: 18),
@@ -484,7 +489,7 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
                       style: const TextStyle(
                         fontSize: 15,
                         height: 1.6,
-                        color: Color(0xFF4F4F4F),
+                        color: Color.fromARGB(255, 12, 12, 12),
                       ),
                     ),
                   ],
@@ -572,12 +577,13 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
       child: Text(
         quizTitle!,
         textAlign: TextAlign.center,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          color: Color(0xFF9E4A6E),
-          letterSpacing: 0.6,
-        ),
+       style: const TextStyle(
+  fontFamily: 'Poppins',
+  fontSize: 18,
+  fontWeight: FontWeight.w600,
+  color: Color.fromARGB(255, 153, 58, 99),
+  letterSpacing: 0.6,
+),
       ),
     ),
   ),

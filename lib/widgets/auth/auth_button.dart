@@ -34,27 +34,24 @@ class AuthButton extends StatelessWidget {
                 colors: backgroundColor != null
                     ? [backgroundColor!, backgroundColor!]
                     : [
-                        LightModeColors.lightSecondary,
-                        LightModeColors.lightPrimary,
+                        Color(0xFFE2377D), // secondary
+                        Color(0xFFC03B66), // primary
                       ],
               )
             : null,
-        color: isOutlined
-            ? Colors.transparent
-            : (!isEnabled ? Colors.grey.withValues(alpha: 0.3) : null),
         border: isOutlined
-            ? Border.all(
-                color: isEnabled 
-                  ? LightModeColors.lightPrimary.withValues(alpha: 0.5)
-                  : Colors.grey.withValues(alpha: 0.3),
-                width: 1.5,
-              )
-            : null,
+    ? Border.all(
+        color: isEnabled
+            ? const Color(0xFFC03B66).withOpacity(0.5)
+            : Colors.grey.withOpacity(0.3),
+        width: 1.5,
+      )
+    : null,
         boxShadow: !isOutlined && isEnabled
             ? [
                 BoxShadow(
-                  color: (backgroundColor ?? LightModeColors.lightSecondary)
-                      .withValues(alpha: 0.3),
+                 color: (backgroundColor ?? const Color(0xFFE2377D))
+    .withOpacity(0.3),
                   blurRadius: 15,
                   offset: const Offset(0, 5),
                 ),
@@ -78,10 +75,11 @@ class AuthButton extends StatelessWidget {
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        isOutlined
-                            ? LightModeColors.lightPrimary
-                            : Colors.white,
-                      ),
+  isOutlined
+      ? const Color(0xFFC03B66)
+      : Colors.white,
+),
+
                     ),
                   )
                 else ...[
@@ -89,8 +87,9 @@ class AuthButton extends StatelessWidget {
                     Icon(
                       icon,
                       color: isOutlined
-                          ? LightModeColors.lightPrimary
-                          : Colors.white,
+    ? const Color(0xFFC03B66)
+    : Colors.white,
+
                       size: 20,
                     ),
                     const SizedBox(width: 12),
@@ -99,10 +98,11 @@ class AuthButton extends StatelessWidget {
                     text,
                     style: Theme.of(context).textTheme.labelLarge!.copyWith(
                       color: isEnabled
-                          ? (isOutlined
-                              ? LightModeColors.lightOnSurface
-                              : Colors.white)
-                          : Colors.grey,
+    ? (isOutlined
+        ? Colors.black
+        : Colors.white)
+    : Colors.grey,
+
                       fontWeight: FontWeight.w600,
                       letterSpacing: 0.5,
                     ),

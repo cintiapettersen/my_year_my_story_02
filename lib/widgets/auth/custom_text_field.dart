@@ -42,9 +42,10 @@ class _CustomTextFieldState extends State<CustomTextField> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
         border: Border.all(
-          color: _isFocused 
-            ? LightModeColors.lightPrimary.withValues(alpha: 0.5)
-            : Colors.grey.withValues(alpha: 0.2),
+          color: _isFocused
+    ? const Color(0xFFC03B66).withOpacity(0.5)
+    : Colors.grey.withOpacity(0.2),
+
           width: 1.5,
         ),
         boxShadow: [
@@ -68,27 +69,27 @@ class _CustomTextFieldState extends State<CustomTextField> {
           validator: widget.validator,
           enabled: widget.enabled,
           style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-            color: LightModeColors.lightOnSurface,
-          ),
+  color: Colors.black,
+),
           decoration: InputDecoration(
             labelText: widget.labelText,
             labelStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
-              color: _isFocused 
-                ? LightModeColors.lightPrimary
-                : Colors.grey.withValues(alpha: 0.6),
-            ),
+  color: _isFocused
+      ? const Color(0xFFC03B66)
+      : Colors.grey.withOpacity(0.6),
+),
             prefixIcon: Icon(
               widget.prefixIcon,
-              color: _isFocused 
-                ? LightModeColors.lightPrimary
-                : LightModeColors.lightSecondary,
+              color: _isFocused
+    ? const Color(0xFFC03B66)
+    : const Color(0xFFE2377D),
               size: 22,
             ),
             suffixIcon: widget.obscureText
                 ? IconButton(
                     icon: Icon(
                       _isObscured ? Icons.visibility_off : Icons.visibility,
-                      color: LightModeColors.lightSecondary,
+                      color: const Color(0xFFE2377D),
                       size: 22,
                     ),
                     onPressed: () {

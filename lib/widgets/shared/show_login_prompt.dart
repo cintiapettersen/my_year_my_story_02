@@ -3,6 +3,9 @@ import 'package:easy_localization/easy_localization.dart';
 
 import 'package:myyearmystory/screens/auth/login_screen.dart';
 import 'package:myyearmystory/screens/splash/fade_page_transition.dart';
+import 'package:myyearmystory/screens/auth/auth_page_view.dart';
+import 'package:myyearmystory/services/app_session.dart';
+
 
 /// 🌸 Mostra um aviso pedindo login ao tentar usar recursos protegidos.
 /// Pode ser chamado em qualquer lugar:
@@ -53,20 +56,20 @@ Future<void> showLoginPrompt(BuildContext context) async {
           ),
           ElevatedButton(
             onPressed: () {
-  // 🔒 Fecha o diálogo usando o root navigator
-  Navigator.of(context, rootNavigator: true).pop();
+  // 1️⃣ Fecha o diálogo
+  Navigator.of(dialogContext).pop();
 
-  // ➡️ Navega direto para o login
+  // 2️⃣ 🔑 Sai do modo guest (ESSENCIAL)
+  AppSession.reset();
+
+  // 3️⃣ Navega para o fluxo de autenticação
   Navigator.of(context).pushReplacement(
     fadePageTransition(
-      LoginScreen(
-        onCreateAccountTap: () {
-          Navigator.of(context).pushNamed('/signup');
-        },
-                  ),
-                ),
-              );
-            },
+      const AuthPageView(),
+    ),
+  );
+},
+
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFC03B66),
               shape: RoundedRectangleBorder(
