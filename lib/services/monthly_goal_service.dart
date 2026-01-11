@@ -4,103 +4,80 @@ import 'package:myyearmystory/supabase/supabase_config.dart';
 class MonthlyGoalService {
   static final _supabase = SupabaseConfig.client;
 
-  /// Lista todas as metas do usuário
-  static Future<List<MonthlyGoal>> getGoals(String userId) async {
+  // =====================================================
+  // FETCH — metas do mês
+  // - Guest → retorna lista vazia
+  // =====================================================
+  static Future<List<MonthlyGoal>> getGoalsByMonth({
+    required int mes,
+    required int ano,
+  }) async {
     try {
-      print('MonthlyGoalService: Fetching goals for user $userId');
+      final user = _supabase.auth.currentUser;
+      if (user == null) return [];
+
       final response = await _supabase
           .from('metas')
           .select()
-          .eq('user_id', userId)
-          .order('created_at', ascending: false);
-
-      print('MonthlyGoalService: Raw response: $response');
-      return (response as List)
-          .map((goal) => MonthlyGoal.fromJson(goal))
-          .toList();
-    } catch (e) {
-      print('MonthlyGoalService: Error fetching goals: $e');
-      rethrow;
-    }
-  }
-
-  /// Lista metas de um mês específico
-  static Future<List<MonthlyGoal>> getGoalsByMonth(
-    int mes,
-    int ano,
-    String userId,
-  ) async {
-    try {
-      print('MonthlyGoalService: Fetching goals for user $userId, mês $mes, ano $ano');
-      final response = await _supabase
-          .from('metas')
-          .select()
-          .eq('user_id', userId)
+          .eq('user_id', user.id)
           .eq('mes', mes)
           .eq('ano', ano)
           .order('created_at', ascending: false);
 
-      print('MonthlyGoalService: Raw response: $response');
       return (response as List)
-          .map((goal) => MonthlyGoal.fromJson(goal))
+          .map((e) => MonthlyGoal.fromJson(e))
           .toList();
     } catch (e) {
-      print('MonthlyGoalService: Error fetching goals by month: $e');
-      rethrow;
+      print('MonthlyGoalService.getGoalsByMonth error: $e');
+      return [];
     }
   }
 
-  /// Cria uma nova meta
-  static Future<MonthlyGoal> createGoal(
-    String userId,
-    int mes,
-    int ano,
-    String conteudo,
-    bool concluido,
-    DateTime createdAt,
-  ) async {
+  // =====================================================
+  // CREATE — nova meta
+  // - Guest → retorna null
+  // =====================================================
+  static Future<MonthlyGoal?> createGoal({
+    required int mes,
+    required int ano,
+    required String conteudo,
+  }) async {
     try {
-      print('MonthlyGoalService: Creating goal for user $userId');
-      print('MonthlyGoalService: Mês: $mes, Ano: $ano, Conteúdo: $conteudo');
+      final user = _supabase.auth.currentUser;
+      if (user == null) return null;
 
-      // Primeiro, vamos testar se conseguimos fazer um SELECT na tabela
-      try {
-        final testSelect = await _supabase.from('metas').select().limit(1);
-        print('MonthlyGoalService: Test SELECT successful: $testSelect');
-      } catch (selectError) {
-        print('MonthlyGoalService: Test SELECT failed: $selectError');
-        throw Exception('Problema de conexão ou permissão na tabela metas: $selectError');
-      }
-
-      // Agora tentamos o INSERT sem a coluna created_at primeiro
       final response = await _supabase
           .from('metas')
           .insert({
-            'user_id': userId,
+            'user_id': user.id,
             'mes': mes,
             'ano': ano,
             'conteudo': conteudo,
-            'concluida': concluido,
+            'concluida': false,
           })
           .select()
           .single();
 
-      print('MonthlyGoalService: Goal created successfully: ${response['id']}');
       return MonthlyGoal.fromJson(response);
     } catch (e) {
-      print('MonthlyGoalService: Error creating goal: $e');
-      rethrow;
+      print('MonthlyGoalService.createGoal error: $e');
+      return null;
     }
   }
 
-  /// Atualiza uma meta existente
-  static Future<MonthlyGoal> updateGoal(
-    String goalId,
-    String conteudo,
-    bool concluido,
-  ) async {
+  // =====================================================
+  // UPDATE — meta existente
+  // - Guest → retorna null
+  // =====================================================
+  static Future<MonthlyGoal?> updateGoal({
+    required String goalId,
+    required String conteudo,
+    required bool concluido,
+  }) async {
     try {
-      print('MonthlyGoalService: Updating goal $goalId');
+      final user = _supabase.auth.currentUser;
+      if (user == null) return null;
+
       final response = await _supabase
           .from('metas')
           .update({
@@ -108,26 +85,36 @@ class MonthlyGoalService {
             'concluida': concluido,
           })
           .eq('id', goalId)
+          .eq('user_id', user.id)
           .select()
           .single();
 
-      print('MonthlyGoalService: Goal updated successfully');
       return MonthlyGoal.fromJson(response);
     } catch (e) {
-      print('MonthlyGoalService: Error updating goal: $e');
-      rethrow;
+      print('MonthlyGoalService.updateGoal error: $e');
+      return null;
     }
   }
 
-  /// Exclui uma meta
-  static Future<void> deleteGoal(String goalId) async {
+  // =====================================================
+  // DELETE — meta
+  // - Guest → retorna false
+  // =====================================================
+  static Future<bool> deleteGoal(String goalId) async {
     try {
-      print('MonthlyGoalService: Deleting goal $goalId');
-      await _supabase.from('metas').delete().eq('id', goalId);
-      print('MonthlyGoalService: Goal deleted successfully');
+      final user = _supabase.auth.currentUser;
+      if (user == null) return false;
+
+      await _supabase
+          .from('metas')
+          .delete()
+          .eq('id', goalId)
+          .eq('user_id', user.id);
+
+      return true;
     } catch (e) {
-      print('MonthlyGoalService: Error deleting goal: $e');
-      rethrow;
+      print('MonthlyGoalService.deleteGoal error: $e');
+      return false;
     }
   }
 }

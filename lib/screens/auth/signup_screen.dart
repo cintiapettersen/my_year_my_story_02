@@ -237,32 +237,34 @@ Widget build(BuildContext context) {
                           SizedBox(height: isTablet ? 24 : 16),
 
                           TextFormField(
-                            controller: _birthDateController,
-                            readOnly: true,
-                            onTap: () => _pickDate(context),
-                            style: TextStyle(
-                              fontSize: isTablet ? 20 : 16,
-                            ),
-                            decoration: InputDecoration(
-                              labelText: 'signup.birth_date'.tr(),
-                              labelStyle:
-                                  TextStyle(fontSize: isTablet ? 20 : 16),
-                              prefixIcon: Icon(
-                                Icons.cake,
-                                color: Color(0xFFA66ABD),
-                                size: isTablet ? 28 : 22,
-                              ),
-                              filled: true,
-                              fillColor: Colors.white,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: BorderSide.none,
-                              ),
-                            ),
-                            validator: (_) => _selectedDate == null
-                                ? 'signup.error_birth'.tr()
-                                : null,
-                          ),
+  controller: _birthDateController,
+  readOnly: true,
+  onTap: () => _pickDate(context),
+  style: TextStyle(
+    fontSize: isTablet ? 20 : 16,
+  ),
+  decoration: InputDecoration(
+    hintText: 'signup.birth_date'.tr(),
+    hintStyle: TextStyle(
+      fontSize: isTablet ? 20 : 16,
+      color: Colors.black54,
+    ),
+    prefixIcon: Icon(
+      Icons.cake,
+      color: Color(0xFFA66ABD),
+      size: isTablet ? 28 : 22,
+    ),
+    filled: true,
+    fillColor: Colors.white,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+      borderSide: BorderSide.none,
+    ),
+  ),
+  validator: (_) => _selectedDate == null
+      ? 'signup.error_birth'.tr()
+      : null,
+),
 
                           SizedBox(height: isTablet ? 24 : 16),
 

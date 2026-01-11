@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
@@ -49,42 +50,56 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
   @override
   void initState() {
     super.initState();
-    debugPrint(
-        '🔥 DidYouKnowWidget INIT — month=${widget.month} year=${widget.year}');
     _initPage();
   }
 
-  /// 🔹 inicialização organizada (PONTO ÚNICO)
   Future<void> _initPage() async {
     await _checkPremiumStatus();
     await _loadRefreshCount();
     await _loadCuriosities();
   }
 
+  // 🔐 Premium
   Future<void> _checkPremiumStatus() async {
+    final user = Supabase.instance.client.auth.currentUser;
+
+    if (user == null) {
+      if (!mounted) return;
+      setState(() => isPremiumUser = false);
+      return;
+    }
+
     final isPrem = await AccessControl.isPremium();
     if (!mounted) return;
+
     setState(() => isPremiumUser = isPrem);
   }
 
-  /// 🔹 carrega contador salvo
+  // 🔢 Limite por usuário / guest
   Future<void> _loadRefreshCount() async {
     final prefs = await SharedPreferences.getInstance();
+    final user = Supabase.instance.client.auth.currentUser;
+    final userKey = user?.id ?? 'guest';
+
     final now = DateTime.now();
-    final key = "refresh_did_you_know_${now.year}_${now.month}_${now.day}";
+    final key =
+        "refresh_did_you_know_${userKey}_${now.year}_${now.month}_${now.day}";
+
     if (!mounted) return;
-    setState(() => refreshCount = prefs.getInt(key) ?? 0);
+    setState(() {
+      refreshCount = prefs.getInt(key) ?? 0;
+    });
   }
 
+  // 📦 Dados
   Future<void> _loadCuriosities() async {
     if (!mounted) return;
     setState(() => isLoading = true);
 
     try {
-     
-          final result = await _service.fetchDailyCuriosities();
-
+      final result = await _service.fetchDailyCuriosities();
       if (!mounted) return;
+
       setState(() {
         curiosities = result;
         isLoading = false;
@@ -96,24 +111,45 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
     }
   }
 
+  // 🔄 Refresh
   Future<void> _handleRefresh() async {
-    if (!isPremiumUser) {
+  await Future.delayed(const Duration(milliseconds: 120));
+  if (!mounted) return;
+
+  // 🔐 FREE / GUEST → bloqueia sempre
+  if (!isPremiumUser) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       showPremiumPopup(context);
-      return;
-    }
-
-    if (refreshCount >= maxRefresh) return;
-
-    final prefs = await SharedPreferences.getInstance();
-    final now = DateTime.now();
-    final key = "refresh_did_you_know_${now.year}_${now.month}_${now.day}";
-
-    await _loadCuriosities();
-    await prefs.setInt(key, refreshCount + 1);
-
-    if (!mounted) return;
-    setState(() => refreshCount++);
+    });
+    return;
   }
+
+  // 💎 PREMIUM → limite diário
+  if (refreshCount >= maxRefresh) {
+    return;
+  }
+
+  final prefs = await SharedPreferences.getInstance();
+  final user = Supabase.instance.client.auth.currentUser;
+  final userKey = user?.id ?? 'guest';
+
+  final now = DateTime.now();
+  final key =
+      "refresh_did_you_know_${userKey}_${now.year}_${now.month}_${now.day}";
+
+  await _loadCuriosities();
+  if (!mounted) return;
+
+  final newCount = refreshCount + 1;
+  await prefs.setInt(key, newCount);
+
+  if (!mounted) return;
+  setState(() {
+    refreshCount = newCount;
+  });
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +157,6 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
 
     final locale = context.locale.languageCode;
     final currentButtonColor = getMonthColor(widget.month);
-    final translatedMonth = "months.${widget.month}".tr();
 
     return MonthPageTemplate(
       month: widget.month,
@@ -136,22 +171,12 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
               ? Center(
                   child: Text(
                     "did_you_know.empty".tr(),
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF444444),
-                    ),
                     textAlign: TextAlign.center,
                   ),
                 )
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 10),
-
-                    
-
-
                     ...curiosities.asMap().entries.map((entry) {
                       final index = entry.key;
                       final item = entry.value;
@@ -191,7 +216,6 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: const Color(0xFFF2D7E0),
-                            width: 1,
                           ),
                         ),
                         child: Column(
@@ -216,31 +240,28 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
                             const SizedBox(height: 8),
                             Text(
                               curiosityText,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                color: Colors.black87,
-                                height: 1.5,
-                              ),
+                              style: const TextStyle(height: 1.5),
                             ),
                           ],
                         ),
                       );
                     }),
-
                     const SizedBox(height: 24),
-
                     Center(
                       child: GestureDetector(
-                        onTapDown: (_) =>
-                            setState(() => isPressed = true),
-                        onTapUp: (_) async {
-                          setState(() => isPressed = false);
-                          await Future.delayed(
-                              const Duration(milliseconds: 120));
-                          _handleRefresh();
+                        onTapDown: (_) {
+                          if (!mounted) return;
+                          setState(() => isPressed = true);
                         },
-                        onTapCancel: () =>
-                            setState(() => isPressed = false),
+                        onTapUp: (_) async {
+                          if (!mounted) return;
+                          setState(() => isPressed = false);
+                          await _handleRefresh();
+                        },
+                        onTapCancel: () {
+                          if (!mounted) return;
+                          setState(() => isPressed = false);
+                        },
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 180),
                           padding: const EdgeInsets.symmetric(
@@ -248,29 +269,16 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
                           decoration: BoxDecoration(
                             color: currentButtonColor,
                             borderRadius: BorderRadius.circular(10),
-                            boxShadow: [
-                              BoxShadow(
-                                color:
-                                    currentButtonColor.withOpacity(0.4),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
                           ),
                           child: Text(
                             isPremiumUser && refreshCount < maxRefresh
                                 ? "did_you_know.button.discover_more".tr()
                                 : "did_you_know.button.come_back_tomorrow".tr(),
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
+                            style: const TextStyle(color: Colors.white),
                           ),
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 40),
                   ],
                 ),

@@ -8,17 +8,10 @@ import 'package:myyearmystory/services/app_session.dart';
 
 
 /// 🌸 Mostra um aviso pedindo login ao tentar usar recursos protegidos.
-/// Pode ser chamado em qualquer lugar:
-/// `showLoginPrompt(context);`
-Future<void> showLoginPrompt(BuildContext context) async {
-  // 🔒 Garante um contexto seguro com Navigator
-  BuildContext safeContext = context;
-  try {
-    safeContext = Navigator.of(context, rootNavigator: true).context;
-  } catch (_) {}
 
+Future<void> showLoginPrompt(BuildContext context) async {
   await showDialog(
-    context: safeContext,
+    context: context,
     barrierDismissible: true,
     builder: (dialogContext) {
       return AlertDialog(
@@ -56,20 +49,19 @@ Future<void> showLoginPrompt(BuildContext context) async {
           ),
           ElevatedButton(
             onPressed: () {
-  // 1️⃣ Fecha o diálogo
-  Navigator.of(dialogContext).pop();
+              // 1️⃣ Fecha o diálogo
+              Navigator.of(dialogContext).pop();
 
-  // 2️⃣ 🔑 Sai do modo guest (ESSENCIAL)
-  AppSession.reset();
+              // 2️⃣ Sai do modo guest
+              AppSession.reset();
 
-  // 3️⃣ Navega para o fluxo de autenticação
-  Navigator.of(context).pushReplacement(
-    fadePageTransition(
-      const AuthPageView(),
-    ),
-  );
-},
-
+              // 3️⃣ Vai para o login
+              Navigator.of(context, rootNavigator: true).pushReplacement(
+                fadePageTransition(
+                  const AuthPageView(),
+                ),
+              );
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFC03B66),
               shape: RoundedRectangleBorder(

@@ -122,7 +122,8 @@
   "completed": "Profile updated successfully!",
   "error": "An error occurred while saving your profile: {{0}}",
   "full_name": "Full Name",
-  "birth_date": "Birth Date"
+  "birth_date": "Birth Date",
+   "updated": "Profile updated successfully!"
 
   },
   "complete_profile": {
@@ -274,7 +275,18 @@
     "error_load_goals": "Error loading goals.",
     "error_add_goal": "Error adding goal.",
     "error_update_goal": "Error updating goal.",
-    "error_remove_goal": "Error removing goal."
+    "error_remove_goal": "Error removing goal.",
+    "login_required": "Sign in to create and track your monthly goals 💕",
+    "add_monthly": "Add monthly goal",
+
+     "empty": "How about starting by setting a goal for this month?\nSmall steps matter too 💗",
+    
+    "add_main": "Add monthly goal",
+    "add_daily": "Add goal",
+    "tab_month": "MONTHLY GOALS",
+    "tab_day": "DAILY GOALS",
+    "completed": "completed"
+
   },
 
   "month_menu": {
@@ -547,6 +559,7 @@
 
   "saved_success": "Interview saved successfully! ✨",
   "save_error": "Error while saving. Try again!",
+  "empty_warning": "Please write at least one answer before saving 💬",
 
   "not_premium": "Feature available for premium users only.",
   "login_required": "Login required to continue.",
@@ -559,7 +572,7 @@
   
     "page_label": "Gratitude Page",
 
-    "description": "Gratitude helps us see the good in life and strengthens the heart. Write down the good things that happened this month 💖",
+    "description": "Seeing the good side of life strengthens the heart. Write down the good things that happened this month — even the small ones.",
     "fixed_description": "Become a keeper of memories and record the stories of those you love. This can be a unique moment with family, friends, and special people. 💖",
 
 
@@ -572,7 +585,11 @@
     "save_error": "Error while saving. 😞",
 
     "item_removed": "Item removed!",
-    "remove_error": "Error while removing."
+    "remove_error": "Error while removing.",
+    "added": "Gratidão adicionada com carinho 💖",
+    "removed": "Gratidão removida",
+    "error_save": "Não foi possível salvar agora. Tente novamente.",
+    "error_remove": "Não foi possível remover agora. Tente novamente."
   },
 
   

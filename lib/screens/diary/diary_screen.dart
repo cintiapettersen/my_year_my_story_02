@@ -25,6 +25,8 @@ class _DiaryScreenState extends State<DiaryScreen> {
   List<DiaryEntryModel> _entries = [];
   bool _isLoading = false;
   bool _isPremiumUser = false;
+    DiaryEntryModel? _editingEntry;
+
 
   late DateTime _selectedDate;
   String _selectedMoodIcon = "😊";
@@ -72,7 +74,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
       return;
     }
 
-    final entries = await DiaryService.getEntries(user.id);
+    final entries = await DiaryService.getEntries();
     setState(() {
       _entries = entries;
       _isLoading = false;
@@ -100,74 +102,58 @@ class _DiaryScreenState extends State<DiaryScreen> {
   // ===============================
 
   Future<void> _handleNewEntry() async {
-  final user = SupabaseConfig.client.auth.currentUser;
+    final user = SupabaseConfig.client.auth.currentUser;
 
-  if (user == null) {
-    _showGuestInfoDialog();
-    return;
+    if (user == null) {
+      await _showGuestInfoDialog();
+      return;
+    }
+
+    if (!_canSaveEntry()) {
+      showPremiumPopup(context);
+      return;
+    }
+
+    _openEntryModal();
   }
 
-  if (!_canSaveEntry()) {
-    showPremiumPopup(context);
-    return;
-  }
-
-  _openEntryModal();
-}
-
-  void _openEntryModal() {
-    _entryController.clear();
-    _selectedMoodIcon = "😊";
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => _buildEntryDialog(),
-    );
-  }
+  
 
   // ===============================
   // UI
   // ===============================
 
   @override
-@override
-Widget build(BuildContext context) {
-  return MainScaffold(
-    currentIndex: 2,
-    body: Stack(
-      children: [
-        Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _entries.isEmpty
-                      ? _buildEmptyState()
-                      : _buildEntriesList(),
-            ),
-          ],
-        ),
-
-        // FAB manual (compatível com MainScaffold)
-        Positioned(
-          bottom: 20,
-          right: 20,
-          child: FloatingActionButton(
-            backgroundColor: _userThemeColor,
-            onPressed: _handleNewEntry,
-            child: const Icon(Icons.add, color: Colors.white),
+  Widget build(BuildContext context) {
+    return MainScaffold(
+      currentIndex: 2,
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _entries.isEmpty
+                        ? _buildEmptyState()
+                        : _buildEntriesList(),
+              ),
+            ],
           ),
-        ),
-      ],
-    ),
-  );
-}
-
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: FloatingActionButton(
+              backgroundColor: _userThemeColor,
+              onPressed: _handleNewEntry,
+              child: const Icon(Icons.add, color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildHeader() {
     return Stack(
@@ -226,23 +212,20 @@ Widget build(BuildContext context) {
             ],
           ),
         ),
-
-        /// ❤️ PIN DE CORAÇÃO
         Positioned(
-  top: 12, // 👈 agora ele fica ENTRE a borda e o título
-  left: 0,
-  right: 0,
-  child: CircleAvatar(
-    radius: 24,
-    backgroundColor: Colors.white,
-    child: CircleAvatar(
-      radius: 20,
-      backgroundColor: _userThemeColor,
-      child: const Icon(Icons.favorite, color: Colors.white, size: 20),
-    ),
-  ),
-),
-
+          top: 12,
+          left: 0,
+          right: 0,
+          child: CircleAvatar(
+            radius: 24,
+            backgroundColor: Colors.white,
+            child: CircleAvatar(
+              radius: 20,
+              backgroundColor: _userThemeColor,
+              child: const Icon(Icons.favorite, color: Colors.white, size: 20),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -305,7 +288,13 @@ Widget build(BuildContext context) {
               ],
             ),
             const SizedBox(height: 12),
-            Text(entry.content, style: const TextStyle(height: 1.5)),
+            Text(
+  entry.content,
+  maxLines: entry.content.length > 80 ? 3 : null,
+  overflow: TextOverflow.ellipsis,
+  style: const TextStyle(height: 1.5),
+),
+
             const SizedBox(height: 12),
             Text(
               _formatTime(entry.entryDate),
@@ -317,224 +306,235 @@ Widget build(BuildContext context) {
     );
   }
 
-  // ===============================
-  // ENTRY MODAL
-  // ===============================
-
   Widget _buildEntryDialog() {
-  return StatefulBuilder(
-    builder: (context, modalSetState) {
-      return Padding(
-        padding: EdgeInsets.fromLTRB(
-          20,
-          20,
-          20,
-          MediaQuery.of(context).viewInsets.bottom + 20,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'diary.new_entry'.tr(),
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // 🔹 SELETOR DE ÍCONES (AGORA FUNCIONA)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: moodIcons.map((icon) {
-                final selected = icon == _selectedMoodIcon;
-
-                return GestureDetector(
-                  onTap: () {
-                    modalSetState(() {
-                      _selectedMoodIcon = icon;
-                    });
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: selected
-                          ? _userThemeColor.withOpacity(0.25)
-                          : Colors.grey[200],
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color:
-                            selected ? _userThemeColor : Colors.transparent,
-                        width: 2,
+    return StatefulBuilder(
+      builder: (context, modalSetState) {
+        return Padding(
+          padding: EdgeInsets.fromLTRB(
+            20,
+            20,
+            20,
+            MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height * 0.75,
+            child: Column(
+              children: [
+                Text(
+                  'diary.new_entry'.tr(),
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: moodIcons.map((icon) {
+                    final selected = icon == _selectedMoodIcon;
+                    return GestureDetector(
+                      onTap: () {
+                        modalSetState(() {
+                          _selectedMoodIcon = icon;
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? _userThemeColor.withOpacity(0.25)
+                              : Colors.grey[200],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: selected ? _userThemeColor : Colors.transparent,
+                            width: 2,
+                          ),
+                        ),
+                        child: Text(
+                          icon,
+                          style: const TextStyle(fontSize: 26),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: TextField(
+                      controller: _entryController,
+                      maxLines: null,
+                      decoration: InputDecoration(
+                        hintText: 'diary.hint_text'.tr(),
+                        filled: true,
+                        fillColor: Colors.grey[50],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
-                    child: Text(
-                      icon,
-                      style: const TextStyle(fontSize: 26),
-                    ),
                   ),
-                );
-              }).toList(),
-            ),
-
-            const SizedBox(height: 20),
-
-            TextField(
-              controller: _entryController,
-              maxLines: null,
-              decoration: InputDecoration(
-                hintText: 'diary.hint_text'.tr(),
-                filled: true,
-                fillColor: Colors.grey[50],
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
                 ),
-              ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () async {
+                    await _saveEntry();
+                    if (!mounted) return;
+                    Navigator.of(context).pop();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _userThemeColor,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: Text('diary.save'.tr()),
+                ),
+              ],
             ),
-
-            const SizedBox(height: 20),
-
-            ElevatedButton(
-  onPressed: () async {
-    await _saveEntry();
-    if (!mounted) return;
-
-    Navigator.of(context).pop(); // fecha SÓ o modal
-  },
-  style: ElevatedButton.styleFrom(
-    backgroundColor: _userThemeColor,
-    foregroundColor: Colors.white,
-  ),
-  child: Text('diary.save'.tr()),
-),
-
-          ],
-        ),
-      );
-    },
-  );
-}
-
+          ),
+        );
+      },
+    );
+  }
 
   Future<void> _saveEntry() async {
   if (_entryController.text.trim().isEmpty) return;
 
   final user = SupabaseConfig.client.auth.currentUser;
-
-  // 👤 CONVIDADO → salva só em memória
   if (user == null) {
-    final tempEntry = DiaryEntryModel(
-      id: 'guest_${DateTime.now().millisecondsSinceEpoch}',
-      userId: 'guest', // obrigatório no model
-      content: _entryController.text.trim(),
-      entryDate: DateTime.now(),
-      createdAt: DateTime.now(), // 👈 ESTE ERA O QUE FALTAVA
-      moodIcon: _selectedMoodIcon,
-    );
-
-    setState(() {
-      _entries.insert(0, tempEntry);
-    });
-
+    showLoginPrompt(context);
     return;
   }
 
-  // 👤 LOGADO → salva no banco
-  await DiaryService.createEntry(
-    user.id,
-    _entryController.text.trim(),
-    _selectedDate,
-    moodIcon: _selectedMoodIcon,
-  );
+  if (_editingEntry != null) {
+  await DiaryService.updateEntry(
+  _editingEntry!.id,
+  _entryController.text.trim(),
+  _editingEntry!.entryDate,
+);
 
+  } else {
+    await DiaryService.createEntry(
+      _entryController.text.trim(),
+      _selectedDate,
+      moodIcon: _selectedMoodIcon,
+    );
+  }
+
+  _editingEntry = null;
   await _loadEntries();
 }
 
 
-
-  void _editEntry(DiaryEntryModel entry) {
+// ===============================
+// EDIT ENTRY
+// ===============================
+void _editEntry(DiaryEntryModel entry) {
+  setState(() {
+    _editingEntry = entry;
     _entryController.text = entry.content;
     _selectedMoodIcon = entry.moodIcon ?? "😊";
-    _openEntryModal();
+  });
+
+  _openEntryModal(isEditing: true);
+}
+
+// ===============================
+// OPEN ENTRY MODAL
+// ===============================
+void _openEntryModal({bool isEditing = false}) {
+  if (!isEditing) {
+    _entryController.clear();
+    _selectedMoodIcon = "😊";
+    _editingEntry = null;
   }
 
-  void _deleteEntry(DiaryEntryModel entry) async {
-    await DiaryService.deleteEntry(entry.id);
-    _loadEntries();
-  }
-
-  // ===============================
-  // HELPERS
-  // ===============================
-
-  String _formatDate(DateTime date) =>
-      '${date.day}/${date.month}/${date.year}';
-
-  String _formatTime(DateTime date) =>
-      '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Text(
-          'diary.no_entries_day'.tr(),
-          textAlign: TextAlign.center,
-        ),
-      ),
-    );
-  }
-
-  Future<void> _showGuestInfoDialog() async {
-  return showDialog(
+  showModalBottomSheet(
     context: context,
-    barrierDismissible: true,
-    builder: (modalContext) {
-      return AlertDialog(
-        backgroundColor: const Color(0xFFFCE9EF),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-
-        title: Text(
-          'diary.guest_info_title'.tr(),
-          textAlign: TextAlign.center,
-        ),
-
-        content: Text(
-          'diary.guest_info_message'.tr(),
-          textAlign: TextAlign.center,
-        ),
-
-        actionsAlignment: MainAxisAlignment.center,
-        actions: [
-          Column(
-            children: [
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(modalContext); // fecha o popup
-                    showLoginPrompt(context);
-                  },
-                  child: Text('diary.guest_login'.tr()),
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(modalContext); // fecha o popup
-                  _openEntryModal(); // 👈 ABRE O MODAL MESMO SENDO CONVIDADO
-                },
-                child: Text('diary.guest_continue'.tr()),
-              ),
-            ],
-          ),
-        ],
-      );
-    },
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (_) => _buildEntryDialog(),
   );
 }
 
+// ===============================
+// DELETE ENTRY
+// ===============================
+void _deleteEntry(DiaryEntryModel entry) async {
+  await DiaryService.deleteEntry(entry.id);
+  _loadEntries();
+}
+
+// ===============================
+// FORMATTERS
+// ===============================
+String _formatDate(DateTime date) =>
+    '${date.day}/${date.month}/${date.year}';
+
+String _formatTime(DateTime date) =>
+    '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+
+// ===============================
+// EMPTY STATE
+// ===============================
+Widget _buildEmptyState() {
+  return Center(
+    child: Padding(
+      padding: const EdgeInsets.all(32),
+      child: Text(
+        'diary.no_entries_day'.tr(),
+        textAlign: TextAlign.center,
+      ),
+    ),
+  );
+}
+
+  Future<void> _showGuestInfoDialog() async {
+    return showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (modalContext) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFFFCE9EF),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Text(
+            'diary.guest_info_title'.tr(),
+            textAlign: TextAlign.center,
+          ),
+          content: Text(
+            'diary.guest_info_message'.tr(),
+            textAlign: TextAlign.center,
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            Column(
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(modalContext);
+                      showLoginPrompt(context);
+                    },
+                    child: Text('diary.guest_login'.tr()),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(modalContext);
+                    _openEntryModal();
+                  },
+                  child: Text('diary.guest_continue'.tr()),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
 }

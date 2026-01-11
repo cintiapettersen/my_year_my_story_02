@@ -4,9 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
-import 'package:myyearmystory/screens/premium/premium_protected_page.dart';
 import 'package:myyearmystory/utils/access_control.dart';
-import 'package:myyearmystory/utils/app_config.dart';
 import 'package:myyearmystory/screens/popups/popup_login.dart';
 
 class CuriositiesWidget extends StatefulWidget {
@@ -24,159 +22,80 @@ class CuriositiesWidget extends StatefulWidget {
 }
 
 class _CuriositiesWidgetState extends State<CuriositiesWidget> {
-  bool _loading = true;
   bool _isPremiumUser = false;
+  int _currentPage = 0;
 
-  String _themeTitle = '';
-  final String _descricaoFixa =
-      "Um espaço só seu, para se observar com carinho e descobrir novos pedacinhos de quem você é. "
-      "Aqui, você pode refletir, se ouvir e se permitir sentir — sem pressa, sem regras, só você.";
+  final PageController _pageController = PageController();
 
   List<String> _questions = [];
   List<TextEditingController> _controllers = [];
 
-  String? curiosidadeAleatoria;
+  final List<Color> heartColors = const [
+    Color(0xFFE57373),
+    Color(0xFFF06292),
+    Color(0xFFBA68C8),
+    Color(0xFF9575CD),
+    Color(0xFF64B5F6),
+    Color(0xFF4DD0E1),
+    Color(0xFF4DB6AC),
+    Color(0xFFAED581),
+    Color(0xFFFF8A65),
+    Color(0xFFFFB74D),
+  ];
 
   @override
   void initState() {
     super.initState();
-    _initializePage();
+    _initialize();
   }
 
-  Future<void> _initializePage() async {
-    await _checkPremiumStatus();
-    await _loadThemeAndQuestions();
-    await _loadSavedAnswers();
-    await _loadCuriosityOfMonth();
+  Future<void> _initialize() async {
+    // Premium é carregado, mas NÃO controla acesso à página
+    _isPremiumUser = await AccessControl.isPremium();
+    await _loadQuestions();
 
-    setState(() {
-      _loading = false;
-    });
+    if (mounted) setState(() {});
   }
 
-  // ------------------------------------------------------------
-  // 🔑 CHECAGEM PREMIUM + ADMIN
-  // ------------------------------------------------------------
-  Future<void> _checkPremiumStatus() async {
-    final user = SupabaseConfig.client.auth.currentUser;
-    final email = user?.email;
+  Future<void> _loadQuestions() async {
+    final language = context.locale.languageCode;
 
-    final isPremium = await AccessControl.isPremium();
-
-    setState(() {
-      _isPremiumUser = isPremium || AppConfig.isAdmin(email);
-    });
-  }
-
-  // ------------------------------------------------------------
-  // 🔄 CARREGA PERGUNTAS DO MÊS
-  // ------------------------------------------------------------
-  Future<void> _loadThemeAndQuestions() async {
-  try {
-    // ⚠️ Captura o idioma ANTES do await
-    final String language = context.locale.languageCode;
-
-    final List<dynamic> res = await SupabaseConfig.client
+    final res = await SupabaseConfig.client
         .from('curiosities_entries')
-        .select(
-          'theme_title, questions, questions_en, group_number, is_premium',
-        )
+        .select('questions, questions_en')
         .eq('month', widget.month)
         .order('group_number');
 
-    if (res.isEmpty) {
-      _questions = [];
-      _controllers = [];
-      return;
-    }
-
-    // 🟣 Título vem sempre do primeiro grupo
-    _themeTitle = res.first['theme_title'] ?? '';
-
-    final List<String> allQuestions = [];
+    final allQuestions = <String>[];
 
     for (final row in res) {
-      final bool isPremiumGroup = row['is_premium'] == true;
-
-      // 🔐 Usuário free → ignora grupos premium
-      if (!_isPremiumUser && isPremiumGroup) continue;
-
-      final List<String> questions = language == 'en'
+      final questions = language == 'en'
           ? List<String>.from(row['questions_en'] ?? [])
           : List<String>.from(row['questions'] ?? []);
-
       allQuestions.addAll(questions);
     }
 
     _questions = allQuestions;
     _controllers =
         List.generate(_questions.length, (_) => TextEditingController());
-  } catch (e) {
-    debugPrint('Erro ao carregar curiosities_entries: $e');
-    _questions = [];
-    _controllers = [];
-  }
-}
-
-  // ------------------------------------------------------------
-  // 🔄 CARREGA RESPOSTAS SALVAS
-  // ------------------------------------------------------------
-  Future<void> _loadSavedAnswers() async {
-    final user = SupabaseConfig.client.auth.currentUser;
-    if (user == null) return;
-
-    try {
-      final res = await SupabaseConfig.client
-          .from('entries')
-          .select('curiosities_answers')
-          .eq('user_id', user.id)
-          .eq('year', widget.year)
-          .eq('month', widget.month)
-          .maybeSingle();
-
-      if (res != null && res['curiosities_answers'] != null) {
-        final saved = List<String>.from(res['curiosities_answers']);
-
-        for (int i = 0; i < _controllers.length; i++) {
-          if (i < saved.length) {
-            _controllers[i].text = saved[i];
-          }
-        }
-      }
-    } catch (e) {
-      debugPrint('Erro ao carregar respostas salvas: $e');
-    }
   }
 
-  // ------------------------------------------------------------
-  // ❤️ SALVA RESPOSTAS
-  // ------------------------------------------------------------
+  // 🔐 Login / Premium SÓ AQUI
   Future<void> _saveAnswers() async {
-  final user = SupabaseConfig.client.auth.currentUser;
+    final user = SupabaseConfig.client.auth.currentUser;
 
-  // 🔐 Convidado → login
-  if (user == null) {
-    showLoginPrompt(context);
-    return;
-  }
+    // 👤 Convidado
+    if (user == null) {
+      showLoginPrompt(context);
+      return;
+    }
 
-  // 🔓 Free → só 1 save por mês
-  if (!_isPremiumUser) {
-    final existing = await SupabaseConfig.client
-        .from('entries')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('year', widget.year)
-        .eq('month', widget.month)
-        .maybeSingle();
-
-    if (existing != null) {
+    // 👤 Free
+    if (!_isPremiumUser) {
       showPremiumPopup(context);
       return;
     }
-  }
 
-  try {
     final answers =
         _controllers.map((c) => c.text.trim()).toList(growable: false);
 
@@ -192,206 +111,126 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('curiosities.saved_success'.tr()),
+        backgroundColor: const Color(0xFFFDF0F4),
+        content: Text(
+          'curiosities.saved_success'.tr(),
+          style: const TextStyle(color: Colors.black),
+        ),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
     );
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('curiosities.save_error'.tr()),
-      ),
-    );
-  }
-}
-
-
-  // ------------------------------------------------------------
-  // 🎁 CURIOSIDADE ALEATÓRIA DE MESES PASSADOS
-  // ------------------------------------------------------------
-  Future<void> _loadCuriosityOfMonth() async {
-    final user = SupabaseConfig.client.auth.currentUser;
-    if (user == null) return;
-
-    try {
-      final res = await SupabaseConfig.client
-          .from('entries')
-          .select('curiosities_answers, month, year')
-          .eq('user_id', user.id)
-          .eq('month', widget.month)
-          .eq('year', widget.year)
-          .maybeSingle();
-
-      if (res == null) {
-        curiosidadeAleatoria = null;
-        return;
-      }
-
-      final answers = res['curiosities_answers'];
-
-      if (answers != null && answers is List && answers.isNotEmpty) {
-        final combined = <Map<String, String>>[];
-
-        for (int i = 0; i < answers.length; i++) {
-          combined.add({
-            "answer": answers[i],
-            "month": res["month"].toString(),
-            "year": res["year"].toString(),
-          });
-        }
-
-        combined.shuffle();
-        final selected = combined.first;
-
-        curiosidadeAleatoria =
-            "${selected['answer']} (${_formatarMesAno(selected['month']!)} ${selected['year']!})";
-      }
-    } catch (e) {
-      curiosidadeAleatoria = null;
-    }
   }
 
-  String _formatarMesAno(String month) {
-    const meses = [
-      "",
-      "jan",
-      "fev",
-      "mar",
-      "abr",
-      "mai",
-      "jun",
-      "jul",
-      "ago",
-      "set",
-      "out",
-      "nov",
-      "dez"
-    ];
-
-    final m = int.tryParse(month) ?? 0;
-    if (m < 1 || m > 12) return month;
-
-    return meses[m];
-  }
-
-  // ------------------------------------------------------------
-  // 🌈 UI
-  // ------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
-    if (_loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (!_isPremiumUser) {
-      return PremiumProtectedPage(
-        child: const Center(child: Text("Carregando...")),
-      );
-    }
-
     return MonthPageTemplate(
       month: widget.month,
       year: widget.year,
       title: '',
       pageLabel: 'curiosities.title'.tr(),
       labelColor: const Color(0xFFc79fe2),
-      description: "curiosities.description_fixed".tr(),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+      description: 'curiosities.description_fixed'.tr(),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 6),
+            if (_questions.isNotEmpty)
+              Text(
+                '${_currentPage + 1} / ${_questions.length}',
+                style: const TextStyle(fontSize: 13, color: Colors.black54),
+              ),
 
-            ...List.generate(_questions.length, (index) {
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 46),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // ❤️ Coração + Pergunta lado a lado
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.favorite,
-              size: 18,
-              color: Color(0xFFE25BA6),
+            const SizedBox(height: 12),
+
+            SizedBox(
+              height: 320,
+              child: PageView.builder(
+                controller: _pageController,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _questions.length,
+                onPageChanged: (i) => setState(() => _currentPage = i),
+                itemBuilder: (context, index) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.favorite,
+                        color: heartColors[index % heartColors.length],
+                        size: 22,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _questions[index],
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFBD3E7D),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: _controllers[index],
+                        maxLines: 5,
+                        decoration: InputDecoration(
+                          hintText: 'curiosities.answer_hint'.tr(),
+                          filled: true,
+                          fillColor: const Color(0xFFFCEAF4),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      ElevatedButton(
+                        onPressed: _saveAnswers,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFE25BA6),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 28,
+                            vertical: 14,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        child: Text('curiosities.save'.tr()),
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
-            const SizedBox(width: 8),
 
-            // texto da pergunta traduzida
-            Expanded(
-              child: Text(
-                _questions[index], // ← AGORA TRADUZ!
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 15,
-                  color: Color.fromARGB(255, 189, 62, 125),
+            const SizedBox(height: 8),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back_ios, size: 18),
+                  onPressed: _currentPage > 0
+                      ? () => _pageController.previousPage(
+                            duration: const Duration(milliseconds: 250),
+                            curve: Curves.easeOut,
+                          )
+                      : null,
                 ),
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 8),
-
-        // Campo de resposta
-        TextField(
-          controller: _controllers[index],
-          minLines: 2,
-          maxLines: 4,
-          decoration: InputDecoration(
-            hintText: 'curiosities.answer_hint'.tr(), // ← também traduz
-            filled: true,
-            fillColor: const Color(0xFFFCEAF4),
-            contentPadding: const EdgeInsets.symmetric(
-              vertical: 10,
-              horizontal: 12,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: Color(0xFFE8B3D0),
-                width: 1,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: Color(0xFFE25BA6),
-                width: 1.4,
-              ),
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}),
-
-
-            const SizedBox(height: 20),
-
-            Center(
-              child: ElevatedButton.icon(
-                onPressed: _loading ? null : _saveAnswers,
-                icon: const Icon(Icons.favorite, color: Colors.white),
-                label: Text(
-                  'curiosities.save'.tr(),
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w600, fontSize: 16),
+                IconButton(
+                  icon: const Icon(Icons.arrow_forward_ios, size: 18),
+                  onPressed: _currentPage < _questions.length - 1
+                      ? () => _pageController.nextPage(
+                            duration: const Duration(milliseconds: 250),
+                            curve: Curves.easeOut,
+                          )
+                      : null,
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE25BA6),
-                  foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  elevation: 3,
-                ),
-              ),
+              ],
             ),
           ],
         ),
@@ -404,6 +243,7 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
     for (final c in _controllers) {
       c.dispose();
     }
+    _pageController.dispose();
     super.dispose();
   }
 }

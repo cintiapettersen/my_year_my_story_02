@@ -61,7 +61,7 @@ class GlobalPageTemplate extends StatelessWidget {
       // 🌷 Menu fixo global
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFFE91E63), // rosa Sonho de Papel
+        selectedItemColor: const Color.fromARGB(255, 216, 98, 139), // rosa Sonho de Papel
         unselectedItemColor: Colors.grey,
         backgroundColor: Colors.white,
         elevation: 10,

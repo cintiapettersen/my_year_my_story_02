@@ -120,7 +120,8 @@
   "free_plan": "Plano Standard",
   "premium_plan": "Plano Premium",
   "completed": "Profile updated successfully!",
-  "error": "An error occurred while saving your profile: {{0}}"
+  "error": "An error occurred while saving your profile: {{0}}",
+  "updated": "Seu nome foi atualizado com sucesso!"
 
   },
 
@@ -265,7 +266,18 @@
     "error_load_goals": "Erro ao carregar metas.",
     "error_add_goal": "Erro ao adicionar meta.",
     "error_update_goal": "Erro ao atualizar meta.",
-    "error_remove_goal": "Erro ao remover meta."
+    "error_remove_goal": "Erro ao remover meta.",
+    "login_required": "Entre com sua conta para criar e acompanhar suas metas mensais 💕",
+    
+    "empty": "Que tal começar definindo uma meta para este mês?\nPequenos passos também contam 💗",
+    "add_monthly": "Adicionar meta do mês",
+    "add_main": "Adicionar meta do mês",
+    "add_daily": "Adicionar meta",
+    "tab_month": "METAS DO MÊS",
+    "tab_day": "METAS DO DIA",
+    "completed": "concluídos",
+    "view_more": "ver mais..."
+
   },
 
   "month_menu": {
@@ -530,7 +542,8 @@
   "save_error": "Erro ao salvar. Tente novamente!",
 
   "not_premium": "Recurso exclusivo para assinantes.",
-  "login_required": "Faça login para continuar."
+  "login_required": "Faça login para continuar.",
+   "empty_warning": "Escreva ao menos uma resposta antes de salvar 💬"
 
 
   },
@@ -538,7 +551,7 @@
   "gratitude": {
    "page_label": "Página da Gratidão",
 
-    "description": "A gratidão nos ajuda a enxergar o lado bom da vida e fortalecer o coração. Registre as coisas boas que aconteceram neste mês 💖",
+    "description": "Enxergar o lado bom da vida fortalece o coração. Registre aqui as coisas boas que aconteceram neste mês — mesmo as pequenas.",
     "fixed_description": "A gratidão nos ajuda a enxergar o lado bom da vida e fortalecer o coração. Registre as coisas boas que aconteceram neste mês 💖",
     "hint": "Sou grato por...",
     "empty_state": "Nenhum registro ainda.\nComece adicionando algo pelo qual você é grato 💛",
@@ -548,7 +561,12 @@
     "save_error": "Erro ao salvar. 😞",
 
     "item_removed": "Item removido!",
-    "remove_error": "Erro ao remover."
+    "remove_error": "Erro ao remover.",
+
+    "added": "Gratitude added with love 💖",
+    "removed": "Gratitude removed",
+    "error_save": "We couldn’t save this right now. Please try again.",
+    "error_remove": "We couldn’t remove this right now. Please try again."
   },
 
   

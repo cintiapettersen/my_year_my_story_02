@@ -82,7 +82,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('auth.forgot.error'.tr()),
-            backgroundColor: Colors.red,
+            backgroundColor: const Color.fromARGB(255, 142, 92, 173),
           ),
         );
       }

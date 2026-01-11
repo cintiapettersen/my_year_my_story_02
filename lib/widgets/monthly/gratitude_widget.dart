@@ -25,7 +25,6 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
   final TextEditingController _controller = TextEditingController();
   List<String> _gratitudes = [];
   bool _isLoading = false;
-
   bool _isPremiumUser = false;
 
   final List<Color> trashColors = const [
@@ -65,8 +64,8 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
     final overlay = Overlay.of(context);
     if (overlay == null) return;
 
-    final randomX = (MediaQuery.of(context).size.width *
-        (0.2 + (0.6 * (DateTime.now().millisecond % 100) / 100)));
+    final randomX = MediaQuery.of(context).size.width *
+        (0.2 + (0.6 * (DateTime.now().millisecond % 100) / 100));
 
     final colors = [
       Colors.pinkAccent,
@@ -79,32 +78,26 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
     final color = colors[DateTime.now().millisecond % colors.length];
 
     final entry = OverlayEntry(
-      builder: (context) {
-        return _HeartFloating(
-          startX: randomX,
-          color: color,
-        );
-      },
+      builder: (_) => _HeartFloating(
+        startX: randomX,
+        color: color,
+      ),
     );
 
     overlay.insert(entry);
 
-    Future.delayed(const Duration(seconds: 2), () {
-      entry.remove();
-    });
+    Future.delayed(const Duration(seconds: 2), entry.remove);
   }
 
   Future<void> _loadGratitudes() async {
-    final user = SupabaseConfig.client.auth.currentUser;
-    if (user == null) return;
-
     setState(() => _isLoading = true);
 
     final list = await GratitudeService.getGratitudeList(
       widget.month,
       widget.year,
-      user.id,
     );
+
+    if (!mounted) return;
 
     setState(() {
       _gratitudes = list;
@@ -113,8 +106,10 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
   }
 
   Future<void> _addGratitude() async {
-    final user = SupabaseConfig.client.auth.currentUser;
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
 
+    final user = SupabaseConfig.client.auth.currentUser;
     if (user == null) {
       showLoginPrompt(context);
       return;
@@ -125,9 +120,6 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
       return;
     }
 
-    final text = _controller.text.trim();
-    if (text.isEmpty) return;
-
     setState(() => _isLoading = true);
 
     final newList = [..._gratitudes, text];
@@ -135,62 +127,78 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
       newList,
       widget.month,
       widget.year,
-      user.id,
     );
 
-    if (success) {
-      _controller.clear();
-      setState(() => _gratitudes = newList);
-
-      _showHeartAnimation();
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('gratitude.added'.tr())),
-        );
-      }
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('gratitude.error_save'.tr())),
-        );
-      }
-    }
+    if (!mounted) return;
 
     setState(() => _isLoading = false);
+
+    if (!success) {
+      showLoginPrompt(context);
+      return;
+    }
+
+    _controller.clear();
+    setState(() => _gratitudes = newList);
+
+    _showHeartAnimation();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(
+    backgroundColor: const Color(0xFFFDF0F4), // rosa clarinho
+    content: Text(
+      'gratitude.added'.tr(),
+      style: const TextStyle(color: Colors.black),
+    ),
+    behavior: SnackBarBehavior.floating,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+    ),
+  ),
+);
   }
 
   Future<void> _deleteGratitude(int index) async {
     final user = SupabaseConfig.client.auth.currentUser;
-    if (user == null) return;
-
-    final newList = List<String>.from(_gratitudes)..removeAt(index);
+    if (user == null) {
+      showLoginPrompt(context);
+      return;
+    }
 
     setState(() => _isLoading = true);
 
+    final newList = List<String>.from(_gratitudes)..removeAt(index);
     final success = await GratitudeService.saveGratitudeList(
       newList,
       widget.month,
       widget.year,
-      user.id,
     );
 
-    if (success) {
-      setState(() => _gratitudes = newList);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('gratitude.removed'.tr())),
-        );
-      }
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('gratitude.error_remove'.tr())),
-        );
-      }
-    }
+    if (!mounted) return;
 
     setState(() => _isLoading = false);
+
+    if (!success) {
+      showLoginPrompt(context);
+      return;
+    }
+
+    setState(() => _gratitudes = newList);
+
+   ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(
+    backgroundColor: const Color(0xFFFDF0F4), // rosa clarinho
+    content: Text(
+      'gratitude.removed'.tr(),
+      style: const TextStyle(color: Colors.black),
+    ),
+    behavior: SnackBarBehavior.floating,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+    ),
+  ),
+);
+
   }
 
   @override
@@ -200,120 +208,117 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
       year: widget.year,
       title: "",
       pageLabel: "gratitude.page_label".tr(),
-      labelColor: const Color(0xFFe2377d),
+      labelColor: const Color.fromARGB(255, 244, 185, 210),
       description: "gratitude.description".tr(),
-      child: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _controller,
-                          decoration: InputDecoration(
-                            hintText: 'gratitude.hint'.tr(),
-                            filled: true,
-                            fillColor: Colors.white,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 14,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onSubmitted: (_) => _addGratitude(),
-                        ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    style: const TextStyle(color: Colors.black),
+                    decoration: InputDecoration(
+                      hintText: 'gratitude.hint'.tr(),
+                      hintStyle: const TextStyle(color: Colors.black54),
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
                       ),
-                      const SizedBox(width: 10),
-                      ElevatedButton(
-                        onPressed: _addGratitude,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFC03B66),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.all(14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Icon(Icons.add, size: 22),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  if (_gratitudes.isEmpty)
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.withOpacity(0.05),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Text(
-                        'gratitude.empty'.tr(),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            fontSize: 16, color: Colors.grey),
-                      ),
-                    )
-                  else
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _gratitudes.length,
-                      itemBuilder: (context, index) {
-                        final text = _gratitudes[index];
-
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFDF0F4),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                                color: const Color(0xFFF3DCE4)),
-                          ),
-                          child: ListTile(
-                            dense: true,
-                            visualDensity: const VisualDensity(
-                              horizontal: -3,
-                              vertical: -3,
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-                            title: Text(
-                              text,
-                              style: const TextStyle(
-                                fontSize: 14.5,
-                                height: 1.25,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            trailing: IconButton(
-                              icon: Icon(
-                                Icons.delete_rounded,
-                                color: trashColors[
-                                    index % trashColors.length],
-                                size: 22,
-                              ),
-                              padding: EdgeInsets.zero,
-                              onPressed: () => _deleteGratitude(index),
-                            ),
-                          ),
-                        );
-                      },
                     ),
-                ],
-              ),
+                    onSubmitted: (_) => _addGratitude(),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                ElevatedButton(
+                  onPressed: _addGratitude,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFC03B66),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.all(14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Icon(Icons.add, size: 22),
+                ),
+              ],
             ),
+            const SizedBox(height: 20),
+            if (_gratitudes.isEmpty)
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Text(
+                  'gratitude.empty'.tr(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black54,
+                  ),
+                ),
+              )
+            else
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _gratitudes.length,
+                itemBuilder: (context, index) {
+                  final text = _gratitudes[index];
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFDF0F4),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFF3DCE4)),
+                    ),
+                    child: ListTile(
+                      dense: true,
+                      visualDensity: const VisualDensity(
+                        horizontal: -3,
+                        vertical: -3,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      title: Text(
+                        text,
+                        style: const TextStyle(
+                          fontSize: 14.5,
+                          height: 1.25,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
+                        ),
+                      ),
+                      trailing: IconButton(
+                        icon: Icon(
+                          Icons.delete_rounded,
+                          color: trashColors[index % trashColors.length],
+                          size: 22,
+                        ),
+                        padding: EdgeInsets.zero,
+                        onPressed: () => _deleteGratitude(index),
+                      ),
+                    ),
+                  );
+                },
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -339,7 +344,6 @@ class _HeartFloatingState extends State<_HeartFloating> {
   @override
   void initState() {
     super.initState();
-
     Future.delayed(const Duration(milliseconds: 30), () {
       setState(() {
         top = 200;

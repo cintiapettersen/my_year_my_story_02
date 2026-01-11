@@ -14,7 +14,7 @@ class AppBottomMenu extends StatelessWidget {
   const AppBottomMenu({
     super.key,
     this.currentIndex,
-    this.themeColor = const Color(0xFFE32278),
+    this.themeColor = const Color.fromARGB(255, 242, 87, 138),
   });
 
   @override

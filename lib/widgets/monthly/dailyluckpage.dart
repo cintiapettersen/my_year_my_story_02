@@ -12,9 +12,9 @@ import 'package:myyearmystory/widgets/shared/app_bottom_menu.dart';
 import 'package:myyearmystory/screens/premium/limit_popup.dart';
 import 'package:myyearmystory/screens/premium/free_limit_popup.dart';
 
-import 'package:myyearmystory/utils/app_config.dart';
 import 'package:myyearmystory/utils/access_control.dart';
 import 'package:flutter/foundation.dart';
+import 'package:myyearmystory/utils/app_theme.dart';
 
 class DailyLuckPage extends StatefulWidget {
   const DailyLuckPage({Key? key}) : super(key: key);
@@ -37,11 +37,12 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
   Color _cardColor = const Color(0xFFDAB6E8);
 
   final List<Color> _cardColors = const [
-    Color(0xFFDAB6E8),
-    Color(0xFFF2D7EA),
-    Color(0xFFFABFE7),
+    Color.fromARGB(255, 226, 193, 239),
+    Color.fromARGB(255, 185, 211, 234),
+    Color.fromARGB(255, 174, 207, 206),
     Color(0xFFEDC3EF),
-    Color.fromARGB(255, 188, 209, 231),
+    Color.fromARGB(255, 190, 211, 233),
+    Color.fromARGB(255, 238, 186, 222),
   ];
 
   @override
@@ -70,7 +71,9 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
       _luckMessage = "dailyLuck.initialPlaceholder".tr();
     }
 
+    if (mounted) {
     setState(() {});
+}
   }
 
   Future<void> _loadTurnData() async {
@@ -92,16 +95,27 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
   bool _isSameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
 
-  Future<bool> _canTurnCard() async {
+ Future<bool> _canTurnCard() async {
   // 🔓 ilimitado SOMENTE no debug local
   if (kDebugMode) return true;
 
+  // 👑 Premium: 3 por dia
   if (_isPremium) {
     return _turnsToday < 3;
   }
 
-  return _turnsToday < 1;
+  // 👤 Guest ou usuário não premium
+  // Guest → 1 por dia
+  // Usuário logado free → 2 por dia
+  final isLoggedIn = supabase.auth.currentUser != null;
+
+  if (!isLoggedIn) {
+    return _turnsToday < 1;
+  }
+
+  return _turnsToday < 2;
 }
+
 
   Future<void> _registerTurn() async {
     final prefs = await SharedPreferences.getInstance();
@@ -247,26 +261,36 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
           /// BOTÃO DE VIRAR CARTA
           TextButton.icon(
             onPressed: () async {
-              if (_isLoading) return;
+  if (_isLoading) return;
 
-              final canTurn = await _canTurnCard();
+  final canTurn = await _canTurnCard();
 
-              if (!canTurn) {
-  if (_isPremium) {
-    showLimitPopup(context);
-  } else {
-    showFreeLimitPopup(context);
+  if (!canTurn) {
+    final isLoggedIn = supabase.auth.currentUser != null;
+
+    if (!isLoggedIn) {
+      // guest
+      showPremiumPopup(context);
+    } else if (_isPremium) {
+      // premium estourou limite
+      showLimitPopup(context);
+    } else {
+      // usuário free
+      showFreeLimitPopup(context);
+    }
+    return;
   }
-  return;
-}
 
-              HapticFeedback.lightImpact();
+  HapticFeedback.lightImpact();
 
-              setState(() => _isLoading = true);
+  setState(() => _isLoading = true);
 
-              await _loadDailyLuck();
-              await _registerTurn();
-            },
+  await _loadDailyLuck();
+  await _registerTurn();
+},
+
+
+
             icon: const Icon(Icons.refresh, color: Color(0xFFA84ABF)),
             label: Text(
               "dailyLuck.turnAgain".tr(),
@@ -279,114 +303,138 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFCE9EF),
+Widget build(BuildContext context) {
+  return ValueListenableBuilder<Color>(
+    valueListenable: appThemeColor,
+    builder: (context, color, _) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFFCE9EF),
 
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFE91E63),
-        elevation: 0,
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: Text(
-          "My Year, My Story",
-          style: GoogleFonts.cinzel(
-            textStyle: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-              letterSpacing: 0.5,
+        appBar: AppBar(
+          backgroundColor: color,
+          elevation: 0,
+          centerTitle: true,
+          iconTheme: const IconThemeData(color: Colors.white),
+          title: Text(
+            "My Year, My Story",
+            style: GoogleFonts.cinzel(
+              textStyle: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                letterSpacing: 0.5,
+              ),
             ),
           ),
         ),
-      ),
 
-      bottomNavigationBar: const AppBottomMenu(currentIndex: null),
-
-      body: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.only(top: 45, bottom: 40),
-            decoration: const BoxDecoration(
-              color: Color.fromARGB(255, 243, 218, 231),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(100),
-                bottomRight: Radius.circular(100),
+        // 👇 BODY
+        body: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.only(top: 45, bottom: 40),
+              decoration: const BoxDecoration(
+                color: Color.fromARGB(255, 243, 218, 231),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(100),
+                  bottomRight: Radius.circular(100),
+                ),
+              ),
+              child: Column(
+                children: [
+                  const Icon(
+                    Icons.favorite,
+                    color: Color(0xFFA84ABF),
+                    size: 35,
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8,
+                      horizontal: 22,
+                    ),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFEBCCE9),
+                      borderRadius: BorderRadius.all(Radius.circular(14)),
+                    ),
+                    child: Text(
+                      "dailyLuck.title".tr(),
+                      style: GoogleFonts.robotoMono(
+                        fontSize: 18,
+                        letterSpacing: 1.4,
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    "dailyLuck.subtitle".tr(),
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.robotoMono(
+                      fontSize: 11,
+                      height: 1.4,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
               ),
             ),
-            child: Column(
-              children: [
-                const Icon(Icons.favorite, color: Color(0xFFA84ABF), size: 35),
-                const SizedBox(height: 8),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 8, horizontal: 22),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFEBCCE9),
-                    borderRadius: BorderRadius.all(Radius.circular(14)),
+
+            const SizedBox(height: 28),
+
+            // 👇 CONTEÚDO PRINCIPAL
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 28.0),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 600),
+                  padding: const EdgeInsets.all(32),
+                  decoration: BoxDecoration(
+                    color: _cardColor,
+                    borderRadius: BorderRadius.circular(40),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.02),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    "dailyLuck.title".tr(),
-                    style: GoogleFonts.robotoMono(
-                      fontSize: 18,
-                      letterSpacing: 1.4,
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w600,
+                  child: AnimatedSwitcher(
+                    duration: 600.ms,
+                    child: _isLoading
+                        ? _buildLoadingCard()
+                        : _buildMessageCard(),
+                  ),
+                )
+                    .animate()
+                    .moveY(
+                      begin: 60,
+                      end: 0,
+                      duration: 700.ms,
+                      curve: Curves.easeOutCubic,
+                    )
+                    .fadeIn(duration: 600.ms)
+                    .scale(
+                      begin: const Offset(0.97, 0.97),
+                      end: const Offset(1, 1),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  "dailyLuck.subtitle".tr(),
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.robotoMono(
-                    fontSize: 11,
-                    height: 1.4,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
 
-          const SizedBox(height: 28),
+            const SizedBox(height: 20),
+          ],
+        ),
 
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 28.0),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 600),
-                padding: const EdgeInsets.all(32),
-                decoration: BoxDecoration(
-                  color: _cardColor,
-                  borderRadius: BorderRadius.circular(40),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
-                      blurRadius: 10,
-                      spreadRadius: 0,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: AnimatedSwitcher(
-                  duration: 600.ms,
-                  child: _isLoading
-                      ? _buildLoadingCard()
-                      : _buildMessageCard(),
-                ),
-              )
-                  .animate()
-                  .moveY(begin: 60, end: 0, duration: 700.ms, curve: Curves.easeOutCubic)
-                  .fadeIn(duration: 600.ms)
-                  .scale(begin: const Offset(0.97, 0.97), end: const Offset(1, 1)),
-            ),
-          ),
-
-          const SizedBox(height: 20),
-        ],
-      ),
-    );
-  }
+        // 👇 AGORA SIM: no lugar certo
+        bottomNavigationBar: AppBottomMenu(
+          currentIndex: null,
+          themeColor: color,
+        ),
+      );
+    },
+  );
+}
 }

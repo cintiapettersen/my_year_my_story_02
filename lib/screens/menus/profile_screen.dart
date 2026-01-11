@@ -104,6 +104,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         backgroundColor: Colors.pinkAccent.withOpacity(0.8),
       ),
     );
+
+    if (!mounted) return;
+
+   // 🔥 avisa o Dashboard que algo mudou
+   Navigator.pop(context, true);   
   }
 
   // -------------------------------------------------------

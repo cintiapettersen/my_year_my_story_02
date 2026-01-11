@@ -17,8 +17,7 @@ import '../premium/premium_page.dart';
 import '../menus/language_screen.dart';
 
 import 'package:myyearmystory/services/app_session.dart';
-import 'package:myyearmystory/screens/auth/login_screen.dart';
-import 'package:myyearmystory/screens/auth/signup_screen.dart';
+
 import '../menus/profile_screen.dart';
 import 'package:myyearmystory/screens/auth/auth_page_view.dart';
 
@@ -268,11 +267,30 @@ class _AppDrawerState extends State<AppDrawer> {
         // ------------------------------------------------------
         if (!isGuest)
        GlassDrawerItem(
-      icon: Icons.person_outline,
-       color: Colors.white,
-       text: "drawer.profile".tr(),
-         onTap: () => _open(context, const ProfileScreen()),
-  ),
+  icon: Icons.person_outline,
+  color: Colors.white,
+  text: "drawer.profile".tr(),
+  onTap: () async {
+    Navigator.pop(context); // fecha o drawer
+
+    final updated = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ProfileScreen()),
+    );
+
+    if (updated == true) {
+      // 🔥 força o Dashboard a ser recriado
+      navigatorKey.currentState?.pushReplacementNamed(
+        '/dashboard',
+        arguments: {
+          'month': DateTime.now().month,
+          'year': DateTime.now().year,
+        },
+      );
+    }
+  },
+),
+
 
         GlassDrawerItem(
            icon:  Icons.translate,

@@ -10,6 +10,7 @@ import 'package:myyearmystory/utils/responsive.dart';
 import 'package:myyearmystory/utils/localized_tip.dart';
 import 'package:myyearmystory/utils/access_control.dart';
 import 'package:myyearmystory/utils/app_config.dart';
+import 'package:myyearmystory/widgets/shared/show_login_prompt.dart';
 
 /// 🎨 Categorias oficiais
 final Map<String, Color> skillCategoryColors = {
@@ -143,41 +144,60 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
 
   /// 🔄 REFRESH (COM BLOQUEIO PREMIUM)
   Future<void> _handleRefresh() async {
-    final prefs = await SharedPreferences.getInstance();
-    final key =
-        "refresh_${widget.year}_${widget.month}_${DateTime.now().day}";
-    final count = prefs.getInt(key) ?? 0;
+  if (!mounted) return;
 
-    if (!isPremiumUser) {
-      showPremiumPopup(context);
-      return;
-    }
+  final prefs = await SharedPreferences.getInstance();
+  if (!mounted) return;
 
-    if (count >= 3) {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text(
-            "tips.refresh_title".tr(),
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          content: Text("tips.refresh_message".tr()),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text("tips.refresh_ok".tr()),
-            )
-          ],
-        ),
-      );
-      return;
-    }
+  final key =
+      "refresh_${widget.year}_${widget.month}_${DateTime.now().day}";
+  final count = prefs.getInt(key) ?? 0;
 
-    await _loadData();
-    await prefs.setInt(key, count + 1);
+  final user = supabase.auth.currentUser;
 
-    setState(() => refreshCount = count + 1);
+  // 👤 convidado → login
+  if (user == null) {
+    showLoginPrompt(context);
+    return;
   }
+
+  // 💎 logado mas não premium → popup premium
+  if (!isPremiumUser) {
+    showPremiumPopup(context);
+    return;
+  }
+
+  // ⛔ limite diário
+  if (count >= 3) {
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(
+          "tips.refresh_title".tr(),
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: Text("tips.refresh_message".tr()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("tips.refresh_ok".tr()),
+          ),
+        ],
+      ),
+    );
+    return;
+  }
+
+  // 🔄 refresh permitido
+  await _loadData();
+  await prefs.setInt(key, count + 1);
+
+  if (!mounted) return;
+  setState(() => refreshCount = count + 1);
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -222,7 +242,7 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
                             crossAxisAlignment:
                                 CrossAxisAlignment.start,
                             children: [
-                              SizedBox(height: isTablet ? 32 : 24),
+                              SizedBox(height: isTablet ? 20 : 14),
                               Container(
                                 padding:
                                     const EdgeInsets.symmetric(
@@ -243,18 +263,17 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
                               ),
                               SizedBox(height: isTablet ? 24 : 20),
                               Text(
-                                text,
-                                style: TextStyle(
-                                  fontSize:
-                                      isTablet ? 17 : 16,
-                                  height:
-                                      isTablet ? 1.65 : 1.5,
-                                ),
-                              ),
+  text,
+  textAlign: TextAlign.left,
+  style: TextStyle(
+    fontSize: isTablet ? 17 : 16,
+    height: isTablet ? 1.6 : 1.5,
+  ),
+),
                               Padding(
                                 padding:
                                     const EdgeInsets.symmetric(
-                                        vertical: 18),
+                                        vertical: 13),
                                 child: Divider(
                                   color: index <
                                           skills.length - 1

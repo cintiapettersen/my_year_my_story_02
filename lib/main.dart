@@ -5,6 +5,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter/widgets.dart';
 
 import 'package:myyearmystory/theme.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
@@ -15,6 +16,8 @@ import 'package:myyearmystory/screens/auth/auth_page_view.dart';
 import 'package:myyearmystory/screens/dashboard/dashboard_screen.dart';
 import 'package:myyearmystory/screens/diary/diary_screen.dart';
 import 'package:myyearmystory/screens/premium/premium_page.dart';
+
+
 
 // Menu
 import 'package:myyearmystory/screens/menus/profile_screen.dart';
@@ -39,6 +42,11 @@ import 'package:myyearmystory/services/oauth_deeplink_handler.dart';
 
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+
+// 👀 OBSERVADOR DE ROTAS (novo)
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -89,6 +97,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: navigatorKey,
+      navigatorObservers: [routeObserver],
       debugShowCheckedModeBanner: false,
       theme: lightTheme,
      

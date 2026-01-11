@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:myyearmystory/widgets/shared/month_header.dart';
 import 'package:myyearmystory/widgets/shared/app_bottom_menu.dart';
 
+import 'package:myyearmystory/utils/app_theme.dart';
+
+
 class MonthPageTemplate extends StatelessWidget {
   final int month;
   final int year;
@@ -27,7 +30,7 @@ class MonthPageTemplate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Map<String, Color> labelColors = {
-      'Metas do Mês': Color.fromARGB(255, 227, 62, 123),
+      'Metas do Mês': Color.fromARGB(255, 211, 62, 117),
       'Sobre Mim': Color.fromARGB(255, 189, 134, 212),
       'Quiz Interativo': Color.fromARGB(255, 207, 148, 168),
       'Signos do Mês': Color.fromARGB(255, 145, 102, 189),
@@ -93,7 +96,7 @@ class MonthPageTemplate extends StatelessWidget {
                             const SizedBox(height: 8),
                             Container(
                               height: 1,
-                              color: Color(0xFFE9B9C9),
+                              color: Color.fromARGB(255, 208, 92, 131),
                             ),
                           ],
                         ),
@@ -112,10 +115,14 @@ class MonthPageTemplate extends StatelessWidget {
     // -------------------------------------------------------------
     // 🌸 CENÁRIO 2 — Página aberta sozinha (via dashboard)
     // -------------------------------------------------------------
+    return ValueListenableBuilder<Color>(
+  valueListenable: appThemeColor,
+  builder: (context, color, _) {
     return Scaffold(
       backgroundColor: const Color(0xFFFFF7FA),
+
       appBar: AppBar(
-        backgroundColor: const Color(0xFFE2377D),
+        backgroundColor: color,
         elevation: 0,
         centerTitle: true,
         title: Text(
@@ -129,6 +136,7 @@ class MonthPageTemplate extends StatelessWidget {
           ),
         ),
       ),
+
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(14, 14, 14, 40),
@@ -147,7 +155,14 @@ class MonthPageTemplate extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: AppBottomMenu(currentIndex: 1),
+
+      bottomNavigationBar: AppBottomMenu(
+        currentIndex: 1,
+        themeColor: color,
+      ),
     );
+  },
+);
+
   }
 }

@@ -1,29 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 import 'package:myyearmystory/services/interview_service.dart';
 import 'package:myyearmystory/utils/access_control.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/screens/popups/coming_soon.dart';
 
-/// CONFIG DEV / ADMIN
 class AppConfig {
-  static bool isDev = true; // coloque false na versão final
-  static bool isAdmin(String? email) {
-    return email != null && email.endsWith("@sonhodepapel.com");
-  }
+  static bool isDev = true;
+  static bool isAdmin(String? email) =>
+      email != null && email.endsWith("@sonhodepapel.com");
 }
 
 class InterviewScreen extends StatefulWidget {
   final int? month;
   final int? year;
 
-  const InterviewScreen({
-    super.key,
-    this.month,
-    this.year,
-  });
+  const InterviewScreen({super.key, this.month, this.year});
 
   @override
   State<InterviewScreen> createState() => _InterviewScreenState();
@@ -35,14 +29,10 @@ class _InterviewScreenState extends State<InterviewScreen>
 
   bool _isLoading = false;
   bool _isSaving = false;
-
   bool _isPremiumUser = false;
-  String? _currentUserId;
-
   bool _showAllQuestions = false;
 
   final List<TextEditingController> _controllers = [];
-
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _relationController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
@@ -64,34 +54,32 @@ class _InterviewScreenState extends State<InterviewScreen>
 
     await _checkPremiumStatus();
 
-    _currentUserId = supabase.auth.currentUser?.id;
-
-    final interviewData = await InterviewService.getInterviewData(
+    final data = await InterviewService.getInterviewData(
       widget.month ?? DateTime.now().month,
       context.locale.languageCode,
     );
 
-    _questions = List<String>.from(interviewData['questions'] ?? []);
-_description = "interview.fixed_description".tr();
+    _questions = List<String>.from(data['questions'] ?? []);
+    _description = "interview.fixed_description".tr();
 
-/// ✅ cria controllers mesmo sem login
-_controllers.clear();
-for (int i = 0; i < _questions.length; i++) {
-  _controllers.add(TextEditingController());
-}
+    _controllers.clear();
+    for (int i = 0; i < _questions.length; i++) {
+      _controllers.add(TextEditingController());
+    }
 
-await _loadSavedAnswers();
+    await _loadSavedAnswers();
 
-    setState(() => _isLoading = false);
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
   }
 
-  // 🔑 CHECAGEM PREMIUM + ADMIN + DEV
   Future<void> _checkPremiumStatus() async {
-    final user = SupabaseConfig.client.auth.currentUser;
+    final user = supabase.auth.currentUser;
     final email = user?.email;
-
     final isPremium = await AccessControl.isPremium();
 
+    if (!mounted) return;
     setState(() {
       _isPremiumUser =
           isPremium || AppConfig.isAdmin(email) || AppConfig.isDev;
@@ -99,47 +87,71 @@ await _loadSavedAnswers();
   }
 
   Future<void> _loadSavedAnswers() async {
-  if (_currentUserId == null) return;
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null) return;
 
-  final data = await InterviewService.getInterviewDataFromEntries(
-    widget.month ?? DateTime.now().month,
-    widget.year ?? DateTime.now().year,
-    _currentUserId!,
-  );
+    final data = await InterviewService.getInterviewDataFromEntries(
+      widget.month ?? DateTime.now().month,
+      widget.year ?? DateTime.now().year,
+      userId,
+    );
 
-  final person = data['person'] ?? {};
-  final questionsData =
-      List<Map<String, dynamic>>.from(data['questions'] ?? []);
+    final person = data['person'] ?? {};
+    final questionsData =
+        List<Map<String, dynamic>>.from(data['questions'] ?? []);
 
-  _nameController.text = person['name'] ?? '';
-  _relationController.text = person['relation'] ?? '';
-  _ageController.text = person['age'] ?? '';
+    _nameController.text = person['name'] ?? '';
+    _relationController.text = person['relation'] ?? '';
+    _ageController.text = person['age'] ?? '';
 
-  for (int i = 0; i < _controllers.length; i++) {
-    if (i < questionsData.length) {
-      _controllers[i].text = questionsData[i]['a'] ?? '';
+    for (int i = 0; i < _controllers.length; i++) {
+      if (i < questionsData.length) {
+        _controllers[i].text = questionsData[i]['a'] ?? '';
+      }
     }
   }
-}
 
   Future<void> _saveInterview() async {
     final user = supabase.auth.currentUser;
 
-    if (user == null) {
+    // 🔐 convidado ou free
+    if (user == null || !_isPremiumUser) {
       showPremiumPopup(context);
       return;
     }
 
-    if (!_isPremiumUser) {
-      showPremiumPopup(context);
+    final visibleCount =
+        _isPremiumUser || _showAllQuestions ? _questions.length : 5;
+
+    final answers = _controllers
+        .take(visibleCount)
+        .map((c) => c.text.trim())
+        .toList();
+
+    // 🚫 nenhuma resposta
+    if (!answers.any((a) => a.isNotEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: const Color(0xFFF3D6E4),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          content: Text(
+            "interview.empty_warning".tr(),
+            style: const TextStyle(
+              color: Color(0xFF6D2C4A),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      );
       return;
     }
 
     setState(() => _isSaving = true);
 
     try {
-      final answers = _controllers.map((c) => c.text.trim()).toList();
-
       await InterviewService.saveInterviewAnswers(
         questions: _questions,
         answers: answers,
@@ -153,38 +165,36 @@ await _loadSavedAnswers();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-  SnackBar(
-    backgroundColor: const Color(0xFFA1A8F0),
-    behavior: SnackBarBehavior.floating,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(14),
-    ),
-    content: Text(
-      "interview.saved_success".tr(),
-      style: const TextStyle(
-        color: Color.fromARGB(255, 244, 240, 246), // um roxo escuro pra contraste
-        fontWeight: FontWeight.w600,
-      ),
-    ),
-  ),
-);
-      }
-    } catch (e) {
-      debugPrint("Erro ao salvar entrevista: $e");
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("interview.save_error".tr()),
-            backgroundColor: Colors.red,
+            backgroundColor: const Color(0xFFA1A8F0),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14),
             ),
+            content: Text(
+              "interview.saved_success".tr(),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            content: Text("interview.save_error".tr()),
           ),
         );
       }
     } finally {
-      if (mounted) setState(() => _isSaving = false);
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
     }
   }
 
@@ -192,7 +202,9 @@ await _loadSavedAnswers();
   Widget build(BuildContext context) {
     super.build(context);
 
-    if (_isLoading) return const Center(child: CircularProgressIndicator());
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
     final month = widget.month ?? DateTime.now().month;
     final year = widget.year ?? DateTime.now().year;
@@ -228,7 +240,6 @@ await _loadSavedAnswers();
               ),
             ),
 
-            /// Card de nome/relação/idade
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
               decoration: BoxDecoration(
@@ -300,8 +311,10 @@ await _loadSavedAnswers();
                     Text(
                       question,
                       style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF6D5C74),
+                        height: 1.4,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -344,59 +357,50 @@ await _loadSavedAnswers();
             const SizedBox(height: 20),
 
             Row(
-  children: [
-    /// BOTÃO DE SALVAR
-    Expanded(
-      child: ElevatedButton(
-        onPressed: _isPremiumUser
-            ? _saveInterview
-            : () => showPremiumPopup(context),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFA1A8F0),
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        child: Text(
-          "interview.save_button".tr(),
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-    ),
-
-    const SizedBox(width: 12),
-
-    /// BOTÃO DE ÁUDIO (COMING SOON)
-    Expanded(
-      child: ElevatedButton(
-        onPressed: () {
-          showComingSoonPrompt(context);
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFC881D5),
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        child: Text(
-          "interview.audio_button".tr(),
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    ),
-  ],
-)
-
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _saveInterview,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFA1A8F0),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      "interview.save_button".tr(),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => showComingSoonPrompt(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFC881D5),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      "interview.audio_button".tr(),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),

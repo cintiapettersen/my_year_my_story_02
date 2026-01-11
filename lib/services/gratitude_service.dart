@@ -3,42 +3,63 @@ import 'package:myyearmystory/supabase/supabase_config.dart';
 class GratitudeService {
   static final _supabase = SupabaseConfig.client;
 
-  static Future<List<String>> getGratitudeList(int month, int year, String userId) async {
+  /// 🔎 Busca a lista de gratidão do mês
+  /// - Guest → retorna lista vazia
+  /// - Usuário logado → busca no banco
+  static Future<List<String>> getGratitudeList(
+    int month,
+    int year,
+  ) async {
     try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) return <String>[];
+
       final row = await _supabase
           .from('entries')
           .select('gratitude_entries')
-          .eq('user_id', userId)
+          .eq('user_id', user.id)
           .eq('month', month)
           .eq('year', year)
           .maybeSingle();
 
       if (row == null) return <String>[];
+
       final data = row['gratitude_entries'];
       if (data is List) {
         return List<String>.from(data);
       }
+
       return <String>[];
     } catch (e) {
-      print('Error fetching gratitude_entries from entries: $e');
+      // log técnico, sem quebrar UX
+      print('Error fetching gratitude_entries: $e');
       return <String>[];
     }
   }
 
-  static Future<bool> saveGratitudeList(List<String> items, int month, int year, String userId) async {
+  /// 💾 Salva a lista de gratidão
+  /// - Guest → retorna false
+  /// - Usuário logado → insere ou atualiza
+  static Future<bool> saveGratitudeList(
+    List<String> items,
+    int month,
+    int year,
+  ) async {
     try {
-      // Check if the entry already exists
+      final user = _supabase.auth.currentUser;
+      if (user == null) return false;
+
       final existing = await _supabase
           .from('entries')
           .select('id')
-          .eq('user_id', userId)
+          .eq('user_id', user.id)
           .eq('month', month)
           .eq('year', year)
           .maybeSingle();
 
       if (existing == null) {
         await _supabase.from('entries').insert({
-          'user_id': userId,
+          'user_id': user.id,
           'month': month,
           'year': year,
           'gratitude_entries': items,
@@ -47,13 +68,14 @@ class GratitudeService {
         await _supabase
             .from('entries')
             .update({'gratitude_entries': items})
-            .eq('user_id', userId)
+            .eq('user_id', user.id)
             .eq('month', month)
             .eq('year', year);
       }
+
       return true;
     } catch (e) {
-      print('Error saving gratitude_entries to entries: $e');
+      print('Error saving gratitude_entries: $e');
       return false;
     }
   }

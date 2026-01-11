@@ -14,15 +14,20 @@ import '../../widgets/monthly/curiosities_widget.dart';
 import 'package:myyearmystory/widgets/monthly/did_you_know_widget.dart';
 import 'package:myyearmystory/widgets/monthly/dailyluckpage.dart';
 import 'package:myyearmystory/widgets/monthly/calender/calendar_page.dart';
+
+
 import 'package:myyearmystory/widgets/shared/app_bottom_menu.dart';
 import 'package:myyearmystory/screens/menus/app_drawer.dart';
+
+
 import 'package:myyearmystory/screens/splash/fade_page_transition.dart';
 import 'package:myyearmystory/screens/notifications/daily_popup.dart';
 import 'package:myyearmystory/services/daily_quote_service.dart';
 import 'package:myyearmystory/utils/month_colors.dart';
 import 'package:myyearmystory/screens/quiz/standalone.dart';
-import 'package:myyearmystory/supabase/supabase_config.dart';
+
 import 'package:myyearmystory/services/app_session.dart';
+import 'package:myyearmystory/utils/app_theme.dart';
 
 
 class DashboardScreen extends StatefulWidget {
@@ -60,55 +65,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   bool isLoading = true;
   Locale? _lastLocale;
-  
 
   Color currentThemeColor = const Color(0xFFE04CB7);
 
   final List<Color> themeOptions = const [
     Color(0xFFe04cb7),
     Color.fromARGB(255, 234, 185, 215),
-    Color(0xFFe2377d),
+    Color.fromARGB(255, 232, 103, 157),
+    Color(0xFF74A192),
     Color(0xFFa0378c),
     Color(0xFFBEB6F2),
   ];
 
-@override
-void initState() {
-  super.initState();
+  @override
+  void initState() {
+    super.initState();
 
-  selectedMonth = widget.month;
-  selectedYear = widget.year;
+    selectedMonth = widget.month;
+    selectedYear = widget.year;
 
-  _loadUserName();
-  _syncUserLanguage();
-  _loadDashboardData();
+    _loadUserName();
+    _syncUserLanguage();
+    _loadDashboardData();
 
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    loadDailyQuote();
-  });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadDailyQuote();
+    });
 
-  Future.delayed(const Duration(seconds: 2), () {
-    if (mounted) checkAndShowDailyAlert();
-  });
-}
-
-
-@override
-void didChangeDependencies() {   // ✅ fora do initState
-  super.didChangeDependencies();
-
-  final currentLocale = context.locale;
-
-  if (_lastLocale != currentLocale) {
-    _lastLocale = currentLocale;
-    _loadDashboardData();  
-    loadDailyQuote();
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) checkAndShowDailyAlert();
+    });
   }
-}
 
-  // ==============================
-  //     ALERTA DIÁRIO
-  // ==============================
+  // 🔥 ESSE é o ajuste certo
+  @override
+  void didUpdateWidget(covariant DashboardScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _loadUserName();
+  }
+
+  // ================= ALERTA DIÁRIO =================
   Future<void> checkAndShowDailyAlert() async {
     final user = supabase.auth.currentUser;
     if (user == null) return;
@@ -426,8 +422,13 @@ Future<void> _loadUserName() async {
       backgroundColor: const Color(0xFFFDFDFD),
       drawer: const AppDrawer(),
 
-      appBar: AppBar(
-        backgroundColor: currentThemeColor,
+     appBar: PreferredSize(
+  preferredSize: const Size.fromHeight(kToolbarHeight),
+  child: ValueListenableBuilder<Color>(
+    valueListenable: appThemeColor,
+    builder: (_, color, __) {
+      return AppBar(
+        backgroundColor: color,
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -438,13 +439,19 @@ Future<void> _loadUserName() async {
             color: Colors.white,
           ),
         ),
-      ),
-
-      bottomNavigationBar: AppBottomMenu(
-        currentIndex: 0,
-        themeColor: currentThemeColor,
-      ),
-
+      );
+    },
+  ),
+),
+     bottomNavigationBar: ValueListenableBuilder<Color>(
+  valueListenable: appThemeColor,
+  builder: (_, color, __) {
+    return AppBottomMenu(
+      currentIndex: 0,
+      themeColor: color,
+    );
+  },
+),
       body: RefreshIndicator(
         onRefresh: _loadDashboardData,
         child: SingleChildScrollView(
@@ -503,7 +510,7 @@ Future<void> _loadUserName() async {
                       children: themeOptions.map((color) {
                         return GestureDetector(
                           onTap: () {
-                            setState(() => currentThemeColor = color);
+                            appThemeColor.value = color;
                           },
                           child: Container(
                             margin: const EdgeInsets.symmetric(horizontal: 6),
