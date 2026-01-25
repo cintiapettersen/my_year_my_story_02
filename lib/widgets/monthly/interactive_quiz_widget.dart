@@ -27,12 +27,20 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
   bool loading = true;
   bool _isPremiumUser = false;
 
+  bool hasSavedResult = false;
+
   String? quizTitle;
   String? resultTitleOnPage;
   String? resultDescOnPage;
 
   late PageController _pageController;
   int currentPage = 0;
+
+  String _getLocalized(String? pt, String? en) {
+  final lang = context.locale.languageCode;
+  if (lang == "en" && en != null && en.isNotEmpty) return en;
+  return pt ?? "";
+}
 
   /* ---------------- INIT ---------------- */
 
@@ -55,16 +63,20 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
     setState(() => loading = false);
   }
 
+  
+
   /* ---------------- DATA ---------------- */
 
-  Future<void> _checkPremiumStatus() async {
-    final user = Supabase.instance.client.auth.currentUser;
-    final email = user?.email;
-    final isPremium = await AccessControl.isPremium();
-    _isPremiumUser = isPremium || AppConfig.isAdmin(email);
-  }
+Future<void> _checkPremiumStatus() async {
+  final user = Supabase.instance.client.auth.currentUser;
+  final email = user?.email;
+  final isPremium = await AccessControl.isPremium();
+  _isPremiumUser = isPremium || AppConfig.isAdmin(email);
+}
 
-  Future<void> _loadQuiz() async {
+Future<void> _loadQuiz() async {
+  try {
+    // 1️⃣ Carrega o quiz do mês
     final data = await Supabase.instance.client
         .from("quizzes")
         .select()
@@ -75,17 +87,61 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
 
     quizData = data;
     quizTitle = _getLocalized(data["title"], data["title_en"]);
-  }
 
-  String _getLocalized(String? pt, String? en) {
-    final lang = context.locale.languageCode;
-    if (lang == "en" && en != null && en.isNotEmpty) return en;
-    return pt ?? "";
+    // 2️⃣ Busca o tipo salvo na entries
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+
+    final entry = await Supabase.instance.client
+        .from('entries')
+        .select('quiz_result_type')
+        .eq('user_id', user.id)
+        .eq('month', widget.month)
+        .eq('year', widget.year)
+        .maybeSingle();
+
+    if (!mounted) return;
+
+    final String? savedType = entry?['quiz_result_type'];
+    if (savedType == null) return;
+
+    // 3️⃣ Reconstrói o resultado usando quizzes.results
+    final List results = quizData?['results'] ?? [];
+
+    Map<String, dynamic>? result;
+
+    for (final r in results) {
+      if (r is Map && r['tipo'] == savedType) {
+        result = Map<String, dynamic>.from(r);
+        break;
+      }
+    }
+
+    if (result != null && mounted) {
+      final String? title   = result['title'] as String?;
+      final String? titleEn = result['title_en'] as String?;
+      final String? desc    = result['desc'] as String?;
+      final String? descEn  = result['desc_en'] as String?;
+
+      setState(() {
+        hasSavedResult = true;
+
+        // ✅ título vem do JSON
+        resultTitleOnPage = _getLocalized(title, titleEn);
+
+        // ✅ descrição vem do JSON
+        resultDescOnPage = _getLocalized(desc, descEn);
+      });
+    }
+  } catch (e) {
+    debugPrint('Erro ao carregar quiz: $e');
   }
+}
+
 
   /* ---------------- SUBMIT ---------------- */
 
-  void _submit() {
+  Future<void> _submit() async {
     final results = quizData?["results"];
     if (results == null || results.isEmpty) return;
 
@@ -128,16 +184,42 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
     }
 
     final result = results.firstWhere(
-      (r) => r["tipo"] == winningType,
-    );
+  (r) => r["tipo"] == winningType,
+  orElse: () => null,
+);
+
+if (result == null) return;
 
     setState(() {
-      resultTitleOnPage =
-          _getLocalized(result["title"], result["title_en"]);
-      resultDescOnPage =
-          _getLocalized(result["desc"], result["desc_en"]);
-      currentPage = quizData?["questions"]?.length ?? 0;
-    });
+  // título do resultado NÃO vem do banco
+  // vem do tipo (ou depois você pode mapear pra algo bonito)
+  resultTitleOnPage = winningType.toUpperCase();
+
+  // descrição REAL vem do quizzes.results
+  resultDescOnPage =
+      _getLocalized(result["desc"], result["desc_en"]);
+
+  // continua igual
+  currentPage = quizData?["questions"]?.length ?? 0;
+});
+
+    final user = Supabase.instance.client.auth.currentUser;
+
+if (user != null) {
+  await Supabase.instance.client
+      .from('entries')
+      .upsert(
+        {
+          'user_id': user.id,
+          'month': widget.month,
+          'year': widget.year,
+          'quiz_result_type': winningType,
+        },
+        onConflict: 'user_id,year,month',
+      );
+}
+
+
 
     _pageController.jumpToPage(currentPage);
   }
@@ -415,7 +497,7 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final hasResult = resultTitleOnPage != null;
+    final hasResult = hasSavedResult;
 
     if (hasResult) {
       return _buildResultPage();

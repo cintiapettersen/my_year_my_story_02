@@ -3,7 +3,8 @@ enum AppAuthFlow {
   authenticating,
   authenticated,
   guest,
-  loggingOut, // 👈 IMPORTANTE
+  loggingOut,
+  resettingPassword, // 👈 IMPORTANTE
 }
 
 class AppSession {

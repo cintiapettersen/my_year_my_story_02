@@ -21,6 +21,9 @@
     "subtitle": "Your story. Your way.",
     "login_button": "Log in / Create account",
     "guest_button": "Explore as guest"
+
+
+    
   },
 
   "auth": {
@@ -42,32 +45,38 @@
     "success": "Login successful!",
     "error_general": "Error signing in",
     "or_biometric": "or with biometrics",
-
     "error_invalid_credentials": "Incorrect email or password.",
-    
-    "magic_link_button": "Sign in with magic link",
-    "magic_link_title": "Prefer a magic link?",
-    "magic_link_description": "Enter your email and we’ll send you a secure login link.",
-    "magic_link_confirm": "Send magic link",
-    "magic_link_sent": "Magic link sent to {{0}}! Check your inbox ✨",
-    "magic_link_error": "Error sending magic link: {{0}}",
-
     "enter_guest": "Enter as guest"
- },
-      "login_prompt": {
-      "title": "Sign in 💫",
-      "description": "To save and keep tracking your achievements, please sign in or create an account.",
-      "not_now": "Not now",
-      "login_button": "Sign in"
-
 
   },
-  
+
+  "reset": {
+    "title": "Create new password",
+    "subtitle": "Choose a new password to access your account",
+    "password": "New password",
+    "confirm": "Confirm new password",
+    "button": "Save new password",
+
+    "success": "Password updated successfully!",
+    "error": "Error updating password",
+
+    "validate_required": "Password is required",
+    "validate_short": "Password must be at least 6 characters",
+    "validate_mismatch": "Passwords do not match"
+    
+  },
+
+  "login_prompt": {
+    "title": "Sign in 💫",
+    "description": "To save and keep tracking your achievements, please sign in or create an account.",
+    "not_now": "Not now",
+    "login_button": "Sign in"
+  },
+
   "biometric": {
     "reason": "Confirm your identity to continue",
     "loading": "Checking your info...",
     "try_again": "Tap to try again"
- 
   },
 
   "forgot": {
@@ -85,6 +94,8 @@
     "success_desc": "Check your inbox and follow the instructions to reset your password.",
     "back": "Back to login"
   }
+
+
 },
 
 
@@ -169,10 +180,10 @@
 
   },
   "signup": {
- 
+  "success": "Account created successfully!",
   "error_general": "Error creating account. Please try again.",
-  
-  "subtitle": "Create your account and start your journey.",
+
+  "subtitle": "Create your account to start your journey.",
   "full_name": "Full name",
   "birth_date": "Birth date",
   "email": "Email",
@@ -183,20 +194,19 @@
   "or": "or",
   "have_account": "I already have an account",
 
-  "success": "Account created successfully!",
-  "error": "Error creating account: {0}",
-
-  "error_name": "Enter your name",
+  "error_name_required": "Name is required",
+  "error_name_short": "Name is too short",
   "error_birth": "Select your birth date",
-  "error_email_empty": "Enter your email",
-  "error_email_invalid": "Enter a valid email",
-  "error_password": "Password must be at least 6 characters",
-  "error_confirm": "Passwords do not match",
-  "error_confirm_empty": "Confirm your password",
+  "error_email_required": "Email is required",
+  "error_email_invalid": "Enter a valid email address",
+  "error_password_required": "Password is required",
+  "error_password_short": "Password must be at least 6 characters",
+  "error_confirm_password_required": "Confirm your password",
+  "error_password_mismatch": "Passwords do not match",
 
   "error_email_exists": "This email is already registered.",
 
-  "bio_info": "🔒 After creating your account, you will be able to activate biometric login for quick and secure access."
+  "bio_info": "🔒 After creating your account, you can enable biometric login for faster and more secure access."
 
 
 },
@@ -497,8 +507,7 @@
     "today_sign": "Today’s sign",
     "phrase_title": "Sign Energy",
     "moon_today": "Moon today",
-
-     "month_description": "Discover the energies and traits influencing this month ✨",
+    "month_description": "Discover the energies and traits influencing this month ✨",
     
     "color": "Color",
     "ruler": "Ruler",
@@ -519,9 +528,9 @@
 "login_required_title": "Log in to continue",
 "login_required_text": "Log in to discover your Personal Year ✨",
 "login_required_button": "Log in",
-"discover_personal_year_button": "Discover your Personal Year"
+"discover_personal_year_button": "Discover your Personal Year",
 
-    
+"personal_year_helper": "Your Personal Year is calculated based on your birth date and the current year. It reveals the themes and energies that will influence your life in the coming months, helping you align with your personal growth and opportunities."
 
 
 

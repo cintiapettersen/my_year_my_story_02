@@ -129,36 +129,36 @@ void _showPersonalYearModal({
                     style: GoogleFonts.poppins(fontSize: 15, height: 1.45),
                   ),
                   const SizedBox(height: 26),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        tr("zodiac.personal_year_color_label"),
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: parsedColor.withOpacity(0.25),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: parsedColor, width: 1.5),
-                        ),
-                        child: Text(
-                          colorName,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: parsedColor,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                  Column(
+  children: [
+    Text(
+      tr("zodiac.personal_year_color_label"),
+      style: GoogleFonts.poppins(
+        fontSize: 15,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+    const SizedBox(height: 8),
+    Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: parsedColor.withOpacity(0.25),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: parsedColor, width: 1.5),
+      ),
+      child: Text(
+        colorName,
+        textAlign: TextAlign.center,
+        style: GoogleFonts.poppins(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: parsedColor,
+        ),
+      ),
+    ),
+  ],
+),
+
                 ],
               ),
             ),
@@ -498,10 +498,20 @@ void _showPersonalYearModal({
                     _endSign!['id'] != _startSign?['id'])
                   _zodiacCard(_endSign!),
                 const SizedBox(height: 30),
-                _buildPersonalYearButton(),
-                const SizedBox(height: 40),
+               _buildPersonalYearButton(),
+              const SizedBox(height: 12),
+Text(
+  tr("zodiac.personal_year_helper"),
+  textAlign: TextAlign.center,
+  style: GoogleFonts.poppins(
+    fontSize: 13,
+    color: const Color(0xFF8D63C3).withOpacity(0.7),
+  ),
+),
+const SizedBox(height: 40),
               ],
             ),
     );
   }
 }
+    

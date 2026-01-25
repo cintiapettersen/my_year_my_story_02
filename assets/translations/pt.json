@@ -26,68 +26,76 @@
 
 
   "auth": {
+    
   "login": {
     "description": "Registre suas memórias, acompanhe seu humor e conte sua história única mês a mês.",
     "sign_in": "Entrar",
-    "create_account": "Criar Conta",
+    "create_account": "Criar conta",
     "email": "E-mail",
     "password": "Senha",
     "remember_me": "Lembrar de mim",
     "forgot_password": "Esqueceu a senha?",
     "button": "Entrar",
 
-    "error_email_empty": "Digite seu e-mail",
-    "error_email_invalid": "Digite um e-mail válido",
-    "error_password_empty": "Digite sua senha",
-    "error_password_short": "A senha deve ter pelo menos 6 caracteres",
+    "error_email_empty": "Informe seu e-mail",
+    "error_email_invalid": "Informe um e-mail válido",
+    "error_password_empty": "Informe sua senha",
+    "error_password_short": "A senha deve ter no mínimo 6 caracteres",
 
     "success": "Login realizado com sucesso!",
-    "error_general": "Erro ao fazer login",
-
+    "error_general": "Erro ao entrar",
+    "or_biometric": "ou usar biometria",
     "error_invalid_credentials": "E-mail ou senha incorretos.",
-    
-
-    "magic_link_button": "Entrar com link mágico",
-    "magic_link_title": "Prefere um link mágico?",
-    "magic_link_description": "Digite seu e-mail e enviaremos um link seguro de acesso.",
-    "magic_link_confirm": "Enviar link mágico",
-    "magic_link_sent": "Link mágico enviado para {{0}}! Verifique sua caixa de entrada ✨",
-    "magic_link_error": "Erro ao enviar link mágico: {{0}}",
-
-    "enter_guest": "Entrar como convidado"
-  },
-
-     "login_prompt": {
-      "title": "Faça login 💫",
-      "description": "Para salvar e continuar acompanhando suas conquistas, entre ou crie uma conta.",
-      "not_now": "Agora não",
-      "login_button": "Fazer login"
-
-
+    "enter_guest": "Entrar como visitante"
     },
-    "biometric": {
-    "reason": "Confirme sua identidade para entrar",
-    "loading": "Verificando dados...",
-    "try_again": "Toque para tentar novamente"
-  
+
+    "reset": {
+      
+      "title": "Criar nova senha",
+      "subtitle": "Escolha uma nova senha para acessar sua conta",
+      "password": "Nova senha",
+      "confirm": "Confirmar nova senha",
+      "button": "Salvar nova senha",
+      "success": "Senha atualizada com sucesso!",
+      "error": "Erro ao atualizar a senha",
+      "validate_required": "A senha é obrigatória",
+      "validate_short": "A senha deve ter no mínimo 6 caracteres",
+      "validate_mismatch": "As senhas não coincidem"
+    
   },
-    "forgot": {
+
+  "login_prompt": {
+    "title": "Entrar 💫",
+    "description": "Para salvar e acompanhar suas conquistas, faça login ou crie uma conta.",
+    "not_now": "Agora não",
+    "login_button": "Entrar"
+  },
+
+  "biometric": {
+    "reason": "Confirme sua identidade para continuar",
+    "loading": "Verificando suas informações...",
+    "try_again": "Toque para tentar novamente"
+  },
+
+  "forgot": {
     "title": "Esqueceu sua senha?",
-    "subtitle": "Digite seu e-mail e enviaremos um link para redefinir sua senha.",
+    "subtitle": "Informe seu e-mail e enviaremos um link para redefinir sua senha.",
     "email": "E-mail",
     "button": "Enviar link de recuperação",
-    "validate_empty": "Por favor, insira seu e-mail",
-    "validate_invalid": "Por favor, insira um e-mail válido",
+    "validate_empty": "Informe seu e-mail",
+    "validate_invalid": "Informe um e-mail válido",
     "sent": "E-mail de recuperação enviado!",
     "not_found": "Este e-mail não está cadastrado.",
     "error": "Não foi possível enviar o e-mail.",
     "error_general": "Erro inesperado",
     "success_title": "E-mail enviado!",
-    "success_desc": "Verifique sua caixa de entrada e siga as instruções para redefinir sua senha.",
-    "back": "Voltar ao login"
+    "success_desc": "Confira sua caixa de entrada e siga as instruções para redefinir sua senha.",
+    "back": "Voltar para o login"
   }
 
+
   },
+
   "drawer": {
   "user": "Seu nome",
   "email": "Seu e-mail",
@@ -158,11 +166,10 @@
 "later": "Talvez depois"
 
   },
-
-  "signup": {
+"signup": {
   "success": "Conta criada com sucesso!",
   "error_general": "Erro ao criar conta. Tente novamente.",
-  
+
   "subtitle": "Crie sua conta para começar sua jornada.",
   "full_name": "Nome completo",
   "birth_date": "Data de nascimento",
@@ -174,38 +181,28 @@
   "or": "ou",
   "have_account": "Já tenho uma conta",
 
- 
-  "error": "Erro ao criar conta: {0}",
-
-  "error_name": "Digite seu nome",
+  "error_name_required": "Informe seu nome",
+  "error_name_short": "O nome é muito curto",
   "error_birth": "Selecione sua data de nascimento",
-  "error_email_empty": "Digite seu e-mail",
+  "error_email_required": "Informe seu e-mail",
   "error_email_invalid": "Digite um e-mail válido",
-  "error_password": "A senha deve ter no mínimo 6 caracteres",
-  "error_confirm": "As senhas não coincidem",
-  "error_confirm_empty": "Confirme sua senha",
+  "error_password_required": "Informe uma senha",
+  "error_password_short": "A senha deve ter no mínimo 6 caracteres",
+  "error_confirm_password_required": "Confirme sua senha",
+  "error_password_mismatch": "As senhas não coincidem",
 
   "error_email_exists": "Este e-mail já está cadastrado.",
 
   "bio_info": "🔒 Após criar sua conta, você poderá ativar o login por biometria para acessar rapidamente e com segurança."
 
 
-},
-"reset": {
-  "success": "Email de recuperação enviado!",
-  "error": "Erro ao enviar email de recuperação."
+
 },
 "error": {
   "connection": "Erro de conexão. Verifique sua internet.",
   "invalid_email": "E-mail inválido.",
   "password_short": "A senha deve ter pelo menos 6 caracteres.",
   "unexpected": "Erro inesperado. Tente novamente."
-},
-
-"login": {
-  "error_invalid_credentials": "E-mail ou senha incorretos.",
-  "error_email_not_confirmed": "E-mail não confirmado.",
-  "success": "Login realizado com sucesso!"
 
 
 },
@@ -483,6 +480,7 @@
     "phrase_title": "Energia do Signo",
     "moon_today": "Lua de hoje",
     "month_description": "Descubra as energias e características que influenciam o mês ✨",
+    "personal_year_helper": "Usamos sua data de nascimento para calcular seu Ano Pessoal.",
     "color": "Cor",
     "ruler": "Regente",
     "number": "Número",

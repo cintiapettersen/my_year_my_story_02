@@ -7,6 +7,10 @@ import 'package:myyearmystory/screens/auth/auth_page_view.dart';
 import 'package:myyearmystory/screens/dashboard/dashboard_screen.dart';
 import 'package:myyearmystory/screens/splash/fade_page_transition.dart';
 import 'package:myyearmystory/services/app_session.dart';
+import 'package:myyearmystory/services/profile_service.dart';
+import 'package:myyearmystory/screens/auth/complete_profile_screen.dart';
+
+
 
 // 🎨 CORES FIXAS DA SPLASH
 const Color splashPrimary = Color(0xFFC03B66);
@@ -61,27 +65,52 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
   }
 
   Future<void> _checkSession() async {
-    await Future.delayed(const Duration(seconds: 3));
+  await Future.delayed(const Duration(seconds: 3));
 
-    final session = Supabase.instance.client.auth.currentSession;
-
-    if (!mounted) return;
-
-    if (session != null) {
-      AppSession.flow = AppAuthFlow.authenticated;
-
-      Navigator.of(context).pushReplacement(
-        fadePageTransition(
-          DashboardScreen(
-            month: DateTime.now().month,
-            year: DateTime.now().year,
-          ),
-        ),
-      );
-    } else {
-      setState(() => _showButtons = true);
-    }
+  // 🛑 Guest nunca passa por verificação de sessão
+  if (AppSession.flow == AppAuthFlow.guest) {
+    setState(() => _showButtons = true);
+    return;
   }
+
+  final session = Supabase.instance.client.auth.currentSession;
+
+  if (!mounted) return;
+
+  // ❌ Sem sessão → mostrar botões
+  if (session == null) {
+    setState(() => _showButtons = true);
+    return;
+  }
+
+  // 🔄 Existe sessão → carrega perfil
+  await profileService.load();
+
+  final isComplete = profileService.isProfileComplete;
+
+  // 🔐 Marca como autenticado (decisão central)
+  AppSession.flow = AppAuthFlow.authenticated;
+
+  if (!mounted) return;
+
+  if (isComplete) {
+    Navigator.of(context).pushReplacement(
+      fadePageTransition(
+        DashboardScreen(
+          month: DateTime.now().month,
+          year: DateTime.now().year,
+        ),
+      ),
+    );
+  } else {
+    Navigator.of(context).pushReplacement(
+      fadePageTransition(
+        const CompleteProfileScreen(),
+      ),
+    );
+  }
+}
+
 
   void _goToLogin() {
     AppSession.reset();

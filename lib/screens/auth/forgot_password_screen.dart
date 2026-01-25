@@ -47,56 +47,44 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   // 🔄 RESET PASSWORD
   // -------------------------------------------------------------------------
   Future<void> _resetPassword() async {
-    if (!_formKey.currentState!.validate()) return;
+  if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
-    FocusScope.of(context).unfocus();
+  setState(() => _isLoading = true);
+  FocusScope.of(context).unfocus();
 
-    final email = _emailController.text.trim();
+  final email = _emailController.text.trim();
 
-    try {
-      final exists = await _emailExists(email);
+  try {
+    final response = await UserService.resetPassword(email);
 
-      if (!exists) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('auth.forgot.not_found'.tr()),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
+    if (response['success']) {
+      setState(() => _emailSent = true);
 
-      final response = await UserService.resetPassword(email);
-
-      if (response['success']) {
-        setState(() => _emailSent = true);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('auth.forgot.sent'.tr()),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('auth.forgot.error'.tr()),
-            backgroundColor: const Color.fromARGB(255, 142, 92, 173),
-          ),
-        );
-      }
-    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${'auth.forgot.error_general'.tr()}: $e'),
-          backgroundColor: Colors.red,
+          content: Text('auth.forgot.sent'.tr()),
+          backgroundColor: Colors.green,
         ),
       );
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('auth.forgot.error'.tr()),
+          backgroundColor: const Color.fromARGB(255, 142, 92, 173),
+        ),
+      );
     }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('auth.forgot.error_general'.tr()),
+        backgroundColor: Colors.red,
+      ),
+    );
+  } finally {
+    if (mounted) setState(() => _isLoading = false);
   }
+}
 
   // -------------------------------------------------------------------------
   // 🌈 UI (SEM FUNDO PRETO!)

@@ -1,6 +1,11 @@
 import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:myyearmystory/services/app_session.dart';
+
+import 'package:flutter/foundation.dart';
+
+
 
 class OAuthDeepLinkHandler {
   static final AppLinks _appLinks = AppLinks();
@@ -31,17 +36,30 @@ class OAuthDeepLinkHandler {
     );
   }
 
-  static Future<void> _handleUri(Uri uri) async {
-    if (uri.queryParameters.containsKey('code')) {
-      try {
-        print('🔑 Processando OAuth do Supabase...');
-        await Supabase.instance.client.auth.getSessionFromUrl(uri);
-        print('✅ getSessionFromUrl OK');
-      } catch (e) {
-        print('❌ Erro no getSessionFromUrl: $e');
-      }
-    }
+static Future<void> _handleUri(Uri uri) async {
+  final type = uri.queryParameters['type'];
+
+  // 🔐 RESET DE SENHA
+  if (type == 'recovery') {
+    AppSession.flow = AppAuthFlow.resettingPassword;
+
+    debugPrint('🔐 DeepLink recovery detectado');
+
+    await Supabase.instance.client.auth.getSessionFromUrl(uri);
+
+    debugPrint('✅ Recovery session criada via deep link');
+    return;
   }
+
+  // 🔑 OAuth normal (Google, etc)
+  if (uri.queryParameters.containsKey('code')) {
+    await Supabase.instance.client.auth.getSessionFromUrl(uri);
+    debugPrint('✅ OAuth session criada');
+  }
+}
+
+
+
 
   static void dispose() {
     _sub?.cancel();

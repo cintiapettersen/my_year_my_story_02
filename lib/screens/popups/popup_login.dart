@@ -69,32 +69,30 @@ void showLoginPrompt(BuildContext context) {
                       ),
                     ),
                     ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFC03B66),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 28, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        shadowColor: Colors.pinkAccent.withOpacity(0.3),
-                        elevation: 3,
-                      ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(
-                          context,
-                          '/Users/cintiapettersen/Downloads/MyYearStoryProject/MyYearStory/lib/screens/auth/login_screen.dart',
-                        );
-                      },
-                      child: Text(
-                        tr('popup_login.login_button'), // "Login"
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
+  style: ElevatedButton.styleFrom(
+    backgroundColor: const Color(0xFFC03B66),
+    padding: const EdgeInsets.symmetric(
+        horizontal: 28, vertical: 12),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(30),
+    ),
+    shadowColor: Colors.pinkAccent.withOpacity(0.3),
+    elevation: 3,
+  ),
+  onPressed: () {
+    Navigator.pop(context);
+    Navigator.pushNamed(context, '/login');
+  },
+  child: Text(
+    tr('popup_login.login_button'),
+    style: const TextStyle(
+      color: Colors.white,
+      fontWeight: FontWeight.w600,
+      fontSize: 16,
+    ),
+  ),
+),
+
                   ],
                 ),
               ],

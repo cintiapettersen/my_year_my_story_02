@@ -127,21 +127,25 @@ class UserService {
   // -----------------------------------------------------------
   // 🔄 RESET PASSWORD
   // -----------------------------------------------------------
-  static Future<Map<String, dynamic>> resetPassword(String email) async {
-    try {
-      await SupabaseConfig.client.auth.resetPasswordForEmail(email.trim());
+ static Future<Map<String, dynamic>> resetPassword(String email) async {
+  try {
+    await Supabase.instance.client.auth.resetPasswordForEmail(
+      email.trim(),
+      redirectTo: 'com.myyear.myyearmystory://reset-password',
+    );
 
-      return {
-        'success': true,
-        'message': 'auth.forgot.sent'.tr(),
-      };
-    } catch (_) {
-      return {
-        'success': false,
-        'message': 'auth.forgot.error_general'.tr(),
-      };
-    }
+    return {
+      'success': true,
+      'message': 'auth.forgot.sent'.tr(),
+    };
+  } catch (_) {
+    return {
+      'success': false,
+      'message': 'auth.forgot.error_general'.tr(),
+    };
   }
+}
+
 
   // -----------------------------------------------------------
   // 🚪 LOGOUT

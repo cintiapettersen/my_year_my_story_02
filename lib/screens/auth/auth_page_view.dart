@@ -65,37 +65,51 @@ class _AuthPageViewState extends State<AuthPageView> {
   }
 
   
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isTablet = constraints.maxWidth > 600;
+ @override
+Widget build(BuildContext context) {
+  return LayoutBuilder(
+    builder: (context, constraints) {
+      final isTablet = constraints.maxWidth > 600;
 
-        return Scaffold(
-          body: SafeArea(
-            child: Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: isTablet ? 600 : constraints.maxWidth,
-                ),
-                child: PageView(
-                  controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: [
-                    LoginScreen(
-                      onCreateAccountTap: _goToSignup,
-                    
-                    ),
-                    SignupScreen(
-                      onLoginTap: _goToLogin,
-                    ),
-                  ],
-                ),
+      return Scaffold(
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: isTablet ? 600 : constraints.maxWidth,
+              ),
+              child: PageView(
+                controller: _pageController,
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  // -------------------------
+                  // LOGIN
+                  // -------------------------
+                  Builder(
+                    builder: (context) {
+                      return LoginScreen(
+                        onCreateAccountTap: _goToSignup,
+                      );
+                    },
+                  ),
+
+                  // -------------------------
+                  // SIGNUP
+                  // -------------------------
+                  Builder(
+                    builder: (context) {
+                      return SignupScreen(
+                        onLoginTap: _goToLogin,
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
 }

@@ -12,21 +12,24 @@ class AccessControl {
     // Visitante → não é premium
     if (user == null) return false;
 
-    // Modo dev → premium liberado
+    // Modo dev global → premium liberado
     if (AppConfig.devMode) return true;
 
     // Admin por email → premium
     if (AppConfig.isAdmin(user.email)) return true;
 
-    // Buscar premium no banco
+    // Buscar flags no banco (premium ou dev)
     final profile = await SupabaseConfig.client
         .from('profiles')
-        .select('is_premium')
+        .select('is_premium, is_dev')
         .eq('id', user.id)
         .maybeSingle();
 
-    return profile?['is_premium'] == true;
-  }
+    if (profile == null) return false;
+
+    return profile['is_premium'] == true ||
+           profile['is_dev'] == true;
+  } // 👈 ESSA CHAVE É O QUE ESTAVA FALTANDO
 
   /// VERIFICA SE O USUÁRIO É FREE / VISITANTE
   static bool isFree() {
@@ -38,7 +41,7 @@ class AccessControl {
   static Future<void> checkAccess(BuildContext context) async {
     final premium = await isPremium();
 
-    if (!premium) {
+    if (!premium && context.mounted) {
       showPremiumPopup(context);
     }
   }

@@ -23,6 +23,8 @@ class CuriositiesWidget extends StatefulWidget {
 
 class _CuriositiesWidgetState extends State<CuriositiesWidget> {
   bool _isPremiumUser = false;
+  bool _initialized = false;
+
   int _currentPage = 0;
 
   final PageController _pageController = PageController();
@@ -49,16 +51,23 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
     _initialize();
   }
 
+
+  @override
+void didChangeDependencies() {
+  super.didChangeDependencies();
+  // intencionalmente vazio
+}
+
   Future<void> _initialize() async {
-    // Premium é carregado, mas NÃO controla acesso à página
     _isPremiumUser = await AccessControl.isPremium();
     await _loadQuestions();
-
+    _initialized = true;
     if (mounted) setState(() {});
   }
 
   Future<void> _loadQuestions() async {
     final language = context.locale.languageCode;
+    final user = SupabaseConfig.client.auth.currentUser;
 
     final res = await SupabaseConfig.client
         .from('curiosities_entries')
@@ -75,39 +84,112 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
       allQuestions.addAll(questions);
     }
 
+    // salva respostas atuais em memória (pra não sumir ao trocar idioma)
+    final Map<String, String> tempAnswers = {};
+    for (int i = 0; i < _questions.length; i++) {
+      if (i < _controllers.length) {
+        tempAnswers[_questions[i]] = _controllers[i].text;
+      }
+    }
+
+    // limpa controllers antigos
+    for (final c in _controllers) {
+      c.dispose();
+    }
+    _controllers.clear();
+
     _questions = allQuestions;
-    _controllers =
-        List.generate(_questions.length, (_) => TextEditingController());
+
+    // busca respostas salvas no banco
+    List<Map<String, dynamic>> savedCuriosities = [];
+
+    if (user != null) {
+      final saved = await SupabaseConfig.client
+          .from('entries')
+          .select('curiosities')
+          .eq('user_id', user.id)
+          .eq('year', widget.year)
+          .eq('month', widget.month)
+          .maybeSingle();
+
+      if (saved != null && saved['curiosities'] is List) {
+        savedCuriosities = (saved['curiosities'] as List)
+            .whereType<Map>()
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
+      }
+    }
+
+    final Map<String, String> answeredMap = {
+      for (final c in savedCuriosities)
+        if (c['question'] != null && c['answer'] != null)
+          c['question']: c['answer'],
+    };
+
+    _controllers = List.generate(
+      _questions.length,
+      (i) => TextEditingController(
+        text: answeredMap[_questions[i]] ?? tempAnswers[_questions[i]] ?? '',
+      ),
+    );
+
+    
   }
 
-  // 🔐 Login / Premium SÓ AQUI
-  Future<void> _saveAnswers() async {
+  // =====================================================
+  // SALVAR RESPOSTA
+  // =====================================================
+  Future<void> _saveCurrentAnswer(int index) async {
     final user = SupabaseConfig.client.auth.currentUser;
 
-    // 👤 Convidado
     if (user == null) {
       showLoginPrompt(context);
       return;
     }
 
-    // 👤 Free
-    if (!_isPremiumUser) {
+    final question = _questions[index];
+    final answer = _controllers[index].text.trim();
+
+    final existing = await SupabaseConfig.client
+        .from('entries')
+        .select('curiosities')
+        .eq('user_id', user.id)
+        .eq('year', widget.year)
+        .eq('month', widget.month)
+        .maybeSingle();
+
+    List<Map<String, dynamic>> curiosities = [];
+
+    if (existing != null && existing['curiosities'] is List) {
+      curiosities = (existing['curiosities'] as List)
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+    }
+
+    curiosities.removeWhere((c) => c['question'] == question);
+
+    if (!_isPremiumUser && curiosities.length >= 3) {
       showPremiumPopup(context);
       return;
     }
 
-    final answers =
-        _controllers.map((c) => c.text.trim()).toList(growable: false);
+    curiosities.add({
+      'question': question,
+      'answer': answer,
+    });
 
     await SupabaseConfig.client.from('entries').upsert(
       {
         'user_id': user.id,
         'year': widget.year,
         'month': widget.month,
-        'curiosities_answers': answers,
+        'curiosities': curiosities,
       },
       onConflict: 'user_id, year, month',
     );
+
+    if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -124,6 +206,9 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
     );
   }
 
+  // =====================================================
+  // BUILD
+  // =====================================================
   @override
   Widget build(BuildContext context) {
     return MonthPageTemplate(
@@ -133,106 +218,128 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
       pageLabel: 'curiosities.title'.tr(),
       labelColor: const Color(0xFFc79fe2),
       description: 'curiosities.description_fixed'.tr(),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: Column(
-          children: [
-            if (_questions.isNotEmpty)
-              Text(
-                '${_currentPage + 1} / ${_questions.length}',
-                style: const TextStyle(fontSize: 13, color: Colors.black54),
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            children: [
+              if (_questions.isNotEmpty &&
+                  _controllers.length == _questions.length)
+                Text(
+                  '${_currentPage + 1} / ${_questions.length}',
+                  style:
+                      const TextStyle(fontSize: 13, color: Colors.black54),
+                ),
+
+              const SizedBox(height: 12),
+
+              SizedBox(
+                height: 320,
+                child: (!_initialized)
+                    ? const Center(child: CircularProgressIndicator())
+                    : PageView.builder(
+                        controller: _pageController,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: _questions.length,
+                        onPageChanged: (i) =>
+                            setState(() => _currentPage = i),
+                        itemBuilder: (context, index) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.favorite,
+                                color: heartColors[
+                                    index % heartColors.length],
+                                size: 22,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                _questions[index],
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFFBD3E7D),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              TextField(
+                                controller: _controllers[index],
+                                maxLines: 5,
+                                decoration: InputDecoration(
+                                  hintText:
+                                      'curiosities.answer_hint'.tr(),
+                                  filled: true,
+                                  fillColor:
+                                      const Color(0xFFFCEAF4),
+                                  border: OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.circular(14),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              ElevatedButton(
+                                onPressed: () =>
+                                    _saveCurrentAnswer(index),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      const Color(0xFFE25BA6),
+                                  foregroundColor: Colors.white,
+                                  padding:
+                                      const EdgeInsets.symmetric(
+                                    horizontal: 28,
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.circular(30),
+                                  ),
+                                ),
+                                child: Text('curiosities.save'.tr()),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
               ),
 
-            const SizedBox(height: 12),
+              const SizedBox(height: 8),
 
-            SizedBox(
-              height: 320,
-              child: PageView.builder(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _questions.length,
-                onPageChanged: (i) => setState(() => _currentPage = i),
-                itemBuilder: (context, index) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.favorite,
-                        color: heartColors[index % heartColors.length],
-                        size: 22,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _questions[index],
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFFBD3E7D),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: _controllers[index],
-                        maxLines: 5,
-                        decoration: InputDecoration(
-                          hintText: 'curiosities.answer_hint'.tr(),
-                          filled: true,
-                          fillColor: const Color(0xFFFCEAF4),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      ElevatedButton(
-                        onPressed: _saveAnswers,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFE25BA6),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 28,
-                            vertical: 14,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                        child: Text('curiosities.save'.tr()),
-                      ),
-                    ],
-                  );
-                },
+              Row(
+                mainAxisAlignment:
+                    MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios,
+                        size: 18),
+                    onPressed: _currentPage > 0
+                        ? () => _pageController.previousPage(
+                              duration: const Duration(
+                                  milliseconds: 250),
+                              curve: Curves.easeOut,
+                            )
+                        : null,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.arrow_forward_ios,
+                        size: 18),
+                    onPressed:
+                        _currentPage < _questions.length - 1
+                            ? () => _pageController.nextPage(
+                                  duration: const Duration(
+                                      milliseconds: 250),
+                                  curve: Curves.easeOut,
+                                )
+                            : null,
+                  ),
+                ],
               ),
-            ),
-
-            const SizedBox(height: 8),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back_ios, size: 18),
-                  onPressed: _currentPage > 0
-                      ? () => _pageController.previousPage(
-                            duration: const Duration(milliseconds: 250),
-                            curve: Curves.easeOut,
-                          )
-                      : null,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.arrow_forward_ios, size: 18),
-                  onPressed: _currentPage < _questions.length - 1
-                      ? () => _pageController.nextPage(
-                            duration: const Duration(milliseconds: 250),
-                            curve: Curves.easeOut,
-                          )
-                      : null,
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

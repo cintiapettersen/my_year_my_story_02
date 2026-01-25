@@ -45,8 +45,15 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  // ==============================
+  // DEPENDÊNCIAS / SERVIÇOS
+  // ==============================
   final supabase = Supabase.instance.client;
+  final quoteService = DailyQuoteService();
 
+  // ==============================
+  // ESTADO / DADOS
+  // ==============================
   String userName = "";
   String? dailyInspiration;
 
@@ -58,14 +65,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int gratidaoCount = 0;
   int diarioCount = 0;
 
-  final quoteService = DailyQuoteService();
-
   late int selectedMonth;
   late int selectedYear;
 
   bool isLoading = true;
-  Locale? _lastLocale;
+  Locale? _lastLocale; // (warning apenas, não quebra)
 
+  // ==============================
+  // TEMA
+  // ==============================
   Color currentThemeColor = const Color(0xFFE04CB7);
 
   final List<Color> themeOptions = const [
@@ -77,6 +85,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     Color(0xFFBEB6F2),
   ];
 
+  // ==============================
+  // INIT
+  // ==============================
   @override
   void initState() {
     super.initState();
@@ -97,13 +108,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-  // 🔥 ESSE é o ajuste certo
+
+@override
+void didChangeDependencies() {
+  super.didChangeDependencies();
+
+  final locale = context.locale;
+
+  if (_lastLocale != locale) {
+    _lastLocale = locale;
+    loadDailyQuote();
+  }
+}
+
+
+
+  // ==============================
+  // ATUALIZAÇÃO DE WIDGET
+  // ==============================
   @override
   void didUpdateWidget(covariant DashboardScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     _loadUserName();
   }
 
+  // ==============================
+  // FORMATAÇÃO DO MÊS (ex: Mar 2024)
+  // ==============================
+  String _formatarMesAno(String mes, String ano) {
+    final m = int.tryParse(mes) ?? 1;
+
+    final nomesMes = [
+      "",
+      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ];
+
+    return "${nomesMes[m]} $ano";
+  }
   // ================= ALERTA DIÁRIO =================
   Future<void> checkAndShowDailyAlert() async {
     final user = supabase.auth.currentUser;
@@ -262,7 +304,7 @@ Future<void> _loadUserName() async {
   // ==============================
   //     CARREGAR DADOS DO DASHBOARD
   // ==============================
-  Future<void> _loadDashboardData() async {
+ Future<void> _loadDashboardData() async {
   if (!mounted) return;
 
   setState(() => isLoading = true);
@@ -275,7 +317,9 @@ Future<void> _loadUserName() async {
   }
 
   try {
-    // --- Metas concluídas ---
+    // ==============================
+    // METAS CONCLUÍDAS
+    // ==============================
     final metas = await supabase
         .from("metas")
         .select()
@@ -284,10 +328,11 @@ Future<void> _loadUserName() async {
         .eq("ano", selectedYear)
         .eq("concluida", true);
 
-    if (!mounted) return;
     metasConcluidas = metas.length;
 
-    // --- ENTRIES DO MÊS ---
+    // ==============================
+    // ENTRIES DO MÊS
+    // ==============================
     final entries = await supabase
         .from("entries")
         .select()
@@ -296,94 +341,53 @@ Future<void> _loadUserName() async {
         .eq("year", selectedYear)
         .maybeSingle();
 
-    if (!mounted) return;
-
     if (entries != null) {
       gratidaoCount =
           (entries["gratitude_entries"] as List?)?.length ?? 0;
 
-      // ---------- CURIOSIDADES ----------
-      final answers = entries["curiosities_answers"];
-      List<String> questions = [];
+      // ==============================
+      // CURIOSIDADES (JSONB)
+      // ==============================
+      final curiosities = entries["curiosities"];
 
-      final answeredMonth = entries["month"];
-      final answeredYear = entries["year"];
+      if (curiosities is List && curiosities.isNotEmpty) {
+        curiosities.shuffle();
+        final selected = curiosities.first;
 
-      final curiosityEntry = await supabase
-          .from("curiosities_entries")
-          .select("questions, questions_en")
-          .eq("month", answeredMonth)
-          .eq("year", answeredYear)
-          .maybeSingle();
+        if (selected is Map) {
+          curiosityQuestion = selected["question"];
+          curiosityAnswer = selected["answer"];
 
-      if (!mounted) return;
+          final formattedMonth = _formatarMesAno(
+            entries["month"].toString(),
+            entries["year"].toString(),
+          );
 
-      if (curiosityEntry != null) {
-        final lang = context.locale.languageCode;
-
-        questions = lang == "en"
-            ? List<String>.from(curiosityEntry["questions_en"] ?? [])
-            : List<String>.from(curiosityEntry["questions"] ?? []);
-      }
-
-      if (answers != null &&
-          answers is List &&
-          answers.isNotEmpty &&
-          questions.isNotEmpty) {
-        final List<Map<String, String>> combined = [];
-
-        for (int i = 0; i < answers.length; i++) {
-          if (i < questions.length) {
-            combined.add({
-              "question": questions[i],
-              "answer": answers[i],
-              "month": answeredMonth.toString(),
-              "year": answeredYear.toString(),
-            });
-          }
-        }
-
-        if (combined.isNotEmpty) {
-          combined.shuffle();
-          final selected = combined.first;
-
-          final formattedMonth =
-              _formatarMesAno(selected["month"]!, selected["year"]!);
-
-          curiosityQuestion = selected['question'];
-          curiosityAnswer = selected['answer'];
           curiosityDate = tr(
             'dashboard.answered_in',
             namedArgs: {'date': formattedMonth},
           );
+        } else {
+          curiosityQuestion = null;
+          curiosityAnswer = null;
+          curiosityDate = null;
         }
+      } else {
+        curiosityQuestion = null;
+        curiosityAnswer = null;
+        curiosityDate = null;
       }
     }
-
-    if (!mounted) return;
-    setState(() => isLoading = false);
-
   } catch (e) {
+    debugPrint('Erro ao carregar dashboard: $e');
+  } finally {
     if (!mounted) return;
     setState(() => isLoading = false);
   }
 }
 
-  // ==============================
-  //    FORMATAÇÃO DO MÊS (ex: Mar 2024)
-  // ==============================
-  String _formatarMesAno(String mes, String ano) {
-    final m = int.tryParse(mes) ?? 1;
 
-    final nomesMes = [
-      "",
-      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-    ];
-
-    return "${nomesMes[m]} $ano";
-  }
-
+ 
   // ==============================
   //      LABEL DO CALENDÁRIO
   // ==============================

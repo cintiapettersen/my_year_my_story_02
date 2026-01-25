@@ -75,11 +75,14 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
     try {
       await supabase.from("profiles").update({
-        "full_name": _nameController.text.trim(),
-        "birth_date": _selectedDate != null
-            ? DateFormat("yyyy-MM-dd").format(_selectedDate!)
-            : null,
+      "full_name": _nameController.text.trim(),
+      "birth_date": _selectedDate != null
+      ? DateFormat("yyyy-MM-dd").format(_selectedDate!)
+      : null,
+      "email": user.email,          // 🔐 garante email no profile
+      "profile_type": "standard",   // 🏷️ normaliza tipo de usuário
       }).eq("id", user.id);
+
 
       if (!mounted) return;
 
@@ -192,10 +195,16 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                               controller: _nameController,
                               labelText: "signup.full_name".tr(),
                               prefixIcon: Icons.person_outline,
-                              validator: (v) =>
-                                  v == null || v.trim().isEmpty
-                                      ? "signup.error_name".tr()
-                                      : null,
+                              validator: (value) {
+                             if (value == null || value.trim().isEmpty) {
+                              return 'signup.error_name_required'.tr();
+                             }
+                            if (value.trim().length < 2) {
+                             return 'signup.error_name_short'.tr();
+                            }
+                           return null;
+                           },
+
                             ),
 
                             const SizedBox(height: 16),

@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/widgets.dart';
+import 'package:myyearmystory/services/app_navigator.dart';
 
 import 'package:myyearmystory/theme.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
@@ -39,6 +40,10 @@ import 'package:myyearmystory/widgets/monthly/photo_gallery_widget.dart';
 // Services
 import 'package:myyearmystory/services/auth_listener.dart';
 import 'package:myyearmystory/services/oauth_deeplink_handler.dart';
+import 'package:myyearmystory/screens/auth/reset_password_screen.dart';
+
+
+
 
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -51,11 +56,13 @@ final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // 🔒 Orientação fixa
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
+  // 🌍 Localização
   await EasyLocalization.ensureInitialized();
   await initializeDateFormatting('pt_BR', null);
   await initializeDateFormatting('en_US', null);
@@ -65,13 +72,14 @@ Future<void> main() async {
 
   Intl.defaultLocale = countryCode == 'US' ? 'en_US' : 'pt_BR';
 
- await SupabaseConfig.initialize();
+  // 🧠 Supabase
+  await SupabaseConfig.initialize();
 
-// 🔗 escuta deep links OAuth PRIMEIRO
-OAuthDeepLinkHandler.initialize();
+  // 🔗 Deep links (OAuth + recovery)
+  OAuthDeepLinkHandler.initialize();
 
-// 🔑 AuthListener depois
-AuthListener.initialize(navigatorKey);
+  // 🔑 Listener global de auth
+  AuthListener.initialize(navigatorKey);
 
   final Locale initialLocale =
       (countryCode == 'BR' || countryCode == 'PT')
@@ -100,7 +108,6 @@ class MyApp extends StatelessWidget {
       navigatorObservers: [routeObserver],
       debugShowCheckedModeBanner: false,
       theme: lightTheme,
-     
       themeMode: ThemeMode.system,
 
       localizationsDelegates: context.localizationDelegates,
@@ -110,14 +117,19 @@ class MyApp extends StatelessWidget {
       // 🔑 SEMPRE começa no splash
       home: const SplashTransitionScreen(),
 
-
+      // ✅ ROTAS REGISTRADAS (ESSENCIAL)
       routes: {
         '/splash': (_) => const SplashTransitionScreen(),
         '/login': (_) => const AuthPageView(),
+
+        // 🔐 RESET DE SENHA (ERA ISSO QUE FALTAVA)
+        '/reset-password': (_) => const ResetPasswordScreen(),
+
         '/dashboard': (_) => DashboardScreen(
               month: DateTime.now().month,
               year: DateTime.now().year,
             ),
+
         '/profile': (_) => ProfileScreen(),
         '/help': (_) => HelpScreen(),
         '/premium': (_) => const PremiumPage(),
@@ -183,6 +195,7 @@ class MyApp extends StatelessWidget {
                 year: args['year'],
               ),
             ),
+
         '/diary': (context) {
           final arg = ModalRoute.of(context)?.settings.arguments;
           final date = arg is DateTime ? arg : DateTime.now();
@@ -192,6 +205,7 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
 
 // Helper único e consistente
 Widget _withArgs(
