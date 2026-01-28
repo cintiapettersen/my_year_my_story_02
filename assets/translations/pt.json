@@ -225,7 +225,14 @@
     "popup_title": "Em breve 💫",
     "popup_content": "A galeria de fotos estará disponível nas próximas atualizações.\nPor enquanto, aproveite as outras seções do app!",
     "ok_button": "Ok",
-    "page_label": "Fotos do mês"
+    "page_label": "Fotos do mês",
+    "replace": "Trocar foto",
+    "delete": "Apagar foto",
+    "limit_reached": "Você já adicionou 4 fotos neste mês.",
+   "comment_title": "Sobre esse momento",
+   "comment_hint": "O que essa foto representa pra você?",
+   "too_large": "A foto selecionada é muito grande. Escolha uma imagem menor."
+    
   },
 
   "premium_popup": {
@@ -719,6 +726,8 @@
     
     "limit_reached": "Você atingiu o limite de lembretes deste mês.",
     "premium_required": "O acesso completo aos lembretes é exclusivo para usuárias premium.",
+    "write_something_first": "Escreva seu lembrete ou alerta antes de salvar 💕",
+
 
     "event_hint": "descreva seu lembrete",
 
@@ -893,6 +902,8 @@
     "saved_success": "Entrada salva com sucesso!",
     "no_entries": "Sem entradas ainda.\nComece escrevendo algo especial hoje!",
     "no_entries_day": "Sem entradas ainda.\nComece escrevendo algo especial hoje!",
+    "guest_save_warning": "Você pode escrever e explorar o diário, mas suas entradas não serão salvas. Faça login para guardar suas memórias.",
+    "guest_login_action": "Fazer login",
 
 
     "guest_info_title": "✨ Só um aviso rápido",

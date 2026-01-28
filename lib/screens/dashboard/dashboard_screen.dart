@@ -89,25 +89,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // INIT
   // ==============================
   @override
-  void initState() {
-    super.initState();
+void initState() {
+  super.initState();
 
-    selectedMonth = widget.month;
-    selectedYear = widget.year;
+  selectedMonth = widget.month;
+  selectedYear = widget.year;
 
-    _loadUserName();
-    _syncUserLanguage();
+  _loadUserName();
+  _syncUserLanguage();
+
+  _loadCuriositiesQuestions().then((_) {
     _loadDashboardData();
+  });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      loadDailyQuote();
-    });
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    loadDailyQuote();
+  });
 
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) checkAndShowDailyAlert();
-    });
-  }
-
+  Future.delayed(const Duration(seconds: 2), () {
+    if (mounted) checkAndShowDailyAlert();
+  });
+}
 
 @override
 void didChangeDependencies() {
@@ -120,6 +122,8 @@ void didChangeDependencies() {
     loadDailyQuote();
   }
 }
+
+List<String> curiositiesQuestions = [];
 
 
 
@@ -249,6 +253,37 @@ Future<void> _loadUserName() async {
 
 
 
+
+  // ==============================
+  //   CARREGAR PERGUNTAS DE CURIOSIDADES
+  // ==============================
+Future<void> _loadCuriositiesQuestions() async {
+  final language = context.locale.languageCode;
+
+  final res = await supabase
+      .from('curiosities_entries')
+      .select('questions, questions_en')
+      .eq('month', selectedMonth)
+      .order('id');
+
+  final List<String> allQuestions = [];
+
+  for (final row in res) {
+    final questions = language == 'en'
+        ? List<String>.from(row['questions_en'] ?? [])
+        : List<String>.from(row['questions'] ?? []);
+
+    allQuestions.addAll(questions);
+  }
+
+  curiositiesQuestions = allQuestions;
+
+  print('DEBUG_QUESTIONS_LENGTH: ${curiositiesQuestions.length}');
+}
+
+
+
+
   // ==============================
   //     FRASE DO DIA
   // ==============================
@@ -304,7 +339,11 @@ Future<void> _loadUserName() async {
   // ==============================
   //     CARREGAR DADOS DO DASHBOARD
   // ==============================
+
+  
  Future<void> _loadDashboardData() async {
+
+  print('DEBUG: entrou no _loadDashboardData');
   if (!mounted) return;
 
   setState(() => isLoading = true);
@@ -318,7 +357,7 @@ Future<void> _loadUserName() async {
 
   try {
     // ==============================
-    // METAS CONCLUÍDAS
+    // METAS
     // ==============================
     final metas = await supabase
         .from("metas")
@@ -331,7 +370,7 @@ Future<void> _loadUserName() async {
     metasConcluidas = metas.length;
 
     // ==============================
-    // ENTRIES DO MÊS
+    // ENTRIES DO MÊS  👈👈👈 ISTO ESTAVA FALTANDO
     // ==============================
     final entries = await supabase
         .from("entries")
@@ -341,22 +380,39 @@ Future<void> _loadUserName() async {
         .eq("year", selectedYear)
         .maybeSingle();
 
+    // ==============================
+    // CURIOSIDADES (JSONB)
+    // ==============================
     if (entries != null) {
-      gratidaoCount =
-          (entries["gratitude_entries"] as List?)?.length ?? 0;
-
-      // ==============================
-      // CURIOSIDADES (JSONB)
-      // ==============================
       final curiosities = entries["curiosities"];
+
+      debugPrint(' Curiosities saved: $curiosities');
+
 
       if (curiosities is List && curiosities.isNotEmpty) {
         curiosities.shuffle();
         final selected = curiosities.first;
 
         if (selected is Map) {
-          curiosityQuestion = selected["question"];
+          final int? index =
+              selected["index"] != null
+                  ? int.tryParse(selected["index"].toString())
+                  : null;
+
           curiosityAnswer = selected["answer"];
+
+          if (curiositiesQuestions.isNotEmpty) {
+  if (index != null &&
+      index >= 0 &&
+      index < curiositiesQuestions.length) {
+    curiosityQuestion = curiositiesQuestions[index];
+  } else {
+    curiosityQuestion = curiositiesQuestions.first;
+
+    print('DEBUG_INDEX_RAW: ${selected["index"]}');
+
+  }
+}
 
           final formattedMonth = _formatarMesAno(
             entries["month"].toString(),
@@ -367,10 +423,6 @@ Future<void> _loadUserName() async {
             'dashboard.answered_in',
             namedArgs: {'date': formattedMonth},
           );
-        } else {
-          curiosityQuestion = null;
-          curiosityAnswer = null;
-          curiosityDate = null;
         }
       } else {
         curiosityQuestion = null;
@@ -379,7 +431,7 @@ Future<void> _loadUserName() async {
       }
     }
   } catch (e) {
-    debugPrint('Erro ao carregar dashboard: $e');
+    print('Erro ao carregar dashboard: $e');
   } finally {
     if (!mounted) return;
     setState(() => isLoading = false);
@@ -387,7 +439,7 @@ Future<void> _loadUserName() async {
 }
 
 
- 
+     
   // ==============================
   //      LABEL DO CALENDÁRIO
   // ==============================

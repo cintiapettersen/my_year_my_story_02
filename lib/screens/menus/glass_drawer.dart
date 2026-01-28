@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:myyearmystory/screens/menus/app_drawer.dart';
+
 
 
 class GlassDrawer extends StatelessWidget {
@@ -23,7 +23,7 @@ class GlassDrawer extends StatelessWidget {
         borderRadius: const BorderRadius.horizontal(right: Radius.circular(32)),
         child: Stack(
           children: [
-            // Fundo borrado (blur)
+            // Fundo borrado
             BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
               child: Container(
@@ -37,10 +37,12 @@ class GlassDrawer extends StatelessWidget {
               ),
             ),
 
-            // Conteúdo colocado por você
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: children,
+            // ✅ CONTEÚDO COM SCROLL
+            SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: children,
+              ),
             ),
           ],
         ),

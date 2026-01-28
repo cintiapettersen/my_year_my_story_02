@@ -5,6 +5,8 @@ import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/utils/access_control.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:myyearmystory/widgets/shared/show_login_prompt.dart';
+
 
 class ReflectionsWidget extends StatefulWidget {
   final int? month;
@@ -36,6 +38,10 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
 
   @override
   bool get wantKeepAlive => true;
+
+  bool get isGuest {
+  return _supabase.auth.currentUser == null;
+}
 
   /// Lista de prompts traduzidos
   final List<Map<String, String>> _reflectionPrompts = [
@@ -123,11 +129,16 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
   Future<void> _saveReflections() async {
     final user = _supabase.auth.currentUser;
 
-    /// Usuário deslogado → popup premium (mesma experiência das outras telas)
-    if (user == null) {
-      showPremiumPopup(context);
-      return;
-    }
+if (isGuest) {
+  
+  return;
+}
+
+if (!_isPremiumUser && _freeSaveCount >= 1) {
+  showPremiumPopup(context);
+  return;
+}
+
 
     /// Free user tentando salvar mais de uma reflexão
     if (!_isPremiumUser && _freeSaveCount >= 1) {
@@ -150,14 +161,15 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
         data,
         widget.month ?? DateTime.now().month,
         widget.year ?? DateTime.now().year,
-        user.id,
+        user!.id
       );
 
       if (!_isPremiumUser) _freeSaveCount++;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(success
+            ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+             backgroundColor: const Color.fromARGB(255, 215, 126, 194), // rosa clarinho
+              content: Text(success
               ? 'reflection.saved'.tr()
               : 'reflection.save_error'.tr()),
         ),
@@ -184,7 +196,7 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
       month: month,
       year: year,
       pageLabel: 'reflection.page_label'.tr(),
-      labelColor: const Color(0xFFcf78f7),
+      labelColor: const Color.fromARGB(255, 180, 107, 214),
       title: '',
       description: 'reflection.description'.tr(),
       child: Column(
@@ -273,7 +285,7 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
                       _saveReflections();
                     },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 183, 54, 159),
+                backgroundColor: const Color.fromARGB(255, 183, 103, 199),
                 foregroundColor: Colors.white,
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(vertical: 14),

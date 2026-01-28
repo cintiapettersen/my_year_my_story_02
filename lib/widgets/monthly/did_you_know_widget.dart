@@ -8,6 +8,8 @@ import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/services/did_you_know_service.dart';
 import 'package:myyearmystory/utils/month_colors.dart';
 import 'package:myyearmystory/utils/access_control.dart';
+import 'package:myyearmystory/widgets/shared/show_login_prompt.dart';
+
 
 class DidYouKnowWidget extends StatefulWidget {
   final int month;
@@ -27,6 +29,10 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
+
+  bool get isGuest {
+  return Supabase.instance.client.auth.currentUser == null;
+}
 
   final DidYouKnowService _service = DidYouKnowService();
 
@@ -117,13 +123,21 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
   if (!mounted) return;
 
   // 🔐 FREE / GUEST → bloqueia sempre
-  if (!isPremiumUser) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      showPremiumPopup(context);
-    });
-    return;
-  }
+  if (isGuest) {
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (!mounted) return;
+    showLoginPrompt(context);
+  });
+  return;
+}
+
+if (!isPremiumUser) {
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (!mounted) return;
+    showPremiumPopup(context);
+  });
+  return;
+}
 
   // 💎 PREMIUM → limite diário
   if (refreshCount >= maxRefresh) {
@@ -254,10 +268,21 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
                           setState(() => isPressed = true);
                         },
                         onTapUp: (_) async {
-                          if (!mounted) return;
-                          setState(() => isPressed = false);
-                          await _handleRefresh();
-                        },
+  if (!mounted) return;
+
+  if (isGuest) {
+  showLoginPrompt(context);
+  return;
+}
+
+if (!isPremiumUser) {
+  showPremiumPopup(context);
+  return;
+}
+
+  setState(() => isPressed = false);
+  await _handleRefresh();
+},
                         onTapCancel: () {
                           if (!mounted) return;
                           setState(() => isPressed = false);

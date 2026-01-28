@@ -90,14 +90,25 @@ class _DayEntryModalState extends State<DayEntryModal> {
   Future<void> _save() async {
     final user = SupabaseConfig.client.auth.currentUser;
     final text = _textController.text.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        tr("calendar.write_something_first"),
+      ),
+      duration: const Duration(seconds: 2),
+      behavior: SnackBarBehavior.floating,
+    ),
+  );
+  return;
+}
 
     // 👤 GUEST → retorna dados
     if (user == null) {
       Navigator.pop(context, {
         'day': widget.day,
         'title': text,
-        'color': _hasAlert ? _selectedColorHex : "FFe04cb7",
+        'color': _selectedColorHex,
       });
       return;
     }

@@ -464,20 +464,24 @@ if (user != null) {
 
           // 🔁 REFazer quiz (mantido)
           TextButton(
-            onPressed: () {
-              setState(() {
-                selectedOptions.clear();
-                resultTitleOnPage = null;
-                resultDescOnPage = null;
-                currentPage = 0;
-              });
+  onPressed: () {
+    setState(() {
+      selectedOptions.clear();
+      resultTitleOnPage = null;
+      resultDescOnPage = null;
+      currentPage = 0;
 
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (_pageController.hasClients) {
-                  _pageController.jumpToPage(0);
-                }
-              });
-            },
+      // 🔥 ISSO É O QUE ESTAVA FALTANDO
+      hasSavedResult = false;
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_pageController.hasClients) {
+        _pageController.jumpToPage(0);
+      }
+    });
+  },
+
             child: Text(
               "quiz.button_retry".tr(),
               style: const TextStyle(

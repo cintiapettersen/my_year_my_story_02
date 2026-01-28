@@ -5,6 +5,8 @@ import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 import 'package:myyearmystory/utils/access_control.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
+import 'package:myyearmystory/widgets/shared/show_login_prompt.dart';
+
 
 /// Config DEV/Admin igual à InterviewScreen
 class AppConfig {
@@ -35,6 +37,10 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
 
   @override
   bool get wantKeepAlive => true;
+
+  bool get isGuest {
+  return _supabase.auth.currentUser == null;
+}
 
   /// Controllers por categoria
   final Map<String, List<TextEditingController>> _controllers = {
@@ -128,10 +134,16 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
   Future<void> _saveList(String listKey) async {
   final user = _supabase.auth.currentUser;
 
-  if (user == null || !_isPremiumUser) {
-    showPremiumPopup(context);
-    return;
-  }
+  if (isGuest) {
+  showLoginPrompt(context);
+  return;
+}
+
+if (!_isPremiumUser) {
+  showPremiumPopup(context);
+  return;
+}
+
 
   // 🔍 Checa se TODAS as listas estão vazias
   final hasAtLeastOneFilled = _controllers.values.any(
@@ -175,7 +187,7 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
       listsToSave,
       widget.month ?? DateTime.now().month,
       widget.year ?? DateTime.now().year,
-      user.id,
+      user!.id,
     );
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -202,10 +214,15 @@ class _MonthlyListsWidgetState extends State<MonthlyListsWidget>
 
   /// Adicionar novo campo com animação cute ✨
   void _addField(String listKey) {
-    if (!_isPremiumUser) {
-      showPremiumPopup(context);
-      return;
-    }
+  if (isGuest) {
+    showLoginPrompt(context);
+    return;
+  }
+
+  if (!_isPremiumUser) {
+    showPremiumPopup(context);
+    return;
+  }
 
     setState(() {
       final newController = TextEditingController();

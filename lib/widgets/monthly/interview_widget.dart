@@ -6,6 +6,8 @@ import 'package:myyearmystory/utils/access_control.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/screens/popups/coming_soon.dart';
+import 'package:myyearmystory/widgets/shared/show_login_prompt.dart';
+
 
 class AppConfig {
   static bool isDev = true;
@@ -42,6 +44,10 @@ class _InterviewScreenState extends State<InterviewScreen>
 
   @override
   bool get wantKeepAlive => true;
+
+  bool get isGuest {
+  return supabase.auth.currentUser == null;
+}
 
   @override
   void initState() {
@@ -114,11 +120,16 @@ class _InterviewScreenState extends State<InterviewScreen>
   Future<void> _saveInterview() async {
     final user = supabase.auth.currentUser;
 
-    // 🔐 convidado ou free
-    if (user == null || !_isPremiumUser) {
-      showPremiumPopup(context);
-      return;
-    }
+if (isGuest) {
+  showLoginPrompt(context);
+  return;
+}
+
+if (!_isPremiumUser) {
+  showPremiumPopup(context);
+  return;
+}
+
 
     final visibleCount =
         _isPremiumUser || _showAllQuestions ? _questions.length : 5;
@@ -157,7 +168,7 @@ class _InterviewScreenState extends State<InterviewScreen>
         answers: answers,
         month: widget.month ?? DateTime.now().month,
         year: widget.year ?? DateTime.now().year,
-        userId: user.id,
+        userId: user!.id,
         interviewName: _nameController.text.trim(),
         interviewRelation: _relationController.text.trim(),
         interviewAge: _ageController.text.trim(),
@@ -342,7 +353,13 @@ class _InterviewScreenState extends State<InterviewScreen>
             if (!_isPremiumUser && !_showAllQuestions)
               Center(
                 child: TextButton(
-                  onPressed: () => showPremiumPopup(context),
+                  onPressed: () {
+                 if (isGuest) {
+                 showLoginPrompt(context);
+                 return;
+               }
+               showPremiumPopup(context);
+            },
                   child: Text(
                     "interview.show_more".tr(),
                     style: const TextStyle(

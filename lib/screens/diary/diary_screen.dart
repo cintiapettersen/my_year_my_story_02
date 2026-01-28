@@ -375,19 +375,71 @@ class _DiaryScreenState extends State<DiaryScreen> {
                     ),
                   ),
                 ),
+
+                
                 const SizedBox(height: 20),
+
+
+if (SupabaseConfig.client.auth.currentUser == null)
+  Container(
+    margin: const EdgeInsets.only(bottom: 12),
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: const Color(0xFFFFEEF4),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: const Color(0xFFF2C6D6)),
+    ),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Icon(
+          Icons.info_outline,
+          color: Color(0xFFB03062),
+          size: 20,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            'diary.guest_save_warning'.tr(),
+            style: const TextStyle(
+              fontSize: 13.5,
+              height: 1.4,
+              color: Color(0xFF6D2C4A),
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+
+
+
+
                 ElevatedButton(
-                  onPressed: () async {
-                    await _saveEntry();
-                    if (!mounted) return;
-                    Navigator.of(context).pop();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _userThemeColor,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: Text('diary.save'.tr()),
-                ),
+  onPressed: () async {
+  final user = SupabaseConfig.client.auth.currentUser;
+
+  if (user == null) {
+    // não fecha o modal
+    return;
+  }
+
+  await _saveEntry();
+  if (!mounted) return;
+  Navigator.of(context).pop();
+},
+
+
+
+  style: ElevatedButton.styleFrom(
+    backgroundColor: _userThemeColor,
+    foregroundColor: Colors.white,
+  ),
+  child: Text('diary.save'.tr()),
+),
+
+                 
+              
               ],
             ),
           ),
@@ -406,11 +458,6 @@ class _DiaryScreenState extends State<DiaryScreen> {
   }
 
   if (_editingEntry != null) {
-  await DiaryService.updateEntry(
-  _editingEntry!.id,
-  _entryController.text.trim(),
-  _editingEntry!.entryDate,
-);
 
   } else {
     await DiaryService.createEntry(
@@ -491,50 +538,118 @@ Widget _buildEmptyState() {
 }
 
   Future<void> _showGuestInfoDialog() async {
-    return showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (modalContext) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFFFCE9EF),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Text(
-            'diary.guest_info_title'.tr(),
-            textAlign: TextAlign.center,
-          ),
-          content: Text(
-            'diary.guest_info_message'.tr(),
-            textAlign: TextAlign.center,
-          ),
-          actionsAlignment: MainAxisAlignment.center,
-          actions: [
-            Column(
-              children: [
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(modalContext);
-                      showLoginPrompt(context);
-                    },
-                    child: Text('diary.guest_login'.tr()),
-                  ),
+  if (!context.mounted) return;
+
+  return showDialog(
+    context: context,
+    barrierDismissible: true,
+    builder: (BuildContext dialogContext) {
+      return Material(
+        type: MaterialType.transparency,
+        child: Stack(
+          children: [
+            Center(
+              child: AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(22),
                 ),
-                const SizedBox(height: 8),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(modalContext);
-                    _openEntryModal();
-                  },
-                  child: Text('diary.guest_continue'.tr()),
+                contentPadding:
+                    const EdgeInsets.fromLTRB(24, 32, 24, 20),
+                backgroundColor: const Color(0xFFFFF1F6),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.edit_note,
+                      size: 42,
+                      color: Color(0xFFB03062),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'diary.guest_info_title'.tr(),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFB03062),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      'diary.guest_info_message'.tr(),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        height: 1.4,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 26),
+
+                    /// BOTÃO PRINCIPAL — LOGIN
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(dialogContext).pop();
+                          showLoginPrompt(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFCD4B78),
+                          padding:
+                              const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          'diary.guest_login'.tr(),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    /// AÇÃO SECUNDÁRIA — CONTINUAR
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(dialogContext).pop();
+                        _openEntryModal();
+                      },
+                      child: Text(
+                        'diary.guest_continue'.tr(),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFB03062),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
+            ),
+
+            /// BOTÃO FECHAR
+            Positioned(
+              top: 12,
+              right: 12,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.grey),
+                onPressed: () => Navigator.of(dialogContext).pop(),
+              ),
             ),
           ],
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
+
 }

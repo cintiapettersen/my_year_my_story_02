@@ -6,6 +6,8 @@ import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/utils/access_control.dart';
 import 'package:myyearmystory/screens/popups/popup_login.dart';
+import 'dart:async';
+
 
 class CuriositiesWidget extends StatefulWidget {
   final int month;
@@ -29,6 +31,9 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
 
   final PageController _pageController = PageController();
 
+
+  late final StreamSubscription _authSub; 
+
   List<String> _questions = [];
   List<TextEditingController> _controllers = [];
 
@@ -45,166 +50,201 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
     Color(0xFFFFB74D),
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _initialize();
+@override
+void initState() {
+  super.initState();
+  _initialize();
+
+  _authSub = SupabaseConfig.client.auth.onAuthStateChange.listen((data) {
+    if (data.session != null) {
+      _loadSavedAnswers();
+    }
+  });
+}
+
+@override
+void dispose() {
+  _authSub.cancel();
+  for (final c in _controllers) {
+    c.dispose();
   }
+  _pageController.dispose();
+  super.dispose();
+}
 
 
-  @override
+ @override
 void didChangeDependencies() {
   super.didChangeDependencies();
-  // intencionalmente vazio
+  if (_initialized) {
+  _loadQuestions().then((_) {
+    _loadSavedAnswers();
+  });
+}
 }
 
   Future<void> _initialize() async {
-    _isPremiumUser = await AccessControl.isPremium();
-    await _loadQuestions();
-    _initialized = true;
-    if (mounted) setState(() {});
-  }
+  _isPremiumUser = await AccessControl.isPremium();
+  await _loadQuestions();
+  await _loadSavedAnswers(); // 👈 ESSENCIAL
+  _initialized = true;
+  if (mounted) setState(() {});
+}
 
   Future<void> _loadQuestions() async {
-    final language = context.locale.languageCode;
-    final user = SupabaseConfig.client.auth.currentUser;
+  final language = context.locale.languageCode;
 
-    final res = await SupabaseConfig.client
-        .from('curiosities_entries')
-        .select('questions, questions_en')
-        .eq('month', widget.month)
-        .order('group_number');
+  final res = await SupabaseConfig.client
+      .from('curiosities_entries')
+      .select('questions, questions_en')
+      .eq('month', widget.month)
+      .order('group_number');
 
-    final allQuestions = <String>[];
+  final allQuestions = <String>[];
+  
 
-    for (final row in res) {
-      final questions = language == 'en'
-          ? List<String>.from(row['questions_en'] ?? [])
-          : List<String>.from(row['questions'] ?? []);
-      allQuestions.addAll(questions);
-    }
-
-    // salva respostas atuais em memória (pra não sumir ao trocar idioma)
-    final Map<String, String> tempAnswers = {};
-    for (int i = 0; i < _questions.length; i++) {
-      if (i < _controllers.length) {
-        tempAnswers[_questions[i]] = _controllers[i].text;
-      }
-    }
-
-    // limpa controllers antigos
-    for (final c in _controllers) {
-      c.dispose();
-    }
-    _controllers.clear();
-
-    _questions = allQuestions;
-
-    // busca respostas salvas no banco
-    List<Map<String, dynamic>> savedCuriosities = [];
-
-    if (user != null) {
-      final saved = await SupabaseConfig.client
-          .from('entries')
-          .select('curiosities')
-          .eq('user_id', user.id)
-          .eq('year', widget.year)
-          .eq('month', widget.month)
-          .maybeSingle();
-
-      if (saved != null && saved['curiosities'] is List) {
-        savedCuriosities = (saved['curiosities'] as List)
-            .whereType<Map>()
-            .map((e) => Map<String, dynamic>.from(e))
-            .toList();
-      }
-    }
-
-    final Map<String, String> answeredMap = {
-      for (final c in savedCuriosities)
-        if (c['question'] != null && c['answer'] != null)
-          c['question']: c['answer'],
-    };
-
-    _controllers = List.generate(
-      _questions.length,
-      (i) => TextEditingController(
-        text: answeredMap[_questions[i]] ?? tempAnswers[_questions[i]] ?? '',
-      ),
-    );
-
-    
+  for (final row in res) {
+    final questions = language == 'en'
+        ? List<String>.from(row['questions_en'] ?? [])
+        : List<String>.from(row['questions'] ?? []);
+    allQuestions.addAll(questions);
   }
+
+  // guarda textos atuais (ex: troca de idioma sem perder digitação)
+  final Map<int, String> tempAnswers = {};
+  for (int i = 0; i < _controllers.length; i++) {
+    tempAnswers[i] = _controllers[i].text;
+  }
+
+  // limpa controllers antigos
+  for (final c in _controllers) {
+    c.dispose();
+  }
+
+  _questions = allQuestions;
+
+  // cria controllers vazios (ou com o que já estava digitado)
+  _controllers = List.generate(
+    _questions.length,
+    (i) => TextEditingController(
+      text: tempAnswers[i] ?? '',
+    ),
+  );
+
+  if (mounted) setState(() {});
+}
+
+
+//_loadSavedAnswers
+
+Future<void> _loadSavedAnswers() async {
+  final user = SupabaseConfig.client.auth.currentUser;
+  if (user == null) return;
+
+  final saved = await SupabaseConfig.client
+      .from('entries')
+      .select('curiosities')
+      .eq('user_id', user.id)
+      .eq('year', widget.year)
+      .eq('month', widget.month)
+      .maybeSingle();
+
+  List<Map<String, dynamic>> savedCuriosities = [];
+
+  if (saved != null && saved['curiosities'] is List) {
+    savedCuriosities = (saved['curiosities'] as List)
+        .whereType<Map>()
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList();
+  }
+
+  final Map<int, String> answeredMap = {
+    for (final c in savedCuriosities)
+      if (c['index'] != null && c['answer'] != null)
+        int.tryParse(c['index'].toString())!: c['answer'] as String,
+  };
+
+  for (int i = 0; i < _controllers.length; i++) {
+    _controllers[i].text = answeredMap[i] ?? '';
+  }
+
+  if (mounted) setState(() {});
+}
 
   // =====================================================
   // SALVAR RESPOSTA
   // =====================================================
   Future<void> _saveCurrentAnswer(int index) async {
-    final user = SupabaseConfig.client.auth.currentUser;
+  final user = SupabaseConfig.client.auth.currentUser;
 
-    if (user == null) {
-      showLoginPrompt(context);
-      return;
-    }
-
-    final question = _questions[index];
-    final answer = _controllers[index].text.trim();
-
-    final existing = await SupabaseConfig.client
-        .from('entries')
-        .select('curiosities')
-        .eq('user_id', user.id)
-        .eq('year', widget.year)
-        .eq('month', widget.month)
-        .maybeSingle();
-
-    List<Map<String, dynamic>> curiosities = [];
-
-    if (existing != null && existing['curiosities'] is List) {
-      curiosities = (existing['curiosities'] as List)
-          .whereType<Map>()
-          .map((e) => Map<String, dynamic>.from(e))
-          .toList();
-    }
-
-    curiosities.removeWhere((c) => c['question'] == question);
-
-    if (!_isPremiumUser && curiosities.length >= 3) {
-      showPremiumPopup(context);
-      return;
-    }
-
-    curiosities.add({
-      'question': question,
-      'answer': answer,
-    });
-
-    await SupabaseConfig.client.from('entries').upsert(
-      {
-        'user_id': user.id,
-        'year': widget.year,
-        'month': widget.month,
-        'curiosities': curiosities,
-      },
-      onConflict: 'user_id, year, month',
-    );
-
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: const Color(0xFFFDF0F4),
-        content: Text(
-          'curiosities.saved_success'.tr(),
-          style: const TextStyle(color: Colors.black),
-        ),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-    );
+  if (user == null) {
+    showLoginPrompt(context);
+    return;
   }
+
+  final answer = _controllers[index].text.trim();
+  if (answer.isEmpty) return;
+
+  final existing = await SupabaseConfig.client
+      .from('entries')
+      .select('curiosities')
+      .eq('user_id', user.id)
+      .eq('year', widget.year)
+      .eq('month', widget.month)
+      .maybeSingle();
+
+  List<Map<String, dynamic>> curiosities = [];
+
+  if (existing != null && existing['curiosities'] is List) {
+    curiosities = (existing['curiosities'] as List)
+        .whereType<Map>()
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList();
+  }
+
+  // 🔥 remove resposta anterior pelo INDEX (não pelo texto)
+  curiosities.removeWhere((c) =>
+    c['index'] != null &&
+    int.tryParse(c['index'].toString()) == index
+  );
+
+  if (!_isPremiumUser && curiosities.length >= 3) {
+    showPremiumPopup(context);
+    return;
+  }
+
+  // ✅ salva no formato novo e estável
+  curiosities.add({
+    'index': index,
+    'answer': answer,
+  });
+
+  await SupabaseConfig.client.from('entries').upsert(
+    {
+      'user_id': user.id,
+      'year': widget.year,
+      'month': widget.month,
+      'curiosities': curiosities,
+    },
+    onConflict: 'user_id, year, month',
+  );
+
+  if (!mounted) return;
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      backgroundColor: const Color(0xFFFDF0F4),
+      content: Text(
+        'curiosities.saved_success'.tr(),
+        style: const TextStyle(color: Colors.black),
+      ),
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    ),
+  );
+}
 
   // =====================================================
   // BUILD
@@ -345,12 +385,5 @@ void didChangeDependencies() {
     );
   }
 
-  @override
-  void dispose() {
-    for (final c in _controllers) {
-      c.dispose();
-    }
-    _pageController.dispose();
-    super.dispose();
-  }
+ 
 }

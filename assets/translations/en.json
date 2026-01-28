@@ -247,8 +247,15 @@
     "popup_title": "Coming soon 💫",
     "popup_content": "The photo gallery will be available in upcoming updates.\nFor now, enjoy the other sections!",
     "ok_button": "Ok",
-    "page_label": "Monthly Photos"
-  },
+    "page_label": "Monthly Photos",
+    "replace": "Replace photo",
+    "delete": "Delete photo",
+    "limit_reached": "You have already added 4 photos this month.",
+   "comment_title": "About this moment",
+    "comment_hint": "What does this photo represent to you?",
+    "too_large": "The selected photo is too large. Choose a smaller image."
+},
+
 
   "premium_popup": {
     "title": "Become Premium",
@@ -744,6 +751,7 @@
      "delete_mood": "Remove mood for this day",
      
     "login_to_save": "You can try it freely, but to save your reminders you need to be logged in.",
+    "write_something_first": "Write your reminder or alert before saving 💕",
     "your_notes": "Your notes for the day",
     "repeat": "Repeat",
     
@@ -952,7 +960,10 @@
     "guest_info_title": "✨ Just a quick note",
     "guest_info_message": "You can write freely, but your entries will only be saved if you create an account or log in.",
     "guest_login": "Create account / Login",
-    "guest_continue": "Keep writing"
+    "guest_continue": "Keep writing",
+    "guest_save_warning": "You can write and explore the diary, but your entries won’t be saved. Log in to keep your memories.",
+
+    "guest_login_action": "Log in to save entries"
 
 
 },

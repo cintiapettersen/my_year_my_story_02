@@ -7,6 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:myyearmystory/widgets/shared/show_login_prompt.dart';
 
 
+
+
 class ZodiacWidget extends StatefulWidget {
   final int month;
   final int year;
@@ -181,7 +183,9 @@ void _showPersonalYearModal({
   // LOAD ZODIAC DATA
   // --------------------------------------------------------
   Future<void> _loadZodiacData() async {
+  if (mounted) {
   setState(() => _isLoading = true);
+}
 
   try {
     final rows =
@@ -245,7 +249,9 @@ void _showPersonalYearModal({
     int sum(int n) =>
         n.toString().split('').fold(0, (a, b) => a + int.parse(b));
     int reduce(int n) {
-      while (n > 9) n = sum(n);
+     while (n > 9) {
+  n = sum(n);
+}
       return n;
     }
 
@@ -256,18 +262,22 @@ void _showPersonalYearModal({
   // 🌍 idioma (capturado antes de qualquer await)
   final bool isEN = context.locale.languageCode == "en";
 
-  // 👤 usuário atual
-  final user = Supabase.instance.client.auth.currentUser;
-  if (user == null) {
+  
+ // 👤 usuário atual
+final user = Supabase.instance.client.auth.currentUser;
+
+if (user == null) {
   showLoginPrompt(context);
   return;
 }
-  // 🧾 buscar perfil com data de nascimento
-  final profile = await Supabase.instance.client
-      .from("profiles")
-      .select("birth_date")
-      .eq("id", user.id)
-      .maybeSingle();
+
+// 🧾 buscar perfil com data de nascimento
+final profile = await Supabase.instance.client
+    .from("profiles")
+    .select("birth_date")
+    .eq("id", user.id)
+    .maybeSingle();
+
 
   if (!mounted) return;
 
