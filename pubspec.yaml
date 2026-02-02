@@ -61,6 +61,8 @@ dependencies:
   # Notificações
   android_intent_plus: ^4.0.2
 
+  in_app_review: ^2.0.8
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

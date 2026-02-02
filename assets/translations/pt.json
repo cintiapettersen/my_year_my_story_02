@@ -1034,7 +1034,11 @@
   "mark_seen": "Marcar como visto",
   "cancel_alert": "Cancelar alerta"
 
-}
+},
+
+"review.title": "Tá curtindo o app?",
+"review.message": "Se esse espaço tem sido útil pra você,\nsua avaliação ajuda o app a continuar crescendo e melhorando.",
+"review.cta": "Avaliar agora"
 
 }
 

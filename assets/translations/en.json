@@ -1058,7 +1058,12 @@
   "mark_seen": "Mark as seen",
   "cancel_alert": "Cancel alert"
 
-}
+},
+
+"review.title": "Enjoying the app?",
+"review.message": "If this space has been helpful to you,\nyour review helps the app keep growing 💛",
+"review.cta": "Rate now"
+
 
 }
 
