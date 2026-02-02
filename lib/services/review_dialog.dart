@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:in_app_review/in_app_review.dart';
+
 
 
 
@@ -52,7 +54,16 @@ const SizedBox(height: 16),
       ),
       padding: const EdgeInsets.symmetric(vertical: 14),
     ),
-    onPressed: () => Navigator.pop(context),
+  onPressed: () async {
+  Navigator.pop(context);
+
+  final inAppReview = InAppReview.instance;
+
+  if (await inAppReview.isAvailable()) {
+    await inAppReview.requestReview();
+  }
+},
+
     child: Text('review.cta'.tr()),
   ),
 ),
