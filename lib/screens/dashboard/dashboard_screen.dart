@@ -30,6 +30,11 @@ import 'package:myyearmystory/screens/quiz/standalone.dart';
 import 'package:myyearmystory/services/app_session.dart';
 import 'package:myyearmystory/utils/app_theme.dart';
 import 'package:myyearmystory/widgets/monthly/curiosity_fallback.dart';
+import 'package:myyearmystory/services/review_service.dart';
+
+import 'package:myyearmystory/screens/popups/review_popup.dart';
+
+
 
 
 class DashboardScreen extends StatefulWidget {
@@ -42,11 +47,17 @@ class DashboardScreen extends StatefulWidget {
     required this.year,
   });
 
+  
+
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
 class _DashboardScreenState extends State<DashboardScreen> { 
+
+
+
+
   // ==============================
   // DEPENDÊNCIAS / SERVIÇOS
   // ==============================
@@ -62,6 +73,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String? curiosityQuestion;
   String? curiosityAnswer;
   String? curiosityDate;
+
+  String _reviewStatus = 'never';
+  DateTime? _lastReviewPrompt;
+  Duration _sessionTime = Duration.zero;
+  int _daysSinceFirstOpen = 0;
+
 
   int metasConcluidas = 0;
   int gratidaoCount = 0;
@@ -90,29 +107,51 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // ==============================
   // INIT
   // ==============================
-  @override
+ @override
 void initState() {
   super.initState();
 
+  // init original
   selectedMonth = widget.month;
   selectedYear = widget.year;
 
   _loadUserName();
   _syncUserLanguage();
+
   WidgetsBinding.instance.addPostFrameCallback((_) {
-  _loadDashboardData();
+    _loadDashboardData();
+  });
+
+  // review (mock por enquanto)
+  _reviewStatus = 'never';
+  _lastReviewPrompt = null;
+  _sessionTime = const Duration(minutes: 12);
+  _daysSinceFirstOpen = 1;
+
+  // review popup
+  Future.delayed(const Duration(seconds: 3), () {
+  if (!mounted) return;
+
+  final user = supabase.auth.currentUser;
+  if (user == null) return; // 👈 visitante NÃO recebe
+
+  if (ReviewService.canShowReview(
+    reviewStatus: _reviewStatus,
+    lastPrompt: _lastReviewPrompt,
+    sessionTime: _sessionTime,
+    daysSinceFirstOpen: _daysSinceFirstOpen,
+  )) {
+    showReviewPopup(context);
+  }
 });
 
- //coloco o blooco aqui?
-
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    loadDailyQuote();
-  });
-
-  Future.delayed(const Duration(seconds: 2), () {
-    if (mounted) checkAndShowDailyAlert();
-  });
 }
+
+ 
+// ==============================
+  // SINCRONIZAÇÃO DE IDIOMA
+  // ==============================
+
 
 @override
 void didChangeDependencies() {
