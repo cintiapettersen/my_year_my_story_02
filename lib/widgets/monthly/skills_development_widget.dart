@@ -10,8 +10,7 @@ import 'package:myyearmystory/utils/responsive.dart';
 import 'package:myyearmystory/utils/localized_tip.dart';
 import 'package:myyearmystory/utils/access_control.dart';
 import 'package:myyearmystory/utils/app_config.dart';
-import 'package:myyearmystory/widgets/shared/show_login_prompt.dart';
-
+import 'package:myyearmystory/screens/popups/popup_login.dart';
 /// 🎨 Categorias oficiais
 final Map<String, Color> skillCategoryColors = {
   "autocuidado": Color(0xFFFAD4D8),
@@ -163,7 +162,7 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
 
   // 💎 logado mas não premium → popup premium
   if (!isPremiumUser) {
-    showPremiumPopup(context);
+    showLoginPrompt(context);
     return;
   }
 

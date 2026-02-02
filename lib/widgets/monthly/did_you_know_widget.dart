@@ -8,7 +8,7 @@ import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/services/did_you_know_service.dart';
 import 'package:myyearmystory/utils/month_colors.dart';
 import 'package:myyearmystory/utils/access_control.dart';
-import 'package:myyearmystory/widgets/shared/show_login_prompt.dart';
+import 'package:myyearmystory/screens/popups/popup_login.dart';
 
 
 class DidYouKnowWidget extends StatefulWidget {
@@ -276,7 +276,7 @@ if (!isPremiumUser) {
 }
 
 if (!isPremiumUser) {
-  showPremiumPopup(context);
+   showLoginPrompt(context);
   return;
 }
 

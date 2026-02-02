@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 
@@ -6,8 +8,6 @@ import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/utils/access_control.dart';
 import 'package:myyearmystory/screens/popups/popup_login.dart';
-import 'dart:async';
-
 
 class CuriositiesWidget extends StatefulWidget {
   final int month;
@@ -30,11 +30,9 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
   int _currentPage = 0;
 
   final PageController _pageController = PageController();
+  late final StreamSubscription _authSub;
 
-
-  late final StreamSubscription _authSub; 
-
-  List<String> _questions = [];
+  List<Map<String, String>> _questions = [];
   List<TextEditingController> _controllers = [];
 
   final List<Color> heartColors = const [
@@ -50,205 +48,212 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
     Color(0xFFFFB74D),
   ];
 
-@override
-void initState() {
-  super.initState();
-  _initialize();
+  @override
+  void initState() {
+    super.initState();
 
-  _authSub = SupabaseConfig.client.auth.onAuthStateChange.listen((data) {
-    if (data.session != null) {
-      _loadSavedAnswers();
-    }
-  });
-}
-
-@override
-void dispose() {
-  _authSub.cancel();
-  for (final c in _controllers) {
-    c.dispose();
+    _authSub =
+        SupabaseConfig.client.auth.onAuthStateChange.listen((data) {
+      if (data.session != null) {
+        _loadSavedAnswers();
+      }
+    });
   }
-  _pageController.dispose();
-  super.dispose();
-}
 
+  @override
+  void dispose() {
+    _authSub.cancel();
+    for (final c in _controllers) {
+      c.dispose();
+    }
+    _pageController.dispose();
+    super.dispose();
+  }
 
- @override
-void didChangeDependencies() {
-  super.didChangeDependencies();
-  if (_initialized) {
-  _loadQuestions().then((_) {
-    _loadSavedAnswers();
-  });
-}
-}
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialize();
+    }
+  }
 
   Future<void> _initialize() async {
-  _isPremiumUser = await AccessControl.isPremium();
-  await _loadQuestions();
-  await _loadSavedAnswers(); // 👈 ESSENCIAL
-  _initialized = true;
-  if (mounted) setState(() {});
-}
+    _isPremiumUser = await AccessControl.isPremium();
+    await _loadQuestions();
+    await _loadSavedAnswers();
+    _initialized = true;
+    if (mounted) setState(() {});
+  }
 
+  // ==============================
+  // CARREGAR PERGUNTAS
+  // ==============================
   Future<void> _loadQuestions() async {
-  final language = context.locale.languageCode;
+    final language = context.locale.languageCode;
 
-  final res = await SupabaseConfig.client
-      .from('curiosities_entries')
-      .select('questions, questions_en')
-      .eq('month', widget.month)
-      .order('group_number');
+    final res = await SupabaseConfig.client
+        .from('curiosities_entries')
+        .select('questions, questions_en')
+        .eq('month', widget.month)
+        .order('group_number');
 
-  final allQuestions = <String>[];
-  
+    final List<Map<String, String>> allQuestions = [];
 
-  for (final row in res) {
-    final questions = language == 'en'
-        ? List<String>.from(row['questions_en'] ?? [])
-        : List<String>.from(row['questions'] ?? []);
-    allQuestions.addAll(questions);
+    for (final row in res) {
+      final rawQuestions =
+          language == 'en' ? row['questions_en'] : row['questions'];
+
+      if (rawQuestions is List) {
+        for (int i = 0; i < rawQuestions.length; i++) {
+          final q = rawQuestions[i];
+          if (q is String && q.trim().isNotEmpty) {
+            allQuestions.add({
+              'id': i.toString(),
+              'text': q,
+            });
+          }
+        }
+      }
+    }
+
+    debugPrint('Curiosities loaded: ${allQuestions.length}');
+
+    // preserva respostas digitadas
+    final Map<String, String> tempAnswers = {};
+    for (int i = 0;
+        i < _controllers.length && i < _questions.length;
+        i++) {
+      tempAnswers[_questions[i]['id']!] = _controllers[i].text;
+    }
+
+    for (final c in _controllers) {
+      c.dispose();
+    }
+
+    _questions = allQuestions;
+    _controllers = List.generate(
+      _questions.length,
+      (i) => TextEditingController(
+        text: tempAnswers[_questions[i]['id']] ?? '',
+      ),
+    );
+
+    if (mounted) setState(() {});
   }
 
-  // guarda textos atuais (ex: troca de idioma sem perder digitação)
-  final Map<int, String> tempAnswers = {};
-  for (int i = 0; i < _controllers.length; i++) {
-    tempAnswers[i] = _controllers[i].text;
-  }
+  // ==============================
+  // CARREGAR RESPOSTAS SALVAS
+  // ==============================
+  Future<void> _loadSavedAnswers() async {
+    final user = SupabaseConfig.client.auth.currentUser;
+    if (user == null) return;
 
-  // limpa controllers antigos
-  for (final c in _controllers) {
-    c.dispose();
-  }
+    final saved = await SupabaseConfig.client
+        .from('entries')
+        .select('curiosities')
+        .eq('user_id', user.id)
+        .eq('year', widget.year)
+        .eq('month', widget.month)
+        .maybeSingle();
 
-  _questions = allQuestions;
+    if (saved == null || saved['curiosities'] is! List) return;
 
-  // cria controllers vazios (ou com o que já estava digitado)
-  _controllers = List.generate(
-    _questions.length,
-    (i) => TextEditingController(
-      text: tempAnswers[i] ?? '',
-    ),
-  );
-
-  if (mounted) setState(() {});
-}
-
-
-//_loadSavedAnswers
-
-Future<void> _loadSavedAnswers() async {
-  final user = SupabaseConfig.client.auth.currentUser;
-  if (user == null) return;
-
-  final saved = await SupabaseConfig.client
-      .from('entries')
-      .select('curiosities')
-      .eq('user_id', user.id)
-      .eq('year', widget.year)
-      .eq('month', widget.month)
-      .maybeSingle();
-
-  List<Map<String, dynamic>> savedCuriosities = [];
-
-  if (saved != null && saved['curiosities'] is List) {
-    savedCuriosities = (saved['curiosities'] as List)
+    final savedList = (saved['curiosities'] as List)
         .whereType<Map>()
         .map((e) => Map<String, dynamic>.from(e))
         .toList();
+
+    for (final item in savedList) {
+      final index = item['index'];
+      final answer = item['answer'];
+      if (index is int &&
+          index < _controllers.length &&
+          answer is String) {
+        _controllers[index].text = answer;
+      }
+    }
+
+    if (mounted) setState(() {});
   }
 
-  final Map<int, String> answeredMap = {
-    for (final c in savedCuriosities)
-      if (c['index'] != null && c['answer'] != null)
-        int.tryParse(c['index'].toString())!: c['answer'] as String,
-  };
-
-  for (int i = 0; i < _controllers.length; i++) {
-    _controllers[i].text = answeredMap[i] ?? '';
-  }
-
-  if (mounted) setState(() {});
-}
-
-  // =====================================================
+  // ==============================
   // SALVAR RESPOSTA
-  // =====================================================
+  // ==============================
   Future<void> _saveCurrentAnswer(int index) async {
-  final user = SupabaseConfig.client.auth.currentUser;
+    final user = SupabaseConfig.client.auth.currentUser;
+    if (user == null) {
+      showLoginPrompt(context);
+      return;
+    }
 
-  if (user == null) {
-    showLoginPrompt(context);
-    return;
-  }
+    final answer = _controllers[index].text.trim();
+    if (answer.isEmpty) return;
 
-  final answer = _controllers[index].text.trim();
-  if (answer.isEmpty) return;
+    final existing = await SupabaseConfig.client
+        .from('entries')
+        .select('curiosities')
+        .eq('user_id', user.id)
+        .eq('year', widget.year)
+        .eq('month', widget.month)
+        .maybeSingle();
 
-  final existing = await SupabaseConfig.client
-      .from('entries')
-      .select('curiosities')
-      .eq('user_id', user.id)
-      .eq('year', widget.year)
-      .eq('month', widget.month)
-      .maybeSingle();
+    List<Map<String, dynamic>> curiosities = [];
+    if (existing != null && existing['curiosities'] is List) {
+      curiosities = (existing['curiosities'] as List)
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+    }
 
-  List<Map<String, dynamic>> curiosities = [];
+    curiosities.removeWhere((c) => c['index'] == index);
 
-  if (existing != null && existing['curiosities'] is List) {
-    curiosities = (existing['curiosities'] as List)
-        .whereType<Map>()
-        .map((e) => Map<String, dynamic>.from(e))
-        .toList();
-  }
+    if (!_isPremiumUser && curiosities.length >= 3) {
+      showPremiumPopup(context);
+      return;
+    }
 
-  // 🔥 remove resposta anterior pelo INDEX (não pelo texto)
-  curiosities.removeWhere((c) =>
-    c['index'] != null &&
-    int.tryParse(c['index'].toString()) == index
-  );
+    curiosities.add({'index': index, 'answer': answer});
 
-  if (!_isPremiumUser && curiosities.length >= 3) {
-    showPremiumPopup(context);
-    return;
-  }
+    await SupabaseConfig.client.from('entries').upsert(
+      {
+        'user_id': user.id,
+        'year': widget.year,
+        'month': widget.month,
+        'curiosities': curiosities,
+      },
+      onConflict: 'user_id, year, month',
+    );
 
-  // ✅ salva no formato novo e estável
-  curiosities.add({
-    'index': index,
-    'answer': answer,
-  });
+    if (!mounted) return;
 
-  await SupabaseConfig.client.from('entries').upsert(
-    {
-      'user_id': user.id,
-      'year': widget.year,
-      'month': widget.month,
-      'curiosities': curiosities,
-    },
-    onConflict: 'user_id, year, month',
-  );
-
-  if (!mounted) return;
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      backgroundColor: const Color(0xFFFDF0F4),
-      content: Text(
-        'curiosities.saved_success'.tr(),
-        style: const TextStyle(color: Colors.black),
-      ),
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+    ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(
+    backgroundColor: const Color(0xFFE25BA6), // rosa do app 🌸
+    content: Text(
+      'curiosities.saved_success'.tr(),
+      style: const TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w600,
       ),
     ),
-  );
+    behavior: SnackBarBehavior.floating,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16),
+    ),
+    margin: const EdgeInsets.symmetric(
+      horizontal: 20,
+      vertical: 12,
+    ),
+    duration: const Duration(seconds: 2),
+  ),
+);
 }
 
-  // =====================================================
+
+  // ==============================
   // BUILD
-  // =====================================================
+  // ==============================
   @override
   Widget build(BuildContext context) {
     return MonthPageTemplate(
@@ -258,132 +263,138 @@ Future<void> _loadSavedAnswers() async {
       pageLabel: 'curiosities.title'.tr(),
       labelColor: const Color(0xFFc79fe2),
       description: 'curiosities.description_fixed'.tr(),
-      child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            children: [
-              if (_questions.isNotEmpty &&
-                  _controllers.length == _questions.length)
-                Text(
-                  '${_currentPage + 1} / ${_questions.length}',
-                  style:
-                      const TextStyle(fontSize: 13, color: Colors.black54),
-                ),
+      child: Column(
+  children: [
+    if (_questions.isNotEmpty)
+      Text(
+        '${_currentPage + 1} / ${_questions.length}',
+        style: const TextStyle(fontSize: 13, color: Colors.black54),
+      ),
 
-              const SizedBox(height: 12),
+    const SizedBox(height: 12),
 
-              SizedBox(
-                height: 320,
-                child: (!_initialized)
-                    ? const Center(child: CircularProgressIndicator())
-                    : PageView.builder(
-                        controller: _pageController,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: _questions.length,
-                        onPageChanged: (i) =>
-                            setState(() => _currentPage = i),
-                        itemBuilder: (context, index) {
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.favorite,
-                                color: heartColors[
-                                    index % heartColors.length],
-                                size: 22,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                _questions[index],
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFFBD3E7D),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              TextField(
-                                controller: _controllers[index],
-                                maxLines: 5,
-                                decoration: InputDecoration(
-                                  hintText:
-                                      'curiosities.answer_hint'.tr(),
-                                  filled: true,
-                                  fillColor:
-                                      const Color(0xFFFCEAF4),
-                                  border: OutlineInputBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(14),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              ElevatedButton(
-                                onPressed: () =>
-                                    _saveCurrentAnswer(index),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      const Color(0xFFE25BA6),
-                                  foregroundColor: Colors.white,
-                                  padding:
-                                      const EdgeInsets.symmetric(
-                                    horizontal: 28,
-                                    vertical: 14,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(30),
-                                  ),
-                                ),
-                                child: Text('curiosities.save'.tr()),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-              ),
-
-              const SizedBox(height: 8),
-
-              Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.spaceBetween,
+    SizedBox(
+      height: 320,
+      child: !_initialized
+          ? const Center(child: CircularProgressIndicator())
+          : PageView.builder(
+              controller: _pageController,
+              physics: const BouncingScrollPhysics(),
+              itemCount: _questions.length,
+              onPageChanged: (i) =>
+                  setState(() => _currentPage = i),
+              itemBuilder: (_, index) => Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_ios,
-                        size: 18),
-                    onPressed: _currentPage > 0
-                        ? () => _pageController.previousPage(
-                              duration: const Duration(
-                                  milliseconds: 250),
-                              curve: Curves.easeOut,
-                            )
-                        : null,
+                  Icon(
+                    Icons.favorite,
+                    color: heartColors[index % heartColors.length],
+                    size: 22,
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.arrow_forward_ios,
-                        size: 18),
-                    onPressed:
-                        _currentPage < _questions.length - 1
-                            ? () => _pageController.nextPage(
-                                  duration: const Duration(
-                                      milliseconds: 250),
-                                  curve: Curves.easeOut,
-                                )
-                            : null,
+
+                  const SizedBox(height: 8),
+
+                  Text(
+                    _questions[index]['text'] ?? '',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFFBD3E7D),
+                      height: 1.4,
+                    ),
                   ),
+
+                  const SizedBox(height: 16),
+
+                  TextField(
+                    controller: _controllers[index],
+                    maxLines: 5,
+                    decoration: InputDecoration(
+                      hintText: 'curiosities.answer_hint'.tr(),
+                      filled: true,
+                      fillColor: const Color(0xFFFCEAF4),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  ElevatedButton(
+  onPressed: () => _saveCurrentAnswer(index),
+  style: ElevatedButton.styleFrom(
+    backgroundColor: const Color(0xFFE25BA6), // 🌸 rosa do app
+    foregroundColor: Colors.white,
+    padding: const EdgeInsets.symmetric(
+      horizontal: 36,
+      vertical: 16,
+    ),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(30),
+    ),
+
+     elevation: 2,
+  ),
+  child: Text('curiosities.save'.tr()),
+
+  
+),
+
                 ],
               ),
-            ],
-          ),
+            ),
+    ),
+
+    const SizedBox(height: 12),
+
+    Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.arrow_back_ios),
+          onPressed: _currentPage > 0
+              ? () => _pageController.previousPage(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOut,
+                  )
+              : null,
         ),
-      ),
+
+        Row(
+          children: List.generate(_questions.length, (index) {
+            final isActive = index == _currentPage;
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              width: isActive ? 10 : 8,
+              height: isActive ? 10 : 8,
+              decoration: BoxDecoration(
+                color: isActive
+                    ? const Color(0xFFE25BA6)
+                    : Colors.black26,
+                shape: BoxShape.circle,
+              ),
+            );
+          }),
+        ),
+
+        IconButton(
+          icon: const Icon(Icons.arrow_forward_ios),
+          onPressed: _currentPage < _questions.length - 1
+              ? () => _pageController.nextPage(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOut,
+                  )
+              : null,
+        ),
+      ],
+    ),
+  ],
+),
+
     );
   }
-
- 
 }

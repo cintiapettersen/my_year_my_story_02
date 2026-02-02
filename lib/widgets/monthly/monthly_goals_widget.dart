@@ -8,7 +8,8 @@ import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 import 'package:myyearmystory/utils/access_control.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
-import 'package:myyearmystory/widgets/shared/show_login_prompt.dart';
+import 'package:myyearmystory/screens/popups/popup_login.dart';
+
 
 class MonthlyGoalsWidget extends StatefulWidget {
   final int month;
@@ -32,6 +33,13 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
 
   bool _isPremiumUser = false;
   int _currentTab = 0;
+
+
+ bool get isGuest {
+  return SupabaseConfig.client.auth.currentUser == null;
+}
+
+
 
     // 🔒 Limites plano free
   static const int freeMonthlyLimit = 3;

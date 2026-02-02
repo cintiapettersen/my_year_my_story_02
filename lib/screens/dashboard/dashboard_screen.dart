@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -28,6 +29,7 @@ import 'package:myyearmystory/screens/quiz/standalone.dart';
 
 import 'package:myyearmystory/services/app_session.dart';
 import 'package:myyearmystory/utils/app_theme.dart';
+import 'package:myyearmystory/widgets/monthly/curiosity_fallback.dart';
 
 
 class DashboardScreen extends StatefulWidget {
@@ -44,7 +46,7 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _DashboardScreenState extends State<DashboardScreen> { 
   // ==============================
   // DEPENDÊNCIAS / SERVIÇOS
   // ==============================
@@ -74,7 +76,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // ==============================
   // TEMA
   // ==============================
-  Color currentThemeColor = const Color(0xFFE04CB7);
+  
 
   final List<Color> themeOptions = const [
     Color(0xFFe04cb7),
@@ -97,10 +99,11 @@ void initState() {
 
   _loadUserName();
   _syncUserLanguage();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+  _loadDashboardData();
+});
 
-  _loadCuriositiesQuestions().then((_) {
-    _loadDashboardData();
-  });
+ //coloco o blooco aqui?
 
   WidgetsBinding.instance.addPostFrameCallback((_) {
     loadDailyQuote();
@@ -123,8 +126,257 @@ void didChangeDependencies() {
   }
 }
 
-List<String> curiositiesQuestions = [];
 
+ // ==============================
+  //              BUILD
+  // ==============================
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+
+    final diaSemana =
+        DateFormat.EEEE(context.locale.languageCode).format(now);
+
+    final dataFormatada =
+        "$diaSemana, ${now.day} ${getNomeMesCompleto(now.month)} ${now.year}";
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFFDFDFD),
+      drawer: const AppDrawer(),
+
+     appBar: PreferredSize(
+  preferredSize: const Size.fromHeight(kToolbarHeight),
+  child: ValueListenableBuilder<Color>(
+    valueListenable: appThemeColor,
+    builder: (_, color, __) {
+      return AppBar(
+        backgroundColor: color,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text(
+          "My Year, My Story",
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      );
+    },
+  ),
+),
+     bottomNavigationBar: ValueListenableBuilder<Color>(
+  valueListenable: appThemeColor,
+  builder: (_, color, __) {
+    return AppBottomMenu(
+      currentIndex: 0,
+      themeColor: color,
+    );
+  },
+),
+      body: RefreshIndicator(
+        onRefresh: _loadDashboardData,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 36),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // 🌸 SAUDAÇÃO
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5E1F7),
+                    borderRadius: BorderRadius.circular(28),
+                  ),
+                  child: Text(
+                    tr('dashboard.hello_user', namedArgs: {'user': userName}),
+                    style: GoogleFonts.courierPrime(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black87,
+                      letterSpacing: 1.1,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                Text(
+                  dataFormatada,
+                  style: const TextStyle(
+                    color: Colors.black45,
+                    fontSize: 11,
+                    height: 1.2,
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+
+                // 🎨 CORES DO TEMA
+                Column(
+                  children: [
+                    Text(
+                      tr('dashboard.choose_your_color_today'),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color.fromARGB(221, 0, 0, 0),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: themeOptions.map((color) {
+                        return GestureDetector(
+                          onTap: () {
+                            appThemeColor.value = color;
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 6),
+                            width: 22,
+                            height: 22,
+                            decoration: BoxDecoration(
+                              color: color,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+  color: appThemeColor.value == color
+      ? const Color.fromARGB(255, 231, 225, 230)
+      : Colors.transparent,
+  width: 2,
+
+
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+
+                    const SizedBox(height: 40),
+                  ],
+                ),
+
+                // 🌈 CALENDÁRIO
+                _calendarLabel(),
+                const SizedBox(height: 20),
+
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: 12,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 1.1,
+                  ),
+                  itemBuilder: (context, index) {
+                    final isActive = index + 1 == selectedMonth;
+
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          fadePageTransition(
+                            CurrentMonthScreen(
+                              month: index + 1,
+                              year: selectedYear,
+                            ),
+                          ),
+                        );
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: isActive
+                              ? getMonthColor(index + 1)
+                              : const Color.fromARGB(255, 255, 253, 254),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isActive
+                                ? getMonthColor(index + 1)
+                                : const Color.fromARGB(255, 119, 118, 118),
+                            width: isActive ? 2.2 : 1.4,
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            getNomeMesAbreviado(index + 1),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 15,
+                              color: isActive ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 40),
+
+                // 🔎 BUSCAR DATA
+                _buildDateSearch(context),
+
+                const SizedBox(height: 36),
+
+                // 🌸 ETIQUETA SEU MÊS
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F3F3),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    tr('dashboard.your_month_space'),
+                    style: GoogleFonts.courierPrime(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // ⭐ CARDS
+                _buildCards(context),
+
+                const SizedBox(height: 48),
+
+                // 🍀 CURIOSIDADE SOBRE VOCÊ
+                _buildCuriosityBlock(),
+
+                const SizedBox(height: 30),
+
+                // 🌟 FRASE DO DIA
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(
+                    (dailyInspiration == null || dailyInspiration!.trim().isEmpty)
+                        ? tr('dashboard.daily_inspiration')
+                        : dailyInspiration!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontStyle: FontStyle.italic,
+                      color: Color(0xFF665C8E),
+                      fontSize: 14,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
 
   // ==============================
@@ -255,36 +507,6 @@ Future<void> _loadUserName() async {
 
 
   // ==============================
-  //   CARREGAR PERGUNTAS DE CURIOSIDADES
-  // ==============================
-Future<void> _loadCuriositiesQuestions() async {
-  final language = context.locale.languageCode;
-
-  final res = await supabase
-      .from('curiosities_entries')
-      .select('questions, questions_en')
-      .eq('month', selectedMonth)
-      .order('id');
-
-  final List<String> allQuestions = [];
-
-  for (final row in res) {
-    final questions = language == 'en'
-        ? List<String>.from(row['questions_en'] ?? [])
-        : List<String>.from(row['questions'] ?? []);
-
-    allQuestions.addAll(questions);
-  }
-
-  curiositiesQuestions = allQuestions;
-
-  print('DEBUG_QUESTIONS_LENGTH: ${curiositiesQuestions.length}');
-}
-
-
-
-
-  // ==============================
   //     FRASE DO DIA
   // ==============================
   Future<void> loadDailyQuote() async {
@@ -336,15 +558,48 @@ Future<void> _loadCuriositiesQuestions() async {
           .eq("id", user.id);
     } catch (_) {}
   }
+
+
+
+// ==============================
+//  Função de normalização da curiosidade
+// ==============================
+
+
+  Map<String, dynamic>? _normalizeCuriosity(dynamic raw) {
+  if (raw == null) return null;
+
+  // Caso 1: já veio como Map
+  if (raw is Map) {
+    return Map<String, dynamic>.from(raw);
+  }
+
+  // Caso 2: veio como String (json serializado)
+  if (raw is String) {
+
+
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is Map) {
+        return Map<String, dynamic>.from(decoded);
+      }
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // Qualquer outro formato inesperado
+  return null;
+}
+
   // ==============================
   //     CARREGAR DADOS DO DASHBOARD
   // ==============================
 
-  
- Future<void> _loadDashboardData() async {
-
-  print('DEBUG: entrou no _loadDashboardData');
+  Future<void> _loadDashboardData() async {
   if (!mounted) return;
+
+  final lang = Localizations.localeOf(context).languageCode;
 
   setState(() => isLoading = true);
 
@@ -370,354 +625,129 @@ Future<void> _loadCuriositiesQuestions() async {
     metasConcluidas = metas.length;
 
     // ==============================
-    // ENTRIES DO MÊS  👈👈👈 ISTO ESTAVA FALTANDO
+    // ENTRIES DO MÊS (resposta do usuário)
     // ==============================
-    final entries = await supabase
+    final entryRow = await supabase
         .from("entries")
-        .select()
+        .select("curiosities, month, year")
         .eq("user_id", user.id)
         .eq("month", selectedMonth)
         .eq("year", selectedYear)
         .maybeSingle();
 
     // ==============================
-    // CURIOSIDADES (JSONB)
+    // CURIOSITIES_ENTRIES (perguntas do mês)
     // ==============================
-    if (entries != null) {
-      final curiosities = entries["curiosities"];
+    final curiositiesSource = await supabase
+        .from("curiosities_entries")
+        .select("questions, questions_en")
+        .eq("month", selectedMonth)
+        .eq("year", selectedYear)
+        .maybeSingle();
 
-      debugPrint(' Curiosities saved: $curiosities');
-
-
-      if (curiosities is List && curiosities.isNotEmpty) {
-        curiosities.shuffle();
-        final selected = curiosities.first;
-
-        if (selected is Map) {
-          final int? index =
-              selected["index"] != null
-                  ? int.tryParse(selected["index"].toString())
-                  : null;
-
-          curiosityAnswer = selected["answer"];
-
-          if (curiositiesQuestions.isNotEmpty) {
-  if (index != null &&
-      index >= 0 &&
-      index < curiositiesQuestions.length) {
-    curiosityQuestion = curiositiesQuestions[index];
-  } else {
-    curiosityQuestion = curiositiesQuestions.first;
-
-    print('DEBUG_INDEX_RAW: ${selected["index"]}');
-
-  }
-}
-
-          final formattedMonth = _formatarMesAno(
-            entries["month"].toString(),
-            entries["year"].toString(),
-          );
-
-          curiosityDate = tr(
-            'dashboard.answered_in',
-            namedArgs: {'date': formattedMonth},
-          );
-        }
-      } else {
-        curiosityQuestion = null;
-        curiosityAnswer = null;
-        curiosityDate = null;
-      }
-    }
-  } catch (e) {
-    print('Erro ao carregar dashboard: $e');
-  } finally {
     if (!mounted) return;
-    setState(() => isLoading = false);
+
+   // ==============================
+// CURIOSIDADES (PERGUNTA + RESPOSTA)
+// ==============================
+
+// perguntas do mês vindas do banco
+final List questionsFromDb =
+    lang == 'en'
+        ? (curiositiesSource?['questions_en'] ?? [])
+        : (curiositiesSource?['questions'] ?? []);
+
+// fallback por mês
+final List<String> fallbackQuestions =
+    lang == 'en'
+        ? (curiosityFallbackQuestionsEn[selectedMonth] ?? [])
+        : (curiosityFallbackQuestionsPt[selectedMonth] ?? []);
+
+// lista final de perguntas
+final List<String> questionsList =
+    questionsFromDb.isNotEmpty
+        ? List<String>.from(questionsFromDb)
+        : fallbackQuestions;
+
+
+// respostas do usuário (jsonb em entries.curiosities)
+final curiosityJson = entryRow?['curiosities'];
+
+String? answer;
+int? answeredIndex;
+
+Map<String, dynamic>? selected;
+
+if (curiosityJson is List && curiosityJson.isNotEmpty) {
+  for (final item in curiosityJson) {
+    if (item is Map && item['index'] == 0) {
+      selected = Map<String, dynamic>.from(item);
+      break;
+    }
   }
 }
 
+if (selected != null) {
+  answer = selected['answer']?.toString().trim();
+  answeredIndex = selected['index'];
+}
 
-     
-  // ==============================
-  //      LABEL DO CALENDÁRIO
-  // ==============================
-  Widget _calendarLabel() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF3F3F3),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Text(
-        tr("dashboard.navigate_months"),
-        style: GoogleFonts.courierPrime(
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-          color: Colors.black87,
-          letterSpacing: 0.5,
-        ),
-      ),
-    );
+
+if (!mounted) return;
+
+
+debugPrint('ANSWER RAW: $answer');
+debugPrint('INDEX RAW: $answeredIndex');
+debugPrint('QUESTIONS LIST SIZE: ${questionsList.length}');
+debugPrint('QUESTIONS LIST: $questionsList');
+
+
+setState(() {
+  // 🟣 PERGUNTA
+  if (answeredIndex != null &&
+      answeredIndex >= 0 &&
+      answeredIndex < questionsList.length) {
+    curiosityQuestion = questionsList[answeredIndex];
+  } else {
+    curiosityQuestion = null;
   }
-  // ==============================
-  //              BUILD
-  // ==============================
-  @override
-  Widget build(BuildContext context) {
-    final now = DateTime.now();
 
-    final diaSemana =
-        DateFormat.EEEE(context.locale.languageCode).format(now);
+  // 🟣 RESPOSTA
+  if (answer != null && answer.isNotEmpty) {
+    curiosityAnswer = answer;
 
-    final dataFormatada =
-        "$diaSemana, ${now.day} ${getNomeMesCompleto(now.month)} ${now.year}";
-
-    return Scaffold(
-      backgroundColor: const Color(0xFFFDFDFD),
-      drawer: const AppDrawer(),
-
-     appBar: PreferredSize(
-  preferredSize: const Size.fromHeight(kToolbarHeight),
-  child: ValueListenableBuilder<Color>(
-    valueListenable: appThemeColor,
-    builder: (_, color, __) {
-      return AppBar(
-        backgroundColor: color,
-        elevation: 0,
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: Text(
-          "My Year, My Story",
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+    curiosityDate = tr(
+      "dashboard.answered_in",
+      namedArgs: {
+        "date": _formatarMesAno(
+          entryRow!['month'].toString(),
+          entryRow['year'].toString(),
         ),
-      );
-    },
-  ),
-),
-     bottomNavigationBar: ValueListenableBuilder<Color>(
-  valueListenable: appThemeColor,
-  builder: (_, color, __) {
-    return AppBottomMenu(
-      currentIndex: 0,
-      themeColor: color,
+      },
     );
-  },
-),
-      body: RefreshIndicator(
-        onRefresh: _loadDashboardData,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 36),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // 🌸 SAUDAÇÃO
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF5E1F7),
-                    borderRadius: BorderRadius.circular(28),
-                  ),
-                  child: Text(
-                    tr('dashboard.hello_user', namedArgs: {'user': userName}),
-                    style: GoogleFonts.courierPrime(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.black87,
-                      letterSpacing: 1.1,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                Text(
-                  dataFormatada,
-                  style: const TextStyle(
-                    color: Colors.black45,
-                    fontSize: 11,
-                    height: 1.2,
-                  ),
-                ),
-
-                const SizedBox(height: 32),
-
-                // 🎨 CORES DO TEMA
-                Column(
-                  children: [
-                    Text(
-                      tr('dashboard.choose_your_color_today'),
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Color.fromARGB(221, 0, 0, 0),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: themeOptions.map((color) {
-                        return GestureDetector(
-                          onTap: () {
-                            appThemeColor.value = color;
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 6),
-                            width: 22,
-                            height: 22,
-                            decoration: BoxDecoration(
-                              color: color,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: currentThemeColor == color
-                                    ? const Color.fromARGB(255, 231, 225, 230)
-                                    : Colors.transparent,
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-
-                    const SizedBox(height: 40),
-                  ],
-                ),
-
-                // 🌈 CALENDÁRIO
-                _calendarLabel(),
-                const SizedBox(height: 20),
-
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: 12,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 1.1,
-                  ),
-                  itemBuilder: (context, index) {
-                    final isActive = index + 1 == selectedMonth;
-
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).push(
-                          fadePageTransition(
-                            CurrentMonthScreen(
-                              month: index + 1,
-                              year: selectedYear,
-                            ),
-                          ),
-                        );
-                      },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 250),
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: isActive
-                              ? getMonthColor(index + 1)
-                              : const Color.fromARGB(255, 255, 253, 254),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: isActive
-                                ? getMonthColor(index + 1)
-                                : const Color.fromARGB(255, 119, 118, 118),
-                            width: isActive ? 2.2 : 1.4,
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            getNomeMesAbreviado(index + 1),
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 15,
-                              color: isActive ? Colors.white : Colors.black87,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 40),
-
-                // 🔎 BUSCAR DATA
-                _buildDateSearch(context),
-
-                const SizedBox(height: 36),
-
-                // 🌸 ETIQUETA SEU MÊS
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF3F3F3),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    tr('dashboard.your_month_space'),
-                    style: GoogleFonts.courierPrime(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // ⭐ CARDS
-                _buildCards(context),
-
-                const SizedBox(height: 48),
-
-                // 🍀 CURIOSIDADE SOBRE VOCÊ
-                _buildCuriosityBlock(),
-
-                const SizedBox(height: 30),
-
-                // 🌟 FRASE DO DIA
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    (dailyInspiration == null || dailyInspiration!.trim().isEmpty)
-                        ? tr('dashboard.daily_inspiration')
-                        : dailyInspiration!,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontStyle: FontStyle.italic,
-                      color: Color(0xFF665C8E),
-                      fontSize: 14,
-                      height: 1.4,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+  } else {
+    curiosityAnswer = null;
+    curiosityDate = null;
   }
+});
+
+
+  } catch (e) {
+    // se quiser, depois colocamos log aqui
+    // Error loading dashboard data
+  }
+
+  if (!mounted) return;
+  setState(() => isLoading = false);
+}
+
+ 
   // =====================================================
   // 🔸 BLOCO DE CURIOSIDADE
   // =====================================================
-  Widget _buildCuriosityBlock() {
-  final hasCuriosity = curiosityQuestion != null && curiosityAnswer != null;
-
+ Widget _buildCuriosityBlock() {
   final screenWidth = MediaQuery.of(context).size.width;
   final isTablet = screenWidth > 600;
-
   final double cardWidth = isTablet ? screenWidth * 0.85 : 300;
 
   return Align(
@@ -741,7 +771,7 @@ Future<void> _loadCuriositiesQuestions() async {
           decoration: BoxDecoration(
             color: const Color(0xFFF3D6E5),
             borderRadius: BorderRadius.circular(40),
-            boxShadow: [
+            boxShadow: const [
               BoxShadow(
                 color: Colors.black12,
                 blurRadius: 5,
@@ -752,76 +782,76 @@ Future<void> _loadCuriositiesQuestions() async {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Icon(Icons.favorite,
-                  size: 20, color: Color.fromARGB(221, 217, 60, 126)),
+              const Icon(
+                Icons.favorite,
+                size: 20,
+                color: Color.fromARGB(221, 217, 60, 126),
+              ),
+
               const SizedBox(height: 8),
 
+              // 🟣 TÍTULO FIXO DO CARD
               Text(
                 tr("dashboard.curiosity_title"),
                 style: GoogleFonts.courierPrime(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
                 ),
                 textAlign: TextAlign.center,
               ),
 
               const SizedBox(height: 12),
-              Divider(color: Colors.black26, thickness: 1),
+              const Divider(color: Colors.black26, thickness: 1),
               const SizedBox(height: 8),
 
-              //
-              // 🔸 CASO TENHA CURIOSIDADE
-              //
-              if (hasCuriosity) ...[
+              // ❓ PERGUNTA (se existir)
+              if (curiosityQuestion != null) ...[
                 Text(
                   curiosityQuestion!,
-                  style: GoogleFonts.courierPrime(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    height: 1.2,
-                  ),
                   textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Divider(color: Colors.black26, thickness: 1),
-                const SizedBox(height: 8),
-                Text(
-                  curiosityAnswer!,
                   style: GoogleFonts.courierPrime(
                     fontSize: 14,
-                    height: 1.3,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                    height: 1.4,
                   ),
-                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 10),
+              ],
+
+              // 📝 RESPOSTA ou CTA
+              if (curiosityAnswer != null && curiosityAnswer!.isNotEmpty) ...[
+                Text(
+                  curiosityAnswer!,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.courierPrime(
+                    fontSize: 14,
+                    color: Colors.black87,
+                    height: 1.4,
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
                 if (curiosityDate != null)
                   Text(
                     curiosityDate!,
                     style: GoogleFonts.courierPrime(
-                      fontSize: 11,
-                      color: Colors.black54,
+                      fontSize: 12,
+                      color: Colors.black45,
                     ),
-                    textAlign: TextAlign.center,
                   ),
-              ],
-
-              //
-              // 🔸 CASO NÃO TENHA CURIOSIDADE
-              //
-              if (!hasCuriosity)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    tr("dashboard.no_curiosity_message"),
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.courierPrime(
-                      fontSize: 13,
-                      color: Colors.black87,
-                      height: 1.3,
-                    ),
+              ] else ...[
+                Text(
+                  tr("dashboard.curiosity_cta"),
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.courierPrime(
+                    fontSize: 13,
+                    color: Colors.black87,
+                    height: 1.3,
                   ),
                 ),
+              ],
             ],
           ),
         ),
@@ -830,88 +860,31 @@ Future<void> _loadCuriositiesQuestions() async {
   );
 }
 
-
+ // ==============================
+  //      LABEL DO CALENDÁRIO
+  // ==============================
+  Widget _calendarLabel() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF3F3F3),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        tr("dashboard.navigate_months"),
+        style: GoogleFonts.courierPrime(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          color: Colors.black87,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+ 
+// =====================================================
+  // 🔸 FUNÇÃO DE CRIAÇÃO DE CARD
   // =====================================================
-  // 🔸 CARDS DO DASHBOARD
-  // =====================================================
-  Widget _buildCards(BuildContext context) {
-  return GridView.count(
-    shrinkWrap: true,
-    physics: const NeverScrollableScrollPhysics(),
-    crossAxisCount: 3,
-    crossAxisSpacing: 12,
-    mainAxisSpacing: 14,
-    children: [
-      _buildCard(
-        context: context,
-        title: tr('dashboard.goals'),
-        icon: PhosphorIconsRegular.target,
-        color: const Color(0xFFe04cb7),
-        route: '/monthly_goals',
-      ),
-      _buildCard(
-        context: context,
-        title: tr('dashboard.mood'),
-        icon: PhosphorIconsRegular.smiley,
-        color: const Color(0xFFfbcce9),
-        iconColor: const Color(0xFF943482),
-        textColor: const Color(0xFF943482),
-        route: '/mood_summary',
-      ),
-      _buildCard(
-        context: context,
-        title: tr('dashboard.diary'),
-        icon: PhosphorIconsRegular.notebook,
-        color: const Color(0xFFa0378c),
-        route: '/diary_entries',
-      ),
-      _buildCard(
-        context: context,
-        title: tr('dashboard.did_you_know'),
-        icon: PhosphorIconsRegular.lightbulb,
-        color: const Color(0xFFdbaf35),
-        route: '/did_you_know',
-      ),
-      _buildCard(
-        context: context,
-        title: tr('dashboard.dailyluckpage'),
-        icon: PhosphorIconsRegular.clover,
-        color: const Color(0xFF74a192),
-        route: '/daily_luck',
-      ),
-      _buildCard(
-        context: context,
-        title: tr('dashboard.calendar_page'),
-        icon: PhosphorIconsRegular.calendarDots,
-        color: const Color(0xFFbeb6f2),
-        route: '/calendar_page',
-      ),
-      _buildCard(
-        context: context,
-        title: tr('dashboard.monthly_quiz'),
-        icon: PhosphorIconsRegular.star,
-        color: const Color(0xFFdd97b7),
-        route: '/interactive_quiz',
-      ),
-      _buildCard(
-        context: context,
-        title: tr('dashboard.gratitude'),
-        icon: PhosphorIconsRegular.heart,
-        color: const Color(0xFFe2377d),
-        route: '/gratitude',
-      ),
-      _buildCard(
-        context: context,
-        title: tr('dashboard.about_me'),
-        icon: PhosphorIconsRegular.userCircle,
-        color: const Color(0xFFcf8ee8),
-        route: '/curiosities',
-      ),
-    ],
-  );
-}
-
-
 Widget _buildCard({
   required BuildContext context,
   required String title,
@@ -1032,6 +1005,89 @@ Widget _buildCard({
     ),
   );
 }
+
+
+
+  // =====================================================
+  // 🔸 CARDS DO DASHBOARD
+  // =====================================================
+  Widget _buildCards(BuildContext context) {
+  return GridView.count(
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(),
+    crossAxisCount: 3,
+    crossAxisSpacing: 12,
+    mainAxisSpacing: 14,
+    children: [
+      _buildCard(
+        context: context,
+        title: tr('dashboard.goals'),
+        icon: PhosphorIconsRegular.target,
+        color: const Color(0xFFe04cb7),
+        route: '/monthly_goals',
+      ),
+      _buildCard(
+        context: context,
+        title: tr('dashboard.mood'),
+        icon: PhosphorIconsRegular.smiley,
+        color: const Color(0xFFfbcce9),
+        iconColor: const Color(0xFF943482),
+        textColor: const Color(0xFF943482),
+        route: '/mood_summary',
+      ),
+      _buildCard(
+        context: context,
+        title: tr('dashboard.diary'),
+        icon: PhosphorIconsRegular.notebook,
+        color: const Color(0xFFa0378c),
+        route: '/diary_entries',
+      ),
+      _buildCard(
+        context: context,
+        title: tr('dashboard.did_you_know'),
+        icon: PhosphorIconsRegular.lightbulb,
+        color: const Color(0xFFdbaf35),
+        route: '/did_you_know',
+      ),
+      _buildCard(
+        context: context,
+        title: tr('dashboard.dailyluckpage'),
+        icon: PhosphorIconsRegular.clover,
+        color: const Color(0xFF74a192),
+        route: '/daily_luck',
+      ),
+      _buildCard(
+        context: context,
+        title: tr('dashboard.calendar_page'),
+        icon: PhosphorIconsRegular.calendarDots,
+        color: const Color(0xFFbeb6f2),
+        route: '/calendar_page',
+      ),
+      _buildCard(
+        context: context,
+        title: tr('dashboard.monthly_quiz'),
+        icon: PhosphorIconsRegular.star,
+        color: const Color(0xFFdd97b7),
+        route: '/interactive_quiz',
+      ),
+      _buildCard(
+        context: context,
+        title: tr('dashboard.gratitude'),
+        icon: PhosphorIconsRegular.heart,
+        color: const Color(0xFFe2377d),
+        route: '/gratitude',
+      ),
+      _buildCard(
+        context: context,
+        title: tr('dashboard.about_me'),
+        icon: PhosphorIconsRegular.userCircle,
+        color: const Color(0xFFcf8ee8),
+        route: '/curiosities',
+      ),
+    ],
+  );
+}
+
 
 
   // =====================================================

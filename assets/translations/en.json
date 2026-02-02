@@ -242,7 +242,7 @@
 
   "photos": {
     "title": "Monthly Photos",
-    "description": "Record the most precious moments of the month and keep memories that will make your heart smile later 💕",
+    "description": "Choose 4 photos from the month to keep as memories. Simple moments deserve to stay too.",
     "empty": "No photos yet 💕\nChoose up to 4 special photos for this month!",
     "popup_title": "Coming soon 💫",
     "popup_content": "The photo gallery will be available in upcoming updates.\nFor now, enjoy the other sections!",
@@ -380,6 +380,7 @@
   "your_month_space": "Your month space!",
   "curiosity_title": "A curiosity about you",
   "no_curiosity_message": "You haven't shared anything about yourself this month.",
+  "curiosity_cta": "A space just for you to reflect, answer, and listen to yourself with kindness 💕",
   "daily_inspiration_guest": "🌙 Fetching today’s inspiration...",
 
 
@@ -579,7 +580,7 @@
 
   "not_premium": "Feature available for premium users only.",
   "login_required": "Login required to continue.",
-  "fixed_description": "This is your monthly interview page! Here you can talk to someone special, record meaningful answers, and save memories that will matter later. Choose someone, ask the questions, and enjoy capturing each detail of this conversation!"
+  "fixed_description": "Be a keeper of memories and capture stories worth remembering. This can be a unique moment shared with special people."
 
 
   },
@@ -588,7 +589,7 @@
   
     "page_label": "Gratitude Page",
 
-    "description": "Seeing the good side of life strengthens the heart. Write down the good things that happened this month — even the small ones.",
+    "description": "Noticing the good in life strengthens the heart. Write down the good things this month brought — even the small ones.",
     "fixed_description": "Become a keeper of memories and record the stories of those you love. This can be a unique moment with family, friends, and special people. 💖",
 
 
@@ -612,7 +613,7 @@
   "reflection": {
     "page_label": "Monthly Reflections",
 
-    "description": "A gentle space to look within, acknowledge your feelings, and record the moments that shaped your month. 💖",
+    "description": "A space to practice presence, look inward, record lessons, and keep the feelings that shaped this month.",
 
     "hint": "Write your reflection here...",
 
@@ -695,7 +696,7 @@
 
   "lists": {
   "page_label": "My Lists",
-  "description": "A space to collect what shaped your month — books, ideas, music, wishlist items and special memories. 💖",
+  "description": "A space to collect what shaped your month — books, ideas, music, wishlist items and special memories.",
 
   "read": "To Read",
   "write": "Movies & Series",
@@ -741,7 +742,7 @@
   
   "calendar": {
     "page_label": "Calendar & Alerts",
-    "description": "Mark your important moments, reminders and colorful highlights throughout the month.",
+    "description": "Mark your important moments, reminders, and highlights with colorful hearts throughout the month.",
     "describe": "Describe your reminder or note for the day",
 
     "add_event": "add event",
@@ -860,7 +861,7 @@
 
  "mood": {
   "how_are_you_feeling": "How are you feeling?",
-  "page_description": "Track your mood every day, fill your calendar with little faces, and take a moment to reflect on how your month has been.",
+  "page_description": "Track your mood each day, fill the calendar with little faces, and notice how your month unfolded.",
 
 
   "highlight_title": "HIGHLIGHT MOOD",
@@ -937,7 +938,7 @@
 "diary": {
 
     "title": "My Diary",
-    "subtitle": "Record your thoughts and important moments",
+    "subtitle": "Writing helps organize your thoughts, embrace your feelings, and be more present. Here, you can slow down, listen to yourself, and better understand how you feel.",
     
     "empty_title": "No entries yet",
     "empty_description": "You haven't written anything here yet. How about starting today?",

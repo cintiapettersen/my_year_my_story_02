@@ -5,8 +5,7 @@ import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 import 'package:myyearmystory/utils/access_control.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
-import 'package:myyearmystory/widgets/shared/show_login_prompt.dart';
-
+import 'package:myyearmystory/screens/popups/popup_login.dart';
 
 /// Config DEV/Admin igual à InterviewScreen
 class AppConfig {
