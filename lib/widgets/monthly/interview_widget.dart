@@ -6,7 +6,7 @@ import 'package:myyearmystory/utils/access_control.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/screens/popups/coming_soon.dart';
-import 'package:myyearmystory/widgets/shared/show_login_prompt.dart';
+import 'package:myyearmystory/screens/popups/popup_login.dart';
 
 
 class AppConfig {

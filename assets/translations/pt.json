@@ -220,7 +220,7 @@
 
   "photos": {
     "title": "Fotos do Mês",
-    "description": "Registre os momentos mais preciosos do mês em 'Fotos' e guarde lembranças que farão seu coração sorrir depois 💕",
+    "description": "Escolha 4 fotos do mês para guardar como lembrança. Momentos simples também merecem ficar.",
     "empty": "Nenhuma foto ainda 💕\nEscolha até 4 fotos especiais para este mês!",
     "popup_title": "Em breve 💫",
     "popup_content": "A galeria de fotos estará disponível nas próximas atualizações.\nPor enquanto, aproveite as outras seções do app!",
@@ -360,6 +360,7 @@
    "navigate_months": "Navegue pelos meses",
    "curiosity_title": "Uma curiosidade sobre você",
    "no_curiosity_message": "Você ainda não compartilhou nada sobre você este mês.",
+   "curiosity_cta": "Um espaço só seu para refletir, responder e se ouvir com carinho 💕",
    "cancel": "Cancelar",
 
 
@@ -526,7 +527,7 @@
   "interview": {
   "page_label": "Conexões",
   "default_description": "Faça perguntas para alguém especial e guarde as respostas para sempre.",
-  "fixed_description": "Seja uma guardiã de memórias e registre histórias de quem você ama. Este pode ser um momento único com familiares, amigos e pessoas queridas. 💖",
+  "fixed_description": "Seja uma guardiã de memórias e registre histórias que merecem ser lembradas. Este pode ser um momento único com pessoas especiais.",
 
   
   "who_prompt": "Quem você quer entrevistar?",
@@ -556,7 +557,7 @@
   "gratitude": {
    "page_label": "Página da Gratidão",
 
-    "description": "Enxergar o lado bom da vida fortalece o coração. Registre aqui as coisas boas que aconteceram neste mês — mesmo as pequenas.",
+    "description": "Enxergar o lado bom da vida fortalece o coração. Registre aqui as coisas boas que este mês trouxe — mesmo as pequenas.",
     "fixed_description": "A gratidão nos ajuda a enxergar o lado bom da vida e fortalecer o coração. Registre as coisas boas que aconteceram neste mês 💖",
     "hint": "Sou grato por...",
     "empty_state": "Nenhum registro ainda.\nComece adicionando algo pelo qual você é grato 💛",
@@ -578,7 +579,7 @@
   "reflection": {
     "page_label": "Reflexões do Mês",
 
-    "description": "Um espaço para olhar para dentro, registrar aprendizados e guardar os sentimentos que marcaram este mês. 💖",
+    "description": "Um espaço para praticar presença, olhar para dentro, registrar aprendizados e guardar os sentimentos que marcaram este mês.",
 
     "hint": "Escreva aqui sua reflexão...",
 
@@ -612,7 +613,7 @@
 
   "lists": {
     "page_label": "Minhas Listas",
-  "description": "Um espaço para guardar o que marcou seu mês — livros, ideias, músicas, desejos e memórias especiais. 💖",
+  "description": "Um espaço para guardar o que marcou seu mês — livros, ideias, músicas, desejos e memórias especiais.",
 
   "read": "Para ler",
   "write": "Filmes & Séries",
@@ -711,7 +712,7 @@
 
   "calendar": {
     "page_label": "Calendário e Alertas",
-    "description": "Marque seus momentos importantes, lembretes e destaques coloridos ao longo do mês.",
+    "description": "Marque seus momentos importantes, lembretes e destaques, distribuindo corações coloridos ao longo do mês.",
     "describe": "Descreva seu lembrete ou anotação do dia",
 
     "add_event": "adicionar evento",
@@ -810,7 +811,7 @@
 },
  "mood": {
   "how_are_you_feeling": "Como você está se sentindo?",
-  "page_description": "Registre seu humor todos os dias, complete seu calendário com carinhas e use esse momento para refletir sobre como foi o seu mês.",
+  "page_description": "Marque seu humor diariamente, preencha o calendário com carinhas e observe como foi o seu mês.",
 
 
   "highlight_title": "HUMOR DESTAQUE",
@@ -883,7 +884,7 @@
    
 "diary": {
     "title": "Meu Diário",
-    "subtitle": "Registre seus pensamentos e momentos importantes",
+    "subtitle": "Escrever ajuda a organizar os pensamentos, acolher sentimentos e estar mais presente. Aqui, você pode desacelerar, ouvir a si mesma e entender melhor o que sente.",
     
     "empty_title": "Nenhuma entrada ainda",
     "empty_description": "Você ainda não escreveu nada por aqui. Que tal começar hoje?",

@@ -5,7 +5,7 @@ import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/utils/access_control.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:myyearmystory/widgets/shared/show_login_prompt.dart';
+import 'package:myyearmystory/screens/popups/popup_login.dart';
 
 
 class ReflectionsWidget extends StatefulWidget {
@@ -127,12 +127,16 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
   }
 
   Future<void> _saveReflections() async {
-    final user = _supabase.auth.currentUser;
+    final user = SupabaseConfig.client.auth.currentUser;
+    if (user == null) {
+      showLoginPrompt(context);
+      return;
+    }
 
-if (isGuest) {
-  
-  return;
-}
+    setState(() => _isLoading = true);
+
+
+
 
 if (!_isPremiumUser && _freeSaveCount >= 1) {
   showPremiumPopup(context);
@@ -140,11 +144,16 @@ if (!_isPremiumUser && _freeSaveCount >= 1) {
 }
 
 
+
     /// Free user tentando salvar mais de uma reflexão
+    
+    
+    
     if (!_isPremiumUser && _freeSaveCount >= 1) {
       showPremiumPopup(context);
       return;
     }
+    
 
     setState(() => _isSaving = true);
 

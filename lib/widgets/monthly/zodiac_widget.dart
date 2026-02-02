@@ -4,7 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'package:myyearmystory/widgets/shared/show_login_prompt.dart';
+import 'package:myyearmystory/screens/popups/popup_login.dart';
 
 
 
@@ -25,6 +25,12 @@ class ZodiacWidget extends StatefulWidget {
 
 class _ZodiacWidgetState extends State<ZodiacWidget> {
   bool _isLoading = false;
+
+ bool get isGuest {
+  return Supabase.instance.client.auth.currentUser == null;
+}
+
+
 
   Map<String, dynamic>? _todaySign;
   Map<String, dynamic>? _startSign;
