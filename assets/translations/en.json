@@ -20,8 +20,8 @@
     "new_chapter": "A new chapter begins…",
     "subtitle": "Your story. Your way.",
     "login_button": "Log in / Create account",
-    "guest_button": "Explore as guest"
-
+    "guest_button": "Explore as guest",
+    "privacy_notice": "By continuing, you agree to our Privacy Policy"
 
     
   },
@@ -134,7 +134,13 @@
   "error": "An error occurred while saving your profile: {{0}}",
   "full_name": "Full Name",
   "birth_date": "Birth Date",
-   "updated": "Profile updated successfully!"
+   "updated": "Profile updated successfully!",
+   "delete_account": "Delete my account",
+  "delete_account_title": "Delete account",
+  "delete_account_description": "Are you sure you want to delete your account? This action is permanent and all your data will be deleted.",
+  "delete_account_confirm": "Delete account",
+  "delete_account_coming_soon": "Account deletion will be available soon."
+
 
   },
   "complete_profile": {
@@ -736,6 +742,13 @@
   "refresh_premium_button": "See more tips",
   "refresh_see_more": "See more tips",
   "refresh_come_back_tomorrow": "Come back tomorrow 🌙"
+},
+
+  "offline": {
+    "save_warning": "You are offline. Connect to the internet to save your changes.",
+    "load_warning": "You are offline. Connect to the internet to load your data.",
+    "delete_warning": "You are offline. Cannot delete."
+  
 
   },
 
@@ -854,7 +867,11 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "close": "Close",
-    "open": "Abrir"
+    "open": "Abrir",
+
+    "offline_title": "You're offline",
+    "offline_message": "It looks like you don’t have an internet connection. Please check and try again.",
+     "try_again": "Try again"
     
 
 },
@@ -974,7 +991,8 @@
   "version": "Version 1.0.0",
   "close": "Close",
   "contact": "Contact: email@sonhodepapel.com",
-  "app_name": "My Year, My Story"
+  "app_name": "My Year, My Story",
+  "privacy_policy": "Privacy Policy"
 
 },
 
@@ -1060,10 +1078,14 @@
 
 },
 
-"review.title": "Enjoying the app?",
-"review.message": "If this space has been helpful to you,\nyour review helps the app keep growing.",
-"review.cta": "Rate now"
+"review_popup": {
+"title": "Enjoying the app?",
+"message": "If this space has been helpful to you,\nyour review helps the app keep growing.",
+"cta": "Rate now",
+"not_now": "Not now"
 
+
+}
 
 }
 

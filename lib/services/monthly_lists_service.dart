@@ -1,4 +1,6 @@
 import 'package:myyearmystory/supabase/supabase_config.dart';
+import 'package:flutter/foundation.dart';
+
 
 class MonthlyListsService {
   static final _supabase = SupabaseConfig.client;
@@ -32,35 +34,44 @@ class MonthlyListsService {
     }
   }
 
-  static Future<bool> saveMonthlyLists(Map<String, List<String>> lists, int month, int year, String userId) async {
-    try {
-      final existing = await _supabase
+  static Future<void> saveMonthlyLists(
+  Map<String, List<String>> lists,
+  int month,
+  int year,
+  String userId,
+) async {
+  try {
+    final existing = await _supabase
+        .from('entries')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('month', month)
+        .eq('year', year)
+        .maybeSingle();
+
+    if (existing == null) {
+      await _supabase
           .from('entries')
-          .select('id')
+          .insert({
+            'user_id': userId,
+            'month': month,
+            'year': year,
+            'lists': lists,
+          })
+          .select(); // 🔴 força erro
+    } else {
+      await _supabase
+          .from('entries')
+          .update({'lists': lists})
           .eq('user_id', userId)
           .eq('month', month)
           .eq('year', year)
-          .maybeSingle();
-
-      if (existing == null) {
-        await _supabase.from('entries').insert({
-          'user_id': userId,
-          'month': month,
-          'year': year,
-          'lists': lists,
-        });
-      } else {
-        await _supabase
-            .from('entries')
-            .update({'lists': lists})
-            .eq('user_id', userId)
-            .eq('month', month)
-            .eq('year', year);
-      }
-      return true;
-    } catch (e) {
-      print('Error saving lists to entries: $e');
-      return false;
+          .select(); // 🔴 força erro
     }
+  } catch (e) {
+    print('Erro ao salvar listas: $e');
+    rethrow;
   }
+}
+
 }

@@ -10,6 +10,7 @@ import 'package:myyearmystory/widgets/shared/show_login_prompt.dart';
 import 'package:myyearmystory/widgets/shared/main_scaffold.dart';
 import 'package:myyearmystory/utils/access_control.dart';
 
+
 class DiaryScreen extends StatefulWidget {
   final DateTime date;
 
@@ -23,9 +24,13 @@ class _DiaryScreenState extends State<DiaryScreen> {
   final TextEditingController _entryController = TextEditingController();
 
   List<DiaryEntryModel> _entries = [];
-  bool _isLoading = false;
-  bool _isPremiumUser = false;
-    DiaryEntryModel? _editingEntry;
+ 
+
+ bool _isLoading = false;
+ bool _isPremiumUser = false;
+DiaryEntryModel? _editingEntry;
+
+   
 
 
   late DateTime _selectedDate;
@@ -46,12 +51,13 @@ class _DiaryScreenState extends State<DiaryScreen> {
   Color _userThemeColor = const Color(0xFFE04CB7);
 
   @override
-  void initState() {
-    super.initState();
-    _selectedDate = widget.date;
-    _checkPremiumStatus();
-    _loadEntries();
-  }
+void initState() {
+  super.initState();
+  _selectedDate = widget.date;
+  _checkPremiumStatus();
+  _loadEntries();
+}
+
 
   Future<void> _checkPremiumStatus() async {
     final premium = await AccessControl.isPremium();
@@ -63,23 +69,27 @@ class _DiaryScreenState extends State<DiaryScreen> {
   // ===============================
 
   Future<void> _loadEntries() async {
+  try {
     setState(() => _isLoading = true);
 
-    final user = SupabaseConfig.client.auth.currentUser;
-    if (user == null) {
-      setState(() {
-        _entries = [];
-        _isLoading = false;
-      });
-      return;
-    }
-
     final entries = await DiaryService.getEntries();
+
+    if (!mounted) return;
     setState(() {
       _entries = entries;
-      _isLoading = false;
     });
+  } catch (e) {
+    debugPrint('Erro ao carregar diário: $e');
+
+   
+
+  } finally {
+    if (!mounted) return;
+    setState(() => _isLoading = false);
   }
+}
+
+
 
   // ===============================
   // LIMIT
@@ -242,14 +252,19 @@ class _DiaryScreenState extends State<DiaryScreen> {
   }
 
   Widget _buildEntryCard(DiaryEntryModel entry) {
-    return Card(
+  return GestureDetector(
+    onTap: () => _editEntry(entry), // 👈 AQUI está o segredo
+    child: Card(
       margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -302,6 +317,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -417,20 +433,17 @@ if (SupabaseConfig.client.auth.currentUser == null)
 
                 ElevatedButton(
   onPressed: () async {
-  final user = SupabaseConfig.client.auth.currentUser;
+    final user = SupabaseConfig.client.auth.currentUser;
 
-  if (user == null) {
-    // não fecha o modal
-    return;
-  }
+    if (user == null) {
+      // não fecha o modal
+      return;
+    }
 
-  await _saveEntry();
-  if (!mounted) return;
-  Navigator.of(context).pop();
-},
-
-
-
+    await _saveEntry();
+    if (!mounted) return;
+    Navigator.of(context).pop();
+  },
   style: ElevatedButton.styleFrom(
     backgroundColor: _userThemeColor,
     foregroundColor: Colors.white,
@@ -457,18 +470,39 @@ if (SupabaseConfig.client.auth.currentUser == null)
     return;
   }
 
-  if (_editingEntry != null) {
+  try {
+    if (_editingEntry != null) {
+      await DiaryService.updateEntry(
+     _editingEntry!.id,
+     _entryController.text.trim(),
+     _selectedDate, // 👈 ESTE era o argumento faltando
+  moodIcon: _selectedMoodIcon,
+);
 
-  } else {
-    await DiaryService.createEntry(
-      _entryController.text.trim(),
-      _selectedDate,
-      moodIcon: _selectedMoodIcon,
+
+    } else {
+      await DiaryService.createEntry(
+        _entryController.text.trim(),
+        _selectedDate,
+        moodIcon: _selectedMoodIcon,
+      );
+    }
+
+    _editingEntry = null;
+    await _loadEntries();
+  } catch (e) {
+    debugPrint('Erro ao salvar diário: $e');
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color.fromARGB(255, 142, 136, 232),
+        content: Text('offline.save_warning'.tr()),
+      ),
     );
   }
-
-  _editingEntry = null;
-  await _loadEntries();
 }
 
 
@@ -509,8 +543,22 @@ void _openEntryModal({bool isEditing = false}) {
 // DELETE ENTRY
 // ===============================
 void _deleteEntry(DiaryEntryModel entry) async {
-  await DiaryService.deleteEntry(entry.id);
-  _loadEntries();
+  try {
+    await DiaryService.deleteEntry(entry.id);
+    await _loadEntries();
+  } catch (e) {
+    debugPrint('Erro ao deletar diário: $e');
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color.fromARGB(255, 130, 121, 182),
+        content: Text('offline.delete_warning'.tr()),
+      ),
+    );
+  }
 }
 
 // ===============================

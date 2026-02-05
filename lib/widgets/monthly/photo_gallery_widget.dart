@@ -37,19 +37,40 @@ class _MonthlyPhotoGalleryState extends State<MonthlyPhotoGallery>
     _fetchPhotos();
   }
 
+// =========================
+  // SNACKBAR
+  // =========================
+ void _showSnack(String textKey, {Color? color}) {
+  if (!mounted) return;
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: color ?? const Color.fromARGB(255, 215, 126, 194),
+      content: Text(textKey.tr()),
+    ),
+  );
+}
+
+
+
   // =========================
   // FETCH
   // =========================
   Future<void> _fetchPhotos() async {
-    final user = Supabase.instance.client.auth.currentUser;
+  final user = Supabase.instance.client.auth.currentUser;
 
-    if (user == null) {
-      setState(() {
-        _photos = [];
-        _isLoading = false;
-      });
-      return;
-    }
+  if (user == null) {
+    if (!mounted) return;
+    setState(() {
+      _photos = [];
+      _isLoading = false;
+    });
+    return;
+  }
+
+  try {
+    setState(() => _isLoading = true);
 
     final res = await Supabase.instance.client
         .from('monthly_photos')
@@ -60,11 +81,24 @@ class _MonthlyPhotoGalleryState extends State<MonthlyPhotoGallery>
         .order('created_at')
         .limit(4);
 
+    if (!mounted) return;
+
     setState(() {
       _photos = List<Map<String, dynamic>>.from(res);
       _isLoading = false;
     });
+  } catch (e) {
+    debugPrint('Erro ao carregar fotos: $e');
+
+    if (!mounted) return;
+
+    setState(() {
+      _photos = [];
+      _isLoading = false; // 🔴 ISSO evita o loop
+    });
   }
+}
+
 
   // =========================
   // PICK + VALIDATE IMAGE
@@ -106,7 +140,10 @@ class _MonthlyPhotoGalleryState extends State<MonthlyPhotoGallery>
   // =========================
   Future<void> _addPhoto(BuildContext context) async {
   final user = Supabase.instance.client.auth.currentUser;
-  if (user == null) return;
+  if (user == null) {
+    _requireLogin();
+    return;
+  }
 
   final file = await _pickImageWithValidation(context);
   if (file == null) return;
@@ -114,27 +151,14 @@ class _MonthlyPhotoGalleryState extends State<MonthlyPhotoGallery>
   final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
   final path = '${user.id}/${widget.year}/${widget.month}/$fileName';
 
-  // 🔐 Upload com tratamento de erro
   try {
-    await Supabase.instance.client.storage
-        .from('photos')
-        .upload(path, file);
+    await Supabase.instance.client.storage.from('photos').upload(path, file);
   } catch (e) {
-    debugPrint('Erro ao fazer upload da foto: $e');
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: const Color(0xFFFDECEA),
-        content: const Text(
-          'Não foi possível enviar a foto. Ela pode ser maior que o permitido ou estar em um formato não suportado.',
-          style: TextStyle(color: Colors.black87),
-        ),
-      ),
-    );
-    return; // ⛔ não continua se o upload falhar
+    debugPrint('Erro upload foto: $e');
+    _showSnack('offline.save_warning', color: const Color(0xFFFDECEA));
+    return;
   }
 
-  // 💾 Salva referência no banco
   try {
     await Supabase.instance.client.from('monthly_photos').insert({
       'year': widget.year,
@@ -142,28 +166,17 @@ class _MonthlyPhotoGalleryState extends State<MonthlyPhotoGallery>
       'file_path': path,
     });
   } catch (e) {
-    debugPrint('Erro ao salvar foto no banco: $e');
+    debugPrint('Erro salvar no banco: $e');
 
-    // rollback simples: remove do storage se falhar no banco
-    await Supabase.instance.client.storage
-        .from('photos')
-        .remove([path]);
+    await Supabase.instance.client.storage.from('photos').remove([path]);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: const Color(0xFFFDECEA),
-        content: const Text(
-          'Ocorreu um erro ao salvar a foto. Tente novamente.',
-          style: TextStyle(color: Colors.black87),
-        ),
-      ),
-    );
+    _showSnack('offline.save_warning', color: const Color(0xFFFDECEA));
     return;
   }
 
-  // 🔄 Atualiza grid
   await _fetchPhotos();
 }
+
 // =========================
   // DELETE PHOTO SILENTLY
   // =========================
@@ -184,17 +197,21 @@ Future<void> _deletePhotoSilently(Map<String, dynamic> photo) async {
   // DELETE PHOTO
   // =========================
   Future<void> _deletePhoto(Map<String, dynamic> photo) async {
+  try {
     final path = photo['file_path'] as String;
 
     await Supabase.instance.client.storage.from('photos').remove([path]);
-
     await Supabase.instance.client
         .from('monthly_photos')
         .delete()
         .eq('id', photo['id']);
 
     await _fetchPhotos();
+  } catch (e) {
+    debugPrint('Erro ao deletar foto: $e');
+    _showSnack('offline.delete_warning', color: const Color(0xFFFDECEA));
   }
+}
 
   // =========================
   // REPLACE PHOTO
@@ -210,7 +227,6 @@ Future<void> _deletePhotoSilently(Map<String, dynamic> photo) async {
   // ✅ aqui o context é o do State, seguro
   await _addPhoto(context);
 
-  await _fetchPhotos();
 }
 
 
@@ -275,14 +291,24 @@ void _requireLogin() {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () async {
-                  await Supabase.instance.client
-                      .from('monthly_photos')
-                      .update({'description': controller.text})
-                      .eq('id', photo['id']);
+  try {
+    await Supabase.instance.client
+        .from('monthly_photos')
+        .update({'description': controller.text})
+        .eq('id', photo['id']);
 
-                  Navigator.pop(context);
-                  await _fetchPhotos();
-                },
+    if (!mounted) return;
+
+    Navigator.pop(context);
+    await _fetchPhotos();
+  } catch (e) {
+    _showSnack(
+      'offline.save_warning',
+      color: const Color(0xFFFDECEA),
+    );
+  }
+},
+
                 child: Text('common.save'.tr()),
               ),
             ),

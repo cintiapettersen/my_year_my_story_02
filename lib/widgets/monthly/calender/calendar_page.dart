@@ -87,9 +87,10 @@ class _CalendarPageState extends State<CalendarPage> {
   // LOAD EVENTS (REAL)
   // ======================
   Future<void> _loadMonthEvents() async {
-    final user = SupabaseConfig.client.auth.currentUser;
-    if (user == null) return;
+  final user = SupabaseConfig.client.auth.currentUser;
+  if (user == null) return;
 
+  try {
     final events = await CalendarEventService.getEventsForMonth(
       userId: user.id,
       year: widget.year,
@@ -97,7 +98,6 @@ class _CalendarPageState extends State<CalendarPage> {
     );
 
     _monthEvents = events;
-
     _eventColors.clear();
 
     for (final e in events) {
@@ -105,9 +105,23 @@ class _CalendarPageState extends State<CalendarPage> {
       final String color = e['color'];
       _eventColors[day] = color;
     }
+  } catch (e) {
+    debugPrint('Erro ao carregar eventos do mês: $e');
 
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFFFDECEA),
+        content: Text(tr('offline.load_warning')),
+      ),
+    );
+  } finally {
     if (mounted) setState(() {});
   }
+}
+
 
   // ======================
   // HELPERS
@@ -175,18 +189,22 @@ class _CalendarPageState extends State<CalendarPage> {
   // OPEN DAY MODAL
   // ======================
   Future<void> _openDayEntry(int day) async {
-    final user = SupabaseConfig.client.auth.currentUser;
-    Map<String, dynamic>? existing;
+  final user = SupabaseConfig.client.auth.currentUser;
+  Map<String, dynamic>? existing;
 
+  // ======================
+  // LOAD EXISTING EVENT + PREMIUM CHECK
+  // ======================
+  try {
     if (user == null) {
+      // 👤 guest
       final dayEvents =
           _guestEvents.where((e) => e['day'] == day).toList();
       if (dayEvents.isNotEmpty) {
         existing = dayEvents.last;
       }
-    }
-
-    if (user != null) {
+    } else {
+      // 👤 logged user
       final events = await CalendarEventService.getEventsForDay(
         userId: user.id,
         year: widget.year,
@@ -198,6 +216,7 @@ class _CalendarPageState extends State<CalendarPage> {
         existing = events.last;
       }
 
+      // 🔐 premium limit
       if (!_isPremiumUser && existing == null) {
         final count =
             await CalendarEventService.countUserEventsForMonth(
@@ -214,42 +233,63 @@ class _CalendarPageState extends State<CalendarPage> {
         }
       }
     }
+  } catch (e) {
+    debugPrint('Erro ao abrir dia do calendário: $e');
 
     if (!mounted) return;
 
-    final result = await showDialog<dynamic>(
-      context: context,
-      builder: (_) => DayEntryModal(
-        year: widget.year,
-        month: widget.month,
-        day: day,
-        existing: existing,
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color.fromARGB(255, 99, 101, 188),
+        content: Text(tr('offline.load_warning')),
       ),
     );
-
-    if (!mounted || result == null) return;
-
-    if (user != null) {
-      await _loadMonthEvents();
-      return;
-    }
-
-    final resultDay = result['day'] as int;
-    final title = result['title'] as String;
-    final color = result['color'] as String;
-
-    _guestEvents.removeWhere((e) => e['day'] == resultDay);
-
-    _guestEvents.add({
-      'day': resultDay,
-      'title': title,
-      'color': color,
-    });
-
-    _eventColors[resultDay] = color;
-
-    setState(() {});
+    return;
   }
+
+  // ======================
+  // OPEN MODAL
+  // ======================
+  if (!mounted) return;
+
+  final result = await showDialog<dynamic>(
+    context: context,
+    builder: (_) => DayEntryModal(
+      year: widget.year,
+      month: widget.month,
+      day: day,
+      existing: existing,
+    ),
+  );
+
+  if (!mounted || result == null) return;
+
+  // ======================
+  // HANDLE RESULT
+  // ======================
+  if (user != null) {
+    await _loadMonthEvents();
+    return;
+  }
+
+  // 👤 guest result
+  final resultDay = result['day'] as int;
+  final title = result['title'] as String;
+  final color = result['color'] as String;
+
+  _guestEvents.removeWhere((e) => e['day'] == resultDay);
+
+  _guestEvents.add({
+    'day': resultDay,
+    'title': title,
+    'color': color,
+  });
+
+  _eventColors[resultDay] = color;
+
+  setState(() {});
+}
 
   // ======================
   // UI
@@ -271,14 +311,15 @@ class _CalendarPageState extends State<CalendarPage> {
                   Padding(
                     padding:
                         const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                    child: Text(
-                      tr("calendar.description"),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.black87,
-                        height: 1.4,
-                      ),
-                    ),
+                  child: Text(
+  tr("calendar.description"),
+  textAlign: TextAlign.center,
+  style: const TextStyle(
+    fontSize: 14,
+    color: Colors.black87,
+    height: 1.4,
+  ),
+),
                   ),
 
                   const SizedBox(height: 26),

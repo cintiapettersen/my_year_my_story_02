@@ -9,6 +9,8 @@ import 'package:myyearmystory/screens/splash/fade_page_transition.dart';
 import 'package:myyearmystory/services/app_session.dart';
 import 'package:myyearmystory/services/profile_service.dart';
 import 'package:myyearmystory/screens/auth/complete_profile_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 
 
 
@@ -157,6 +159,10 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
       ),
     );
   }
+
+
+
+  
 Widget _buildAnimatedSplash(bool isTablet, {Key? key}) {
   return Column(
     key: key,
@@ -286,8 +292,31 @@ Widget _buildAnimatedSplash(bool isTablet, {Key? key}) {
                 fontWeight: FontWeight.bold,
               ),
             ),
+    
           ),
         ),
+
+        const SizedBox(height: 24),
+
+GestureDetector(
+  onTap: () {
+    launchUrl(
+      Uri.parse('https://sonhodepapel.com/my-year-my-story-policy/'),
+      mode: LaunchMode.externalApplication,
+    );
+  },
+  child: Text(
+    context.tr('splash.privacy_notice'),
+    textAlign: TextAlign.center,
+    style: TextStyle(
+      fontSize: isTablet ? 14 : 12,
+      color: Colors.black54,
+      height: 1.4,
+      decoration: TextDecoration.underline,
+    ),
+  ),
+),
+
       ],
     ),
   );

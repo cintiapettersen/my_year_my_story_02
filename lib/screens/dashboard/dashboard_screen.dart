@@ -33,9 +33,7 @@ import 'package:myyearmystory/widgets/monthly/curiosity_fallback.dart';
 import 'package:myyearmystory/services/review_service.dart';
 
 import 'package:myyearmystory/screens/popups/review_popup.dart';
-
-
-
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DashboardScreen extends StatefulWidget {
   final int month;
@@ -47,37 +45,27 @@ class DashboardScreen extends StatefulWidget {
     required this.year,
   });
 
-  
-
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
-
-class _DashboardScreenState extends State<DashboardScreen> { 
-
-
-
-
+class _DashboardScreenState extends State<DashboardScreen> {
   // ==============================
-  // DEPENDÊNCIAS / SERVIÇOS
+  // DEPENDÊNCIAS
   // ==============================
   final supabase = Supabase.instance.client;
   final quoteService = DailyQuoteService();
 
+
   // ==============================
-  // ESTADO / DADOS
+  // ESTADO
   // ==============================
+   
   String userName = "";
   String? dailyInspiration;
 
   String? curiosityQuestion;
   String? curiosityAnswer;
   String? curiosityDate;
-
-  String _reviewStatus = 'never';
-  DateTime? _lastReviewPrompt;
-  Duration _sessionTime = Duration.zero;
-  int _daysSinceFirstOpen = 0;
 
 
   int metasConcluidas = 0;
@@ -88,9 +76,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
   late int selectedYear;
 
   bool isLoading = true;
-  Locale? _lastLocale; // (warning apenas, não quebra)
 
-  // ==============================
+
+  String _reviewStatus = 'never';
+  DateTime? _lastReviewPrompt;
+  Duration _sessionTime = Duration.zero;
+  int _daysSinceFirstOpen = 1;
+
+  Locale? _lastLocale;
+
+    // ==============================
   // TEMA
   // ==============================
   
@@ -104,50 +99,94 @@ class _DashboardScreenState extends State<DashboardScreen> {
     Color(0xFFBEB6F2),
   ];
 
+
   // ==============================
   // INIT
   // ==============================
- @override
-void initState() {
-  super.initState();
+  @override
+  void initState() {
+    super.initState();
 
-  // init original
-  selectedMonth = widget.month;
-  selectedYear = widget.year;
+    selectedMonth = widget.month;
+    selectedYear = widget.year;
 
-  _loadUserName();
-  _syncUserLanguage();
+    _loadUserName();
+    _syncUserLanguage();
+    _initReviewData();
 
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    _loadDashboardData();
-  });
-
-  // review (mock por enquanto)
-  _reviewStatus = 'never';
-  _lastReviewPrompt = null;
-  _sessionTime = const Duration(minutes: 12);
-  _daysSinceFirstOpen = 1;
-
-  // review popup
-  Future.delayed(const Duration(seconds: 3), () {
-  if (!mounted) return;
-
-  final user = supabase.auth.currentUser;
-  if (user == null) return; // 👈 visitante NÃO recebe
-
-  if (ReviewService.canShowReview(
-    reviewStatus: _reviewStatus,
-    lastPrompt: _lastReviewPrompt,
-    sessionTime: _sessionTime,
-    daysSinceFirstOpen: _daysSinceFirstOpen,
-  )) {
-    showReviewPopup(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadDashboardData();
+      _scheduleReviewPopup();
+    });
   }
-});
 
+  
+void _scheduleReviewPopup() {
+  Future.delayed(const Duration(seconds: 5), () async {
+    if (!mounted) return;
+
+    final user = supabase.auth.currentUser;
+    if (user == null) return;
+
+    final canShow = ReviewService.canShowReview(
+      reviewStatus: _reviewStatus,
+      lastPrompt: _lastReviewPrompt,
+      sessionTime: _sessionTime,
+      daysSinceFirstOpen: _daysSinceFirstOpen,
+    );
+
+    if (!canShow) return;
+
+    // ⛔ pega o context ANTES do await
+    final ctx = context;
+
+    showReviewPopup(ctx);
+
+    final prefs = await SharedPreferences.getInstance();
+    final now = DateTime.now();
+
+    await prefs.setString(
+      'last_review_prompt',
+      now.toIso8601String(),
+    );
+
+    _lastReviewPrompt = now;
+  });
 }
 
- 
+
+// ==============================
+// INIT REVIEW DATA
+// ==============================
+Future<void> _initReviewData() async {
+  final prefs = await SharedPreferences.getInstance();
+
+  final last = prefs.getString('last_review_prompt');
+  _lastReviewPrompt = last != null ? DateTime.parse(last) : null;
+
+  // status inicial (pode evoluir depois)
+  _reviewStatus = 'eligible';
+
+  // por enquanto fixo — depois dá pra calcular real
+  _daysSinceFirstOpen = 1;
+  _sessionTime = Duration.zero;
+}
+
+
+
+
+
+ Future<void> saveLastReviewPrompt(DateTime date) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString(
+    'last_review_prompt',
+    date.toIso8601String(),
+  );
+
+  // atualiza o estado local também
+  _lastReviewPrompt = date;
+}
+
 // ==============================
   // SINCRONIZAÇÃO DE IDIOMA
   // ==============================

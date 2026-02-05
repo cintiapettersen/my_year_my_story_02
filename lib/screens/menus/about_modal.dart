@@ -2,9 +2,24 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AboutAppScreen extends StatelessWidget {
   const AboutAppScreen({super.key});
+
+  Future<void> _openPrivacyPolicy() async {
+  final uri = Uri.parse(
+    'https://sonhodepapel.com/my-year-my-story-policy/',
+  );
+
+  if (!await launchUrl(
+    uri,
+    mode: LaunchMode.externalApplication,
+  )) {
+    throw Exception('Could not launch privacy policy');
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +45,8 @@ class AboutAppScreen extends StatelessWidget {
     ),
   ),
 ),
+
+
 
 
       body: Stack(
@@ -146,6 +163,24 @@ class AboutAppScreen extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
+
+                    const SizedBox(height: 26),
+
+GestureDetector(
+  onTap: _openPrivacyPolicy,
+  child: Text(
+    "about.privacy_policy".tr(),
+    textAlign: TextAlign.center,
+    style: TextStyle(
+      color: const Color(0xFF4A266A),
+      fontSize: 13,
+      fontWeight: FontWeight.w600,
+      decoration: TextDecoration.underline,
+    ),
+  ),
+),
+
+
                     ],
                   ),
                 ),

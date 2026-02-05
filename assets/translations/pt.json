@@ -19,7 +19,8 @@
     "new_chapter": "um novo capítulo começa…",
     "subtitle": "Sua história, do seu jeito.",
     "login_button": "Entrar / Criar conta",
-    "guest_button": "Explorar sem login"
+    "guest_button": "Explorar sem login",
+     "privacy_notice": "Ao continuar, você concorda com nossa Política de Privacidade"
     
 
   },
@@ -127,9 +128,14 @@
   "app_name": "My Year, My Story",
   "free_plan": "Plano Standard",
   "premium_plan": "Plano Premium",
-  "completed": "Profile updated successfully!",
-  "error": "An error occurred while saving your profile: {{0}}",
-  "updated": "Seu nome foi atualizado com sucesso!"
+  "completed": "Perfil atualizado com sucesso!",
+  "error": "Ocorreu um erro ao salvar seu perfil: {{0}}",
+  "updated": "Seu nome foi atualizado com sucesso!",
+  "delete_account": "Excluir minha conta",
+  "delete_account_title": "Excluir conta",
+  "delete_account_description": "Tem certeza que deseja excluir sua conta? Esta ação é permanente e todos os seus dados serão apagados.",
+  "delete_account_confirm": "Excluir conta",
+  "delete_account_coming_soon": "A exclusão de conta estará disponível em breve."
 
   },
 
@@ -640,7 +646,12 @@
   "sticker_listen": "Músicas que amei",
   "sticker_keep": "Trends do mês"
 
-
+ },
+  "offline": {
+    "save_warning": "Você está offline. Conecte-se à internet para salvar suas alterações.",
+    "load_warning": "Você está offline. Conecte-se à internet para salvar suas alterações.",
+    "delete_warning": "Você está offline. Não foi possível excluir."
+  
 
   },
 
@@ -706,6 +717,7 @@
   "refresh_premium_button": "Atualizar mais dicas",
   "refresh_see_more": "Atualizar mais dicas",
   "refresh_come_back_tomorrow": "Volte amanhã 🌙"
+  
   
   },
 
@@ -806,7 +818,10 @@
     "cancel": "Cancelar",
     "delete": "Apagar",
     "close": "Fechar",
-    "open": "Abrir"
+    "open": "Abrir",
+    "offline_title": "Sem conexão",
+    "offline_message": "Parece que você está sem internet. Verifique sua conexão e tente novamente.",
+    "try_again": "Tentar novamente"
 
 },
  "mood": {
@@ -951,7 +966,8 @@
   "version": "Versão 1.0.0",
   "close": "Fechar",
   "contact": "Contato: email@sonhodepapel.com",
-  "app_name": "My Year, My Story"
+  "app_name": "My Year, My Story",
+  "privacy_policy": "Política de Privacidade"
 
 },
 
@@ -1035,13 +1051,21 @@
   "cancel_alert": "Cancelar alerta"
 
 },
+"review": {
 
-"review.title": "Tá curtindo o app?",
-"review.message": "Se esse espaço tem sido útil pra você,\nsua avaliação ajuda o app a continuar crescendo e melhorando.",
-"review.cta": "Avaliar agora"
+"title": "Tá curtindo o app?",
+"message": "Se esse espaço tem sido útil pra você,\nsua avaliação ajuda o app a continuar crescendo e melhorando.",
+"cta": "Avaliar agora",
+"not_now": "Agora não"
+
 
 }
 
+
+
+
+
+}
 
 
 

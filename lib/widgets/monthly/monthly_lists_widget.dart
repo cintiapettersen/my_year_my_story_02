@@ -145,69 +145,102 @@ if (!_isPremiumUser) {
 
 
   // 🔍 Checa se TODAS as listas estão vazias
-  final hasAtLeastOneFilled = _controllers.values.any(
-    (listControllers) =>
-        listControllers.any((c) => c.text.trim().isNotEmpty),
+ // 1️⃣ validação antes de tudo
+final hasAtLeastOneFilled = _controllers.values.any(
+  (listControllers) =>
+      listControllers.any((c) => c.text.trim().isNotEmpty),
+);
+
+if (!hasAtLeastOneFilled) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      backgroundColor: const Color(0xFFa652b6),
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+      ),
+      content: Text(
+        'lists.empty_warning'.tr(),
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    ),
+  );
+  return;
+}
+
+// 2️⃣ começa o save real
+setState(() => _isSaving = true);
+
+final Map<String, List<String>> listsToSave = {};
+
+for (final key in _controllers.keys) {
+  listsToSave[key] = _controllers[key]!
+      .map((c) => c.text.trim())
+      .where((t) => t.isNotEmpty)
+      .toList();
+}
+
+
+try {
+  await MonthlyListsService.saveMonthlyLists(
+    listsToSave,
+    widget.month ?? DateTime.now().month,
+    widget.year ?? DateTime.now().year,
+    user!.id,
   );
 
-  if (!hasAtLeastOneFilled) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: const Color(0xFFa652b6),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
-        content: Text(
-  "lists.empty_warning".tr(),
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
+  if (!mounted) return;
+
+  // ✅ sucesso SÓ aqui
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      backgroundColor: const Color(0xFFa652b6),
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+      ),
+      content: Text(
+        'lists.saved'.tr(),
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
         ),
       ),
-    );
-    return;
+    ),
+  );
+} catch (e) {
+  if (!mounted) return;
+
+  // ❌ erro offline
+  showOfflineSaveWarning(context);
+} finally {
+  if (mounted) {
+    setState(() => _isSaving = false);
   }
+}
+}
 
-  setState(() => _isSaving = true);
 
-  try {
-    final listsToSave = <String, List<String>>{};
-
-    for (String key in _controllers.keys) {
-      listsToSave[key] = _controllers[key]!
-          .map((c) => c.text.trim())
-          .where((t) => t.isNotEmpty)
-          .toList();
-    }
-
-    await MonthlyListsService.saveMonthlyLists(
-      listsToSave,
-      widget.month ?? DateTime.now().month,
-      widget.year ?? DateTime.now().year,
-      user!.id,
-    );
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: const Color(0xFFa652b6),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
-        content: Text(
-          'lists.saved'.tr(),
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
+void showOfflineSaveWarning(BuildContext context) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      backgroundColor: const Color(0xFFa652b6),
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+      ),
+      content: Text(
+        'offline.save_warning'.tr(),
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
         ),
       ),
-    );
-  } finally {
-    if (mounted) setState(() => _isSaving = false);
-  }
+    ),
+  );
 }
 
 

@@ -9,6 +9,7 @@ import 'package:myyearmystory/services/did_you_know_service.dart';
 import 'package:myyearmystory/utils/month_colors.dart';
 import 'package:myyearmystory/utils/access_control.dart';
 import 'package:myyearmystory/screens/popups/popup_login.dart';
+import 'package:myyearmystory/widgets/shared/remote_data_wrapper.dart';
 
 
 class DidYouKnowWidget extends StatefulWidget {
@@ -36,11 +37,15 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
 
   final DidYouKnowService _service = DidYouKnowService();
 
-  List<Map<String, dynamic>> curiosities = [];
-  bool isLoading = true;
-  bool isPressed = false;
-  bool isPremiumUser = false;
-  int refreshCount = 0;
+  bool _isLoading = true;
+bool _hasError = false;
+
+bool isPressed = false;
+bool isPremiumUser = false;
+
+List<Map<String, dynamic>> curiosities = [];
+int refreshCount = 0;
+
 
   final int maxRefresh = 3;
 
@@ -53,17 +58,35 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
     Color(0xFFD8CA7D),
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _initPage();
-  }
+ @override
+void initState() {
+  super.initState();
+  _initializePage();
+}
 
-  Future<void> _initPage() async {
+Future<void> _initializePage() async {
+  try {
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
+
     await _checkPremiumStatus();
     await _loadRefreshCount();
     await _loadCuriosities();
+  } catch (e) {
+    debugPrint('Erro ao carregar curiosities: $e');
+    if (mounted) {
+      setState(() => _hasError = true);
+    }
+  } finally {
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
   }
+}
+
+
 
   // 🔐 Premium
   Future<void> _checkPremiumStatus() async {
@@ -99,23 +122,26 @@ class _DidYouKnowWidgetState extends State<DidYouKnowWidget>
 
   // 📦 Dados
   Future<void> _loadCuriosities() async {
+  try {
+    final result = await _service.fetchDailyCuriosities();
+
     if (!mounted) return;
-    setState(() => isLoading = true);
 
-    try {
-      final result = await _service.fetchDailyCuriosities();
-      if (!mounted) return;
+    setState(() {
+      curiosities = result;
+    });
+  } catch (e) {
+    debugPrint('Erro ao carregar curiosidades: $e');
 
-      setState(() {
-        curiosities = result;
-        isLoading = false;
-      });
-    } catch (e) {
-      debugPrint('❌ Erro ao carregar curiosidades: $e');
-      if (!mounted) return;
-      setState(() => isLoading = false);
-    }
+    if (!mounted) return;
+
+    setState(() {
+      _hasError = true;   
+    });
   }
+}
+
+  
 
   // 🔄 Refresh
   Future<void> _handleRefresh() async {
@@ -165,148 +191,159 @@ if (!isPremiumUser) {
 }
 
 
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
+@override
+Widget build(BuildContext context) {
+  super.build(context);
 
-    final locale = context.locale.languageCode;
-    final currentButtonColor = getMonthColor(widget.month);
+  final locale = context.locale.languageCode;
+  final currentButtonColor = getMonthColor(widget.month);
 
-    return MonthPageTemplate(
-      month: widget.month,
-      year: widget.year,
-      title: "",
-      pageLabel: "did_you_know.title".tr(),
-      labelColor: const Color(0xFFdbaf35),
-      description: "did_you_know.desc.fixed".tr(),
-      child: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : curiosities.isEmpty
-              ? Center(
-                  child: Text(
-                    "did_you_know.empty".tr(),
-                    textAlign: TextAlign.center,
-                  ),
-                )
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ...curiosities.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final item = entry.value;
+  return MonthPageTemplate(
+    month: widget.month,
+    year: widget.year,
+    title: "",
+    pageLabel: "did_you_know.title".tr(),
+    labelColor: const Color(0xFFdbaf35),
+    description: "did_you_know.desc.fixed".tr(),
+    child: RemoteDataWrapper(
+      isLoading: _isLoading,
+      hasError: _hasError,
+      onRetry: _initializePage,
+      child: curiosities.isEmpty
+          ? Center(
+              child: Text(
+                "did_you_know.empty".tr(),
+                textAlign: TextAlign.center,
+              ),
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ...curiosities.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final item = entry.value;
 
-                      final color =
-                          categoryColors[index % categoryColors.length];
+                  final color =
+                      categoryColors[index % categoryColors.length];
 
-                      final rawCategory =
-                          item['category']?.toString().toLowerCase() ??
-                              'general';
+                  final rawCategory =
+                      item['category']?.toString().toLowerCase() ?? 'general';
 
-                      final normalizedKey = rawCategory
-                          .replaceAll(' ', '_')
-                          .replaceAll('ç', 'c')
-                          .replaceAll('ã', 'a')
-                          .replaceAll('á', 'a')
-                          .replaceAll('é', 'e')
-                          .replaceAll('í', 'i')
-                          .replaceAll('ó', 'o')
-                          .replaceAll('ú', 'u');
+                  final normalizedKey = rawCategory
+                      .replaceAll(' ', '_')
+                      .replaceAll('ç', 'c')
+                      .replaceAll('ã', 'a')
+                      .replaceAll('á', 'a')
+                      .replaceAll('é', 'e')
+                      .replaceAll('í', 'i')
+                      .replaceAll('ó', 'o')
+                      .replaceAll('ú', 'u');
 
-                      final categoryTr =
-                          "did_you_know.categories.$normalizedKey".tr();
+                  final categoryTr =
+                      "did_you_know.categories.$normalizedKey".tr();
 
-                      final contentPt = item['content'];
-                      final contentEn = item['text_en'];
+                  final contentPt = item['content'];
+                  final contentEn = item['text_en'];
 
-                      final curiosityText = locale == 'pt'
-                          ? (contentPt ?? '')
-                          : (contentEn ?? contentPt ?? '');
+                  final curiosityText = locale == 'pt'
+                      ? (contentPt ?? '')
+                      : (contentEn ?? contentPt ?? '');
 
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: const Color(0xFFF2D7E0),
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 4, horizontal: 8),
-                              decoration: BoxDecoration(
-                                color: color,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                categoryTr,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              curiosityText,
-                              style: const TextStyle(height: 1.5),
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
-                    const SizedBox(height: 24),
-                    Center(
-                      child: GestureDetector(
-                        onTapDown: (_) {
-                          if (!mounted) return;
-                          setState(() => isPressed = true);
-                        },
-                        onTapUp: (_) async {
-  if (!mounted) return;
-
-  if (isGuest) {
-  showLoginPrompt(context);
-  return;
-}
-
-if (!isPremiumUser) {
-   showLoginPrompt(context);
-  return;
-}
-
-  setState(() => isPressed = false);
-  await _handleRefresh();
-},
-                        onTapCancel: () {
-                          if (!mounted) return;
-                          setState(() => isPressed = false);
-                        },
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 180),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 28, vertical: 14),
-                          decoration: BoxDecoration(
-                            color: currentButtonColor,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            isPremiumUser && refreshCount < maxRefresh
-                                ? "did_you_know.button.discover_more".tr()
-                                : "did_you_know.button.come_back_tomorrow".tr(),
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ),
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: const Color(0xFFF2D7E0),
                       ),
                     ),
-                    const SizedBox(height: 40),
-                  ],
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 4,
+                            horizontal: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: color,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            categoryTr,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          curiosityText,
+                          style: const TextStyle(height: 1.5),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+
+                const SizedBox(height: 24),
+
+                Center(
+                  child: GestureDetector(
+                    onTapDown: (_) {
+                      if (!mounted) return;
+                      setState(() => isPressed = true);
+                    },
+                    onTapUp: (_) async {
+                      if (!mounted) return;
+
+                      if (isGuest) {
+                        showLoginPrompt(context);
+                        return;
+                      }
+
+                      if (!isPremiumUser) {
+                        showLoginPrompt(context);
+                        return;
+                      }
+
+                      setState(() => isPressed = false);
+                      await _handleRefresh();
+                    },
+                    onTapCancel: () {
+                      if (!mounted) return;
+                      setState(() => isPressed = false);
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 28,
+                        vertical: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        color: currentButtonColor,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        isPremiumUser && refreshCount < maxRefresh
+                        
+                            ? "did_you_know.button.discover_more".tr()
+                            : "did_you_know.button.come_back_tomorrow".tr(),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
                 ),
-    );
-  }
+
+                const SizedBox(height: 40),
+              ],
+            ),
+    ),
+  );
+}
+
 }

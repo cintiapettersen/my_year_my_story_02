@@ -6,6 +6,9 @@ import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/utils/access_control.dart';
 import 'package:myyearmystory/utils/app_config.dart';
 
+import 'package:myyearmystory/widgets/shared/remote_data_wrapper.dart';
+
+
 class MonthlyQuizWidget extends StatefulWidget {
   final int month;
   final int year;
@@ -28,6 +31,10 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
   bool _isPremiumUser = false;
 
   bool hasSavedResult = false;
+  bool _isLoading = true;
+  bool _hasError = false;
+  bool _initialized = false;
+  
 
   String? quizTitle;
   String? resultTitleOnPage;
@@ -48,7 +55,7 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
   void initState() {
     super.initState();
     _pageController = PageController();
-    _initializePage();
+    
   }
 
   @override
@@ -58,12 +65,32 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
   }
 
   Future<void> _initializePage() async {
+  try {
+    _isLoading = true;
+    _hasError = false;
+
     await _checkPremiumStatus();
     await _loadQuiz();
-    setState(() => loading = false);
-  }
 
-  
+    _initialized = true;
+  } catch (e) {
+    _hasError = true;
+  } finally {
+    _isLoading = false;
+    if (mounted) setState(() {});
+  }
+}
+
+
+
+  @override
+void didChangeDependencies() {
+  super.didChangeDependencies();
+  if (!_initialized) {
+    _initializePage();
+  }
+}
+
 
   /* ---------------- DATA ---------------- */
 
@@ -125,16 +152,16 @@ Future<void> _loadQuiz() async {
 
       setState(() {
         hasSavedResult = true;
-
-        // ✅ título vem do JSON
         resultTitleOnPage = _getLocalized(title, titleEn);
-
-        // ✅ descrição vem do JSON
-        resultDescOnPage = _getLocalized(desc, descEn);
+        resultDescOnPage  = _getLocalized(desc, descEn);
       });
     }
+
   } catch (e) {
     debugPrint('Erro ao carregar quiz: $e');
+
+    // 🔥 ESSA LINHA É A DIFERENÇA
+    rethrow;
   }
 }
 
@@ -495,65 +522,75 @@ if (user != null) {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    if (loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+@override
+Widget build(BuildContext context) {
+  return RemoteDataWrapper(
+    isLoading: _isLoading,
+    hasError: _hasError && !hasSavedResult,
 
-    final hasResult = hasSavedResult;
+    onRetry: _initializePage,
+    child: _buildQuizContent(),
+  );
+}
 
-    if (hasResult) {
-      return _buildResultPage();
-    }
+Widget _buildQuizContent() {
+  final hasResult = hasSavedResult;
 
-    return Column(
-      children: [
-        if (quizTitle != null)
-          Padding(
-            padding: const EdgeInsets.only(
-              top: 4,
-              bottom: 12,
-              left: 16,
-              right: 16,
-            ),
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 10,
-              ),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF8DFF0),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                quizTitle!,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Color.fromARGB(255, 153, 58, 99),
-                ),
-              ),
-            ),
+  if (hasResult) {
+    return _buildResultPage();
+  }
+
+  return Column(
+    children: [
+      if (quizTitle != null)
+        Padding(
+          padding: const EdgeInsets.only(
+            top: 4,
+            bottom: 12,
+            left: 16,
+            right: 16,
           ),
-        SizedBox(
-          height: 420,
-          child: PageView.builder(
-            controller: _pageController,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: totalPages,
-            itemBuilder: (context, index) {
-              final qLen =
-                  quizData?["questions"]?.length ?? 0;
-              return index < qLen
-                  ? _buildQuestionPage(index)
-                  : _buildResultPage();
-            },
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 10,
+            ),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8DFF0),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              quizTitle!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Color.fromARGB(255, 153, 58, 99),
+              ),
+            ),
           ),
         ),
-      ],
-    );
-  }
+
+      const SizedBox(height: 16),
+
+      SizedBox(
+        height: 420,
+        child: PageView.builder(
+          controller: _pageController,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: totalPages,
+          itemBuilder: (context, index) {
+            final qLen = quizData?['questions']?.length ?? 0;
+
+            return index < qLen
+                ? _buildQuestionPage(index)
+                : _buildResultPage();
+          },
+        ),
+      ),
+    ],
+  );
+}
+
 }
