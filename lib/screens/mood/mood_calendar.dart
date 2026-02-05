@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:intl/intl.dart';
+
+
 
 class MoodCalendar extends StatefulWidget {
   final String? userId;
@@ -13,6 +14,8 @@ class MoodCalendar extends StatefulWidget {
   final Map<String, Color> moodColors;
 
   final Function(int)? onDaySelected;
+
+  
 
   const MoodCalendar({
     super.key,
@@ -41,17 +44,42 @@ class _MoodCalendarState extends State<MoodCalendar> {
   Map<int, String> moodByDay = {};
   int? selectedDay;
 
+
+  bool _offlineMoodWarned = false; // 👈 AQUI
+
   @override
   void initState() {
     super.initState();
     loadMoods();
   }
 
+ 
+
+
+  // 👇 COLOCA AQUI
+  void _showOfflineMoodWarning() {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      behavior: SnackBarBehavior.floating,
+      duration: const Duration(seconds: 3),
+      backgroundColor: const Color(0xFFFFEEF4),
+      content: Text(
+        'Para registrar o humor, é preciso estar online 💭',
+        style: const TextStyle(color: Color(0xFF6D2C4A)),
+      ),
+    ),
+  );
+}
+
+
+  
+
   void setGuestMood(int day, String moodKey) {
     setState(() {
       moodByDay[day] = moodKey;
     });
   }
+
 
 
   Future<void> loadMoods() async {
@@ -286,7 +314,10 @@ Future<void> _deleteMood(int day) async {
   @override
   Widget build(BuildContext context) {
     final totalDays = DateTime(widget.year, widget.month + 1, 0).day;
-    final firstWeekday = DateTime(widget.year, widget.month, 1).weekday;
+    final firstWeekday =
+    DateTime(widget.year, widget.month, 1).weekday;
+
+
 
     final today = DateTime.now();
     final isTodayMonth =
@@ -295,7 +326,9 @@ Future<void> _deleteMood(int day) async {
     List<Widget> grid = [];
 
     for (int i = 1; i < firstWeekday; i++) {
-      grid.add(Container());
+    grid.add(Container());
+
+
     }
 
     for (int day = 1; day <= totalDays; day++) {
@@ -305,47 +338,64 @@ Future<void> _deleteMood(int day) async {
       final bool isSelected = selectedDay == day;
       final bool isToday = isTodayMonth && today.day == day;
 
+      
+
       grid.add(
-        GestureDetector(
-          onTap: () {
-            setState(() => selectedDay = day);
+  GestureDetector(
+    onTap: () {
+      setState(() => selectedDay = day);
 
-            final moodKey = moodByDay[day];
+      final moodKey = moodByDay[day];
 
-            if (moodKey != null) {
-              Future.delayed(const Duration(milliseconds: 120), () {
-                _showMoodActionsPopup(day, moodKey);
-              });
-            }
+      // 🟣 Já existe humor → popup normal
+      if (moodKey != null) {
+        Future.delayed(const Duration(milliseconds: 120), () {
+          _showMoodActionsPopup(day, moodKey);
+        });
+        widget.onDaySelected?.call(day);
+        return;
+      }
 
-            widget.onDaySelected?.call(day);
-          },
-          child: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: isSelected ? Colors.pink.withOpacity(0.2) : Colors.white,
-              borderRadius: BorderRadius.circular(40),
-              border: isToday
-                  ? Border.all(color: Colors.pinkAccent, width: 2)
-                  : Border.all(color: Colors.black12, width: 1),
+      // 🟠 Dia vazio + guest → avisa uma vez
+      if (widget.userId == null) {
+        if (!_offlineMoodWarned && mounted) {
+          _showOfflineMoodWarning();
+          _offlineMoodWarned = true;
+        }
+        return;
+      }
+
+      // ✅ Usuário válido → segue fluxo normal
+      widget.onDaySelected?.call(day);
+    },
+    child: Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: isSelected ? Colors.pink.withOpacity(0.2) : Colors.white,
+        borderRadius: BorderRadius.circular(40),
+        border: isToday
+            ? Border.all(color: Colors.pinkAccent, width: 2)
+            : Border.all(color: Colors.black12, width: 1),
+      ),
+      alignment: Alignment.center,
+      child: emoji == null
+          ? Text(
+              "$day",
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            )
+          : Text(
+              emoji,
+              style: const TextStyle(fontSize: 20),
             ),
-            alignment: Alignment.center,
-            child: emoji == null
-                ? Text(
-                    "$day",
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  )
-                : Text(
-                    emoji,
-                    style: const TextStyle(fontSize: 20),
-                  ),
-          ),
-        ),
-      );
+    ),
+  ),
+);
+
+  
     }
 
     return Column(

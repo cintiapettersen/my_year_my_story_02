@@ -111,6 +111,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
    Navigator.pop(context, true);   
   }
 
+
+// DELETAR CONTA-------------------------------------------------------
+
+void _confirmDeleteAccount() {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(tr("profile.delete_account_title")),
+      content: Text(tr("profile.delete_account_description")),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(tr("common.cancel")),
+        ),
+       TextButton(
+  onPressed: () async {
+    Navigator.pop(context);
+    await _deleteAccount();
+  },
+  style: TextButton.styleFrom(
+    foregroundColor: Colors.red,
+  ),
+  child: Text(tr("profile.delete_account_confirm")),
+),
+
+      ],
+    ),
+  );
+}
+
+
+
+
   // -------------------------------------------------------
   // FORMAT DATE
   // -------------------------------------------------------
@@ -188,6 +221,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
       });
     }
   }
+
+// -------------------------------------------------------
+  // DELETE ACCOUNT
+  // -------------------------------------------------------
+Future<void> _deleteAccount() async {
+  // 1️⃣ Mostrar feedback visual
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(tr("profile.delete_account_coming_soon")),
+      backgroundColor: Colors.redAccent.withOpacity(0.9),
+    ),
+  );
+
+  // 🚧 A exclusão real será implementada depois
+}
+
+
+
 
   // -------------------------------------------------------
   // UI
@@ -279,8 +330,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
 
                 const SizedBox(height: 40),
-                _saveButton(),
-                const SizedBox(height: 80),
+_saveButton(),
+
+const SizedBox(height: 40),
+Divider(
+  color: Colors.purple.withOpacity(0.2),
+),
+
+const SizedBox(height: 20),
+
+GestureDetector(
+  onTap: _confirmDeleteAccount,
+  child: Text(
+    tr("profile.delete_account"),
+    style: TextStyle(
+      color: Colors.redAccent.withOpacity(0.85),
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+      decoration: TextDecoration.underline,
+    ),
+  ),
+),
+
+const SizedBox(height: 80),
+
               ],
             ),
           ),

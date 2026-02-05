@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:myyearmystory/screens/popups/popup_login.dart';
 
+import 'package:myyearmystory/widgets/shared/remote_data_wrapper.dart';
+
 
 
 
@@ -24,7 +26,10 @@ class ZodiacWidget extends StatefulWidget {
 }
 
 class _ZodiacWidgetState extends State<ZodiacWidget> {
-  bool _isLoading = false;
+  
+bool _isLoading = true;
+bool _hasError = false;
+
 
  bool get isGuest {
   return Supabase.instance.client.auth.currentUser == null;
@@ -39,8 +44,31 @@ class _ZodiacWidgetState extends State<ZodiacWidget> {
   @override
   void initState() {
     super.initState();
-    _loadZodiacData();
+    _initializePage();
+   
+
   }
+
+  Future<void> _initializePage() async {
+  try {
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
+
+    await _loadZodiacData();
+  } catch (e) {
+    _hasError = true;
+    debugPrint('Erro ao carregar zodiac: $e');
+  } finally {
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+}
+
 
   Map<String, DateTime> _makeStartEnd(
   Map<String, dynamic> row,
@@ -189,61 +217,44 @@ void _showPersonalYearModal({
   // LOAD ZODIAC DATA
   // --------------------------------------------------------
   Future<void> _loadZodiacData() async {
-  if (mounted) {
-  setState(() => _isLoading = true);
-}
+  final rows = await Supabase.instance.client
+      .from('zodiac_signs')
+      .select('*');
 
-  try {
-    final rows =
-        await Supabase.instance.client.from('zodiac_signs').select('*');
+  final List<Map<String, dynamic>> processed = rows.map((row) {
+    final dates = _makeStartEnd(row, widget.year);
+    return {
+      "data": row,
+      "start": dates["start"]!,
+      "end": dates["end"]!,
+    };
+  }).toList();
 
-    final List<Map<String, dynamic>> processed = rows.map((row) {
-      final dates = _makeStartEnd(row, widget.year);
-      return {
-        "data": row,
-        "start": dates["start"]!,
-        "end": dates["end"]!,
-      };
-    }).toList();
+  final DateTime now = DateTime.now();
+  final DateTime monthStart = DateTime(widget.year, widget.month, 1);
+  final DateTime monthEnd = DateTime(widget.year, widget.month + 1, 0);
 
-    final DateTime now = DateTime.now();
-    final DateTime monthStart =
-        DateTime(widget.year, widget.month, 1);
-    final DateTime monthEnd =
-        DateTime(widget.year, widget.month + 1, 0);
-
-    // 🔮 signo do dia
-    for (final item in processed) {
-      if (!item["start"].isAfter(now) &&
-          !item["end"].isBefore(now)) {
-        _todaySign = item["data"];
-        break;
-      }
+  for (final item in processed) {
+    if (!item["start"].isAfter(now) && !item["end"].isBefore(now)) {
+      _todaySign = item["data"];
+      break;
     }
-
-    // 📅 signo do início do mês
-    for (final item in processed) {
-      if (!item["start"].isAfter(monthStart) &&
-          !item["end"].isBefore(monthStart)) {
-        _startSign = item["data"];
-        break;
-      }
-    }
-
-    // 📅 signo do fim do mês
-    for (final item in processed) {
-      if (!item["start"].isAfter(monthEnd) &&
-          !item["end"].isBefore(monthEnd)) {
-        _endSign = item["data"];
-        break;
-      }
-    }
-  } catch (e) {
-    debugPrint("Erro signos → $e");
   }
 
-  if (mounted) {
-    setState(() => _isLoading = false);
+  for (final item in processed) {
+    if (!item["start"].isAfter(monthStart) &&
+        !item["end"].isBefore(monthStart)) {
+      _startSign = item["data"];
+      break;
+    }
+  }
+
+  for (final item in processed) {
+    if (!item["start"].isAfter(monthEnd) &&
+        !item["end"].isBefore(monthEnd)) {
+      _endSign = item["data"];
+      break;
+    }
   }
 }
 
@@ -488,46 +499,56 @@ final profile = await Supabase.instance.client
   // BUILD
   // --------------------------------------------------------
   @override
-  Widget build(BuildContext context) {
-    return MonthPageTemplate(
-      month: widget.month,
-      year: widget.year,
-      title: '',
-      pageLabel: 'zodiac.title'.tr(),
-      labelColor: const Color(0xFF8D63C3),
-      description: 'zodiac.month_description'.tr(),
-      child: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                if (_todaySign != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 24),
-                    child: Text(
-                      "${'zodiac.today_sign'.tr()}: "
-                      "${context.locale.languageCode == 'en' ? _todaySign!['signo_en'] : _todaySign!['signo_pt']}",
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                if (_startSign != null) _zodiacCard(_startSign!),
-                if (_endSign != null &&
-                    _endSign!['id'] != _startSign?['id'])
-                  _zodiacCard(_endSign!),
-                const SizedBox(height: 30),
-               _buildPersonalYearButton(),
-              const SizedBox(height: 12),
-Text(
-  tr("zodiac.personal_year_helper"),
-  textAlign: TextAlign.center,
-  style: GoogleFonts.poppins(
-    fontSize: 13,
-    color: const Color(0xFF8D63C3).withOpacity(0.7),
-  ),
-),
-const SizedBox(height: 40),
-              ],
+Widget build(BuildContext context) {
+  return MonthPageTemplate(
+    month: widget.month,
+    year: widget.year,
+    title: '',
+    pageLabel: 'zodiac.title'.tr(),
+    labelColor: const Color(0xFF8D63C3),
+    description: 'zodiac.month_description'.tr(),
+    child: RemoteDataWrapper(
+      isLoading: _isLoading,
+      hasError: _hasError,
+      onRetry: _initializePage,
+      child: Column(
+        children: [
+          if (_todaySign != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 24),
+              child: Text(
+                "${'zodiac.today_sign'.tr()}: "
+                "${context.locale.languageCode == 'en'
+                    ? _todaySign!['signo_en']
+                    : _todaySign!['signo_pt']}",
+                textAlign: TextAlign.center,
+              ),
             ),
-    );
-  }
+
+          if (_startSign != null) _zodiacCard(_startSign!),
+
+          if (_endSign != null && _endSign!['id'] != _startSign?['id'])
+            _zodiacCard(_endSign!),
+
+          const SizedBox(height: 30),
+
+          _buildPersonalYearButton(),
+
+          const SizedBox(height: 12),
+
+          Text(
+            tr("zodiac.personal_year_helper"),
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              color: const Color(0xFF8D63C3).withOpacity(0.7),
+            ),
+          ),
+
+          const SizedBox(height: 40),
+        ],
+      ),
+    ),
+  );
 }
-    
+}

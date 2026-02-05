@@ -8,6 +8,8 @@ import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/utils/access_control.dart';
 import 'package:myyearmystory/screens/popups/popup_login.dart';
+import 'package:myyearmystory/widgets/shared/remote_data_wrapper.dart';
+
 
 class CuriositiesWidget extends StatefulWidget {
   final int month;
@@ -26,6 +28,10 @@ class CuriositiesWidget extends StatefulWidget {
 class _CuriositiesWidgetState extends State<CuriositiesWidget> {
   bool _isPremiumUser = false;
   bool _initialized = false;
+  bool _isLoading = true;
+  bool _hasError = false;
+
+  
 
   int _currentPage = 0;
 
@@ -78,13 +84,27 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
     }
   }
 
+
+//INITIALIZAÇÃO
+
   Future<void> _initialize() async {
+  try {
+    _isLoading = true;
+    _hasError = false;
+
     _isPremiumUser = await AccessControl.isPremium();
     await _loadQuestions();
     await _loadSavedAnswers();
+
     _initialized = true;
+  } catch (e) {
+    _hasError = true;
+  } finally {
+    _isLoading = false;
     if (mounted) setState(() {});
   }
+}
+
 
   // ==============================
   // CARREGAR PERGUNTAS
@@ -255,146 +275,144 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
   // BUILD
   // ==============================
   @override
-  Widget build(BuildContext context) {
-    return MonthPageTemplate(
-      month: widget.month,
-      year: widget.year,
-      title: '',
-      pageLabel: 'curiosities.title'.tr(),
-      labelColor: const Color(0xFFc79fe2),
-      description: 'curiosities.description_fixed'.tr(),
-      child: Column(
-  children: [
-    if (_questions.isNotEmpty)
-      Text(
-        '${_currentPage + 1} / ${_questions.length}',
-        style: const TextStyle(fontSize: 13, color: Colors.black54),
+Widget build(BuildContext context) {
+  return MonthPageTemplate(
+    month: widget.month,
+    year: widget.year,
+    title: '',
+    pageLabel: 'curiosities.title'.tr(),
+    labelColor: const Color(0xFFc79fe2),
+    description: 'curiosities.description_fixed'.tr(),
+
+child: RemoteDataWrapper(
+  isLoading: _isLoading,
+  hasError: _hasError,
+  onRetry: _initialize,
+  child: Column(
+    children: [
+      if (_questions.isNotEmpty)
+        Text(
+          '${_currentPage + 1} / ${_questions.length}',
+          style: const TextStyle(fontSize: 13, color: Colors.black54),
+        ),
+
+      const SizedBox(height: 12),
+
+      SizedBox(
+        height: 320,
+        child: PageView.builder(
+          controller: _pageController,
+          physics: const BouncingScrollPhysics(),
+          itemCount: _questions.length,
+          onPageChanged: (i) =>
+              setState(() => _currentPage = i),
+          itemBuilder: (_, index) => Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.favorite,
+                color: heartColors[index % heartColors.length],
+                size: 22,
+              ),
+
+              const SizedBox(height: 8),
+
+              Text(
+                _questions[index]['text'] ?? '',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFFBD3E7D),
+                  height: 1.4,
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              TextField(
+                controller: _controllers[index],
+                maxLines: 5,
+                decoration: InputDecoration(
+                  hintText: 'curiosities.answer_hint'.tr(),
+                  filled: true,
+                  fillColor: const Color(0xFFFCEAF4),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              ElevatedButton(
+                onPressed: () => _saveCurrentAnswer(index),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFE25BA6),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 36,
+                    vertical: 16,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                child: Text('curiosities.save'.tr()),
+              ),
+            ],
+          ),
+        ),
       ),
 
-    const SizedBox(height: 12),
+      const SizedBox(height: 12),
 
-    SizedBox(
-      height: 320,
-      child: !_initialized
-          ? const Center(child: CircularProgressIndicator())
-          : PageView.builder(
-              controller: _pageController,
-              physics: const BouncingScrollPhysics(),
-              itemCount: _questions.length,
-              onPageChanged: (i) =>
-                  setState(() => _currentPage = i),
-              itemBuilder: (_, index) => Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.favorite,
-                    color: heartColors[index % heartColors.length],
-                    size: 22,
-                  ),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back_ios),
+            onPressed: _currentPage > 0
+                ? () => _pageController.previousPage(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOut,
+                    )
+                : null,
+          ),
 
-                  const SizedBox(height: 8),
+          Row(
+            children: List.generate(_questions.length, (index) {
+              final isActive = index == _currentPage;
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: isActive ? 10 : 8,
+                height: isActive ? 10 : 8,
+                decoration: BoxDecoration(
+                  color: isActive
+                      ? const Color(0xFFE25BA6)
+                      : Colors.black26,
+                  shape: BoxShape.circle,
+                ),
+              );
+            }),
+          ),
 
-                  Text(
-                    _questions[index]['text'] ?? '',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFFBD3E7D),
-                      height: 1.4,
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  TextField(
-                    controller: _controllers[index],
-                    maxLines: 5,
-                    decoration: InputDecoration(
-                      hintText: 'curiosities.answer_hint'.tr(),
-                      filled: true,
-                      fillColor: const Color(0xFFFCEAF4),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  ElevatedButton(
-  onPressed: () => _saveCurrentAnswer(index),
-  style: ElevatedButton.styleFrom(
-    backgroundColor: const Color(0xFFE25BA6), // 🌸 rosa do app
-    foregroundColor: Colors.white,
-    padding: const EdgeInsets.symmetric(
-      horizontal: 36,
-      vertical: 16,
-    ),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(30),
-    ),
-
-     elevation: 2,
+          IconButton(
+            icon: const Icon(Icons.arrow_forward_ios),
+            onPressed: _currentPage < _questions.length - 1
+                ? () => _pageController.nextPage(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOut,
+                    )
+                : null,
+          ),
+        ],
+      ),
+    ],
   ),
-  child: Text('curiosities.save'.tr()),
-
-  
 ),
-
-                ],
-              ),
-            ),
-    ),
-
-    const SizedBox(height: 12),
-
-    Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
-          onPressed: _currentPage > 0
-              ? () => _pageController.previousPage(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOut,
-                  )
-              : null,
-        ),
-
-        Row(
-          children: List.generate(_questions.length, (index) {
-            final isActive = index == _currentPage;
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              width: isActive ? 10 : 8,
-              height: isActive ? 10 : 8,
-              decoration: BoxDecoration(
-                color: isActive
-                    ? const Color(0xFFE25BA6)
-                    : Colors.black26,
-                shape: BoxShape.circle,
-              ),
-            );
-          }),
-        ),
-
-        IconButton(
-          icon: const Icon(Icons.arrow_forward_ios),
-          onPressed: _currentPage < _questions.length - 1
-              ? () => _pageController.nextPage(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOut,
-                  )
-              : null,
-        ),
-      ],
-    ),
-  ],
-),
-
-    );
+  );
   }
 }

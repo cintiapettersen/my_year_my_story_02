@@ -127,71 +127,73 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
   }
 
   Future<void> _saveReflections() async {
-    final user = SupabaseConfig.client.auth.currentUser;
-    if (user == null) {
-      showLoginPrompt(context);
-      return;
+  final user = SupabaseConfig.client.auth.currentUser;
+  if (user == null) {
+    showLoginPrompt(context);
+    return;
+  }
+
+  if (!_isPremiumUser && _freeSaveCount >= 1) {
+    showPremiumPopup(context);
+    return;
+  }
+
+  setState(() => _isSaving = true);
+
+  try {
+    final data = <String, String>{};
+
+    for (var entry in _controllers.entries) {
+      if (entry.value.text.trim().isNotEmpty) {
+        data[entry.key] = entry.value.text.trim();
+      }
     }
 
-    setState(() => _isLoading = true);
+    final success = await ReflectionsService.saveReflections(
+      data,
+      widget.month ?? DateTime.now().month,
+      widget.year ?? DateTime.now().year,
+      user.id,
+    );
 
+    if (!mounted) return;
 
+    if (success) {
+      if (!_isPremiumUser) _freeSaveCount++;
 
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: const Color.fromARGB(255, 215, 126, 194),
+          content: Text('reflection.saved'.tr()),
+        ),
+      );
+    } else {
+      // 👇 AQUI é o offline
+      ScaffoldMessenger.of(context).showSnackBar(
+       SnackBar(
+  behavior: SnackBarBehavior.floating,
+  backgroundColor: const Color.fromARGB(255, 215, 126, 194),
+  content: Text('offline.save_warning'.tr()),
+),
 
-if (!_isPremiumUser && _freeSaveCount >= 1) {
-  showPremiumPopup(context);
-  return;
+      );
+    }
+  } catch (e) {
+    if (!mounted) return;
+
+    // erro inesperado (não conexão)
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('reflection.save_error'.tr()),
+      ),
+    );
+  } finally {
+    if (mounted) setState(() => _isSaving = false);
+  }
 }
 
 
-
-    /// Free user tentando salvar mais de uma reflexão
-    
-    
-    
-    if (!_isPremiumUser && _freeSaveCount >= 1) {
-      showPremiumPopup(context);
-      return;
-    }
-    
-
-    setState(() => _isSaving = true);
-
-    try {
-      final data = <String, String>{};
-
-      for (var entry in _controllers.entries) {
-        if (entry.value.text.trim().isNotEmpty) {
-          data[entry.key] = entry.value.text.trim();
-        }
-      }
-
-      final success = await ReflectionsService.saveReflections(
-        data,
-        widget.month ?? DateTime.now().month,
-        widget.year ?? DateTime.now().year,
-        user!.id
-      );
-
-      if (!_isPremiumUser) _freeSaveCount++;
-
-            ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-             backgroundColor: const Color.fromARGB(255, 215, 126, 194), // rosa clarinho
-              content: Text(success
-              ? 'reflection.saved'.tr()
-              : 'reflection.save_error'.tr()),
-        ),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('reflection.save_error'.tr())),
-      );
-    } finally {
-      if (mounted) setState(() => _isSaving = false);
-    }
-  }
-
+// BUILD
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -225,7 +227,7 @@ if (!_isPremiumUser && _freeSaveCount >= 1) {
                 border: Border.all(color: const Color(0xFFF2D7E0)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black12.withOpacity(0.05),
+                    color: const Color.fromARGB(31, 199, 84, 163),
                     blurRadius: 6,
                     offset: const Offset(0, 2),
                   )

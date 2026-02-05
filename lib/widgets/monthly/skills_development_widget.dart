@@ -4,13 +4,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 import 'package:myyearmystory/widgets/shared/month_page_template.dart';
-import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/utils/month_colors.dart';
 import 'package:myyearmystory/utils/responsive.dart';
 import 'package:myyearmystory/utils/localized_tip.dart';
 import 'package:myyearmystory/utils/access_control.dart';
 import 'package:myyearmystory/utils/app_config.dart';
 import 'package:myyearmystory/screens/popups/popup_login.dart';
+import 'package:myyearmystory/widgets/shared/remote_data_wrapper.dart';
+
 /// 🎨 Categorias oficiais
 final Map<String, Color> skillCategoryColors = {
   "autocuidado": Color(0xFFFAD4D8),
@@ -66,29 +67,71 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
   @override
   bool get wantKeepAlive => true;
 
+  static const int maxRefresh = 3;
+
   final supabase = Supabase.instance.client;
 
-  bool isLoading = true;
+ 
   bool isPressed = false;
   bool isPremiumUser = false;
+bool _isLoading = true;
+bool _hasError = false;
+
+
+
   int refreshCount = 0;
 
   List<Map<String, dynamic>> skills = [];
   Color currentButtonColor = Colors.pinkAccent;
 
   @override
-  void initState() {
-    super.initState();
-    currentButtonColor = getMonthColor(widget.month);
-    _checkPremiumStatus();
-    _loadData();
+void initState() {
+  super.initState();
+  currentButtonColor = getMonthColor(widget.month);
+  _checkPremiumStatus();
+  _initializePage();
+}
+
+Future<void> _initializePage() async {
+  try {
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
+
+    await _loadData();
+  } catch (e) {
+    debugPrint('Erro ao carregar tela: $e');
+    if (mounted) {
+      setState(() => _hasError = true);
+    }
+  } finally {
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
   }
+}
+
+
+/// 🔄 RÓTULO DO BOTÃO DE REFRESH
+  String get refreshButtonLabel {
+  if (!isPremiumUser) {
+    return "tips.refresh_premium_button".tr();
+  }
+
+  if (refreshCount >= maxRefresh) {
+    return "tips.refresh_come_back_tomorrow".tr();
+  }
+
+  return "tips.refresh_see_more".tr();
+}
+
 
   /// 🔑 CHECA PREMIUM / ADMIN
   Future<void> _checkPremiumStatus() async {
     final user = supabase.auth.currentUser;
 
-    if (user == null || user.isAnonymous == true) {
+    if (user == null || user.isAnonymous) {
       setState(() => isPremiumUser = false);
       return;
     }
@@ -99,236 +142,184 @@ class _SkillsDevelopmentWidgetState extends State<SkillsDevelopmentWidget>
     setState(() => isPremiumUser = premium || admin);
   }
 
+  /// 🔐 GUARD PREMIUM + LIMITE
+  Future<bool> canExecutePremiumAction(BuildContext context) async {
+    final user = supabase.auth.currentUser;
+
+    if (user == null || user.isAnonymous) {
+      showLoginPrompt(context);
+      return false;
+    }
+
+    if (!isPremiumUser) {
+      showLoginPrompt(context);
+      return false;
+    }
+
+    if (refreshCount >= maxRefresh) {
+      return false; // silêncio elegante ✨
+    }
+
+    return true;
+  }
+
   /// 📥 CARREGA DICAS
   Future<void> _loadData() async {
-    setState(() => isLoading = true);
+  final response = await supabase.from('skills_tips').select();
+  final allTips = List<Map<String, dynamic>>.from(response)..shuffle();
 
-    try {
-      final response = await supabase.from('skills_tips').select();
+  final Map<String, List<Map<String, dynamic>>> grouped = {};
 
-      final allTips = List<Map<String, dynamic>>.from(response);
-      allTips.shuffle();
+  for (var tip in allTips) {
+    final localized = getLocalizedTipText(context, tip);
+    final dbCategory =
+        (tip["category_mapped"] as String?)?.toLowerCase().trim();
 
-      final Map<String, List<Map<String, dynamic>>> grouped = {};
+    final category = dbCategory?.isNotEmpty == true
+        ? dbCategory!
+        : fallbackCategory(localized);
 
-      for (var tip in allTips) {
-        final localized = getLocalizedTipText(context, tip);
-
-        final dbCategory =
-            (tip["category_mapped"] as String?)?.toLowerCase().trim();
-
-        final category = dbCategory?.isNotEmpty == true
-            ? dbCategory!
-            : fallbackCategory(localized);
-
-        grouped.putIfAbsent(category, () => []);
-        grouped[category]!.add(tip);
-      }
-
-      final List<Map<String, dynamic>> selected = [];
-      grouped.forEach((_, list) {
-        if (list.isNotEmpty) selected.add(list.first);
-      });
-
-      selected.shuffle();
-
-      setState(() {
-        skills = selected.take(5).toList();
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() => isLoading = false);
-    }
+    grouped.putIfAbsent(category, () => []);
+    grouped[category]!.add(tip);
   }
 
-  /// 🔄 REFRESH (COM BLOQUEIO PREMIUM)
-  Future<void> _handleRefresh() async {
-  if (!mounted) return;
+  final selected = grouped.values
+      .where((list) => list.isNotEmpty)
+      .map((list) => list.first)
+      .toList()
+    ..shuffle();
 
-  final prefs = await SharedPreferences.getInstance();
-  if (!mounted) return;
-
-  final key =
-      "refresh_${widget.year}_${widget.month}_${DateTime.now().day}";
-  final count = prefs.getInt(key) ?? 0;
-
-  final user = supabase.auth.currentUser;
-
-  // 👤 convidado → login
-  if (user == null) {
-    showLoginPrompt(context);
-    return;
+  // ⚠️ único setState permitido aqui
+  if (mounted) {
+    setState(() {
+      skills = selected.take(5).toList();
+    });
   }
-
-  // 💎 logado mas não premium → popup premium
-  if (!isPremiumUser) {
-    showLoginPrompt(context);
-    return;
-  }
-
-  // ⛔ limite diário
-  if (count >= 3) {
-    if (!mounted) return;
-
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(
-          "tips.refresh_title".tr(),
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        content: Text("tips.refresh_message".tr()),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("tips.refresh_ok".tr()),
-          ),
-        ],
-      ),
-    );
-    return;
-  }
-
-  // 🔄 refresh permitido
-  await _loadData();
-  await prefs.setInt(key, count + 1);
-
-  if (!mounted) return;
-  setState(() => refreshCount = count + 1);
 }
 
 
+  /// 🔄 EXECUTA REFRESH (SEM VALIDAÇÃO)
+  Future<void> _handleRefresh() async {
+    final prefs = await SharedPreferences.getInstance();
+    final key =
+        "refresh_${widget.year}_${widget.month}_${DateTime.now().day}";
+    final count = prefs.getInt(key) ?? 0;
+
+    await _loadData();
+    await prefs.setInt(key, count + 1);
+
+    if (!mounted) return;
+    setState(() => refreshCount = count + 1);
+  }
+
   @override
-  Widget build(BuildContext context) {
-    super.build(context);
+Widget build(BuildContext context) {
+  super.build(context);
 
-    return MonthPageTemplate(
-      month: widget.month,
-      year: widget.year,
-      title: '',
-      pageLabel: "tips.page_label".tr(),
-      labelColor: const Color(0xFFb539bc),
-      description: "tips.description".tr(),
-      child: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ResponsiveLayout(
-              builder: (context, constraints, isTablet) {
-                return Align(
-                  alignment: Alignment.topCenter,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: isTablet ? 600 : constraints.maxWidth,
-                    ),
-                    child: Column(
-                      children: [
-                        ...skills.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final tip = entry.value;
-                          final text =
-                              getLocalizedTipText(context, tip);
+  return MonthPageTemplate(
+    month: widget.month,
+    year: widget.year,
+    title: '',
+    pageLabel: "tips.page_label".tr(),
+    labelColor: const Color(0xFFb539bc),
+    description: "tips.description".tr(),
+    child: RemoteDataWrapper(
+      isLoading: _isLoading,
+      hasError: _hasError,
+      onRetry: _initializePage,
+      child: ResponsiveLayout(
+        builder: (context, constraints, isTablet) {
+          return Column(
+            children: [
+              const SizedBox(height: 32),
 
-                          final category =
-                              (tip["category_mapped"] as String?)
-                                      ?.toLowerCase()
-                                      .trim() ??
-                                  fallbackCategory(text);
+              // 🔹 LISTA DE DICAS
+              ...skills.map((tip) {
+                final text = getLocalizedTipText(context, tip);
+                final category =
+                    (tip["category_mapped"] as String?)?.toLowerCase() ??
+                        fallbackCategory(text);
 
-                          final color =
-                              skillCategoryColors[category] ??
-                                  Colors.purple.shade100;
+                final color =
+                    skillCategoryColors[category] ??
+                        Colors.purple.shade100;
 
-                          return Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(height: isTablet ? 20 : 14),
-                              Container(
-                                padding:
-                                    const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: color,
-                                  borderRadius:
-                                      BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  "♡ ${'tips_categories.$category'.tr()} ♡",
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: isTablet ? 24 : 20),
-                              Text(
-  text,
-  textAlign: TextAlign.left,
-  style: TextStyle(
-    fontSize: isTablet ? 17 : 16,
-    height: isTablet ? 1.6 : 1.5,
-  ),
-),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(
-                                        vertical: 13),
-                                child: Divider(
-                                  color: index <
-                                          skills.length - 1
-                                      ? Colors.black26
-                                      : Colors.transparent,
-                                ),
-                              ),
-                            ],
-                          );
-                        }).toList(),
-                        const SizedBox(height: 60),
-                        
-                                                GestureDetector(
-                          onTapDown: (_) =>
-                              setState(() => isPressed = true),
-                          onTapUp: (_) async {
-                            setState(() => isPressed = false);
-                            await Future.delayed(
-                                const Duration(milliseconds: 120));
-                            _handleRefresh();
-                          },
-                          onTapCancel: () =>
-                              setState(() => isPressed = false),
-                          child: Transform.scale(
-                            scale: isPressed ? 0.93 : 1.0,
-                            child: AnimatedContainer(
-                              duration:
-                                  const Duration(milliseconds: 250),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 28,
-                                vertical: 14,
-                              ),
-                              decoration: BoxDecoration(
-                                color: currentButtonColor,
-                                borderRadius:
-                                    BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                !isPremiumUser
-                                    ? "tips.refresh_premium_button"
-                                        .tr()
-                                    : "tips.refresh_see_more".tr(),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: color,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        "♡ ${'tips_categories.$category'.tr()} ♡",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
                         ),
-                      ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(text),
+                    const Divider(),
+                    const SizedBox(height: 28),
+                  ],
+                );
+              }).toList(),
+
+              // 🔹 BOTÃO REFRESH
+              GestureDetector(
+                onTapDown: (_) => setState(() => isPressed = true),
+                onTapUp: (_) async {
+                  setState(() => isPressed = false);
+                  await Future.delayed(
+                    const Duration(milliseconds: 120),
+                  );
+
+                  final canExecute =
+                      await canExecutePremiumAction(context);
+                  if (!canExecute) return;
+
+                  _handleRefresh();
+                },
+                onTapCancel: () =>
+                    setState(() => isPressed = false),
+                child: Transform.scale(
+                  scale: isPressed ? 0.93 : 1.0,
+                  child: AnimatedContainer(
+                    duration:
+                        const Duration(milliseconds: 250),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 28,
+                      vertical: 14,
+                    ),
+                    decoration: BoxDecoration(
+                      color: currentButtonColor,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      refreshButtonLabel,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                );
-              },
-            ),
-    );
-  } // build
-} // _Skills
+                ),
+              ),
+
+              const SizedBox(height: 40),
+            ],
+          );
+        },
+      ),
+    ),
+  );
+}
+
+}

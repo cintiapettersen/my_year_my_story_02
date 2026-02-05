@@ -110,21 +110,19 @@ class DidYouKnowService {
   // MODO DIÁRIO (USADO PELO WIDGET)
   // --------------------------------------------------
   Future<List<Map<String, dynamic>>> fetchDailyCuriosities() async {
-    debugPrint('🧠 DidYouKnowService.fetchDailyCuriosities CALLED');
+  try {
+    final result = await _supabase
+        .from('did_you_know')
+        .select('id, category, content, text_en, created_at');
 
-    try {
-      final result = await _supabase
-          .from('did_you_know')
-          .select('id, category, content, text_en, created_at');
+    if (result.isEmpty) return [];
 
-      if (result.isEmpty) return [];
-
-      final list = List<Map<String, dynamic>>.from(result);
-
-      return _smartBalancedSelection(list);
-    } catch (e) {
-      debugPrint('❌ Erro ao carregar curiosidades diárias: $e');
-      return [];
-    }
+    final list = List<Map<String, dynamic>>.from(result);
+    return _smartBalancedSelection(list);
+  } catch (e) {
+    debugPrint('❌ Erro ao carregar curiosidades diárias: $e');
+    rethrow;
   }
+}
+
 }
