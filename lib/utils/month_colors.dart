@@ -17,3 +17,4 @@ Color getMonthColor(int month) {
   ];
   return monthColors[month - 1];
 }
+

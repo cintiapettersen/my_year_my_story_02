@@ -183,11 +183,15 @@ void initState() {
             children: [
               const SizedBox(height: 40),
               Text(
-                'diary.title'.tr().toUpperCase(),
-                style: GoogleFonts.robotoMono(
-                  fontSize: 20,
-                  color: const Color.fromARGB(221, 143, 50, 98),
-                  fontWeight: FontWeight.bold,
+                'diary.title'.tr().toLowerCase(),
+                 style: GoogleFonts.monteCarlo (
+                  fontSize: 35,
+                  fontWeight: FontWeight.w600,
+                  color: const Color.fromARGB(221, 0, 0, 0),
+                  letterSpacing: 1.5,
+                  
+                  
+                  
                 ),
               ),
               const SizedBox(height: 10),

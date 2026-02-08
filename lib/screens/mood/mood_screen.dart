@@ -247,11 +247,16 @@ class _MoodScreenState extends State<MoodScreen> {
             children: [
               const SizedBox(height: 26),
               Text(
-                "mood.how_are_you_feeling".tr().toUpperCase(),
+                "mood.how_are_you_feeling".tr().toLowerCase(),
                 textAlign: TextAlign.center,
-                style: GoogleFonts.courierPrime(
-                  fontSize: 18,
+                
+                style: GoogleFonts.monteCarlo(
+                  color: Colors.black,
+                  fontSize: 32,
                   fontWeight: FontWeight.w600,
+                  letterSpacing: 1.3,
+          
+
                 ),
               ),
               const SizedBox(height: 14),
@@ -259,7 +264,7 @@ class _MoodScreenState extends State<MoodScreen> {
                 widthFactor: 0.9,
                 child: Container(
                   height: 1,
-                  color: Colors.black.withOpacity(0.25),
+                  color: Colors.black
                 ),
               ),
               const SizedBox(height: 12),

@@ -93,7 +93,6 @@
     "success_title": "Email sent!",
     "success_desc": "Check your inbox and follow the instructions to reset your password.",
     "back": "Back to login"
-  }
 
 
 },
@@ -376,7 +375,7 @@
   "gratitude": "Gratitude",
   "about_me": "About Me",
   "did_you_know": "Did you know?",
-  "dailyluckpage": "Today's Message",
+  "central_messages": "Messages Center",
   "calendar_page": "Calendar & Reminders",
 
   "daily_inspiration": "🌙 Fetching today’s inspiration...",
@@ -1084,10 +1083,55 @@
 "cta": "Rate now",
 "not_now": "Not now"
 
+},
 
+
+  "cards": {
+  "page_title": "Weekly Reflection",
+  "button": "Message Center",
+  "onboarding": "Here you’ll find readings shaped by what has been present in your recent days.The more you use the app, the more these messages connect to your story.",
+  "placeholder": "Tap to reveal your reading.Over time, as you record and express yourself, these messages begin to reflect who you are.",
+  "hint": "Choose a type of reading",
+  "reveal": "Reveal message",
+   "share_text": "My reading on My Year, My Story ✨",
+  "image_ready": "Image ready to share ✨",
+
+  "fallback": {
+    "weekly_reflection": "The past days seem to have followed their own rhythm, with pauses and repetition. Sometimes, simply noticing that already matters.",
+    "mood_insight": "There are signs of emotional variation, as if balance is being sought without urgency or pressure.",
+    "personality": "There is a tendency to observe carefully before acting, allowing thoughts and feelings to settle over time."
+  },
+
+ "weekly_reflection": "Tap to reveal your reading.\nThe more you reflect and express yourself, the more these messages begin to reflect who you are.",
+      "mood_insight": "Your emotions take shape as you express them.\nKeep using the app to receive more connected insights.",
+      "personality": "Over time, subtle patterns begin to emerge.\nContinue using the app to receive messages that feel more like you."
+
+   },
+
+  "card_types": {
+    "weeklyReflection": {
+      "label": "Reflection",
+      "title": "WEEKLY REFLECTION"
+    },
+    "moodInsight": {
+      "label": "Emotions",
+      "title": "FEELINGS & EXPRESSIONS"
+    },
+    "personality": {
+      "label": "Patterns",
+      "title": "YOU, NOW"
+    }
+  }
 }
 
 }
+
+  
+
+
+
+
+
 
 
 
