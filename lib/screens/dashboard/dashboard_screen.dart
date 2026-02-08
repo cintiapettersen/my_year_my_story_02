@@ -13,13 +13,12 @@ import 'package:myyearmystory/widgets/monthly/gratitude_widget.dart';
 import 'package:myyearmystory/screens/monthly/current_month_screen.dart';
 import '../../widgets/monthly/curiosities_widget.dart';
 import 'package:myyearmystory/widgets/monthly/did_you_know_widget.dart';
-import 'package:myyearmystory/widgets/monthly/dailyluckpage.dart';
-import 'package:myyearmystory/widgets/monthly/calender/calendar_page.dart';
 
+import 'package:myyearmystory/widgets/monthly/calender/calendar_page.dart';
 
 import 'package:myyearmystory/widgets/shared/app_bottom_menu.dart';
 import 'package:myyearmystory/screens/menus/app_drawer.dart';
-
+import 'package:myyearmystory/screens/messages/central_messages_page.dart';
 
 import 'package:myyearmystory/screens/splash/fade_page_transition.dart';
 import 'package:myyearmystory/screens/notifications/daily_popup.dart';
@@ -34,6 +33,11 @@ import 'package:myyearmystory/services/review_service.dart';
 
 import 'package:myyearmystory/screens/popups/review_popup.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+
+
+
+
 
 class DashboardScreen extends StatefulWidget {
   final int month;
@@ -1030,8 +1034,8 @@ Widget _buildCard({
           );
           break;
 
-        case '/daily_luck':
-          target = const DailyLuckPage();
+          case '/central_messages':
+          target = const CentralMessagesPage();
           break;
 
         case '/calendar_page':
@@ -1129,10 +1133,10 @@ Widget _buildCard({
       ),
       _buildCard(
         context: context,
-        title: tr('dashboard.dailyluckpage'),
-        icon: PhosphorIconsRegular.clover,
+        title: tr('dashboard.central_messages'),
+        icon: PhosphorIconsRegular.envelopeOpen,
         color: const Color(0xFF74a192),
-        route: '/daily_luck',
+        route: '/central_messages',
       ),
       _buildCard(
         context: context,

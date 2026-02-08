@@ -353,7 +353,7 @@
   "gratitude": "Gratidão",
   "about_me": "Sobre Mim",
   "did_you_know": "você sabia",
-  "dailyluckpage": "Mensagem de hoje",
+  "central_messages": "Central de Mensagens",
   "calendar_page": "Calendário & Alertas",
 
   "daily_inspiration": "Buscando inspiração para hoje...",
@@ -1058,14 +1058,53 @@
 "cta": "Avaliar agora",
 "not_now": "Agora não"
 
+},
+"cards": {
+  "page_title": "Reflexão da Semana",
+  "button": "Central de Mensagens",
+  "onboarding": "Aqui você encontra leituras criadas a partir do que esteve presente nos seus últimos dias. Com o tempo, elas se tornam cada vez mais conectadas à sua história.",
+  "placeholder": "Toque para revelar sua leitura. Quanto mais você registra e se expressa, mais essas mensagens refletem quem você é. ",
+  "hint": "Escolha o tipo de leitura",
+  "reveal": "Revelar mensagem",
+  "share_text": "Minha leitura no My Year, My Story ✨",
+  "image_ready": "Imagem pronta para compartilhar ✨",
 
+  "fallback": {
+    "weekly_reflection": "Os últimos dias parecem ter seguido um ritmo próprio, com pausas e repetições. Às vezes, perceber isso já é um passo importante.",
+    "mood_insight": "Há sinais de variação emocional, como se você estivesse buscando equilíbrio sem pressa ou cobrança.",
+    "personality": "Existe uma tendência a observar com cuidado antes de agir, organizando pensamentos e sentimentos aos poucos."
+  },
+
+  "warmup": {
+      "weekly_reflection": "Toque para revelar sua leitura.\nQuanto mais você registra e se expressa, mais essas mensagens refletem quem você é.",
+      "mood_insight": "Suas emoções vão ganhando forma conforme você se expressa.\nContinue registrando para receber leituras mais conectadas ao seu momento.",
+      "personality": "Com o tempo, padrões sutis começam a aparecer.\nUse o app com mais frequência para receber mensagens mais alinhadas a você."
+    },
+
+
+  "card_types": {
+    "weeklyReflection": {
+      "label": "Reflexão",
+      "title": "REFLEXÃO DA SEMANA"
+    },
+    "moodInsight": {
+      "label": "Emoções",
+      "title": "SENTIMENTOS E EXPRESSÕES"
+    },
+    "personality": {
+      "label": "Padrões",
+      "title": "VOCÊ, AGORA"
+    }
+  }
 }
 
 
+  
+    }
+  
 
 
 
-}
 
 
 
