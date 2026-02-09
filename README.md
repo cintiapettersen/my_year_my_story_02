@@ -1,15 +1,18 @@
-# myyearmystory
-A new Flutter project.
+# My Year, My Story
 
-## Getting Started
+My Year, My Story is a mobile app focused on self-discovery and emotional reflection for adolescents and young adults.
 
-This project is a starting point for a Flutter application.
+## About the project
+The app provides a safe, non-competitive space to record emotions, daily reflections, goals, and personal memories over time.
 
-A few resources to get you started if this is your first Flutter project:
+## Gemini integration
+Google Gemini is used to support reflective insights based on the user’s own records.
+The AI does not give advice or diagnoses, acting only as a layer of synthesis to help users recognize patterns and emotional atmospheres.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Built with
+- Flutter
+- Dart
+- Supabase
+- Google Gemini API
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+The project explores how technology can support reflection and memory without replacing human experience.
