@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'dart:ui' as ui;
+
 import 'package:myyearmystory/utils/month_colors.dart';
-import 'package:myyearmystory/widgets/monthly/dailyluckpage.dart';
+
 
 class MonthMenu extends StatelessWidget {
   final int month;
@@ -121,23 +121,33 @@ class MonthMenu extends StatelessWidget {
               ),
               child: Column(
                 children: [
+
                   Text(
-                    "$monthName $year",
-                    style: TextStyle(
-                      fontSize: titleSize,
-                      fontWeight: FontWeight.bold,
-                      color: textColor,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    formattedDate,
-                    style: TextStyle(
-                      fontSize: subtitleSize,
-                      color: textColor.withOpacity(0.8),
-                    ),
-                  ),
+  "$monthName $year".toLowerCase(),
+  style: GoogleFonts.cinzelDecorative(
+
+    fontSize: 20,
+    
+    fontWeight: FontWeight.w600,
+    color: textColor,
+    letterSpacing: 0.5,
+  ),
+  textAlign: TextAlign.center,
+),
+
+const SizedBox(height: 4),
+
+Text(
+  formattedDate,
+  style: GoogleFonts.poppins(
+    fontSize: subtitleSize,
+    fontWeight: FontWeight.normal,
+    color: textColor.withAlpha(204), // equivalente a 0.8
+    letterSpacing: 1.0,
+  ),
+  textAlign: TextAlign.center,
+),
+
                 ],
               ),
             ),

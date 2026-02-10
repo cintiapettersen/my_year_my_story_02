@@ -85,17 +85,16 @@ class MonthHeader extends StatelessWidget {
 
 
           /// 📅 Mês + ano
-          Text(
-            '$monthName $year',
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              letterSpacing: 1.1,
-            ),
-            textAlign: TextAlign.center,
-          ),
-
+Text(
+  "$monthName $year",
+  style: const TextStyle(
+    fontSize: 15,
+    fontWeight: FontWeight.bold,
+    color: Colors.white,
+    letterSpacing: 0.5,
+  ),
+  textAlign: TextAlign.center,
+),
           const SizedBox(height: 6),
 
         

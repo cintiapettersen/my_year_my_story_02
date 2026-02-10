@@ -1,9 +1,11 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/message_card.dart';
 import '../models/message_category.dart';
-import 'gemini_rest_service.dart';
 
-import 'package:flutter/foundation.dart';
+import 'package:easy_localization/easy_localization.dart';
+
+import 'package:flutter/widgets.dart';
+
 
 
 
@@ -60,33 +62,28 @@ class MessageServiceSupabase {
   }
 }
 
-
- /// 🎯 Método principal chamado pela UI
+/// 🎯 Método principal chamado pela UI
 Future<MessageCard> getCardByType(
   MessageType type, {
-  String? context,
+  String? semanticContext,
+  required String outputLanguage,
 }) async {
   final user = _client.auth.currentUser;
 
-  // 🔒 Sem usuário → estado inicial (convidado)
   if (user == null) {
     return _warmupCard(type);
   }
 
-    // 🧠 Sem sinais suficientes
-    final hasEnoughSignals = await _hasMinimumSignals();
-    if (!hasEnoughSignals) {
-      return _warmupCard(type);
-    }
+  final hasEnoughSignals = await _hasMinimumSignals();
+  if (!hasEnoughSignals) {
+    return _warmupCard(type);
+  }
 
+  debugPrint('🌍 OUTPUT LANGUAGE (service): $outputLanguage');
 
-  // 🌍 Resolver idioma de saída
-  final outputLanguage = _resolveOutputLanguage();
-
-  // 🤖 Gemini (somente se houver sinais)
   final geminiText = await _tryGemini(
     type,
-    context,
+    semanticContext,
     outputLanguage,
   );
 
@@ -100,31 +97,10 @@ Future<MessageCard> getCardByType(
     );
   }
 
-  // 🧯 Falha técnica → fallback real
   return _fallbackCard(type);
 }
 
-  // ---------------------------------------------------------------------------
-  // 🌍 Idioma
-  // ---------------------------------------------------------------------------
 
-  String _resolveOutputLanguage() {
-    // 1️⃣ Preferência explícita do usuário
-    final userLang = _client.auth.currentUser?.userMetadata?['language'];
-    if (userLang is String && userLang.isNotEmpty) {
-      return userLang;
-    }
-
-    // 2️⃣ Idioma do dispositivo
-    final deviceLang =
-        PlatformDispatcher.instance.locale.languageCode;
-
-    if (deviceLang == 'pt') return 'pt-BR';
-    if (deviceLang == 'en') return 'en';
-
-    // 3️⃣ Fallback seguro
-    return 'pt-BR';
-  }
 
   // ---------------------------------------------------------------------------
   // 🤖 Gemini helpers
@@ -171,10 +147,16 @@ Future<MessageCard> getCardByType(
   ) {
     assert(outputLanguage.isNotEmpty);
 
+    
+
   final languageInstruction =
-      outputLanguage == 'pt'
-          ? 'Write the text in Brazilian Portuguese.'
-          : 'Write the text in English.';
+  outputLanguage == 'pt' || outputLanguage == 'pt-BR'
+    ? 'Write the text in Brazilian Portuguese.'
+    : 'Write the text in English.';
+
+    debugPrint('🌍 OUTPUT LANGUAGE: $outputLanguage');
+    debugPrint('📝 LANGUAGE INSTRUCTION: $languageInstruction');
+
 
   final systemBlock = '''
 SYSTEM INSTRUCTION:

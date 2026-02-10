@@ -5,7 +5,6 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../models/message_card.dart';
 import '../../models/message_category.dart';
 import '../../services/message_service_supabase.dart';
-import '../../services/gemini_rest_service.dart';
 import '../../widgets/shared/remote_data_wrapper.dart';
 
 import '../../widgets/shared/main_scaffold.dart';
@@ -35,8 +34,8 @@ class _CentralMessagesPageState extends State<CentralMessagesPage> {
   bool _isFavorite = false;
   bool _hasRequestedCard = false;
 
-  final GlobalKey _cardKey = GlobalKey(); // ❌ remove daqui
 
+  final GlobalKey _cardKey = GlobalKey();
 
 @override
 void initState() {
@@ -49,37 +48,40 @@ void initState() {
   _loadCard(); // 👉 ESSENCIAL
 }
 
-  Future<void> _loadCard() async {
+ Future<void> _loadCard() async {
+  setState(() {
+    _isLoading = true;
+    _hasError = false;
+    _currentCard = null;
+  });
+
+  try {
+    final outputLanguage = resolveOutputLanguage(context);
+
+    debugPrint('🌍 OUTPUT LANGUAGE (UI): $outputLanguage');
+
+    final card = await _messageService.getCardByType(
+      _activeType,
+      semanticContext: null, // ou seu texto
+      outputLanguage: outputLanguage,
+    );
+
+    if (!mounted) return;
+
     setState(() {
-      _isLoading = true;
-      _hasError = false;
-      _currentCard = null;
+      _currentCard = card;
+      _isFavorite = false;
+      _isLoading = false;
     });
-
-    try {
-      final card = await _messageService.getCardByType(_activeType);
-
-      debugPrint('TYPE: $_activeType');
-     debugPrint('CARD: ${card.text}');
-    debugPrint('SOURCE: ${card.source}');
-
-      if (!mounted) return;
-
-      setState(() {
-        _currentCard = card;
-        _isFavorite = false; // 👈 AQUI
-        _isLoading = false;
-      });
-    } catch (_) {
-      if (!mounted) return;
-
-
-      setState(() {
-        _hasError = true;
-        _isLoading = false;
-      });
-    }
+  } catch (_) {
+    if (!mounted) return;
+    setState(() {
+      _hasError = true;
+      _isLoading = false;
+    });
   }
+}
+
 
  void _changeType(MessageType type) {
   setState(() {
@@ -151,13 +153,15 @@ Future<void> _saveCardAsImage() async {
       text: 'cards.share_text'.tr(),
     );
 
-   ScaffoldMessenger.of(context).showSnackBar(
+  if (!mounted) return;
+
+ScaffoldMessenger.of(context).showSnackBar(
   SnackBar(
     content: Text(
       'cards.image_ready'.tr(),
       style: const TextStyle(color: Colors.white),
     ),
-    backgroundColor: const Color.fromARGB(255, 203, 55, 151), // 💖 escolha sua cor aqui
+    backgroundColor: const Color.fromARGB(255, 203, 55, 151),
     behavior: SnackBarBehavior.floating,
     duration: const Duration(seconds: 2),
   ),
@@ -170,6 +174,23 @@ Future<void> _saveCardAsImage() async {
 }
 
 
+// ---------------------------------------------------------------------------
+// 🌍 Idioma
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// 🌍 Idioma de saída (fonte única de verdade para IA)
+// ---------------------------------------------------------------------------
+
+
+
+String resolveOutputLanguage(BuildContext context) {
+  final uiLang = context.locale.languageCode;
+
+  if (uiLang == 'pt') return 'pt';
+  if (uiLang == 'en') return 'en';
+
+  return 'pt'; // fallback seguro
+}
 
 
 
@@ -236,49 +257,6 @@ Widget build(BuildContext context) {
     ),
   );
 }
-
-
-Widget _buildCardBody() {
-  final today = DateFormat('dd/MM/yyyy').format(DateTime.now());
-
-  return RepaintBoundary(
-    key: _cardKey,
-    child: Container(
-      key: ValueKey('${_activeType}_${_currentCard?.text ?? 'empty'}'),
-      margin: const EdgeInsets.all(24),
-      padding: const EdgeInsets.all(28),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(32),
-      ),
-     child: Column(
-  children: [
-    Expanded(
-      child: _buildCardContent(),
-    ),
-
-    const SizedBox(height: 12),
-
-    Align(
-      alignment: Alignment.centerRight,
-      child: Text(
-        today,
-        style: GoogleFonts.robotoMono(
-          fontSize: 11,
-          color: Colors.black38,
-          letterSpacing: 1,
-        ),
-      ),
-    ),
-  ],
-),
-
-    )
-  );
-
-}
-
-
 
 
 
@@ -458,6 +436,9 @@ Widget _buildMainCard() {
                 ),
               ),
 
+
+              const SizedBox(height: 20),
+
               /// 🧠 CONTEÚDO
               Expanded(
                 child: _buildCardContent(),
@@ -474,6 +455,9 @@ Widget _buildMainCard() {
                         ? null
                         : () {
                             setState(() => _hasRequestedCard = true);
+
+
+
                             _loadCard();
                           },
                     style: TextButton.styleFrom(

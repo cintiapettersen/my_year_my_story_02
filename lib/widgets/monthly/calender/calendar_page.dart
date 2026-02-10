@@ -36,18 +36,17 @@ class _CalendarPageState extends State<CalendarPage> {
   // CONSTANTES (WEEK HEADER)
   // ======================
   
-  List<String> _getWeekDays(BuildContext context) {
+ List<String> _getWeekDays(BuildContext context) {
   return [
-    tr('week.mon'),
-    tr('week.tue'),
-    tr('week.wed'),
-    tr('week.thu'),
-    tr('week.fri'),
-    tr('week.sat'),
-    tr('week.sun'),
+    tr('week.short.mon'),
+    tr('week.short.tue'),
+    tr('week.short.wed'),
+    tr('week.short.thu'),
+    tr('week.short.fri'),
+    tr('week.short.sat'),
+    tr('week.short.sun'),
   ];
 }
-
 
   static const List<Color> _weekDayColors = [
     Color(0xFFE9A3B8),
