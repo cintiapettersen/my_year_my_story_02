@@ -1,409 +1,23 @@
 {
-
-"january": "January",
-"february": "February",
-"march": "March",
-"april": "April",
-"may": "May",
-"june": "June",
-"july": "July",
-"august": "August",
-"september": "September",
-"october": "October",
-"november": "November",
-"december": "December",
-"months.december": "December",
-"month.december": "December",
-
-
-  "splash": {
-    "new_chapter": "A new chapter begins…",
-    "subtitle": "Your story. Your way.",
-    "login_button": "Log in / Create account",
-    "guest_button": "Explore as guest",
-    "privacy_notice": "By continuing, you agree to our Privacy Policy"
-
-    
-  },
-
-  "auth": {
-  "login": {
-    "description": "Record your memories, track your mood and tell your unique story month by month.",
-    "sign_in": "Sign in",
-    "create_account": "Create Account",
-    "email": "Email",
-    "password": "Password",
-    "remember_me": "Remember me",
-    "forgot_password": "Forgot password?",
-    "button": "Sign in",
-
-    "error_email_empty": "Enter your email",
-    "error_email_invalid": "Enter a valid email",
-    "error_password_empty": "Enter your password",
-    "error_password_short": "Password must be at least 6 characters",
-
-    "success": "Login successful!",
-    "error_general": "Error signing in",
-    "or_biometric": "or with biometrics",
-    "error_invalid_credentials": "Incorrect email or password.",
-    "enter_guest": "Enter as guest"
-
-  },
-
-  "reset": {
-    "title": "Create new password",
-    "subtitle": "Choose a new password to access your account",
-    "password": "New password",
-    "confirm": "Confirm new password",
-    "button": "Save new password",
-
-    "success": "Password updated successfully!",
-    "error": "Error updating password",
-
-    "validate_required": "Password is required",
-    "validate_short": "Password must be at least 6 characters",
-    "validate_mismatch": "Passwords do not match"
-    
-  },
-
-  "login_prompt": {
-    "title": "Sign in 💫",
-    "description": "To save and keep tracking your achievements, please sign in or create an account.",
-    "not_now": "Not now",
-    "login_button": "Sign in"
-  },
-
-  "biometric": {
-    "reason": "Confirm your identity to continue",
-    "loading": "Checking your info...",
-    "try_again": "Tap to try again"
-  },
-
-  "forgot": {
-    "title": "Forgot your password?",
-    "subtitle": "Enter your e-mail and we will send a link to reset your password.",
-    "email": "Email",
-    "button": "Send recovery link",
-    "validate_empty": "Please enter your email",
-    "validate_invalid": "Please enter a valid email",
-    "sent": "Recovery email sent!",
-    "not_found": "This email is not registered.",
-    "error": "Could not send the email.",
-    "error_general": "Unexpected error",
-    "success_title": "Email sent!",
-    "success_desc": "Check your inbox and follow the instructions to reset your password.",
-    "back": "Back to login"
-
-
-},
-
-
-  "drawer": {
-  "user": "Your Name",
-  "email": "Your Email",
-  "change_icon": "Change icon",
-  "profile": "Profile",
-  "help": "Help",
-  "about": "About",
-  "logout": "Logout",
-  "go_premium": "Go Premium",
-  "choose_icon":" Pick your icon",
-  "language": "Language",
-  "guest_name": "Guest",
-  "login_or_create": "Sign in or create account"
   
+  "mash": {
 
-  },
+  "month.january": "January",
+  "month.february": "February",
+  "month.march": "March",
+  "month.april": "April",
+  "month.may": "May",
+  "month.june": "June",
+  "month.july": "July",
+  "month.august": "August",
+  "month.september": "September",
+  "month.october": "October",
+  "month.november": "November",
+  "december": "December",
+  "months.december": "December",
+  "month.december": "December"
 
-
-  "profile": {
-   
-  "title": "Profile",
-  "name": "Full Name",
-  "email": "Email",
-  "birth": "Birth Date",
-  "save_button": "Save Changes",
-  "your_sign": "Your sign",
-  "years": "years",
-  "email_change_alert": "To change the email of your account, please contact support.",
-  "app_name": "My Year, My Story",
-  "free_plan": "Standard Plan",
-  "premium_plan": "Premium Plan",
-  "completed": "Profile updated successfully!",
-  "error": "An error occurred while saving your profile: {{0}}",
-  "full_name": "Full Name",
-  "birth_date": "Birth Date",
-   "updated": "Profile updated successfully!",
-   "delete_account": "Delete my account",
-  "delete_account_title": "Delete account",
-  "delete_account_description": "Are you sure you want to delete your account? This action is permanent and all your data will be deleted.",
-  "delete_account_confirm": "Delete account",
-  "delete_account_coming_soon": "Account deletion will be available soon."
-
-
-  },
-  "complete_profile": {
-    "subtitle": "Before you start, complete your profile quickly!",
-    "button": "Save and continue"
   
-
-  },
- 
-     "help": {
-    "title": "Need help?",
-    "subtitle": "Here you can find quick answers and ways to get in touch.",
-    "faq": "Frequently asked questions",
-    "contact": "email@sonhodepapel.com",
-    "button": "Go back"
-  },
-
-
-  "date_picker": {
-  "ok": "OK",
-  "cancel": "Cancel"
-},
-  
-  "premium": {
-    
-  "app_name": "My Year, My Story",
-  "title": "Premium Experience",
-  "main_phrase": "Create memories to carry for life.",
-  "sub_phrase": "Unlock special features and make your experience even more magical.",
-
-  "benefit1": "Unlimited access to monthly content",
-"benefit2": "Enhanced experience in the Daily Message",
-"benefit3": "Save unlimited memories",
-"benefit4": "Unlimited lists, goals, and gratitude",
-"benefit5": "More quizzes per month",
-"benefit6": "More exclusive tips and curiosities",
-"benefit7": "A free space to write and reflect",
-"benefit8": "Mood calendar with monthly statistics",
-"benefit9": "Calendar with notes and reminders",
-  "button": "BECOME PREMIUM ✨",
-  "later": "Maybe later"
-
-
-  },
-  "signup": {
-  "success": "Account created successfully!",
-  "error_general": "Error creating account. Please try again.",
-
-  "subtitle": "Create your account to start your journey.",
-  "full_name": "Full name",
-  "birth_date": "Birth date",
-  "email": "Email",
-  "password": "Password",
-  "confirm_password": "Confirm password",
-
-  "button_create": "Create account",
-  "or": "or",
-  "have_account": "I already have an account",
-
-  "error_name_required": "Name is required",
-  "error_name_short": "Name is too short",
-  "error_birth": "Select your birth date",
-  "error_email_required": "Email is required",
-  "error_email_invalid": "Enter a valid email address",
-  "error_password_required": "Password is required",
-  "error_password_short": "Password must be at least 6 characters",
-  "error_confirm_password_required": "Confirm your password",
-  "error_password_mismatch": "Passwords do not match",
-
-  "error_email_exists": "This email is already registered.",
-
-  "bio_info": "🔒 After creating your account, you can enable biometric login for faster and more secure access."
-
-
-},
-
-"reset": {
-  "success": "Recovery email sent!",
-  "error": "Error sending recovery email."
-
-},
-"error": {
-  "connection": "Connection error. Check your internet.",
-  "invalid_email": "Invalid email.",
-  "password_short": "Password must be at least 6 characters.",
-  "unexpected": "Unexpected error. Try again."
-
-},
-"login": {
-  "error_invalid_credentials": "Incorrect email or password.",
-  "error_email_not_confirmed": "Email not confirmed.",
-  "success": "Login successful!"
-
-
-  },
-
-  "bottom": {
-    "home": "Home",
-    "current_month": "My Month",
-    "photos": "Photos",
-    "diary": "Diary",
-    "mood": "Mood",
-    "luck": "Daily Luck"
-  },
-
-  "photos": {
-    "title": "Monthly Photos",
-    "description": "Choose 4 photos from the month to keep as memories. Simple moments deserve to stay too.",
-    "empty": "No photos yet 💕\nChoose up to 4 special photos for this month!",
-    "popup_title": "Coming soon 💫",
-    "popup_content": "The photo gallery will be available in upcoming updates.\nFor now, enjoy the other sections!",
-    "ok_button": "Ok",
-    "page_label": "Monthly Photos",
-    "replace": "Replace photo",
-    "delete": "Delete photo",
-    "limit_reached": "You have already added 4 photos this month.",
-   "comment_title": "About this moment",
-    "comment_hint": "What does this photo represent to you?",
-    "too_large": "The selected photo is too large. Choose a smaller image."
-},
-
-
-  "premium_popup": {
-    "title": "Become Premium",
-    "message": "With the Premium plan, you unlock all app features and can create as many memories as you want!",
-    "upgrade_button": "See Premium"
-  },
-
-  "popup_login": {
-    "required_title": "Login required",
-    "required_description": "Create a free account to save your answers 💖",
-    "cancel": "Later",
-    "login_button": "Log in"
-  },
-
-  "actions": {
-    "ok": "OK",
-    "close": "Close",
-    "login": "Login"
-  },
-
-  "coming_soon_popup": {
-    "title": "Feature coming soon",
-    "message": "This feature will be available soon! 💕",
-    "button": "Got it"
-  },
-
-  "monthly_goals": {
-    "title": "Monthly Goals",
-    "description": "Plan, co-create and organize your goals. Every time you decide, you’re already one step closer to making your dreams real.",
-    "add_goal_hint": "Type here...",
-    "no_goals_yet": "No goals added yet.\nStart by setting your goals for this month!",
-    "goal_added": "Goal added successfully!",
-    "goal_removed": "Goal removed successfully!",
-    "error_load_goals": "Error loading goals.",
-    "error_add_goal": "Error adding goal.",
-    "error_update_goal": "Error updating goal.",
-    "error_remove_goal": "Error removing goal.",
-    "login_required": "Sign in to create and track your monthly goals 💕",
-    "add_monthly": "Add monthly goal",
-
-     "empty": "How about starting by setting a goal for this month?\nSmall steps matter too 💗",
-    
-    "add_main": "Add monthly goal",
-    "add_daily": "Add goal",
-    "tab_month": "MONTHLY GOALS",
-    "tab_day": "DAILY GOALS",
-    "completed": "completed"
-
-  },
-
-  "month_menu": {
-    "goals": "Monthly Goals",
-    "about_me": "About Me",
-    "quiz": "Interactive Quiz",
-    "signs": "Zodiac of the Month",
-    "tips": "My Moment",
-    "facts": "Did You Know?",
-    "interview": "Connections",
-    "lists": "My Lists",
-    "gratitude": "Gratitude",
-    "reflections": "Reflections",
-    "photos": "Monthly Photos",
-    "dates": "Calendar & Reminders",
-    "choose_section": "What do you want to explore today?"
-  },
-
-  "dailyLuck": {
-    "title": "DAILY MESSAGE",
-    "subtitle": "EVERY DAY A NEW MESSAGE TO INSPIRE YOU",
-    "initialPlaceholder": "Tap to reveal your daily message ✨",
-    "loading": "Consulting the universe... ✨",
-    "turnAgain": "Turn again",
-    "comeBackTomorrow": "Come back tomorrow ✨",
-    "consultingUniverse": "Consulting the universe... ✨",
-    "limitPremiumUserMessage": "Daily limit reached 💜",
-    "limitPremiumUserText": "You have already turned your card today.\nCome back tomorrow for a new message ✨",
-    "freeLimitTitle": "Come back tomorrow ✨",
-    "freeLimitText": "You've already seen your message of the day. More surprises await you tomorrow 💫",
-    "freeLimitButtonPremium": "See more today",
-    "freeLimitButtonCancel": "Not now",
-    "premiumLimitTitle": "Daily limit reached!",
-    "premiumLimitText": "You've already checked your messages for today. Come back tomorrow to see more ✨",
-    "premiumLimitButtonOk": "Ok",
-   
-   "fallback1": "Good energy is coming your way today.",
-   "fallback2": "Take a deep breath and trust — your day will be light.",
-   "fallback3": "Your inner glow is stronger than ever."
-
-   },
-
-    "test_screen": {
-    "hello_name": "Hello, Cintia PADUA!",
-    "language_pt": "PT-BR",
-    "language_en": "EN"
-
-  },
-
-  "dashboard": {
-  "hello_user": "Hello, {user}!",
-  "guest_user": "Guest",
-  "track_your_activities": "Track your activities 👋",
-  "about_you_title": "A curiosity about you",
-  "about_you_empty": "You haven't shared anything about yourself this month",
-  "navigate_months": "Browse the months",
-  "answered_in": "answered in {{date}}",
-  "cancel": "Cancel",
- 
-  "goals": "Goals",
-  "mood": "Mood",
-  "diary": "Diary",
-  "monthly_quiz": "Monthly Quiz",
-  "gratitude": "Gratitude",
-  "about_me": "About Me",
-  "did_you_know": "Did you know?",
-  "central_messages": "Messages Center",
-  "calendar_page": "Calendar & Reminders",
-
-  "daily_inspiration": "🌙 Fetching today’s inspiration...",
-  "search_previous_dates": "Search dates",
-  "select_date": "Select a date",
-  "choose_your_color_today": "Choose your color today:",
-  "your_month_space": "Your month space!",
-  "curiosity_title": "A curiosity about you",
-  "no_curiosity_message": "You haven't shared anything about yourself this month.",
-  "curiosity_cta": "A space just for you to reflect, answer, and listen to yourself with kindness 💕",
-  "daily_inspiration_guest": "🌙 Fetching today’s inspiration...",
-
-
-
-  "month_short": {
-    "jan": "Jan",
-    "feb": "Feb",
-    "mar": "Mar",
-    "apr": "Apr",
-    "may": "May",
-    "jun": "Jun",
-    "jul": "Jul",
-    "aug": "Aug",
-    "sep": "Sep",
-    "oct": "Oct",
-    "nov": "Nov",
-    "dec": "Dec"
-  }
 },
 
 
@@ -422,36 +36,379 @@
     "december": "December"
   },
 
+  "splash": {
+    "new_chapter": "a new chapter begins…",
+    "subtitle": "Your story, your way.",
+    "login_button": "Sign in / Create account",
+    "guest_button": "Explore as guest",
+    "privacy_notice": "By continuing, you agree to our Privacy Policy"
+  },
 
+  "auth": {
+    "login": {
+      "description": "Record your memories, track your mood, and tell your unique story month by month.",
+      "sign_in": "Sign in",
+      "create_account": "Create account",
+      "email": "Email",
+      "password": "Password",
+      "remember_me": "Remember me",
+      "forgot_password": "Forgot password?",
+      "button": "Sign in",
+      "error_email_empty": "Please enter your email",
+      "error_email_invalid": "Please enter a valid email",
+      "error_password_empty": "Please enter your password",
+      "error_password_short": "Password must be at least 6 characters",
+      "success": "Login successful!",
+      "error_general": "Login error",
+      "or_biometric": "or use biometrics",
+      "error_invalid_credentials": "Incorrect email or password.",
+      "enter_guest": "Continue as guest"
+    },
+
+    "reset": {
+      "title": "Create new password",
+      "subtitle": "Choose a new password to access your account",
+      "password": "New password",
+      "confirm": "Confirm new password",
+      "button": "Save new password",
+      "success": "Password updated successfully!",
+      "error": "Error updating password",
+      "validate_required": "Password is required",
+      "validate_short": "Password must be at least 6 characters",
+      "validate_mismatch": "Passwords do not match"
+    },
+
+    "login_prompt": {
+      "title": "Sign in 💫",
+      "description": "To save and track your journey, sign in or create an account.",
+      "not_now": "Not now",
+      "login_button": "Sign in"
+    },
+
+    "biometric": {
+      "reason": "Confirm your identity to continue",
+      "loading": "Checking your information...",
+      "try_again": "Tap to try again"
+    },
+
+    "forgot": {
+      "title": "Forgot your password?",
+      "subtitle": "Enter your email and we’ll send you a link to reset your password.",
+      "email": "Email",
+      "button": "Send recovery link",
+      "validate_empty": "Please enter your email",
+      "validate_invalid": "Please enter a valid email",
+      "sent": "Recovery email sent!",
+      "not_found": "This email is not registered.",
+      "error": "Could not send email.",
+      "error_general": "Unexpected error",
+      "success_title": "Email sent!",
+      "success_desc": "Check your inbox and follow the instructions to reset your password.",
+      "back": "Back to login"
+    }
+  },
+  "drawer": {
+    "user": "Your name",
+    "email": "Your email",
+    "change_icon": "Change icon",
+    "profile": "My Profile",
+    "help": "Help Center",
+    "about": "About the App",
+    "logout": "Sign out",
+    "go_premium": "Go Premium",
+    "choose_icon": "Choose your icon for today",
+    "language": "Language",
+    "guest_name": "Guest",
+    "login_or_create": "Sign in or create account"
+  },
+
+
+  "language": {
+  "title": "App Language",
+  "subtitle": "Choose how you prefer to use MyYearMyStory.",
+  "system": "Follow system language",
+  "portuguese": "Portuguese (Brazil)",
+  "english": "English",
+  "saved": "Language updated!",
+  "language": "Language",
+  "app_name": "My Year, My Story"
+
+
+},
+  "profile": {
+    "title": "Profile",
+    "full_name": "Full name",
+    "email": "Email",
+    "birth_date": "Birth date",
+    "save_button": "Save changes",
+    "your_sign": "Your zodiac sign",
+    "years": "years",
+    "email_change_alert": "To change your account email, please contact support.",
+    "app_name": "My Year, My Story",
+    "free_plan": "Standard Plan",
+    "premium_plan": "Premium Plan",
+    "completed": "Profile updated successfully!",
+    "error": "An error occurred while saving your profile: {{0}}",
+    "updated": "Your name has been updated successfully!",
+    "delete_account": "Delete my account",
+    "delete_account_title": "Delete account",
+    "delete_account_description": "Are you sure you want to delete your account? This action is permanent and all your data will be erased.",
+    "delete_account_confirm": "Delete account",
+    "delete_account_coming_soon": "Account deletion will be available soon."
+  },
+
+  "complete_profile": {
+    "subtitle": "Before starting, quickly complete your profile!",
+    "button": "Save and continue"
+  },
+
+  "date_picker": {
+    "ok": "OK",
+    "cancel": "Cancel"
+  },
+
+  "premium": {
+    "app_name": "My Year, My Story",
+    "title": "Premium Experience",
+    "main_phrase": "Create memories to last a lifetime.",
+    "sub_phrase": "Unlock special features and make your experience even more magical.",
+    "benefit1": "Unlimited access to monthly content",
+    "benefit2": "Enhanced Daily Message experience",
+    "benefit3": "Save unlimited memories",
+    "benefit4": "Unlimited lists, goals, and gratitude",
+    "benefit5": "More quizzes per month",
+    "benefit6": "More exclusive tips and curiosities",
+    "benefit7": "Free space to write and reflect",
+    "benefit8": "Mood calendar with monthly statistics",
+    "benefit9": "Calendar with notes and alerts",
+    "button": "GO PREMIUM ✨",
+    "later": "Maybe later"
+  },
+
+  "signup": {
+    "success": "Account created successfully!",
+    "error_general": "Error creating account. Please try again.",
+    "subtitle": "Create your account to start your journey.",
+    "full_name": "Full name",
+    "birth_date": "Birth date",
+    "email": "Email",
+    "password": "Password",
+    "confirm_password": "Confirm password",
+    "button_create": "Create account",
+    "or": "or",
+    "have_account": "I already have an account",
+    "error_name_required": "Please enter your name",
+    "error_name_short": "Name is too short",
+    "error_birth": "Please select your birth date",
+    "error_email_required": "Please enter your email",
+    "error_email_invalid": "Please enter a valid email",
+    "error_password_required": "Please enter a password",
+    "error_password_short": "Password must be at least 6 characters",
+    "error_confirm_password_required": "Please confirm your password",
+    "error_password_mismatch": "Passwords do not match",
+    "error_email_exists": "This email is already registered.",
+    "bio_info": "🔒 After creating your account, you can enable biometric login for fast and secure access."
+  },
+
+  "error": {
+    "connection": "Connection error. Please check your internet.",
+    "invalid_email": "Invalid email.",
+    "password_short": "Password must be at least 6 characters.",
+    "unexpected": "Unexpected error. Please try again."
+  },
+  "bottom": {
+    "home": "Home",
+    "current_month": "My Month",
+    "photos": "Photos",
+    "diary": "Diary",
+    "mood": "Mood",
+    "luck": "Daily Luck"
+  },
+
+  "photos": {
+    "title": "Monthly Photos",
+    "description": "Choose 4 photos from the month to keep as memories. Simple moments deserve to stay too.",
+    "empty": "No photos yet 💕\nChoose up to 4 special photos for this month!",
+    "popup_title": "Coming soon 💫",
+    "popup_content": "The photo gallery will be available in upcoming updates.\nFor now, enjoy the other app sections!",
+    "ok_button": "Ok",
+    "page_label": "Monthly photos",
+    "replace": "Replace photo",
+    "delete": "Delete photo",
+    "limit_reached": "You have already added 4 photos this month.",
+    "comment_title": "About this moment",
+    "comment_hint": "What does this photo represent to you?",
+    "too_large": "The selected photo is too large. Please choose a smaller image."
+  },
+
+  "premium_popup": {
+    "title": "Go Premium",
+    "message": "With the Premium plan, you unlock all app features and can create as many memories as you want!",
+    "upgrade_button": "Discover Premium"
+  },
+
+  "popup_login": {
+    "required_title": "Login required",
+    "required_description": "Create a free account to save your answers 💖",
+    "cancel": "Later",
+    "login_button": "Sign in"
+  },
+
+  "actions": {
+    "ok": "OK",
+    "close": "Close",
+    "login": "Sign in"
+  },
+
+  "coming_soon_popup": {
+    "title": "Feature coming soon",
+    "message": "This feature will be available soon! 💕",
+    "button": "Got it"
+  },
+
+  "monthly_goals": {
+    "title": "Monthly Goals",
+    "description": "Plan, co-create, and organize your monthly goals. Every decision brings you one step closer to turning your dreams into reality.",
+    "add_goal_hint": "Write here…",
+    "no_goals_yet": "No goals added yet.\nStart by setting your goals for this month!",
+    "goal_added": "Goal added successfully!",
+    "goal_removed": "Goal removed successfully!",
+    "error_load_goals": "Error loading goals.",
+    "error_add_goal": "Error adding goal.",
+    "error_update_goal": "Error updating goal.",
+    "error_remove_goal": "Error removing goal.",
+    "login_required": "Sign in to create and track your monthly goals 💕",
+    "empty": "How about starting by setting a goal for this month?\nSmall steps count too 💗",
+    "add_monthly": "Add monthly goal",
+    "add_main": "Add monthly goal",
+    "add_daily": "Add goal",
+    "tab_month": "MONTHLY GOALS",
+    "tab_day": "DAILY GOALS",
+    "completed": "completed",
+    "view_more": "see more..."
+  },
+  "month_menu": {
+    "goals": "Monthly Goals",
+    "about_me": "About Me",
+    "quiz": "Interactive Quiz",
+    "signs": "Zodiac of the Month",
+    "tips": "My Moment",
+    "facts": "Did You Know?",
+    "interview": "Connections",
+    "lists": "My Lists",
+    "gratitude": "Gratitude",
+    "reflections": "Reflections",
+    "photos": "Monthly Photos",
+    "dates": "Calendar & Alerts",
+    "choose_section": "What would you like to explore today?"
+  },
+
+  "dailyLuck": {
+    "title": "DAILY MESSAGE",
+    "subtitle": "A NEW MESSAGE EVERY DAY\nTO INSPIRE YOU",
+    "initialPlaceholder": "Tap to reveal your daily message ✨",
+    "loading": "Consulting the universe... ✨",
+    "turnAgain": "Turn again",
+    "comeBackTomorrow": "Come back tomorrow ✨",
+    "consultingUniverse": "Consulting the universe... ✨",
+    "limitPremiumUserMessage": "Daily limit reached 💜",
+    "limitPremiumUserText": "You’ve already drawn your card today.\nCome back tomorrow for a new message ✨",
+    "freeLimitTitle": "Come back tomorrow ✨",
+    "freeLimitText": "You’ve already seen today’s message. More surprises await you tomorrow 💫",
+    "freeLimitButtonPremium": "I want to see more today",
+    "freeLimitButtonCancel": "Not now",
+    "fallback1": "Good energies are coming your way today.",
+    "fallback2": "Take a deep breath and trust — today will be light.",
+    "fallback3": "Your inner glow is stronger than ever.",
+    "premiumLimitTitle": "Daily limit reached!",
+    "premiumLimitText": "You’ve already checked your messages today. Come back tomorrow to discover more ✨",
+    "premiumLimitButtonOk": "Ok"
+  },
+
+  "dashboard": {
+    "hello_user": "Hello, {user}!",
+    "guest_user": "Guest",
+    "track_your_activities": "Track your activities 👋",
+    "answered_in": "answered on {{date}}",
+    "daily_inspiration_guest": "🌙 Looking for today’s inspiration...",
+    "goals": "Goals",
+    "mood": "Mood",
+    "diary": "Diary",
+    "monthly_quiz": "Monthly Quiz",
+    "gratitude": "Gratitude",
+    "about_me": "About Me",
+    "did_you_know": "did you know",
+    "central_messages": "Message Center",
+    "calendar_page": "Calendar & Alerts",
+    "daily_inspiration": "Looking for inspiration for today...",
+    "search_previous_dates": "Search dates",
+    "select_date": "Select a date",
+    "choose_your_color_today": "Choose your color today:",
+    "your_month_space": "Your monthly space!",
+    "about_you_title": "Curiosity about you",
+    "about_you_empty": "You haven’t shared anything about yourself this month yet",
+    "navigate_months": "Navigate through months",
+    "curiosity_title": "A curiosity about you",
+    "no_curiosity_message": "You haven’t shared anything about yourself this month yet.",
+    "curiosity_cta": "A space just for you to reflect, answer, and listen to yourself with care 💕",
+    "cancel": "Cancel",
+    "month_short": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dec"
+    }
+  },
+
+  "month": {
+    "january": "January",
+    "february": "February",
+    "march": "March",
+    "april": "April",
+    "may": "May",
+    "june": "June",
+    "july": "July",
+    "august": "August",
+    "september": "September",
+    "october": "October",
+    "november": "November",
+    "december": "December"
+  },
 
   "months": {
-  "january": "January",
-  "february": "February",
-  "march": "March",
-  "april": "April",
-  "may": "May",
-  "june": "June",
-  "july": "July",
-  "august": "August",
-  "september": "September",
-  "october": "October",
-  "november": "November",
-  "december": "December",
-
-  "1": "January",
-  "2": "February",
-  "3": "March",
-  "4": "April",
-  "5": "May",
-  "6": "June",
-  "7": "July",
-  "8": "August",
-  "9": "September",
-  "10": "October",
-  "11": "November",
-  "12": "December"
-},
-
+    "january": "January",
+    "february": "February",
+    "march": "March",
+    "april": "April",
+    "may": "May",
+    "june": "June",
+    "july": "July",
+    "august": "August",
+    "september": "September",
+    "october": "October",
+    "november": "November",
+    "december": "December",
+    "1": "January",
+    "2": "February",
+    "3": "March",
+    "4": "April",
+    "5": "May",
+    "6": "June",
+    "7": "July",
+    "8": "August",
+    "9": "September",
+    "10": "October",
+    "11": "November",
+    "12": "December"
+  },
 
   "calendar_month_short": {
     "1": "Jan",
@@ -468,37 +425,25 @@
     "12": "Dec"
   },
 
-  
-
- "general": {
-   "cancel": "cancel"
-
-
-},
-
+  "general": {
+    "cancel": "Cancel"
+  },
 
   "quiz": {
-    
-    "description": "Answer this month's questions and discover a little more about yourself. Sometimes, small answers reveal big things.",
-  "page_label": "Interactive Quiz",
-  "button_result": "See my result ✨",
-  "button_retry": "Retry quiz",
-
-  "next": "Next",
-  "question_counter": "Question {}/{}",
-  
-
-  "ready_title": "All set ✨",
-  "ready_desc": "Now it’s time to see your result 💖",
-
-  "answers_title": "Your answers 💬",
-
-  "missing_title": "Oops!",
-  "missing_message": "You left one or more questions unanswered.",
-  "missing_button": "Got it",
-  "missing_answers_barrier": "missing_answers_popup",
-
-  "result_close": "Close"
+    "description": "Answer this month’s questions and discover a little more about yourself. Sometimes small answers reveal big things.",
+    "page_label": "Interactive Quiz",
+    "button_result": "See my result ✨",
+    "button_retry": "Retake quiz",
+    "next": "Next",
+    "question_counter": "Question {}/{}",
+    "ready_title": "All set ✨",
+    "ready_desc": "Now it’s time to see your result 💖",
+    "answers_title": "Your answers 💬",
+    "missing_title": "Oops!",
+    "missing_message": "You left one or more questions unanswered.",
+    "missing_button": "Got it",
+    "missing_answers_barrier": "popup_missing_answers",
+    "result_close": "Close"
   },
 
   "curiosities": {
@@ -506,297 +451,170 @@
     "description": "Answer fun questions and discover more about yourself!",
     "answer_hint": "Your answer...",
     "save": "Save answers",
-    "description_fixed": "A space just for you, to observe yourself with kindness and discover new little pieces of who you are. Here, you can reflect, listen to yourself, and allow yourself to feel — without hurry, without rules, just you.",
-  
-    "saved_success": "Your answers have been saved successfully 💖",
-    "save_error": "We couldn't save your answers right now. Please try again."
-  
+    "description_fixed": "A space just for you — to observe yourself with care and discover new pieces of who you are. Here, you can reflect, listen to yourself, and allow yourself to feel — no rush, no rules, just you.",
+    "saved_success": "Your answers were saved successfully 💖",
+    "save_error": "Could not save right now. Please try again."
   },
 
   "zodiac": {
     "title": "Zodiac of the Month",
     "description": "Discover the energy and characteristics influencing this period.",
-    "no_data": "We couldn't find zodiac info for today.",
+    "no_data": "We couldn’t find zodiac information for today.",
     "today_sign": "Today’s sign",
-    "phrase_title": "Sign Energy",
-    "moon_today": "Moon today",
-    "month_description": "Discover the energies and traits influencing this month ✨",
-    
+    "phrase_title": "Zodiac Energy",
+    "moon_today": "Today’s Moon",
+    "month_description": "Discover the energies and characteristics influencing the month ✨",
+    "personal_year_helper": "We use your birth date to calculate your Personal Year.",
     "color": "Color",
     "ruler": "Ruler",
     "number": "Number",
     "element": "Element",
     "stone": "Stone",
     "flower": "Flower",
-
-    
-"personal_year_title": "Your Personal Year",
-"personal_year_color_label": "Color of the Year",
-"personal_year_no_birthdate_title": "birth_date_missing",
-"personal_year_no_birthdate_text": "To calculate your Personal Year, we need your birth date.",
-"personal_year_edit_birthdate_button": "Edit birth date",
-"personal_year_go_to_login": "Log in",
-"personal_year_header_year": "Year",
-"personal_year_error": "We couldn't calculate your Personal Year. Please try again.",
-"login_required_title": "Log in to continue",
-"login_required_text": "Log in to discover your Personal Year ✨",
-"login_required_button": "Log in",
-"discover_personal_year_button": "Discover your Personal Year",
-
-"personal_year_helper": "Your Personal Year is calculated based on your birth date and the current year. It reveals the themes and energies that will influence your life in the coming months, helping you align with your personal growth and opportunities."
-
-
-
+    "personal_year_title": "your personal number",
+    "personal_year_color_label": "year color:",
+    "personal_year_no_birthdate_title": "Birth date not found",
+    "personal_year_no_birthdate_text": "To calculate your Personal Year, we need your birth date.",
+    "personal_year_edit_birthdate_button": "Edit birth date",
+    "personal_year_go_to_login": "Sign in",
+    "personal_year_header_year": "Year",
+    "personal_year_error": "Could not calculate your Personal Year. Please sign in or edit your birth date.",
+    "discover_personal_year_button": "Discover your Personal Year",
+    "login_required_title": "Sign in to continue",
+    "login_required_text": "Sign in to your account to discover your Personal Year ✨",
+    "login_required_button": "Sign in"
   },
 
   "my_moment": {
     "title": "My Moment",
-    "description": "Every month brings a chance to reconnect with yourself. Explore these ideas gently and discover what speaks to your heart."
+    "description": "Each month brings a chance to reconnect with yourself. Explore these ideas gently and discover what resonates with your current moment."
   },
 
   "refresh_limit": {
     "title": "Hey, you’ve seen everything for today 👀✨",
-    "message": "Tomorrow brings fresh tips!",
+    "message": "Fresh tips will be waiting for you tomorrow!",
     "ok": "OK"
-  
   },
-
   "interview": {
-  "page_label": "Connections",
-  "default_description": "Ask someone special and keep their answers forever.",
-  
-  "who_prompt": "Who do you want to interview?",
-  "name_label": "Name",
-  "name_hint": "Enter the name",
-  "relation_hint": "Relationship (friend, mother, uncle…)",
-  "age_hint": "Age",
-
-  "ask": "Ask:",
-  "answer_hint": "Write the answer here…",
-
-  "show_more": "Show all questions",
-  
-  "save_button": "Save memory",
-  "audio_button": "Record audio",
-
-  "saved_success": "Interview saved successfully! ✨",
-  "save_error": "Error while saving. Try again!",
-  "empty_warning": "Please write at least one answer before saving 💬",
-
-  "not_premium": "Feature available for premium users only.",
-  "login_required": "Login required to continue.",
-  "fixed_description": "Be a keeper of memories and capture stories worth remembering. This can be a unique moment shared with special people."
-
-
+    "page_label": "Connections",
+    "default_description": "Ask questions to someone special and keep their answers forever.",
+    "fixed_description": "Be a guardian of memories and record stories worth remembering. This can be a unique moment with special people.",
+    "who_prompt": "Who would you like to interview?",
+    "name_label": "Name",
+    "name_hint": "Enter the name",
+    "relation_hint": "Relationship (friend, mother, uncle…)",
+    "age_hint": "Age",
+    "ask": "Ask:",
+    "answer_hint": "Write the answer here…",
+    "show_more": "See all questions",
+    "save_button": "Save memory",
+    "audio_button": "Record audio",
+    "saved_success": "Interview saved successfully! ✨",
+    "save_error": "Error saving. Please try again!",
+    "not_premium": "Exclusive feature for subscribers.",
+    "login_required": "Please sign in to continue.",
+    "empty_warning": "Write at least one answer before saving 💬"
   },
 
   "gratitude": {
-  
     "page_label": "Gratitude Page",
-
-    "description": "Noticing the good in life strengthens the heart. Write down the good things this month brought — even the small ones.",
-    "fixed_description": "Become a keeper of memories and record the stories of those you love. This can be a unique moment with family, friends, and special people. 💖",
-
-
+    "description": "Seeing the good in life strengthens the heart. Write down the good things this month brought — even the small ones.",
+    "fixed_description": "Gratitude helps us see the good in life and strengthen the heart. Record the good things that happened this month 💖",
     "hint": "I am grateful for...",
-    "empty_state": "No entries yet.\nStart by adding something you're grateful for 💛",
-
-    "empty": "No entries yet.\nStart by adding something you're grateful for 💛",
-
+    "empty_state": "No entries yet.\nStart by adding something you’re grateful for 💛",
+    "empty": "No entries yet.\nStart by adding something you’re grateful for 💛",
     "added_success": "Gratitude added! 💖",
-    "save_error": "Error while saving. 😞",
-
+    "save_error": "Error saving. 😞",
     "item_removed": "Item removed!",
-    "remove_error": "Error while removing.",
-    "added": "Gratidão adicionada com carinho 💖",
-    "removed": "Gratidão removida",
-    "error_save": "Não foi possível salvar agora. Tente novamente.",
-    "error_remove": "Não foi possível remover agora. Tente novamente."
+    "remove_error": "Error removing.",
+    "added": "Gratitude added with love 💖",
+    "removed": "Gratitude removed",
+    "error_save": "We couldn’t save this right now. Please try again.",
+    "error_remove": "We couldn’t remove this right now. Please try again."
   },
 
-  
   "reflection": {
     "page_label": "Monthly Reflections",
-
-    "description": "A space to practice presence, look inward, record lessons, and keep the feelings that shaped this month.",
-
+    "description": "A space to practice presence, look inward, record learnings, and keep the feelings that marked this month.",
     "hint": "Write your reflection here...",
-
     "saved": "Reflections saved successfully! 💖",
     "save_error": "Error saving your reflections.",
-
     "biggest_lesson_title": "Biggest lesson of the month",
-    "biggest_lesson_prompt": "What did life teach you in these last days?",
-
+    "biggest_lesson_prompt": "What did life teach you in recent days?",
     "most_grateful_title": "Most grateful for",
-    "most_grateful_prompt": "What moment warmed your heart this month?",
-
+    "most_grateful_prompt": "Which moment warmed your heart this month?",
     "proudest_moment_title": "Proudest moment",
-    "proudest_moment_prompt": "What achievement or attitude made you proud?",
-
+    "proudest_moment_prompt": "Which action or achievement are you proud of?",
     "biggest_challenge_title": "Biggest challenge",
-    "biggest_challenge_prompt": "What required more strength, courage, or patience from you?",
-
+    "biggest_challenge_prompt": "What required the most strength, courage, or patience from you?",
     "personal_growth_title": "Personal growth",
-    "personal_growth_prompt": "What changed inside you? What did you learn about yourself?",
-
+    "personal_growth_prompt": "What changed in you? What did you learn about yourself?",
     "unexpected_joy_title": "Unexpected joy",
-    "unexpected_joy_prompt": "What good surprise did the month bring to you?",
-
+    "unexpected_joy_prompt": "What good surprise did the month bring you?",
     "next_month_focus_title": "Focus for next month",
-    "next_month_focus_prompt": "Where do you want to put your energy in the coming weeks?",
-
+    "next_month_focus_prompt": "Where do you want to place your energy in the coming weeks?",
     "save_button": "Save Reflections"
-  
-},
-
-
-
-  "did_you_know": {
-  "title": "Did You Know?",
-
-  "desc": {
-    "fixed": "A space with selected curiosities that connect science, culture, and behavior, created to inspire reflection, expand your perspective, and help you learn something new every day."
   },
-
-  "daily_message": "Here are your curiosities for today",
-  "updated_at": "Updated on",
-  "empty": "No curiosities found for today.",
-
-  "button": {
-    "discover_more": "Discover more",
-    "come_back_tomorrow": "Come back tomorrow 🌙"
-  },
-
-  "categories": {
-    
-  "ciencia": "Science",
-  "cultura": "Culture",
-  "mente_e_alma": "Mind, Body & Soul",
-  "vida_pratica": "Everyday Life",
-  "general": "General Curiosity",
-  "historias_do_mundo": "Stories That Shaped the World" 
-    
-  }
-
-  },
-
-  "tips_categories": {
-  
-  "autocuidado": "Self-care",
-  "energia": "Energy",
-  "propósito": "Purpose",
-  "leveza": "Lightness",
-  "reflexão": "Reflection",
-  "gratidão": "Gratitude",
-  "rotina": "Routine",
-  "crescimento": "Growth",
-  "confiança": "Confidence",
-  "presença": "Presence",
-  "intuição": "Intuition",
-  "hábitos": "Habits"
-
-
-},
 
   "lists": {
-  "page_label": "My Lists",
-  "description": "A space to collect what shaped your month — books, ideas, music, wishlist items and special memories.",
-
-  "read": "To Read",
-  "write": "Movies & Series",
-  "buy": "To Buy",
-  "listen": "To Listen",
-  "keep": "This Month's Trends",
-
-  "read_label": "Reading of the month",
-  "write_label": "Movies & Series",
-  "buy_label": "Things I want to buy",
-  "listen_label": "Songs I loved",
-  "keep_label": "Trends I'm following",
-
-  "item": "Item",
-
-  "add_more": "Add more",
-  "save": "Save List",
-  "saved": "List saved successfully! 💖",
-  "empty_warning": "Your list is empty! Add something before saving ✨",
-
-  "sticker_read": "Reading of the Month",
-  "sticker_write": "Movies & Series",
-  "sticker_buy": "Wishlist",
-  "sticker_listen": "Songs I Loved",
-  "sticker_keep": "This Month’s Trends"
+    "page_label": "My Lists",
+    "description": "A space to keep what marked your month — books, ideas, music, wishes, and special memories.",
+    "read": "To read",
+    "write": "Movies & Series",
+    "buy": "To buy",
+    "listen": "To listen",
+    "keep": "Monthly trends",
+    "read_label": "Reads of the month",
+    "write_label": "Movies & series",
+    "buy_label": "Things I want",
+    "listen_label": "Songs I loved",
+    "keep_label": "Trends I’m following",
+    "item": "Item",
+    "add_more": "Add more",
+    "save": "Save list",
+    "saved": "List saved successfully! 💖",
+    "empty_warning": "Your list is empty! Add something before saving ✨",
+    "sticker_read": "Monthly Reads",
+    "sticker_write": "Movies & Series",
+    "sticker_buy": "Wishlist",
+    "sticker_listen": "Songs I loved",
+    "sticker_keep": "Monthly Trends"
   },
 
-  "tips": {
-  "page_label": "My Moment",
-  "description": "A space to organize your thoughts, take care of yourself, and move forward with more ease.",
-  "seen_all_today": "You've seen all the tips for today. Come back tomorrow 💛",
-
-  "refresh_title": "Come back tomorrow ✨",
-  "refresh_message": "You've already refreshed today's suggestions!",
-  "refresh_ok": "OK",
-
-  "refresh_premium_button": "See more tips",
-  "refresh_see_more": "See more tips",
-  "refresh_come_back_tomorrow": "Come back tomorrow 🌙"
-},
-
-  "offline": {
-    "save_warning": "You are offline. Connect to the internet to save your changes.",
-    "load_warning": "You are offline. Connect to the internet to load your data.",
-    "delete_warning": "You are offline. Cannot delete."
-  
-
-  },
-
-  
   "calendar": {
     "page_label": "Calendar & Alerts",
-    "description": "Mark your important moments, reminders, and highlights with colorful hearts throughout the month.",
+    "description": "Mark important moments, reminders, and highlights, spreading colorful hearts throughout the month.",
     "describe": "Describe your reminder or note for the day",
-
     "add_event": "add event",
     "edit_event": "edit event",
-     "add_alert": "Add alert",
-     "remove_alert": "Remove alert",
-     "delete_mood": "Remove mood for this day",
-     
-    "login_to_save": "You can try it freely, but to save your reminders you need to be logged in.",
-    "write_something_first": "Write your reminder or alert before saving 💕",
+    "add_alert": "Add alert",
+    "remove_alert": "Remove alert",
+    "login_to_save": "You can try freely, but to save reminders you must be logged in.",
     "your_notes": "Your notes for the day",
     "repeat": "Repeat",
-    
-    "limit_reached": "You have reached the reminder limit for this month.",
-    "premium_required": "Full access to reminders is available for premium users only.",
-
+    "limit_reached": "You’ve reached the reminder limit for this month.",
+    "premium_required": "Full access to reminders is exclusive to premium users.",
+    "write_something_first": "Write your reminder or alert before saving 💕",
     "event_hint": "describe your reminder",
-
     "color_label": "reminder color",
-
     "repeat_label": "repeat",
     "repeat_none": "None",
-    "repeat_daily": "Every day",
-    "repeat_weekly": "Every week",
-    "repeat_monthly": "Every month",
-    "repeat_yearly": "Every year",
-
+    "repeat_daily": "Daily",
+    "repeat_weekly": "Weekly",
+    "repeat_yearly": "Yearly",
+    "repeat_monthly": "Monthly",
     "mood_of_day": "Your mood on",
     "view_entries": "View diary entries",
-    "no_entries_day": "No entries for this day",
-    "write_diary": "Write in the diary",
-    "edit_mood": "Edit today's mood",
-
+    "no_entries_day": "No entries made on this day",
+    "write_diary": "Write in diary",
+    "edit_mood": "Edit mood of the day",
+    "delete_mood": "Delete mood of the day",
     "weekdays": "Weekdays",
-
-    "days_before_label": "how many days before do you want to be notified?",
-    "days_before": "how many days before?",
+    "days_before_label": "how many days before would you like to be notified?",
+    "days_before": "how many days before would you like to be notified?",
     "days_suffix": "days",
-
     "test_alert": "Test alert (10s)",
     "test_alert_message": "Your alert will ring in 10 seconds!",
-
     "delete_event": "Delete alert",
     "delete_button": "Delete alert",
     "delete_title": "Delete alert?",
@@ -804,350 +622,313 @@
     "delete_cancel": "Cancel",
     "delete_confirm": "Delete",
     "delete_done": "Alert deleted 💔",
-
     "save_new": "create alert",
     "save_edit": "save changes",
     "create": "create alert",
     "save": "save changes",
     "cancel": "Cancel",
     "ok": "OK",
-
     "error_empty": "Type something to save.",
-    "save_created": "Your alert was created! 💛",
-    "save_updated": "Your alert was updated ✨",
-
-    "empty": "No events this month.",
-
-  "month.1": "January",
-  "month.2": "February",
-  "month.3": "March",
-  "month.4": "April",
-  "month.5": "May",
-  "month.6": "June",
-  "month.7": "July",
-  "month.8": "August",
-  "month.9": "September",
-  "month.10": "October",
-  "month.11": "November",
-  "month.12": "December"
-
+    "save_created": "Your alert has been created! 💛",
+    "save_updated": "Your alert has been edited ✨",
+    "empty": "No events this month."
   },
 
-  "calendar_month": {
-  "1": "January",
-  "2": "February",
-  "3": "March",
-  "4": "April",
-  "5": "May",
-  "6": "June",
-  "7": "July",
-  "8": "August",
-  "9": "September",
-  "10": "October",
-  "11": "November",
-  "12": "December"
+  "mood": {
+    "how_are_you_feeling": "How are you feeling?",
+    "page_description": "Track your mood daily, fill the calendar with faces, and see how your month went.",
+    "highlight_title": "HIGHLIGHT MOOD",
+    "other_marked": "HIGHLIGHT MOOD",
+    "highlight_mood": "HIGHLIGHT MOOD",
+    "other_top_moods": "Other moods of the month",
+    "happy": "Happy",
+    "calm": "Calm",
+    "loving": "Loving",
+    "thoughtful": "Thoughtful",
+    "anxious": "Anxious",
+    "tired": "Tired",
+    "sad": "Sad",
+    "irritated": "Irritated",
+    "embarrassed": "Embarrassed",
+    "comforted": "Comforted",
+    "bored": "Bored",
+    "excited": "Excited",
+    "overwhelmed": "Overwhelmed",
+    "proud": "Proud",
+    "surprised": "Surprised",
+    "confused": "Confused",
+    "sick": "Sick",
+    "lucky": "Lucky",
+    "productive": "Productive",
+    "disappointed": "Disappointed",
+    "limit_message": "💗 You’ve already registered your mood! Try again in 1 hour."
+  },
 
- 
-},
-
-
-  "agenda": {
-
-    "tap_to_add_note": "Tap to add a note",
-    "note_hint": "Write a note (this does not create an alert)",
-    "save_note": "Save note",
-    "create_alert": "Create alert for this time",
-    "default_alert_title": "Reminder"
-  
-},
-
-"common": {
-    "save": "Save",
-    "cancel": "Cancel",
-    "delete": "Delete",
-    "close": "Close",
-    "open": "Abrir",
-
-    "offline_title": "You're offline",
-    "offline_message": "It looks like you don’t have an internet connection. Please check and try again.",
-     "try_again": "Try again"
-    
-
-},
-
- "mood": {
-  "how_are_you_feeling": "How are you feeling?",
-  "page_description": "Track your mood each day, fill the calendar with little faces, and notice how your month unfolded.",
-
-
-  "highlight_title": "HIGHLIGHT MOOD",
-  "other_marked": "HIGHLIGHT MOOD",
-  "other_top_moods": "Other moods of the month",
-
-  "happy": "Happy",
-  "calm": "Calm",
-  "loving": "Loving",
-  "thoughtful": "Thoughtful",
-  "anxious": "Anxious",
-  "tired": "Tired",
-  "sad": "Sad",
-  "irritated": "Irritated",
-  "embarrassed": "Embarrassed",
-  "comforted": "Comforted",
-  "bored": "Bored",
-  "excited": "Excited",
-  "overwhelmed": "Overwhelmed",
-  "proud": "Proud",
-  "surprised": "Surprised",
-  "confused": "Confused",
-  "sick": "Sick",
-  "lucky": "Lucky",
-  "productive": "Productive",
-  "disappointed": "Disappointed",
-
-
-  "limit_message": "💗 You already recorded your mood! Try again in 1 hour.",
-
-
- "calendar_description": "This is your mood calendar.\nEvery day you can record how you feel, and little by little, your emojis will appear here.",
- "calendar_register_hint": "Click the buttons below to record your mood for the day",
- "guest_saved": "Mood saved for today 💜",
- "guest_title": "Guest mode",
- "guest_description": "You can track your moods here, but they won’t be saved without an account.",
-  "search_other_dates": "Search other dates",
-  "choose_period": "Choose period",
-  "choose_period_desc": "Select the month and year you want to view.",
-   "select_day_first": "Please select a day on the calendar first 😊"
-
-
-
-
- },
-
-
-"motivation": {
-  "happy": "So good to see you happy!",
-  "calm": "Take a deep breath and stay like this!",
-  "loving": "Spread that love around!",
-  "thoughtful": "Reflecting is part of growing.",
-  "anxious": "You're not alone. One step at a time.",
-  "tired": "Rest a little — you deserve it.",
-  "sad": "It's okay to feel this way. It will pass.",
-  "irritated": "Breathe. Your day can still get better.",
-  "embarrassed": "It happens to everyone!",
-  "comforted": "It feels so good to feel safe and supported!",
-  "bored": "Maybe it's time to try something new!",
-  "excited": "Love seeing that energy!",
-  "overwhelmed": "Pause. You're doing your best.",
-  "proud": "Be proud — you earned it!",
-  "surprised": "Wow! Good things are happening!",
-  "confused": "Everything will make sense soon.",
-  "sick": "Take some time to rest and take care of yourself. Tomorrow can be better.",
-  "lucky": "Enjoy this moment! Small joys make a difference.",
-  "productive": "It’s great to see your effort paying off. Keep going!",
-  "disappointed": "Not every day is easy. Be gentle with yourself."
-
-},
-
-
-
-"diary": {
-
+  "diary": {
     "title": "My Diary",
-    "subtitle": "Writing helps organize your thoughts, embrace your feelings, and be more present. Here, you can slow down, listen to yourself, and better understand how you feel.",
-    
+    "subtitle": "Writing helps organize thoughts, welcome feelings, and stay present.",
     "empty_title": "No entries yet",
-    "empty_description": "You haven't written anything here yet. How about starting today?",
+    "empty_description": "You haven’t written anything here yet. How about starting today?",
     "first_entry_button": "Write first entry",
-
     "new_entry": "New entry",
     "hint_text": "Write your thoughts here...",
     "cancel": "Cancel",
     "save": "Save",
-
     "edit": "Edit",
     "delete": "Delete",
     "delete_title": "Delete entry",
     "delete_confirm": "Are you sure you want to delete this entry?",
-    "delete_success": "Entry successfully deleted!",
+    "delete_success": "Entry deleted successfully!",
     "saved_success": "Entry saved successfully!",
-    "no_entries": "No entries for this day.\nStart by writing something special today!",
-    "no_entries_day": "No entries for this day.\nStart by writing something special today!",
+    "no_entries": "No entries yet.\nStart writing something special today!",
+    "no_entries_day": "No entries yet.\nStart writing something special today!"
+  },
 
-    "guest_info_title": "✨ Just a quick note",
-    "guest_info_message": "You can write freely, but your entries will only be saved if you create an account or log in.",
-    "guest_login": "Create account / Login",
-    "guest_continue": "Keep writing",
-    "guest_save_warning": "You can write and explore the diary, but your entries won’t be saved. Log in to keep your memories.",
+  "notifications": {
+    "page_label": "Notifications",
+    "description": "Your reminders and alerts appear here.",
+    "title": "Notifications",
+    "clear_history_tooltip": "Clear history",
+    "dialog_clear_title": "Clear all notifications?",
+    "dialog_clear_message": "Are you sure you want to delete all notification history?",
+    "dialog_cancel": "Cancel",
+    "dialog_confirm_clear": "Clear",
+    "empty_state": "You don’t have any saved notifications yet.\nNew alerts will appear here when enabled."
+  },
 
-    "guest_login_action": "Log in to save entries"
-
-
-},
   "about": {
-  "title": "My Year, My Story",
-  "description": "An interactive journal for you to record memories, feelings and special moments throughout the year.",
-  "version": "Version 1.0.0",
-  "close": "Close",
-  "contact": "Contact: email@sonhodepapel.com",
-  "app_name": "My Year, My Story",
-  "privacy_policy": "Privacy Policy"
+    "title": "My Year, My Story",
+    "description": "An interactive journal to record memories, feelings, and special moments throughout the year.",
+    "version": "Version 1.0.0",
+    "close": "Close",
+    "contact": "Contact: email@sonhodepapel.com",
+    "app_name": "My Year, My Story",
+    "privacy_policy": "Privacy Policy"
+  },
 
-},
+  "agenda": {
+    "tap_to_add_note": "Tap to add a note",
+    "note_hint": "Write a note (no alert created)",
+    "save_note": "Save note",
+    "create_alert": "Create alert for this time",
+    "default_alert_title": "Reminder"
+  },
 
-  "sign": {
-  "aries": "Aries",
-  "taurus": "Taurus",
-  "gemini": "Gemini",
-  "cancer": "Cancer",
-  "leo": "Leo",
-  "virgo": "Virgo",
-  "libra": "Libra",
-  "scorpio": "Scorpio",
-  "sagittarius": "Sagittarius",
-  "capricorn": "Capricorn",
-  "aquarius": "Aquarius",
-  "pisces": "Pisces"
+  "calendar_month": {
+    "1": "January",
+    "2": "February",
+    "3": "March",
+    "4": "April",
+    "5": "May",
+    "6": "June",
+    "7": "July",
+    "8": "August",
+    "9": "September",
+    "10": "October",
+    "11": "November",
+    "12": "December"
+  },
 
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "close": "Close",
+    "open": "Open",
+    "offline_title": "No connection",
+    "offline_message": "It looks like you’re offline. Check your internet connection and try again.",
+    "try_again": "Try again"
+  },
 
-},
-
-  "language": {
-  "title": "App Language",
-  "subtitle": "Choose how you prefer to use MyYearMyStory.",
-  "system": "Follow system language",
-  "portuguese": "Portuguese (Brazil)",
-  "english": "English",
-  "saved": "Language updated!",
-  "language": "Language",
-  "app_name": "My Year, My Story"
-
-   },
+  "daily_popup": {
+    "default_title": "Today’s alert",
+    "subtitle": "You have an event or reminder scheduled for today!",
+    "mark_seen": "Mark as seen",
+    "cancel_alert": "Cancel alert"
+  },
 
   "dates": {
-    "title": "Calendar & Reminder",
-    "description": "Save moments, check your important days and highlight your favorite moments.",
-    "insight": "You have saved {0} reminders this month."
+    "title": "Calendar & Alerts",
+    "description": "See your important days and highlight your best moments."
+  },
+
+  "did_you_know": {
+    "title": "Did You Know?",
+    "desc": {
+      "fixed": "A space with curated curiosities that blend science, culture, and behavior, meant to inspire reflections, broaden your view, and learn something new each day."
+    },
+    "daily_message": "These are today’s selected curiosities for you",
+    "updated_at": "Updated on",
+    "empty": "No curiosities found for today.",
+    "button": {
+      "discover_more": "Discover more",
+      "come_back_tomorrow": "Come back tomorrow 🌙"
+    },
+    "categories": {
+      "ciencia": "Science",
+      "cultura": "Culture",
+      "mente_e_alma": "Mind, Body & Spirit",
+      "vida_pratica": "Everyday Life",
+      "general": "General Curiosity",
+      "historias_do_mundo": "Stories That Shaped the World"
+    }
+  },
+
+  "help": {
+    "title": "Help Center",
+    "subtitle": "If something doesn’t work as expected, reach out to us",
+    "faq": "FAQ — Coming soon",
+    "contact": " email@sonhodepapel.com",
+    "button": "Back",
+    "app_name": "My Year, My Story"
+  },
+
+  "motivation": {
+    "happy": "So good to see you happy!",
+    "calm": "Take a deep breath and stay that way!",
+    "loving": "Spread that love around!",
+    "thoughtful": "Reflection is part of growth.",
+    "anxious": "You’re not alone. One step at a time.",
+    "tired": "Rest a little, you deserve it.",
+    "sad": "It’s okay to feel this way. It will pass.",
+    "irritated": "Breathe. Your day can get better.",
+    "embarrassed": "It happens to everyone!",
+    "comforted": "How nice to feel comforted!",
+    "bored": "Maybe it’s time to try something new!",
+    "excited": "Love seeing that energy!",
+    "overwhelmed": "Pause. You’re doing your best.",
+    "proud": "Be proud indeed!",
+    "surprised": "Wow! Good things happen!",
+    "confused": "Everything will make more sense soon.",
+    "sick": "Rest and take care. Tomorrow can be better.",
+    "lucky": "Enjoy this moment! Little joys matter.",
+    "productive": "Great to see your effort paying off. Keep it up!",
+    "disappointed": "Not every day is easy. Be kind to yourself."
+  },
+
+  "offline": {
+    "save_warning": "You are offline. Connect to the internet to save your changes.",
+    "load_warning": "You are offline. Connect to the internet to load your data.",
+    "delete_warning": "You are offline. Could not delete."
+  },
+
+  "review": {
+    "title": "Enjoying the app?",
+    "message": "If this space has been useful to you,\nyour review helps the app keep growing and improving.",
+    "cta": "Rate now",
+    "not_now": "Not now"
+  },
+
+  "sign": {
+    "aries": "Aries",
+    "taurus": "Taurus",
+    "gemini": "Gemini",
+    "cancer": "Cancer",
+    "leo": "Leo",
+    "virgo": "Virgo",
+    "libra": "Libra",
+    "scorpio": "Scorpio",
+    "sagittarius": "Sagittarius",
+    "capricorn": "Capricorn",
+    "aquarius": "Aquarius",
+    "pisces": "Pisces"
+  },
+
+  "stickers": {
+    "read": "Reads of the Month",
+    "write": "Free Thoughts",
+    "buy": "Things I Want",
+    "listen": "Songs I Loved",
+    "keep": "Things I Keep"
+  },
+
+  "test_screen": {
+    "hello_name": "Hello, Cintia!",
+    "language_pt": "PT-BR",
+    "language_en": "EN"
+  },
+
+  "tips": {
+    "page_label": "My Moment",
+    "description": "A space to organize thoughts, take care of yourself, and keep moving with lightness.",
+    "seen_all_today": "You’ve seen all of today’s tips. Come back tomorrow 💛",
+    "refresh_title": "Come back tomorrow ✨",
+    "refresh_message": "You’ve already refreshed your suggestions for today!",
+    "refresh_ok": "OK",
+    "refresh_premium_button": "Refresh more tips",
+    "refresh_see_more": "Refresh more tips",
+    "refresh_come_back_tomorrow": "Come back tomorrow 🌙"
+  },
+
+  "tips_categories": {
+    "autocuidado": "Self-care",
+    "energia": "Energy",
+    "propósito": "Purpose",
+    "leveza": "Lightness",
+    "reflexão": "Reflection",
+    "gratidão": "Gratitude",
+    "rotina": "Routine",
+    "crescimento": "Growth",
+    "confiança": "Confidence",
+    "presença": "Presence",
+    "intuição": "Intuition",
+    "hábitos": "Habits"
   },
 
   "week": {
     "short": {
-      "sun": "S",
-      "mon": "M",
-      "tue": "T",
-      "wed": "W",
-      "thu": "T",
-      "fri": "F",
-      "sat": "S"
+      "sun": "Sun",
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat"
     },
-
-    "sun": "Sun",
-    "mon": "Mon",
-    "tue": "Tue",
-    "wed": "Wed",
-    "thu": "Thu",
-    "fri": "Fri",
-    "sat": "Sat"
-
-
-},
-
-
-
-  "notifications": {
-  "page_label": "Notifications",
-  "description": "Your saved reminders and alerts appear here. You can review or clear your notification history anytime.",
-
-  "title": "Notifications",
-  "clear_history_tooltip": "Clear history",
-  
-  "dialog_clear_title": "Clear all notifications?",
-  "dialog_clear_message": "Are you sure you want to remove your entire notification history?",
-  "dialog_cancel": "Cancel",
-  "dialog_confirm_clear": "Clear",
-
-  "empty_state": "You have no saved notifications.\nNew alerts will appear here when they’re triggered."
-
-},
-  "daily_popup": {
-  "default_title": "Today's alert",
-  "subtitle": "You have a scheduled event or reminder for today!",
-  "mark_seen": "Mark as seen",
-  "cancel_alert": "Cancel alert"
-
-},
-
-"review_popup": {
-"title": "Enjoying the app?",
-"message": "If this space has been helpful to you,\nyour review helps the app keep growing.",
-"cta": "Rate now",
-"not_now": "Not now"
-
-},
-
-
-  "cards": {
-  "page_title": "Weekly Reflection",
-  "button": "Message Center",
-  "onboarding": "Here you’ll find readings shaped by what has been present in your recent days.The more you use the app, the more these messages connect to your story.",
-  "placeholder": "Tap to reveal your reading.Over time, as you record and express yourself, these messages begin to reflect who you are.",
-  "hint": "Choose a type of reading",
-  "reveal": "Reveal message",
-   "share_text": "My reading on My Year, My Story ✨",
-  "image_ready": "Image ready to share ✨",
-
-  "fallback": {
-    "weekly_reflection": "The past days seem to have followed their own rhythm, with pauses and repetition. Sometimes, simply noticing that already matters.",
-    "mood_insight": "There are signs of emotional variation, as if balance is being sought without urgency or pressure.",
-    "personality": "There is a tendency to observe carefully before acting, allowing thoughts and feelings to settle over time."
+    "sun": "Sunday",
+    "mon": "Monday",
+    "tue": "Tuesday",
+    "wed": "Wednesday",
+    "thu": "Thursday",
+    "fri": "Friday",
+    "sat": "Saturday"
   },
 
- "weekly_reflection": "Tap to reveal your reading.\nThe more you reflect and express yourself, the more these messages begin to reflect who you are.",
-      "mood_insight": "Your emotions take shape as you express them.\nKeep using the app to receive more connected insights.",
-      "personality": "Over time, subtle patterns begin to emerge.\nContinue using the app to receive messages that feel more like you."
+  "cards": {
+    "page_title": "Weekly Reflection",
+    "button": "Message Center",
+    "onboarding": "Here you’ll find readings created from what has been present in your recent days.",
+    "placeholder": "Tap to reveal your reading.",
+    "hint": "Choose the type of reading",
+    "reveal": "Reveal message",
+    "share_text": "My reading in My Year, My Story ✨",
+    "image_ready": "Image ready to share ✨",
 
-   },
+    "fallback": {
+      "weekly_reflection": "Recent days seem to have followed their own rhythm.",
+      "mood_insight": "There are signs of emotional variation.",
+      "personality": "There is a tendency to observe carefully before acting."
+    },
 
-  "card_types": {
-    "weeklyReflection": {
-      "label": "Reflection",
-      "title": "WEEKLY REFLECTION"
+    "warmup": {
+      "weekly_reflection": "Tap to reveal your reading.",
+      "mood_insight": "Your emotions take shape as you express yourself.",
+      "personality": "Over time, subtle patterns begin to appear."
     },
-    "moodInsight": {
-      "label": "Emotions",
-      "title": "FEELINGS & EXPRESSIONS"
-    },
-    "personality": {
-      "label": "Patterns",
-      "title": "YOU, NOW"
+
+    "card_types": {
+      "weeklyReflection": {
+        "label": "Reflection",
+        "title": "WEEKLY REFLECTION"
+      },
+      "moodInsight": {
+        "label": "Emotions",
+        "title": "FEELINGS & EXPRESSIONS"
+      },
+      "personality": {
+        "label": "Patterns",
+        "title": "YOU, NOW"
+      }
     }
   }
 }
-
-}
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
- 
-
-
-
-
-
-
-
-
-  
-
-

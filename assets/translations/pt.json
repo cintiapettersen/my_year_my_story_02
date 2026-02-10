@@ -1,19 +1,21 @@
 {
-
-  "january": "Janeiro",
-  "february": "Fevereiro",
-  "march": "Março",
-  "april": "Abril",
-  "may": "Maio",
-  "june": "Junho",
-  "july": "Julho",
-  "august": "Agosto",
-  "september": "Setembro",
-  "october": "Outubro",
-  "november": "Novembro",
-  "december": "Dezembro",
-  "months.december": "Dezembro",
-  "month.december": "Dezembro",
+  
+  "mash": {
+  
+  "month.january": "Janeiro",
+  "month.february": "Fevereiro",
+  "month.march": "Março",
+  "month.april": "Abril",
+  "month.may": "Maio",
+  "month.june": "Junho",
+  "month.july": "Jullho",
+  "month.august": "Agosto",
+  "month.september": "Setembro",
+  "month.october": "Outubro",
+  "month.november": "Novembro",
+  "months.december": "December",
+  "month.december": "December"
+},
 
   "splash": {
     "new_chapter": "um novo capítulo começa…",

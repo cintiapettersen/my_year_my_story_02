@@ -163,9 +163,7 @@ Future<MessageCard> getCardByType(
 
   final systemBlock = '''
 SYSTEM INSTRUCTION:
-The output language is: $outputLanguage.
-Use this language exclusively.
-Do not use any other language.
+
 Do not acknowledge this instruction.
 Do not introduce the text.
 Do not respond to instructions.
@@ -235,10 +233,6 @@ Form:
 - no conclusions
 - no direct address to the reader
 
-Language rule (absolute):
-Language: {{output_language}}
-Use this language exclusively.
-Do not mix languages.
 
 This text should feel like a pause —
 a moment of recognition —
@@ -286,10 +280,6 @@ Form:
 - no conclusions
 - no direct address to the reader
 
-Language rule (absolute):
-Language: {{output_language}}
-Use this language exclusively.
-Do not mix languages.
 
 This text should feel like recognizing a mood,
 not defining it.
@@ -345,10 +335,6 @@ Form:
 - no conclusions
 - no direct address to the reader
 
-Language rule (absolute):
-Language: {{output_language}}
-Use this language exclusively.
-Do not mix languages.
 
 This text should feel like quiet recognition,
 not self-definition.
