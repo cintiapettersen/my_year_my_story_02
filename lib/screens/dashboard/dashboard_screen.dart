@@ -1134,7 +1134,7 @@ Widget _buildCard({
       _buildCard(
         context: context,
         title: tr('dashboard.central_messages'),
-        icon: PhosphorIconsRegular.envelopeOpen,
+        icon: PhosphorIconsRegular.bookBookmark,
         color: const Color(0xFF74a192),
         route: '/central_messages',
       ),

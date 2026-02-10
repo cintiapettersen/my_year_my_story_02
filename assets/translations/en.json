@@ -338,7 +338,7 @@
     "gratitude": "Gratitude",
     "about_me": "About Me",
     "did_you_know": "did you know",
-    "central_messages": "Message Center",
+    "central_messages": "Chapter",
     "calendar_page": "Calendar & Alerts",
     "daily_inspiration": "Looking for inspiration for today...",
     "search_previous_dates": "Search dates",
@@ -894,27 +894,33 @@
     "sat": "Saturday"
   },
 
-  "cards": {
-    "page_title": "Weekly Reflection",
-    "button": "Message Center",
-    "onboarding": "Here you’ll find readings created from what has been present in your recent days.",
-    "placeholder": "Tap to reveal your reading.",
-    "hint": "Choose the type of reading",
-    "reveal": "Reveal message",
-    "share_text": "My reading in My Year, My Story ✨",
-    "image_ready": "Image ready to share ✨",
+  
+   "cards": {
+  "page_title": "Weekly Chapters",
+  "onboarding": "Here you’ll find reflections shaped by what you write, answer, and record in the app. Over time, they begin to reflect your story more deeply.",
+  "placeholder": "This space grows with what you record. Tap to reveal and notice how these messages evolve as you use the app.",
+  "hint": "Choose a reading type",
+  "reveal": "Reveal message",
+  "share_text": "My reading on My Year, My Story ✨",
+  "image_ready": "Image ready to share ✨",
 
-    "fallback": {
-      "weekly_reflection": "Recent days seem to have followed their own rhythm.",
-      "mood_insight": "There are signs of emotional variation.",
-      "personality": "There is a tendency to observe carefully before acting."
-    },
 
-    "warmup": {
-      "weekly_reflection": "Tap to reveal your reading.",
-      "mood_insight": "Your emotions take shape as you express yourself.",
-      "personality": "Over time, subtle patterns begin to appear."
-    },
+  "fallback": {
+  "weekly_reflection": "Recent days seem to have followed their own rhythm, with quiet moments repeating themselves.",
+  "mood_insight": "The week showed subtle shifts in emotional tone, moving between tension and ease.",
+  "personality": "There is a tendency to observe carefully before acting, maintaining a certain consistency over time."
+},
+
+
+  "warmup": {
+  "weekly_reflection": "This space is shaped by what you write. The more you record your thoughts and experiences, the more these reflections begin to mirror who you are.",
+  "mood_insight": "Your emotions start to take form as you express yourself. Keep writing and checking in to receive messages that feel more connected to your moment.",
+  "personality": "Over time, subtle patterns begin to emerge. Using the app regularly helps these messages feel more aligned with how you move through life."
+   
+
+   },
+
+
 
     "card_types": {
       "weeklyReflection": {

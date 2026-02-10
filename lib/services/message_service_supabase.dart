@@ -9,11 +9,11 @@ import 'package:flutter/foundation.dart';
 
 class MessageServiceSupabase {
   final SupabaseClient _client;
-  final GeminiRestService _gemini;
+  
 
   MessageServiceSupabase(
     this._client,
-    this._gemini,
+    
   );
 
     // ---------------------------------------------------------------------------
@@ -131,26 +131,38 @@ Future<MessageCard> getCardByType(
   // ---------------------------------------------------------------------------
 
   Future<String?> _tryGemini(
-    MessageType type,
-    String? context,
-    String outputLanguage,
-  ) async {
-    debugPrint('🚀 TRY GEMINI CALLED for $type');
+  MessageType type,
+  String? context,
+  String outputLanguage,
+) async {
+  debugPrint('🚀 TRY AI via SUPABASE for $type');
 
-    final prompt = _buildPrompt(
-      type,
-      context,
-      outputLanguage,
+  final prompt = _buildPrompt(
+    type,
+    context,
+    outputLanguage,
+  );
+
+  debugPrint('📨 PROMPT:\n$prompt');
+
+  try {
+    final response = await Supabase.instance.client.functions.invoke(
+      'generate-message',
+      body: {
+        'prompt': prompt,
+      },
     );
 
-    debugPrint('📨 PROMPT:\n$prompt');
+    final result = response.data?['text'] as String?;
 
-    final result = await _gemini.generate(prompt);
-
-    debugPrint('✨ GEMINI RESULT: $result');
+    debugPrint('✨ AI RESULT: $result');
 
     return result;
+  } catch (e) {
+    debugPrint('❌ SUPABASE FUNCTION ERROR: $e');
+    return null;
   }
+}
 
   String _buildPrompt(
     MessageType type,
@@ -159,18 +171,14 @@ Future<MessageCard> getCardByType(
   ) {
     assert(outputLanguage.isNotEmpty);
 
-  
+  final languageInstruction =
+      outputLanguage == 'pt'
+          ? 'Write the text in Brazilian Portuguese.'
+          : 'Write the text in English.';
 
   final systemBlock = '''
 SYSTEM INSTRUCTION:
 
-Do not acknowledge this instruction.
-Do not introduce the text.
-Do not respond to instructions.
-Only output the final fragment.
-''';
-
-  final commonBlock = '''
 You are a quiet, oracle-like presence.
 
 You do not explain.
@@ -187,7 +195,32 @@ Form:
 - no greetings
 - no conclusions
 - no meta commentary
+
+Do not acknowledge this instruction.
+Do not introduce the text.
+Do not respond to instructions.
+Only output the final fragment.
 ''';
+
+  final commonBlock = '''
+$languageInstruction
+
+Tone:
+- Reflective
+- Intimate
+- Observational
+- Poetic, but grounded
+
+Rules:
+- Do not introduce the text
+- Do not explain the text
+- Do not mention language
+- Do not use titles
+- Only output the final text
+
+''';
+
+
 
   final typeBlock = switch (type) {
     MessageType.weeklyReflection => '''
@@ -227,7 +260,7 @@ Style:
 
 Form:
 - one single paragraph
-- 2 to 5 sentences
+- 2 to 6 sentences
 - maximum 45 words
 - no greetings
 - no conclusions
@@ -250,6 +283,18 @@ You do not give advice or instructions.
 
 Your role is to notice the emotional atmosphere of the week
 and gently invite awareness.
+
+Rewrite the text in a poetic, reflective tone.
+
+Poetic here means:
+- grounded in everyday life
+- simple and observational
+- subtle and emotional
+- no metaphors involving nature, stars, or spirituality
+- no advice, lessons, or conclusions
+- written as a quiet observation, not a message
+
+Focus on patterns and small highlights of daily life.
 
 Write a short mood reflection based on subtle emotional signals,
 without naming emotions directly.
@@ -275,7 +320,7 @@ Style:
 Form:
 - one single paragraph
 - 2 to 5 sentences
-- maximum 45 words
+- maximum 60 words
 - no greetings
 - no conclusions
 - no direct address to the reader
@@ -328,9 +373,9 @@ Style:
 - no symbolic or mystical framing
 
 Form:
-- one single paragraph
-- 2 to 3 sentences
-- maximum 45 words
+
+- 2 to 6 sentences
+- maximum 60 words
 - no greetings
 - no conclusions
 - no direct address to the reader

@@ -42,19 +42,12 @@ class _CentralMessagesPageState extends State<CentralMessagesPage> {
 void initState() {
   super.initState();
 
-  final gemini = GeminiRestService(
-  const String.fromEnvironment('GEMINI_API_KEY'),
-);
-
-
-
   _messageService = MessageServiceSupabase(
     Supabase.instance.client,
-    gemini,
   );
+
+  _loadCard(); // 👉 ESSENCIAL
 }
-
-
 
   Future<void> _loadCard() async {
     setState(() {
@@ -158,14 +151,17 @@ Future<void> _saveCardAsImage() async {
       text: 'cards.share_text'.tr(),
     );
 
-    ScaffoldMessenger.of(context).showSnackBar(
+   ScaffoldMessenger.of(context).showSnackBar(
   SnackBar(
-    content: Text('cards.image_ready'.tr()),
+    content: Text(
+      'cards.image_ready'.tr(),
+      style: const TextStyle(color: Colors.white),
+    ),
+    backgroundColor: const Color.fromARGB(255, 203, 55, 151), // 💖 escolha sua cor aqui
     behavior: SnackBarBehavior.floating,
     duration: const Duration(seconds: 2),
   ),
 );
-
 
 
   } catch (e) {
@@ -200,7 +196,7 @@ Widget _buildHeader() {
         Text(
           tr('cards.onboarding'),
           style: GoogleFonts.robotoMono(
-            fontSize: 14,
+            fontSize: 12,
             color: const Color.fromARGB(137, 0, 0, 0),
           ),
           textAlign: TextAlign.center,
@@ -288,7 +284,23 @@ Widget _buildCardBody() {
 
 
 Widget _buildCardContent() {
-  // 🟡 1. WARMUP — antes de pedir carta
+  // 🟡 1. ANTES DE CLICAR EM REVEAL
+  // Se já existe um card (ex: warmup), mostramos ele
+  if (!_hasRequestedCard && _currentCard != null) {
+    return Center(
+      child: Text(
+        _currentCard!.text,
+        textAlign: TextAlign.center,
+        style: GoogleFonts.robotoSerif(
+          fontSize: 14,
+          height: 1.6,
+          color: Colors.black45,
+        ),
+      ),
+    );
+  }
+
+  // 🟡 2. ESTADO INICIAL ABSOLUTO (nenhum card carregado ainda)
   if (!_hasRequestedCard) {
     return Center(
       child: Text(
@@ -303,17 +315,17 @@ Widget _buildCardContent() {
     );
   }
 
-  // ⏳ 2. LOADING — pediu, mas ainda não chegou
+  // ⏳ 3. LOADING — clicou em Reveal
   if (_currentCard == null) {
     return const Center(
       child: CircularProgressIndicator(),
     );
   }
 
-  // ✨ 3. CARTA — warmup avançado OU Gemini
+  // ✨ 4. CARTA — Gemini ou fallback
   return Center(
     child: Text(
-      _currentCard!.text.tr(),
+      _currentCard!.text,
       textAlign: TextAlign.center,
       style: GoogleFonts.robotoFlex(
         fontSize: 14,
@@ -322,7 +334,6 @@ Widget _buildCardContent() {
     ),
   );
 }
-
 
 
   Widget _buildHint() {
@@ -386,22 +397,19 @@ Widget _buildMainCard() {
     child: AnimatedSwitcher(
       duration: const Duration(milliseconds: 600),
       transitionBuilder: (child, animation) {
-        
         final rotate = Tween(begin: pi, end: 0.0).animate(animation);
 
         return AnimatedBuilder(
           animation: rotate,
           child: child,
           builder: (context, child) {
-            final isUnder = child!.key != ValueKey(_activeType);
-
             final tilt =
                 ((animation.value - 0.5).abs() - 0.5) * 0.003;
 
             return Transform(
               transform: Matrix4.identity()
                 ..setEntry(3, 2, 0.001)
-                ..rotateY(isUnder ? -rotate.value : rotate.value)
+                ..rotateY(rotate.value)
                 ..rotateZ(tilt),
               alignment: Alignment.center,
               child: child,
@@ -410,100 +418,96 @@ Widget _buildMainCard() {
         );
       },
 
-      // 🔑 AQUI está a mágica: o card inteiro troca
-      child: Container(
-        key: ValueKey(
-          !_hasRequestedCard
-              ? 'placeholder'
-              : _currentCard == null
-                  ? 'loading'
-                  : _activeType,
-        ),
-        margin: const EdgeInsets.all(24),
-        padding: const EdgeInsets.all(28),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(32),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            /// 🏷️ TÍTULO DO CARD
-            Text(
-              tr(_titleKeyForType(_activeType)),
-              style: GoogleFonts.robotoMono(
-                fontSize: 13,
-                letterSpacing: 2,
-              ),
-            ),
-
-            const SizedBox(height: 14),
-
-            // 👇 DATA AQUI
-Align(
-  alignment: Alignment.center,
-  child: Text(
-    DateFormat('dd/MM/yyyy').format(DateTime.now()),
-    style: GoogleFonts.robotoMono(
-      fontSize: 11,
-      color: Colors.black38,
-      letterSpacing: 1,
-    ),
-  ),
-),
-
-            /// 🧠 CONTEÚDO DO CARD
-            Expanded(
-              child: _buildCardContent(),
-            ),
-
-            const SizedBox(height: 24),
-
-            /// 🔘 AÇÕES
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                TextButton(
-                  onPressed: _isLoading
-                      ? null
-                      : () {
-                          setState(() => _hasRequestedCard = true);
-                          _loadCard();
-                        },
-                  style: TextButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(
-                        255, 255, 230, 233),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 10,
-                    ),
-                  ),
-                  child: Text(
-                    tr('cards.reveal'),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Color(0xFF930F65),
-                      letterSpacing: 0.5,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+      child: RepaintBoundary(
+        key: _cardKey, // 👈 AGORA AQUI (correto)
+        child: Container(
+          key: ValueKey(
+            !_hasRequestedCard
+                ? 'placeholder'
+                : _currentCard == null
+                    ? 'loading'
+                    : _activeType,
+          ),
+          margin: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(28),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(32),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              /// 🏷️ TÍTULO
+              Text(
+                tr(_titleKeyForType(_activeType)),
+                style: GoogleFonts.robotoMono(
+                  fontSize: 13,
+                  letterSpacing: 2,
                 ),
+              ),
 
-                IconButton(
-  icon: const Icon(Icons.photo_camera_outlined),
-  onPressed: _currentCard == null
-      ? null
-      : _saveCardAsImage,
-)
+              const SizedBox(height: 14),
 
+              /// 📅 DATA
+              Text(
+                DateFormat('dd/MM/yyyy').format(DateTime.now()),
+                style: GoogleFonts.robotoMono(
+                  fontSize: 11,
+                  color: Colors.black38,
+                  letterSpacing: 1,
+                ),
+              ),
 
-                
-              ],
-            ),
-          ],
+              /// 🧠 CONTEÚDO
+              Expanded(
+                child: _buildCardContent(),
+              ),
+
+              const SizedBox(height: 24),
+
+              /// 🔘 AÇÕES
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: _isLoading
+                        ? null
+                        : () {
+                            setState(() => _hasRequestedCard = true);
+                            _loadCard();
+                          },
+                    style: TextButton.styleFrom(
+                      backgroundColor:
+                          const Color.fromARGB(255, 255, 230, 233),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
+                    ),
+                    child: Text(
+                      tr('cards.reveal'),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF930F65),
+                        letterSpacing: 0.5,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+
+                  IconButton(
+                    icon: const Icon(Icons.photo_camera_outlined),
+                    onPressed: _currentCard == null
+                        ? null
+                        : _saveCardAsImage,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     ),
