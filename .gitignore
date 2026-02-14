@@ -20,3 +20,5 @@ androidold/app/build/
 
 # Key/Config
 key.properties
+
+.env
