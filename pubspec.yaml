@@ -15,6 +15,8 @@ dependencies:
 
   # 🔐 Auth / Deep link
   webview_flutter: ^4.7.0
+  flutter_dotenv: ^5.1.0
+
 
   # 📊 Gráficos e UI
   fl_chart: 1.1.1
