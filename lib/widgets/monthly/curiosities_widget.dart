@@ -137,7 +137,7 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
       }
     }
 
-    debugPrint('Curiosities loaded: ${allQuestions.length}');
+    
 
     // preserva respostas digitadas
     final Map<String, String> tempAnswers = {};

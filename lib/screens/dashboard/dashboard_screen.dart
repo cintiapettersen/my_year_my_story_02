@@ -778,10 +778,6 @@ if (selected != null) {
 if (!mounted) return;
 
 
-debugPrint('ANSWER RAW: $answer');
-debugPrint('INDEX RAW: $answeredIndex');
-debugPrint('QUESTIONS LIST SIZE: ${questionsList.length}');
-debugPrint('QUESTIONS LIST: $questionsList');
 
 
 setState(() {

@@ -13,6 +13,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/foundation.dart';
+
 
 
 
@@ -58,7 +60,10 @@ void initState() {
   try {
     final outputLanguage = resolveOutputLanguage(context);
 
-    debugPrint('🌍 OUTPUT LANGUAGE (UI): $outputLanguage');
+    if (kDebugMode) {
+  debugPrint('OUTPUT LANGUAGE (UI): $outputLanguage');
+}
+
 
     final card = await _messageService.getCardByType(
       _activeType,
@@ -127,7 +132,10 @@ void initState() {
 
 Future<void> _saveCardAsImage() async {
   if (_cardKey.currentContext == null) {
-    debugPrint('RepaintBoundary ainda não está pronto');
+   if (kDebugMode) {
+  debugPrint('Erro ao salvar imagem: $e');
+}
+
     return;
   }
   try {
@@ -169,7 +177,10 @@ ScaffoldMessenger.of(context).showSnackBar(
 
 
   } catch (e) {
-    debugPrint('Erro ao salvar imagem: $e');
+    if (kDebugMode) {
+  debugPrint('RepaintBoundary não está pronto');
+}
+
   }
 }
 
@@ -245,13 +256,9 @@ Widget build(BuildContext context) {
           const SizedBox(height: 24),
 
           Expanded(
-            child: RemoteDataWrapper(
-              isLoading: _isLoading,
-              hasError: _hasError,
-              onRetry: _loadCard,
-              child: _buildMainCard(),
-            ),
-          ),
+  child: _buildMainCard(),
+),
+
         ],
       ),
     ),
@@ -262,12 +269,21 @@ Widget build(BuildContext context) {
 
 
 Widget _buildCardContent() {
+  String resolveCardText(String rawText) {
+    if (rawText.startsWith('cards.')) {
+      return rawText.tr();
+    }
+    return rawText;
+  }
+
+
+
+
   // 🟡 1. ANTES DE CLICAR EM REVEAL
-  // Se já existe um card (ex: warmup), mostramos ele
   if (!_hasRequestedCard && _currentCard != null) {
     return Center(
       child: Text(
-        _currentCard!.text,
+        resolveCardText(_currentCard!.text),
         textAlign: TextAlign.center,
         style: GoogleFonts.robotoSerif(
           fontSize: 14,
@@ -278,7 +294,7 @@ Widget _buildCardContent() {
     );
   }
 
-  // 🟡 2. ESTADO INICIAL ABSOLUTO (nenhum card carregado ainda)
+  // 🟡 2. ESTADO INICIAL ABSOLUTO
   if (!_hasRequestedCard) {
     return Center(
       child: Text(
@@ -293,24 +309,56 @@ Widget _buildCardContent() {
     );
   }
 
-  // ⏳ 3. LOADING — clicou em Reveal
+  // ⏳ 3. LOADING
   if (_currentCard == null) {
     return const Center(
       child: CircularProgressIndicator(),
     );
   }
 
-  // ✨ 4. CARTA — Gemini ou fallback
-  return Center(
-    child: Text(
-      _currentCard!.text,
-      textAlign: TextAlign.center,
-      style: GoogleFonts.robotoFlex(
-        fontSize: 14,
-        height: 1.5,
+/// ✨ 4. CARTA — Gemini ou fallback
+return Center(
+  child: Stack(
+    children: [
+      // 🔹 Aspas decorativas
+      Positioned(
+        top: -35,
+        left: 0,
+        child: Text(
+          '“',
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 80,
+            color: const Color.fromARGB(255, 7, 7, 7).withValues(alpha: 0.20),
+          ),
+        ),
       ),
-    ),
-  );
+
+      // 🔹 Texto principal
+      Padding(
+        padding: const EdgeInsets.only(top: 24),
+        child: Align(
+          alignment: Alignment.center,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: 280,
+            ),
+            child: Text(
+              resolveCardText(_currentCard!.text),
+              textAlign: TextAlign.center,
+              style: GoogleFonts.playfairDisplay(
+                fontSize: 13,
+                height: 1.5,
+                letterSpacing: 0.2,
+                color: const Color.fromARGB(255, 0, 0, 0),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ],
+  ),
+);
+
 }
 
 
@@ -409,9 +457,17 @@ Widget _buildMainCard() {
           margin: const EdgeInsets.all(24),
           padding: const EdgeInsets.all(28),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(32),
-          ),
+  color: Colors.white,
+  borderRadius: BorderRadius.circular(32),
+  boxShadow: [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.06),
+      blurRadius: 30,
+      offset: const Offset(0, 12),
+    ),
+  ],
+),
+
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

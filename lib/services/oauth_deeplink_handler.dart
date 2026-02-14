@@ -43,7 +43,7 @@ static Future<void> _handleUri(Uri uri) async {
   if (type == 'recovery') {
     AppSession.flow = AppAuthFlow.resettingPassword;
 
-    debugPrint('🔐 DeepLink recovery detectado');
+  
 
     await Supabase.instance.client.auth.getSessionFromUrl(uri);
 

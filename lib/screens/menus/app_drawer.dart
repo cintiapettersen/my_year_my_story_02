@@ -92,7 +92,7 @@ class _AppDrawerState extends State<AppDrawer> {
                 .eq("id", user["id"]);
           }
         } catch (e) {
-          debugPrint("Erro ao salvar emoji: $e");
+          
         }
       },
       child: Container(

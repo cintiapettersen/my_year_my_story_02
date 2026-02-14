@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
+
 
 class SupabaseMessageService {
   final String supabaseUrl;
@@ -27,7 +29,9 @@ class SupabaseMessageService {
     );
 
     if (response.statusCode != 200) {
-      print('❌ Supabase error: ${response.body}');
+      if (kDebugMode) {
+      debugPrint('SupabaseMessageService error (${response.statusCode})');
+}
       return null;
     }
 

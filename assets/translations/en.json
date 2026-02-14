@@ -584,6 +584,7 @@
   "calendar": {
     "page_label": "Calendar & Alerts",
     "description": "Mark important moments, reminders, and highlights, spreading colorful hearts throughout the month.",
+    "dates_insight": "You have {} reminders this month.",
     "describe": "Describe your reminder or note for the day",
     "add_event": "add event",
     "edit_event": "edit event",
@@ -661,7 +662,13 @@
     "lucky": "Lucky",
     "productive": "Productive",
     "disappointed": "Disappointed",
-    "limit_message": "💗 You’ve already registered your mood! Try again in 1 hour."
+    "limit_message": "💗 You’ve already registered your mood! Try again in 1 hour.",
+    
+    "search_other_dates": "Search other dates",
+    "choose_period": "Choose period",
+    "choose_period_desc": "Select the month and year you want to view.",
+    "select_day_first": "Please select a day on the calendar first 😊"
+
   },
 
   "diary": {
@@ -904,22 +911,23 @@
   "share_text": "My reading on My Year, My Story ✨",
   "image_ready": "Image ready to share ✨",
 
+ 
 
   "fallback": {
   "weekly_reflection": "Recent days seem to have followed their own rhythm, with quiet moments repeating themselves.",
   "mood_insight": "The week showed subtle shifts in emotional tone, moving between tension and ease.",
   "personality": "There is a tendency to observe carefully before acting, maintaining a certain consistency over time."
+  
 },
 
 
-  "warmup": {
+ "warmup": {
   "weekly_reflection": "This space is shaped by what you write. The more you record your thoughts and experiences, the more these reflections begin to mirror who you are.",
   "mood_insight": "Your emotions start to take form as you express yourself. Keep writing and checking in to receive messages that feel more connected to your moment.",
   "personality": "Over time, subtle patterns begin to emerge. Using the app regularly helps these messages feel more aligned with how you move through life."
    
 
    },
-
 
 
     "card_types": {

@@ -73,7 +73,7 @@ class _AnnualPhotoAlbumScreenState extends State<AnnualPhotoAlbumScreen> {
       if (!mounted) return;
       setState(() => _photosByMonth = grouped);
     } catch (e) {
-      debugPrint("❌ Erro ao carregar fotos anuais: $e");
+     
     } finally {
       if (!mounted) return;
       setState(() => _isLoading = false);

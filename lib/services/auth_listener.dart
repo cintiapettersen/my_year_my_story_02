@@ -34,9 +34,8 @@ class AuthListener {
     required Session? session,
     required NavigatorState navigator,
   }) async {
-    debugPrint(
-      '📡 AuthListener → event=$event | flow=${AppSession.flow}',
-    );
+   
+ 
 
    // 🔐 PASSWORD RECOVERY (evento inicial)
 if (event == AuthChangeEvent.passwordRecovery && session != null) {
@@ -47,14 +46,14 @@ if (event == AuthChangeEvent.passwordRecovery && session != null) {
     (_) => false,
   );
 
-  debugPrint('🔐 passwordRecovery → reset-password');
+  
   return;
 }
 
 // 🔐 BLOQUEIO TOTAL DURANTE RESET
 if (AppSession.flow == AppAuthFlow.resettingPassword &&
     event != AuthChangeEvent.signedOut) {
-  debugPrint('🔐 Reset ativo → ignorando $event');
+ 
   return;
 }
 
@@ -66,7 +65,7 @@ if (event == AuthChangeEvent.signedIn &&
     AppSession.flow != AppAuthFlow.resettingPassword) {
 
   if (AppSession.flow == AppAuthFlow.authenticated) {
-    debugPrint('⏭️ signedIn ignorado (já autenticado)');
+   
     return;
   }
 
@@ -99,7 +98,7 @@ if (event == AuthChangeEvent.signedIn &&
         (_) => false,
       );
 
-      debugPrint('👋 signedOut → login');
+      
       return;
     }
   }

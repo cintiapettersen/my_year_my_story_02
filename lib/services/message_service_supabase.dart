@@ -46,7 +46,7 @@ class MessageServiceSupabase {
       id: null,
       type: type,
       text: _warmupKeyFor(type),
-      isFallback: true,
+      isFallback: false,
       source: 'warmup',
     );
   }
@@ -79,7 +79,7 @@ Future<MessageCard> getCardByType(
     return _warmupCard(type);
   }
 
-  debugPrint('🌍 OUTPUT LANGUAGE (service): $outputLanguage');
+
 
   final geminiText = await _tryGemini(
     type,
@@ -111,7 +111,7 @@ Future<MessageCard> getCardByType(
   String? context,
   String outputLanguage,
 ) async {
-  debugPrint('🚀 TRY AI via SUPABASE for $type');
+ 
 
   final prompt = _buildPrompt(
     type,
@@ -119,7 +119,7 @@ Future<MessageCard> getCardByType(
     outputLanguage,
   );
 
-  debugPrint('📨 PROMPT:\n$prompt');
+ 
 
   try {
     final response = await Supabase.instance.client.functions.invoke(
@@ -131,7 +131,7 @@ Future<MessageCard> getCardByType(
 
     final result = response.data?['text'] as String?;
 
-    debugPrint('✨ AI RESULT: $result');
+    
 
     return result;
   } catch (e) {
@@ -154,8 +154,7 @@ Future<MessageCard> getCardByType(
     ? 'Write the text in Brazilian Portuguese.'
     : 'Write the text in English.';
 
-    debugPrint('🌍 OUTPUT LANGUAGE: $outputLanguage');
-    debugPrint('📝 LANGUAGE INSTRUCTION: $languageInstruction');
+   
 
 
   final systemBlock = '''
@@ -172,7 +171,7 @@ You do not address the reader directly.
 
 Form:
 - one single paragraph
-- 3 to 6 sentences
+- 3 to 5 sentences
 - maximum 45 words
 - no greetings
 - no conclusions
@@ -191,7 +190,7 @@ Tone:
 - Reflective
 - Intimate
 - Observational
-- Poetic, but grounded
+
 
 Rules:
 - Do not introduce the text
@@ -199,6 +198,9 @@ Rules:
 - Do not mention language
 - Do not use titles
 - Only output the final text
+- Write in a poetic but grounded tone. 
+-Avoid generic inspirational phrases. Reference observable behaviors, recent time frames, and subtle patterns. 
+-Keep it intimate but concrete.
 
 ''';
 
@@ -242,7 +244,7 @@ Style:
 
 Form:
 - one single paragraph
-- 2 to 6 sentences
+- 2 to 5 sentences
 - maximum 45 words
 - no greetings
 - no conclusions
@@ -356,7 +358,7 @@ Style:
 
 Form:
 
-- 2 to 6 sentences
+- 2 to 5 sentences
 - maximum 60 words
 - no greetings
 - no conclusions

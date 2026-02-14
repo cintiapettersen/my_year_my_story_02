@@ -105,7 +105,7 @@ class _CalendarPageState extends State<CalendarPage> {
       _eventColors[day] = color;
     }
   } catch (e) {
-    debugPrint('Erro ao carregar eventos do mês: $e');
+   
 
     if (!mounted) return;
 
@@ -233,7 +233,7 @@ class _CalendarPageState extends State<CalendarPage> {
       }
     }
   } catch (e) {
-    debugPrint('Erro ao abrir dia do calendário: $e');
+   
 
     if (!mounted) return;
 
@@ -409,7 +409,7 @@ class _CalendarPageState extends State<CalendarPage> {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Text(
-        tr("dates.insight", args: ["${_monthEvents.length}"]),
+        tr("calendar.dates_insight", args: ["${_monthEvents.length}"]),
         style: const TextStyle(fontStyle: FontStyle.italic),
       ),
     );

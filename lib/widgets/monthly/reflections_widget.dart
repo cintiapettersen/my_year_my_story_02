@@ -120,7 +120,7 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
         }
       });
     } catch (e) {
-      debugPrint('Erro ao carregar reflexões: $e');
+     
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

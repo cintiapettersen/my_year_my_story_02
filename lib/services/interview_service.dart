@@ -22,7 +22,7 @@ class InterviewService {
         .maybeSingle();
 
     if (response == null) {
-      debugPrint('⚠️ Nenhum registro encontrado para o mês $month');
+   
       return {
         'description': '',
         'questions': <String>[],
@@ -108,7 +108,7 @@ class InterviewService {
         onConflict: 'user_id,month,year',
       );
     } catch (e) {
-      debugPrint('❌ Erro ao salvar entrevista: $e');
+     
       rethrow; // ⬅️ importante
     }
   }
@@ -127,9 +127,9 @@ class InterviewService {
           .eq('month', month)
           .eq('year', year);
 
-      debugPrint('🧹 Entrevista limpa com sucesso!');
+     
     } catch (e) {
-      debugPrint('❌ Erro ao limpar entrevista: $e');
+     
     }
   }
 }

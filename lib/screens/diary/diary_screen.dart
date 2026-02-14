@@ -79,7 +79,7 @@ void initState() {
       _entries = entries;
     });
   } catch (e) {
-    debugPrint('Erro ao carregar diário: $e');
+   
 
    
 
@@ -495,7 +495,7 @@ if (SupabaseConfig.client.auth.currentUser == null)
     _editingEntry = null;
     await _loadEntries();
   } catch (e) {
-    debugPrint('Erro ao salvar diário: $e');
+    
 
     if (!mounted) return;
 
@@ -551,7 +551,7 @@ void _deleteEntry(DiaryEntryModel entry) async {
     await DiaryService.deleteEntry(entry.id);
     await _loadEntries();
   } catch (e) {
-    debugPrint('Erro ao deletar diário: $e');
+   
 
     if (!mounted) return;
 

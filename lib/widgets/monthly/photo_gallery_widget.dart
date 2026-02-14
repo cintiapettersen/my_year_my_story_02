@@ -88,7 +88,7 @@ class _MonthlyPhotoGalleryState extends State<MonthlyPhotoGallery>
       _isLoading = false;
     });
   } catch (e) {
-    debugPrint('Erro ao carregar fotos: $e');
+   
 
     if (!mounted) return;
 
@@ -154,7 +154,7 @@ class _MonthlyPhotoGalleryState extends State<MonthlyPhotoGallery>
   try {
     await Supabase.instance.client.storage.from('photos').upload(path, file);
   } catch (e) {
-    debugPrint('Erro upload foto: $e');
+   
     _showSnack('offline.save_warning', color: const Color(0xFFFDECEA));
     return;
   }
@@ -166,7 +166,7 @@ class _MonthlyPhotoGalleryState extends State<MonthlyPhotoGallery>
       'file_path': path,
     });
   } catch (e) {
-    debugPrint('Erro salvar no banco: $e');
+   
 
     await Supabase.instance.client.storage.from('photos').remove([path]);
 
@@ -208,7 +208,7 @@ Future<void> _deletePhotoSilently(Map<String, dynamic> photo) async {
 
     await _fetchPhotos();
   } catch (e) {
-    debugPrint('Erro ao deletar foto: $e');
+    
     _showSnack('offline.delete_warning', color: const Color(0xFFFDECEA));
   }
 }

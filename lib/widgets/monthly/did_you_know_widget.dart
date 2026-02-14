@@ -75,7 +75,7 @@ Future<void> _initializePage() async {
     await _loadRefreshCount();
     await _loadCuriosities();
   } catch (e) {
-    debugPrint('Erro ao carregar curiosities: $e');
+   
     if (mounted) {
       setState(() => _hasError = true);
     }
@@ -131,7 +131,7 @@ Future<void> _initializePage() async {
       curiosities = result;
     });
   } catch (e) {
-    debugPrint('Erro ao carregar curiosidades: $e');
+    
 
     if (!mounted) return;
 

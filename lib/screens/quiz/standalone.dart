@@ -17,9 +17,10 @@ class InteractiveQuizStandalone extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String monthName = DateFormat.MMMM('pt_BR')
-        .format(DateTime(0, month))
-        .capitalize();
+   final String monthName = DateFormat.MMMM(context.locale.toString())
+    .format(DateTime(0, month))
+    .capitalize();
+
 
     return MonthPageTemplate(
       month: month,

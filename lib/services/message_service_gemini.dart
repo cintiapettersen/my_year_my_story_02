@@ -25,12 +25,12 @@ class MessageServiceGemini {
       Content.text(prompt),
     ]);
 
-    debugPrint('📦 RAW GEMINI RESPONSE: ${response.text}');
+   
 
     final text = response.text?.trim();
 
     if (text == null || text.isEmpty) {
-      debugPrint('⚠️ Gemini returned empty text');
+      
       return null;
     }
 

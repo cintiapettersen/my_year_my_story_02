@@ -727,6 +727,7 @@
   "calendar": {
     "page_label": "Calendário e Alertas",
     "description": "Marque seus momentos importantes, lembretes e destaques, distribuindo corações coloridos ao longo do mês.",
+    "dates_insight": "Você tem {} lembretes neste mês.",
     "describe": "Descreva seu lembrete ou anotação do dia",
 
     "add_event": "adicionar evento",
@@ -859,12 +860,11 @@
 
   "limit_message": "💗 Você já registrou seu humor! Tente novamente em 1 hora.",
 
-
-  "calendar_description": "Esse é o seu calendário de humor.\nTodo dia você pode registrar como está se sentindo e, aos poucos, as carinhas vão aparecendo aqui.",
-  "calendar_register_hint": "Clique nos botões abaixo e registre seu humor do dia",
-  "guest_saved": "Humor salvo para hoje 💜",
-  "guest_title": "Modo convidado",
-  "guest_description": "Você pode marcar seus humores, mas eles não serão salvos sem uma conta.",
+"calendar_description": "This is your mood calendar.\nEvery day you can record how you're feeling, and little by little your mood icons will start appearing here.",
+"calendar_register_hint": "Tap the buttons below to record your mood for today",
+"guest_saved": "Mood saved for today 💜",
+"guest_title": "Guest mode",
+"guest_description": "You can track your moods, but they won’t be saved without an account.",
 
   "search_other_dates": "Pesquisar outras datas",
     "choose_period": "Escolher período",
@@ -1070,14 +1070,14 @@
   "reveal": "Revelar mensagem",
   "share_text": "Minha leitura no My Year, My Story ✨",
   "image_ready": "Imagem pronta para compartilhar ✨",
-
+  
 
  "fallback": {
   "weekly_reflection": "Os últimos dias parecem ter seguido um ritmo próprio, com momentos que se repetem de forma silenciosa.",
   "mood_insight": "A semana mostrou variações sutis no clima emocional, alternando entre tensão e leveza.",
   "personality": "Há uma tendência a observar com cuidado antes de agir, mantendo certa constância nas escolhas."
-},
 
+  },
 
   "warmup": {
       "weekly_reflection": "Este espaço se constrói a partir do que você registra. Quanto mais você se expressa, mais essas mensagens refletem quem você é.",
@@ -1100,11 +1100,11 @@
       "title": "VOCÊ, AGORA"
     }
   }
+
 }
 
-
-  }
-    
+  
+    }
   
 
 
@@ -1131,5 +1131,3 @@
   
 
  
-
-

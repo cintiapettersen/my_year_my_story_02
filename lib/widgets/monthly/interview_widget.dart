@@ -85,7 +85,7 @@ class _InterviewScreenState extends State<InterviewScreen>
 
       await _loadSavedAnswers();
     } catch (e) {
-      debugPrint('❌ Erro ao inicializar entrevista: $e');
+      
       if (mounted) setState(() => _hasError = true);
     } finally {
       if (mounted) setState(() => _isLoading = false);

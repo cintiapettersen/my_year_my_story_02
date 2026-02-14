@@ -38,7 +38,7 @@ class DidYouKnowService {
 
       return List<Map<String, dynamic>>.from(result);
     } catch (e) {
-      debugPrint('❌ Erro ao carregar curiosidades: $e');
+     
       return [];
     }
   }
@@ -120,7 +120,7 @@ class DidYouKnowService {
     final list = List<Map<String, dynamic>>.from(result);
     return _smartBalancedSelection(list);
   } catch (e) {
-    debugPrint('❌ Erro ao carregar curiosidades diárias: $e');
+   
     rethrow;
   }
 }

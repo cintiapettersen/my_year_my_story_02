@@ -59,7 +59,7 @@ bool _hasError = false;
     await _loadZodiacData();
   } catch (e) {
     _hasError = true;
-    debugPrint('Erro ao carregar zodiac: $e');
+    
   } finally {
     if (mounted) {
       setState(() {

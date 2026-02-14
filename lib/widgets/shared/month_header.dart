@@ -20,19 +20,20 @@ class MonthHeader extends StatelessWidget {
 
   /// Traduz os meses
   String getMonthName(int month) {
+    // Usa as chaves existentes no JSON ("month.*") para evitar avisos de chave ausente
     const months = [
-      'january',
-      'february',
-      'march',
-      'april',
-      'may',
-      'june',
-      'july',
-      'august',
-      'september',
-      'october',
-      'november',
-      'december'
+      'month.january',
+      'month.february',
+      'month.march',
+      'month.april',
+      'month.may',
+      'month.june',
+      'month.july',
+      'month.august',
+      'month.september',
+      'month.october',
+      'month.november',
+      'month.december'
     ];
     return months[month - 1];
   }
@@ -41,7 +42,7 @@ class MonthHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final bannerColor = getMonthColor(month);
     final monthKey = getMonthName(month);
-     final translated = monthKey.tr();
+    final translated = monthKey.tr();
     final monthName = translated[0].toUpperCase() + translated.substring(1).toLowerCase();
 
 

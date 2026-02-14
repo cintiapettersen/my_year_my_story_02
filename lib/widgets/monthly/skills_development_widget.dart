@@ -101,7 +101,7 @@ Future<void> _initializePage() async {
 
     await _loadData();
   } catch (e) {
-    debugPrint('Erro ao carregar tela: $e');
+    
     if (mounted) {
       setState(() => _hasError = true);
     }

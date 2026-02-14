@@ -158,7 +158,7 @@ Future<void> _loadQuiz() async {
     }
 
   } catch (e) {
-    debugPrint('Erro ao carregar quiz: $e');
+   
 
     // 🔥 ESSA LINHA É A DIFERENÇA
     rethrow;
