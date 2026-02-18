@@ -1,6 +1,7 @@
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class GoogleAuthService {
   static final _supabase = Supabase.instance.client;
@@ -16,6 +17,7 @@ class GoogleAuthService {
       await _supabase.auth.signInWithOAuth(
         OAuthProvider.google,
         redirectTo: redirectUrl,
+        authScreenLaunchMode: LaunchMode.externalApplication,
       );
 
       return {'success': true};
@@ -35,6 +37,7 @@ class GoogleAuthService {
       return 'https://abrctowsfsgfxdoszmdq.supabase.co/auth/v1/callback';
     }
 
-    return 'com.myyear.myyearmystory://auth/callback';
+    return 'com.myyear.myyearmystory://login-callback';
+
   }
 }

@@ -85,7 +85,7 @@ PODS:
   - in_app_purchase_storekit (0.0.1):
     - Flutter
     - FlutterMacOS
-  - in_app_review (2.0.0):
+  - in_app_review (0.2.0):
     - Flutter
   - just_audio (0.0.1):
     - Flutter
@@ -204,7 +204,7 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
   image_picker_ios: e0ece4aa2a75771a7de3fa735d26d90817041326
   in_app_purchase_storekit: 22cca7d08eebca9babdf4d07d0baccb73325d3c8
-  in_app_review: 7dd1ea365263f834b8464673f9df72c80c17c937
+  in_app_review: 8efcf4a4d3ba72d5d776d29e5a268f1abf64d184
   just_audio: 4e391f57b79cad2b0674030a00453ca5ce817eed
   local_auth_darwin: c3ee6cce0a8d56be34c8ccb66ba31f7f180aaebb
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
@@ -217,6 +217,6 @@ SPEC CHECKSUMS:
   url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
   webview_flutter_wkwebview: 8ebf4fded22593026f7dbff1fbff31ea98573c8d
 
-PODFILE CHECKSUM: 251cb053df7158f337c0712f2ab29f4e0fa474ce
+PODFILE CHECKSUM: ca299c1dabc84581befbc4fdda0cce8586830337
 
 COCOAPODS: 1.16.2

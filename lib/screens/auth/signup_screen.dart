@@ -10,6 +10,7 @@ import 'package:myyearmystory/widgets/auth/divider_with_text.dart';
 import 'package:myyearmystory/services/user_service.dart';
 import 'package:myyearmystory/screens/auth/auth_page_view.dart';
 import 'package:myyearmystory/screens/splash/fade_page_transition.dart';
+import 'package:go_router/go_router.dart';
 
 class SignupScreen extends StatefulWidget {
   final VoidCallback? onLoginTap;
@@ -110,9 +111,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
       await Future.delayed(const Duration(milliseconds: 600));
 
-      Navigator.of(context).pushReplacement(
-        fadePageTransition(const AuthPageView()),
-      );
+      context.go('/login');
     } catch (e) {
       if (!mounted) return;
 
@@ -170,12 +169,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             ),
                             onPressed: widget.onLoginTap ??
                                 () {
-                                  Navigator.pushReplacement(
-                                    context,
-                                    fadePageTransition(
-                                      const AuthPageView(),
-                                    ),
-                                  );
+                                  context.go('/login');
                                 },
                           ),
                         ),
@@ -357,12 +351,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         TextButton(
                           onPressed: widget.onLoginTap ??
                               () {
-                                Navigator.pushReplacement(
-                                  context,
-                                  fadePageTransition(
-                                    const AuthPageView(),
-                                  ),
-                                );
+                                context.go('/login');
                               },
                           child: Text(
                             'signup.have_account'.tr(),

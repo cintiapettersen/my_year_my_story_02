@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'dart:ui' as ui;
@@ -20,7 +21,7 @@ import 'package:myyearmystory/widgets/shared/app_bottom_menu.dart';
 import 'package:myyearmystory/screens/menus/app_drawer.dart';
 import 'package:myyearmystory/screens/messages/central_messages_page.dart';
 
-import 'package:myyearmystory/screens/splash/fade_page_transition.dart';
+import 'package:go_router/go_router.dart';
 import 'package:myyearmystory/screens/notifications/daily_popup.dart';
 import 'package:myyearmystory/services/daily_quote_service.dart';
 import 'package:myyearmystory/utils/month_colors.dart';
@@ -360,13 +361,12 @@ void didChangeDependencies() {
 
                     return GestureDetector(
                       onTap: () {
-                        Navigator.of(context).push(
-                          fadePageTransition(
-                            CurrentMonthScreen(
-                              month: index + 1,
-                              year: selectedYear,
-                            ),
-                          ),
+                        context.push(
+                          '/current_month',
+                          extra: {
+                            'month': index + 1,
+                            'year': selectedYear,
+                          },
                         );
                       },
                       child: AnimatedContainer(
@@ -835,13 +835,12 @@ setState(() {
       child: InkWell(
         borderRadius: BorderRadius.circular(32),
         onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => CuriositiesWidget(
-                month: selectedMonth,
-                year: selectedYear,
-              ),
-            ),
+          context.push(
+            '/curiosities',
+            extra: {
+              'month': selectedMonth,
+              'year': selectedYear,
+            },
           );
         },
         child: Container(
@@ -1045,7 +1044,23 @@ Widget _buildCard({
           return;
       }
 
-      Navigator.of(context).push(fadePageTransition(target));
+      // Rotas com argumentos de mês/ano
+      final args = {
+        'month': selectedMonth,
+        'year': selectedYear,
+      };
+
+      switch (route) {
+        case '/central_messages':
+          context.push('/central_messages');
+          return;
+        case '/calendar_page':
+          context.push('/calendar_page', extra: args);
+          return;
+        default:
+          context.push(route, extra: args);
+          return;
+      }
     },
     child: Container(
       decoration: BoxDecoration(
@@ -1279,13 +1294,12 @@ Widget _buildCard({
                             return GestureDetector(
                               onTap: () {
                                 Navigator.pop(context);
-                                Navigator.of(context).push(
-                                  fadePageTransition(
-                                    CurrentMonthScreen(
-                                      month: index + 1,
-                                      year: selectedYear,
-                                    ),
-                                  ),
+                                context.push(
+                                  '/current_month',
+                                  extra: {
+                                    'month': index + 1,
+                                    'year': selectedYear,
+                                  },
                                 );
                               },
                               child: Container(

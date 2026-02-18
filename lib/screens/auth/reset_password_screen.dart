@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:go_router/go_router.dart';
 import 'package:myyearmystory/widgets/auth/custom_text_field.dart';
 import 'package:myyearmystory/widgets/auth/auth_button.dart';
 import 'package:myyearmystory/services/app_session.dart';
@@ -59,10 +60,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     await Future.delayed(const Duration(milliseconds: 600));
 
     // ✅ força login REAL
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      '/login',
-      (_) => false,
-    );
+    context.go('/login');
   } catch (e) {
     if (!mounted) return;
 

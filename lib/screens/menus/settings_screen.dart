@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:myyearmystory/services/user_service.dart';
 import 'package:myyearmystory/screens/auth/login_screen.dart';
+import 'package:go_router/go_router.dart';
+import 'package:go_router/go_router.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -598,17 +600,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 
                 // Navegar para tela de login
                 if (mounted) {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-  builder: (context) => LoginScreen(
-    onCreateAccountTap: () {
-      Navigator.of(context).pushNamed('/signup');
-    },
-  ),
-),
-
-                    (route) => false,
-                  );
+                  context.go('/login');
                 }
               } catch (e) {
                 if (mounted) {

@@ -30,13 +30,14 @@ class SupabaseConfig {
 
     print('🚀 Inicializando Supabase...');
     try {
-      await Supabase.initialize(
+  await Supabase.initialize(
   url: supabaseUrl,
   anonKey: supabaseAnonKey,
   debug: true,
   authOptions: const FlutterAuthClientOptions(
     autoRefreshToken: true,
     detectSessionInUri: true, // ✅ ESSENCIAL
+    authFlowType: AuthFlowType.pkce,
   ),
 );
 

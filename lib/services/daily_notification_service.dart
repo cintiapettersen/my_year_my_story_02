@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:myyearmystory/services/alerts_history_service.dart';
 import 'package:myyearmystory/services/calendar_event_service.dart';
-import 'package:myyearmystory/main.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
 
 /// ===========================================================
 /// 🌸 Função chamada sempre que o app abre o Dashboard
 /// ===========================================================
-Future<void> showDailyNotification() async {
+Future<void> showDailyNotification(BuildContext context) async {
   final prefs = await SharedPreferences.getInstance();
   final today = DateTime.now();
   final todayKey = today.toIso8601String().substring(0, 10);
@@ -20,7 +20,7 @@ Future<void> showDailyNotification() async {
   final alert = await _getRelevantAlertForToday();
 
   if (alert != null) {
-    await _showAlertPopup(alert['title']);
+    await _showAlertPopup(context, alert['title']);
 
     await saveNotificationHistory(
       title: alert['title'],
@@ -118,10 +118,7 @@ bool _isSameDay(DateTime a, DateTime b) {
 /// ===========================================================
 /// 🌸 Popup exibido ao abrir o app — com “Marcar como visto”
 /// ===========================================================
-Future<void> _showAlertPopup(String title) async {
-  final context = navigatorKey.currentContext;
-  if (context == null) return;
-
+Future<void> _showAlertPopup(BuildContext context, String title) async {
   return showDialog(
     context: context,
     barrierDismissible: true,
@@ -141,7 +138,7 @@ Future<void> _showAlertPopup(String title) async {
           // MARCAR COMO VISTO
           TextButton(
             onPressed: () {
-              Navigator.pop(context); // fecha popup
+              context.pop(); // fecha popup
             },
             child: const Text(
               "Marcar como visto",
@@ -152,7 +149,7 @@ Future<void> _showAlertPopup(String title) async {
           // BOTÃO OK
           TextButton(
             onPressed: () {
-              Navigator.pop(context); // fecha popup
+              context.pop(); // fecha popup
             },
             child: const Text(
               "OK",

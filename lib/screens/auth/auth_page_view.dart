@@ -1,7 +1,7 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:go_router/go_router.dart';
 
 import 'login_screen.dart';
 import 'signup_screen.dart';
@@ -17,31 +17,16 @@ class AuthPageView extends StatefulWidget {
 
 class _AuthPageViewState extends State<AuthPageView> {
   late final PageController _pageController;
-  StreamSubscription<AuthState>? _authSub;
 
   @override
   void initState() {
     super.initState();
 
     _pageController = PageController(initialPage: 0);
-
-    // 🔑 Escuta auth para sair da tela quando logar
-    _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-      if (!mounted) return;
-
-      if (data.event == AuthChangeEvent.signedIn &&
-          !AppSession.isGuest) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          '/dashboard',
-          (_) => false,
-        );
-      }
-    });
   }
 
   @override
   void dispose() {
-    _authSub?.cancel();
     _pageController.dispose();
     super.dispose();
   }

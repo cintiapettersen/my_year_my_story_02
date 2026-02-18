@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:go_router/go_router.dart';
 
-import 'package:myyearmystory/main.dart';
 import 'package:myyearmystory/services/profile_service.dart';
 
 import 'glass_drawer.dart';
@@ -19,7 +19,6 @@ import '../menus/language_screen.dart';
 import 'package:myyearmystory/services/app_session.dart';
 
 import '../menus/profile_screen.dart';
-import 'package:myyearmystory/screens/auth/auth_page_view.dart';
 
 
 
@@ -45,13 +44,10 @@ class _AppDrawerState extends State<AppDrawer> {
     _loadProfile();
   }
 
-  void _open(BuildContext context, Widget screen) {
-  Navigator.pop(context); // fecha o drawer
-  Navigator.push(
-    context,
-    MaterialPageRoute(builder: (_) => screen),
-  );
-}
+  void _open(BuildContext context, String route) {
+    context.pop(); // fecha o drawer
+    context.push(route);
+  }
 
 
   // ------------------------------------------------------
@@ -235,27 +231,8 @@ class _AppDrawerState extends State<AppDrawer> {
         // ------------------------------------------------------
         PremiumButtonGlass(
           onTap: () {
-            Navigator.pop(context);
-
-            Future.delayed(const Duration(milliseconds: 40), () {
-              showGeneralDialog(
-                context: navigatorKey.currentContext!,
-                barrierDismissible: true,
-                barrierLabel: "premium",
-                barrierColor: Colors.black.withOpacity(0.05),
-                transitionBuilder:
-                    (context, animation, secondaryAnimation, child) {
-                  return FadeTransition(
-                    opacity: animation,
-                    child: child,
-                  );
-                },
-                pageBuilder: (context, animation, secondaryAnimation) {
-                  return const PremiumPage();
-                 
-                },
-              );
-            });
+            context.pop();
+            context.push('/premium');
           },
         ),
 
@@ -265,28 +242,18 @@ class _AppDrawerState extends State<AppDrawer> {
         // ------------------------------------------------------
         // MENU ITEMS
         // ------------------------------------------------------
-        if (!isGuest)
+if (!isGuest)
        GlassDrawerItem(
   icon: Icons.person_outline,
   color: Colors.white,
   text: "drawer.profile".tr(),
   onTap: () async {
-    Navigator.pop(context); // fecha o drawer
+    context.pop(); // fecha o drawer
 
-    final updated = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const ProfileScreen()),
-    );
+    final updated = await context.push<bool>('/profile');
 
     if (updated == true) {
-      // 🔥 força o Dashboard a ser recriado
-      navigatorKey.currentState?.pushReplacementNamed(
-        '/dashboard',
-        arguments: {
-          'month': DateTime.now().month,
-          'year': DateTime.now().year,
-        },
-      );
+      context.go('/dashboard');
     }
   },
 ),
@@ -296,21 +263,21 @@ class _AppDrawerState extends State<AppDrawer> {
            icon:  Icons.translate,
            color: Colors.white,
            text: "drawer.language".tr(),
-           onTap: () => _open(context, const LanguageScreen()),
+           onTap: () => _open(context, '/language'),
          ),
 
         GlassDrawerItem(
           icon: Icons.help_outline,
           color: Colors.white,
           text: "drawer.help".tr(),
-          onTap: () => _open(context, const HelpScreen()),
+          onTap: () => _open(context, '/help'),
         ),
 
         GlassDrawerItem(
           icon: Icons.info_outline,
           color: Colors.white,
           text: "drawer.about".tr(),
-          onTap: () => _open(context, const AboutAppScreen()),
+          onTap: () => _open(context, '/about'),
 
         ),
 
@@ -327,18 +294,13 @@ if (isGuest)
     text: "drawer.login_or_create".tr(),
     onTap: () {
       // Fecha o drawer
-      Navigator.pop(context);
+      context.pop();
 
       // Sai explicitamente do modo guest
       AppSession.flow = AppAuthFlow.splash;
 
       // Força ida ao fluxo de autenticação
-      Navigator.of(context).pushAndRemoveUntil(
-  MaterialPageRoute(
-    builder: (_) => const AuthPageView(),
-  ),
-  (_) => false,
-);
+      context.go('/login');
     },
   )
 else

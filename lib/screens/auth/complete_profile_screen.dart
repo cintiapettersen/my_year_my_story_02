@@ -5,8 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:myyearmystory/widgets/auth/custom_text_field.dart';
 import 'package:myyearmystory/widgets/auth/auth_button.dart';
-import 'package:myyearmystory/screens/splash/fade_page_transition.dart';
-import 'package:myyearmystory/screens/dashboard/dashboard_screen.dart';
+import 'package:go_router/go_router.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
   const CompleteProfileScreen({super.key});
@@ -95,16 +94,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
       await Future.delayed(const Duration(milliseconds: 500));
 
-      Navigator.pushAndRemoveUntil(
-        context,
-        fadePageTransition(
-          DashboardScreen(
-            month: DateTime.now().month,
-            year: DateTime.now().year,
-          ),
-        ),
-        (_) => false,
-      );
+      context.go('/dashboard');
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

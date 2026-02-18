@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 
@@ -231,10 +232,9 @@ Future<void> _deleteMood(int day) async {
                       ? () {
                           Navigator.pop(context);
                           Future.delayed(const Duration(milliseconds: 80), () {
-                            Navigator.pushNamed(
-                              currentContext,
+                            context.push(
                               "/diary",
-                              arguments: DateTime(widget.year, widget.month, day),
+                              extra: DateTime(widget.year, widget.month, day),
                             );
                           });
                         }
@@ -252,11 +252,10 @@ Future<void> _deleteMood(int day) async {
                   onTap: () {
                     Navigator.pop(context);
                     Future.delayed(const Duration(milliseconds: 80), () {
-                      Navigator.pushNamed(
-                      context,
-                       "/diary",
-                        arguments: DateTime(widget.year, widget.month, day),
-);
+                      context.push(
+                        "/diary",
+                        extra: DateTime(widget.year, widget.month, day),
+                      );
 
                     });
                   },

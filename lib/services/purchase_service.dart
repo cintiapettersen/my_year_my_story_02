@@ -39,6 +39,11 @@ class PurchaseService extends ChangeNotifier {
 
     products = response.productDetails;
 
+    debugPrint("Produtos retornados pela Apple: ${products.length}");
+    debugPrint("IDs retornados: ${products.map((e) => e.id).toList()}");
+    debugPrint("IDs não encontrados: ${response.notFoundIDs}");
+
+
     _subscription = _inAppPurchase.purchaseStream.listen(
       _listenToPurchaseUpdated,
       onDone: () => _subscription?.cancel(),

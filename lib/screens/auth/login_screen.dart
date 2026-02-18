@@ -11,19 +11,16 @@ import 'package:myyearmystory/screens/auth/forgot_password_screen.dart';
 import 'package:myyearmystory/services/user_service.dart';
 import 'package:myyearmystory/services/google_auth_service.dart';
 import 'package:myyearmystory/services/app_session.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginScreen extends StatefulWidget {
   final VoidCallback onCreateAccountTap;
 
-  const LoginScreen({
-    super.key,
-    required this.onCreateAccountTap,
-  });
+  const LoginScreen({super.key, required this.onCreateAccountTap});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
-
 
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
@@ -36,22 +33,10 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoginSelected = true; // 🔁 toggle restaurado
 
   @override
-void initState() {
-  super.initState();
-  _loadRememberedEmail();
-
-  Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-    final session = data.session;
-
-    if (session != null) {
-      print('🔐 Usuário autenticado');
-
-      if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/dashboard');
-
-    }
-  });
-}
+  void initState() {
+    super.initState();
+    _loadRememberedEmail();
+  }
 
   // =============================================================
   // REMEMBER ME
@@ -126,64 +111,55 @@ void initState() {
   // GOOGLE LOGIN
   // =============================================================
   Future<void> _signInWithGoogle() async {
-  // 🔔 Marca fluxo
-  AppSession.flow = AppAuthFlow.authenticating;
-
-  // ⚠️ NÃO usa loading aqui
-  // OAuth mobile não retorna normalmente
-  await GoogleAuthService.signInWithGoogle();
-
-  // ❌ NÃO setState
-  // ❌ NÃO navega
-  // ❌ NÃO faz nada depois disso
-  //
-  // 👉 AuthListener vai receber signedIn
-}
-
-
-
-// =============================================================
-// APPLE LOGIN
-// =============================================================
-Future<void> _signInWithApple() async {
-  print('🟡 Apple login iniciado');
-
-  try {
+    // 🔔 Marca fluxo
     AppSession.flow = AppAuthFlow.authenticating;
 
-    final response =
-        await Supabase.instance.client.auth.signInWithOAuth(
-  OAuthProvider.apple,
-  redirectTo: 'com.myyear.myyearmystory://login-callback',
-);
+    // ⚠️ NÃO usa loading aqui
+    // OAuth mobile não retorna normalmente
+    await GoogleAuthService.signInWithGoogle();
 
-
-    print('🟢 signInWithApple chamado com sucesso');
-    print('🟢 Response: $response');
-
-  } catch (e, stackTrace) {
-    print('🔴 ERRO no signInWithApple: $e');
-    print(stackTrace);
+    // ❌ NÃO setState
+    // ❌ NÃO navega
+    // ❌ NÃO faz nada depois disso
+    //
+    // 👉 AuthListener vai receber signedIn
   }
-}
 
+  // =============================================================
+  // APPLE LOGIN
+  // =============================================================
+  Future<void> _signInWithApple() async {
+    print('🟡 Apple login iniciado');
+
+    try {
+      AppSession.flow = AppAuthFlow.authenticating;
+
+      final response = await Supabase.instance.client.auth.signInWithOAuth(
+        OAuthProvider.apple,
+        redirectTo: 'com.myyear.myyearmystory://login-callback',
+        authScreenLaunchMode: LaunchMode.externalApplication,
+      );
+
+      print('🟢 signInWithApple chamado com sucesso');
+      print('🟢 Response: $response');
+    } catch (e, stackTrace) {
+      print('🔴 ERRO no signInWithApple: $e');
+      print(stackTrace);
+    }
+  }
 
   // =============================================================
   // UI
   // =============================================================
   @override
-Widget build(BuildContext context) {
-  // ✅ BLOQUEIO VISUAL DURANTE LOGIN COM GOOGLE
-  if (AppSession.isAuthenticating) {
-    return const Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
-  }
+  Widget build(BuildContext context) {
+    // ✅ BLOQUEIO VISUAL DURANTE LOGIN COM GOOGLE
+    if (AppSession.isAuthenticating) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
-  final isTablet = MediaQuery.of(context).size.shortestSide >= 600;
-  final maxWidth = isTablet ? 520.0 : double.infinity;
+    final isTablet = MediaQuery.of(context).size.shortestSide >= 600;
+    final maxWidth = isTablet ? 520.0 : double.infinity;
 
     return Scaffold(
       body: GestureDetector(
@@ -197,7 +173,10 @@ Widget build(BuildContext context) {
               child: ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: maxWidth),
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 20,
+                  ),
                   child: Form(
                     key: _formKey,
                     child: Column(
@@ -257,20 +236,15 @@ Widget build(BuildContext context) {
                         const SizedBox(height: 24),
 
                         AuthButton(
-  text: 'auth.login.button'.tr(),
-  isLoading: _isLoading,
-  onPressed: _signIn,
-  backgroundColor: const Color(0xFFE2377D),
-),
+                          text: 'auth.login.button'.tr(),
+                          isLoading: _isLoading,
+                          onPressed: _signIn,
+                          backgroundColor: const Color(0xFFE2377D),
+                        ),
 
-const SizedBox(height: 20),
+                        const SizedBox(height: 28),
 
-_buildGoogleButton(isTablet),
-
-const SizedBox(height: 14),
-
-_buildAppleButton(isTablet),
-
+                        _buildOAuthButtons(isTablet),
                       ],
                     ),
                   ),
@@ -300,9 +274,10 @@ _buildAppleButton(isTablet),
           return Stack(
             children: [
               AnimatedAlign(
-                alignment: _isLoginSelected
-                    ? Alignment.centerLeft
-                    : Alignment.centerRight,
+                alignment:
+                    _isLoginSelected
+                        ? Alignment.centerLeft
+                        : Alignment.centerRight,
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
                 child: Container(
@@ -325,9 +300,10 @@ _buildAppleButton(isTablet),
                           style: TextStyle(
                             fontSize: isTablet ? 22 : 18,
                             fontWeight: FontWeight.w600,
-                            color: _isLoginSelected
-                                ? Colors.white
-                                : Colors.black87,
+                            color:
+                                _isLoginSelected
+                                    ? Colors.white
+                                    : Colors.black87,
                           ),
                         ),
                       ),
@@ -335,13 +311,13 @@ _buildAppleButton(isTablet),
                   ),
                   Expanded(
                     child: GestureDetector(
-                  onTap: () {
-  // 🔥 Sai explicitamente do modo guest
-  AppSession.flow = AppAuthFlow.splash;
+                      onTap: () {
+                        // 🔥 Sai explicitamente do modo guest
+                        AppSession.flow = AppAuthFlow.splash;
 
-  setState(() => _isLoginSelected = false);
-  widget.onCreateAccountTap();
-},
+                        setState(() => _isLoginSelected = false);
+                        widget.onCreateAccountTap();
+                      },
 
                       child: Center(
                         child: Text(
@@ -349,9 +325,10 @@ _buildAppleButton(isTablet),
                           style: TextStyle(
                             fontSize: isTablet ? 22 : 18,
                             fontWeight: FontWeight.w600,
-                            color: !_isLoginSelected
-                                ? Colors.white
-                                : Colors.black87,
+                            color:
+                                !_isLoginSelected
+                                    ? Colors.white
+                                    : Colors.black87,
                           ),
                         ),
                       ),
@@ -380,10 +357,11 @@ _buildAppleButton(isTablet),
         Text('auth.login.remember_me'.tr()),
         const Spacer(),
         GestureDetector(
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
-          ),
+          onTap:
+              () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+              ),
           child: Text(
             'auth.login.forgot_password'.tr(),
             style: const TextStyle(decoration: TextDecoration.underline),
@@ -394,74 +372,111 @@ _buildAppleButton(isTablet),
   }
 
   // =============================================================
-  // GOOGLE BUTTON
   // =============================================================
+  // OAUTH SECTION
+  // =============================================================
+  Widget _buildOAuthButtons(bool isTablet) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            const Expanded(
+              child: Divider(thickness: 1, color: Color(0xFFE4D8EB)),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Text(
+                'ou',
+                style: TextStyle(
+                  color: Colors.black54,
+                  fontSize: isTablet ? 16 : 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            const Expanded(
+              child: Divider(thickness: 1, color: Color(0xFFE4D8EB)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final sideBySide = constraints.maxWidth >= 360;
+            if (sideBySide) {
+              return Row(
+                children: [
+                  Expanded(child: _buildGoogleButton(isTablet)),
+                  const SizedBox(width: 12),
+                  Expanded(child: _buildAppleButton(isTablet)),
+                ],
+              );
+            }
+            return Column(
+              children: [
+                _buildGoogleButton(isTablet),
+                const SizedBox(height: 12),
+                _buildAppleButton(isTablet),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+
   Widget _buildGoogleButton(bool isTablet) {
     return OutlinedButton(
       onPressed: _signInWithGoogle,
       style: OutlinedButton.styleFrom(
         backgroundColor: Colors.white,
-        padding: EdgeInsets.symmetric(vertical: isTablet ? 20 : 14),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
+        padding: EdgeInsets.symmetric(vertical: isTablet ? 16 : 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        side: const BorderSide(color: Color(0xFFE4D8EB)),
       ),
-      child: _isGoogleLoading
-          ? const SizedBox(
-              height: 22,
-              width: 22,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset(
-                  "assets/icons/google_icon.png",
-                  height: isTablet ? 32 : 22,
-                ),
-                const SizedBox(width: 12),
-                const Text(
-                  "Continue with Google",
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
+      child:
+          _isGoogleLoading
+              ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+              : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    "assets/icons/google_icon.png",
+                    height: isTablet ? 26 : 20,
+                  ),
+                  const SizedBox(width: 10),
+                  const Text(
+                    "Google",
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
     );
-    
   }
 
-
-// =============================================================
-// APPLE BUTTON
-// =============================================================
-Widget _buildAppleButton(bool isTablet) {
-  return OutlinedButton(
-    onPressed: _signInWithApple,
-    style: OutlinedButton.styleFrom(
-      backgroundColor: Colors.black,
-      padding: EdgeInsets.symmetric(vertical: isTablet ? 20 : 14),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
+  Widget _buildAppleButton(bool isTablet) {
+    return OutlinedButton(
+      onPressed: _signInWithApple,
+      style: OutlinedButton.styleFrom(
+        backgroundColor: Colors.black,
+        padding: EdgeInsets.symmetric(vertical: isTablet ? 16 : 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Icon(Icons.apple, color: Colors.white),
-        const SizedBox(width: 12),
-        const Text(
-          "Continue with Apple",
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.apple, color: Colors.white),
+          const SizedBox(width: 10),
+          const Text(
+            "Apple",
+            style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
           ),
-        ),
-      ],
-    ),
-  );
-}
-
-
-
-
+        ],
+      ),
+    );
+  }
 }

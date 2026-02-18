@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:myyearmystory/widgets/shared/main_scaffold.dart';
 import 'package:myyearmystory/screens/mood/mood_calendar.dart';
@@ -493,14 +494,9 @@ class _MoodScreenState extends State<MoodScreen> {
                     ),
                     onPressed: () {
                       Navigator.pop(context);
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => MoodScreen(
-                            month: tempMonth,
-                            year: tempYear,
-                          ),
-                        ),
+                      context.go(
+                        '/mood',
+                        extra: {'month': tempMonth, 'year': tempYear},
                       );
                     },
                     child: Text(
