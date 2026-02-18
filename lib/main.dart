@@ -30,6 +30,9 @@ import 'package:myyearmystory/widgets/monthly/interview_widget.dart';
 import 'package:myyearmystory/widgets/monthly/monthly_lists_widget.dart';
 import 'package:myyearmystory/widgets/monthly/photo_gallery_widget.dart';
 
+import 'package:provider/provider.dart';
+import 'services/purchase_service.dart';
+
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
@@ -77,82 +80,104 @@ class MyApp extends StatelessWidget {
       home: const SplashTransitionScreen(),
 
       routes: {
-        '/login': (_) => const AuthPageView(),
-        '/reset-password': (_) => const ResetPasswordScreen(),
-        '/dashboard': (_) => DashboardScreen(
-              month: DateTime.now().month,
-              year: DateTime.now().year,
-            ),
-        '/profile': (_) => ProfileScreen(),
-        '/help': (_) => HelpScreen(),
-        '/premium': (_) => const PremiumPage(),
-        '/daily_notifications': (_) => const NotificationsPage(),
-        '/monthly_goals': (_) => _withArgs(
-              (args) => MonthlyGoalsWidget(
-                month: args['month'],
-                year: args['year'],
-              ),
-            ),
-        '/gratitude': (_) => _withArgs(
-              (args) => GratitudeWidget(
-                month: args['month'],
-                year: args['year'],
-              ),
-            ),
-        '/reflections': (_) => _withArgs(
-              (args) => ReflectionsWidget(
-                month: args['month'],
-                year: args['year'],
-              ),
-            ),
-        '/curiosities': (_) => _withArgs(
-              (args) => CuriositiesWidget(
-                month: args['month'],
-                year: args['year'],
-              ),
-            ),
-        '/zodiac': (_) => _withArgs(
-              (args) => ZodiacWidget(
-                month: args['month'],
-                year: args['year'],
-              ),
-            ),
-        '/skills_development': (_) => _withArgs(
-              (args) => SkillsDevelopmentWidget(
-                month: args['month'],
-                year: args['year'],
-              ),
-            ),
-        '/did_you_know': (_) => _withArgs(
-              (args) => DidYouKnowWidget(
-                month: args['month'],
-                year: args['year'],
-              ),
-            ),
-        '/interview': (_) => _withArgs(
-              (args) => InterviewScreen(
-                month: args['month'],
-                year: args['year'],
-              ),
-            ),
-        '/monthly_lists': (_) => _withArgs(
-              (args) => MonthlyListsWidget(
-                month: args['month'],
-                year: args['year'],
-              ),
-            ),
-        '/monthly_photo_gallery': (_) => _withArgs(
-              (args) => MonthlyPhotoGallery(
-                month: args['month'],
-                year: args['year'],
-              ),
-            ),
-        '/diary': (context) {
-          final arg = ModalRoute.of(context)?.settings.arguments;
-          final date = arg is DateTime ? arg : DateTime.now();
-          return DiaryScreen(date: date);
-        },
-      },
+  '/login': (_) => const AuthPageView(),
+
+  // 👇 ESSA É A ROTA QUE ESTAVA FALTANDO
+  '/login-callback': (_) => const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      ),
+
+  '/reset-password': (_) => const ResetPasswordScreen(),
+
+  '/dashboard': (_) => DashboardScreen(
+        month: DateTime.now().month,
+        year: DateTime.now().year,
+      ),
+
+  '/profile': (_) => ProfileScreen(),
+  '/help': (_) => HelpScreen(),
+  '/premium': (_) => const PremiumPage(),
+  '/daily_notifications': (_) => const NotificationsPage(),
+
+  '/monthly_goals': (_) => _withArgs(
+        (args) => MonthlyGoalsWidget(
+          month: args['month'],
+          year: args['year'],
+        ),
+      ),
+
+  '/gratitude': (_) => _withArgs(
+        (args) => GratitudeWidget(
+          month: args['month'],
+          year: args['year'],
+        ),
+      ),
+
+  '/reflections': (_) => _withArgs(
+        (args) => ReflectionsWidget(
+          month: args['month'],
+          year: args['year'],
+        ),
+      ),
+
+  '/curiosities': (_) => _withArgs(
+        (args) => CuriositiesWidget(
+          month: args['month'],
+          year: args['year'],
+        ),
+      ),
+
+  '/zodiac': (_) => _withArgs(
+        (args) => ZodiacWidget(
+          month: args['month'],
+          year: args['year'],
+        ),
+      ),
+
+  '/skills_development': (_) => _withArgs(
+        (args) => SkillsDevelopmentWidget(
+          month: args['month'],
+          year: args['year'],
+        ),
+      ),
+
+  '/did_you_know': (_) => _withArgs(
+        (args) => DidYouKnowWidget(
+          month: args['month'],
+          year: args['year'],
+        ),
+      ),
+
+  '/interview': (_) => _withArgs(
+        (args) => InterviewScreen(
+          month: args['month'],
+          year: args['year'],
+        ),
+      ),
+
+  '/monthly_lists': (_) => _withArgs(
+        (args) => MonthlyListsWidget(
+          month: args['month'],
+          year: args['year'],
+        ),
+      ),
+
+  '/monthly_photo_gallery': (_) => _withArgs(
+        (args) => MonthlyPhotoGallery(
+          month: args['month'],
+          year: args['year'],
+        ),
+      ),
+
+  '/diary': (context) {
+    final arg = ModalRoute.of(context)?.settings.arguments;
+    final date = arg is DateTime ? arg : DateTime.now();
+    return DiaryScreen(date: date);
+  },
+},
+
     );
   }
 }

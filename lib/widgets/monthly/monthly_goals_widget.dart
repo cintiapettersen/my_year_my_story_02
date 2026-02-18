@@ -33,6 +33,7 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
 
   bool _isPremiumUser = false;
   int _currentTab = 0;
+  static const Color _completedColor = Color(0xFFE2377D); // rosa vibrante
 
 
  bool get isGuest {
@@ -48,21 +49,6 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
 
   List<MonthlyGoal> _monthlyGoals = [];
   Map<String, List<Map<String, dynamic>>> _dailyGoalsByDate = {};
-
-  
-
-  final List<Color> trashColors = const [
-    Color(0xFFE57373),
-    Color(0xFFF06292),
-    Color(0xFFBA68C8),
-    Color(0xFF9575CD),
-    Color(0xFF64B5F6),
-    Color(0xFF4DD0E1),
-    Color(0xFF4DB6AC),
-    Color(0xFFAED581),
-    Color(0xFFFF8A65),
-    Color(0xFFFFB74D),
-  ];
 
   @override
   void initState() {
@@ -253,28 +239,34 @@ final TextStyle tabTextStyle = const TextStyle(
 Widget _tabs() {
   Widget tab(String text, int index) {
     final active = _currentTab == index;
+    const accent = _MonthlyGoalsWidgetState._completedColor;
 
     return GestureDetector(
       onTap: () => setState(() => _currentTab = index),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         decoration: BoxDecoration(
-          color: active
-              ? const Color.fromARGB(255, 217, 171, 239)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(6),
+          color: active ? accent : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: active
-                ? const Color(0xFFC7C2F7)
+                ? accent
                 : const Color(0xFFE25BA6),
           ),
+          boxShadow: active
+              ? [
+                  BoxShadow(
+                    color: accent.withOpacity(0.28),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : [],
         ),
         child: Text(
           text,
           style: tabTextStyle.copyWith(
-            color: active
-                ? Colors.black87
-                : const Color(0xFFE25BA6),
+            color: active ? Colors.white : const Color(0xFFE25BA6),
           ),
         ),
       ),
@@ -359,41 +351,21 @@ Widget _tabs() {
 
             // 📌 METAS ATIVAS
             ...active.map(
-              (goal) => Row(
-                children: [
-                  Expanded(
-                    child: CheckboxListTile(
-                      contentPadding: EdgeInsets.zero,
-                      controlAffinity:
-                          ListTileControlAffinity.leading,
-                      activeColor: const Color(0xFFE25BA6),
-                      value: false,
-                      onChanged: (_) async {
-                        
-                        await MonthlyGoalService.updateGoal(
-                          goalId: goal.id,
-                          conteudo: goal.conteudo,
-                          concluido: true,
-                        );
-                        await _loadMonthlyGoals();
-                      },
-                      title: Text(goal.conteudo),
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.delete_rounded,
-                      color: trashColors[
-                          active.indexOf(goal) %
-                              trashColors.length],
-                    ),
-                    onPressed: () async {
-                     
-                      await MonthlyGoalService.deleteGoal(goal.id);
-                      await _loadMonthlyGoals();
-                    },
-                  ),
-                ],
+              (goal) => _GoalTile(
+                text: goal.conteudo,
+                completed: false,
+                onToggle: () async {
+                  await MonthlyGoalService.updateGoal(
+                    goalId: goal.id,
+                    conteudo: goal.conteudo,
+                    concluido: true,
+                  );
+                  await _loadMonthlyGoals();
+                },
+                onDelete: () async {
+                  await MonthlyGoalService.deleteGoal(goal.id);
+                  await _loadMonthlyGoals();
+                },
               ),
             ),
 
@@ -410,17 +382,18 @@ Widget _tabs() {
               ),
               const SizedBox(height: 8),
               ...completed.map(
-                (goal) => Padding(
-                  padding:
-                      const EdgeInsets.only(left: 40, bottom: 6),
-                  child: Text(
-                    goal.conteudo,
-                    style: const TextStyle(
-                      color: Colors.grey,
-                      decoration:
-                          TextDecoration.lineThrough,
-                    ),
-                  ),
+                (goal) => _GoalTile(
+                  text: goal.conteudo,
+                  completed: true,
+                  onToggle: () async {
+                    await MonthlyGoalService.updateGoal(
+                      goalId: goal.id,
+                      conteudo: goal.conteudo,
+                      concluido: false,
+                    );
+                    await _loadMonthlyGoals();
+                  },
+                  onDelete: null,
                 ),
               ),
             ],
@@ -536,40 +509,21 @@ Widget _tabs() {
                     ),
                     child: Column(
                       children: activeGoals.map((goal) {
-                        return Row(
-                          children: [
-                            Expanded(
-                              child: CheckboxListTile(
-                                contentPadding: EdgeInsets.zero,
-                                controlAffinity:
-                                    ListTileControlAffinity.leading,
-                                activeColor:
-                                    const Color(0xFFE25BA6),
-                                value: false,
-                                onChanged: (_) async {
-                                  await DailyGoalService.toggleCompleted(
-                                    goalId: goal['id'],
-                                    completed: true,
-                                  );
-                                  await _loadDailyGoals();
-                                },
-                                title: Text(goal['content']),
-                              ),
-                            ),
-                            IconButton(
-                              icon: Icon(
-                                Icons.delete_rounded,
-                                color: trashColors[
-                                    activeGoals.indexOf(goal) %
-                                        trashColors.length],
-                              ),
-                              onPressed: () async {
-                                await DailyGoalService.deleteGoal(
-                                    goal['id']);
-                                await _loadDailyGoals();
-                              },
-                            ),
-                          ],
+                        return _GoalTile(
+                          text: goal['content'],
+                          completed: false,
+                          onToggle: () async {
+                            await DailyGoalService.toggleCompleted(
+                              goalId: goal['id'],
+                              completed: true,
+                            );
+                            await _loadDailyGoals();
+                          },
+                          onDelete: () async {
+                            await DailyGoalService.deleteGoal(
+                                goal['id']);
+                            await _loadDailyGoals();
+                          },
                         );
                       }).toList(),
                     ),
@@ -588,17 +542,17 @@ Widget _tabs() {
                     ),
                     const SizedBox(height: 6),
                     ...completedGoals.map(
-                      (goal) => Padding(
-                        padding: const EdgeInsets.only(
-                            left: 32, bottom: 4),
-                        child: Text(
-                          goal['content'],
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            decoration:
-                                TextDecoration.lineThrough,
-                          ),
-                        ),
+                      (goal) => _GoalTile(
+                        text: goal['content'],
+                        completed: true,
+                        onToggle: () async {
+                          await DailyGoalService.toggleCompleted(
+                            goalId: goal['id'],
+                            completed: false,
+                          );
+                          await _loadDailyGoals();
+                        },
+                        onDelete: null,
                       ),
                     ),
                   ],
@@ -618,5 +572,101 @@ Widget _tabs() {
     _monthlyController.dispose();
     _dailyController.dispose();
     super.dispose();
+  }
+}
+
+class _GoalTile extends StatelessWidget {
+  final String text;
+  final bool completed;
+  final VoidCallback onToggle;
+  final VoidCallback? onDelete;
+
+  const _GoalTile({
+    required this.text,
+    required this.completed,
+    required this.onToggle,
+    this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const Color accent = _MonthlyGoalsWidgetState._completedColor;
+
+    return AnimatedScale(
+      scale: completed ? 1.0 : 0.95,
+      duration: const Duration(milliseconds: 170),
+      curve: Curves.easeOut,
+      child: GestureDetector(
+        onTap: onToggle,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: completed ? accent : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: completed ? accent : Colors.black.withOpacity(0.08),
+            ),
+            boxShadow: completed
+                ? [
+                    BoxShadow(
+                      color: accent.withOpacity(0.25),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [],
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(
+                completed ? Icons.star_rounded : Icons.radio_button_unchecked,
+                color: completed ? Colors.white : const Color(0xFFE25BA6),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      text,
+                      style: TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w600,
+                        color: completed ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                    if (completed) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        'monthly_goals.completed_message'.tr(),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white.withOpacity(0.92),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (onDelete != null) ...[
+                const SizedBox(width: 10),
+                IconButton(
+                  onPressed: onDelete,
+                  icon: const Icon(
+                    Icons.delete_rounded,
+                    color: Color(0xFFB0B0B0),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

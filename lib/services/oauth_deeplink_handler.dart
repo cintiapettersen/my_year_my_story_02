@@ -51,11 +51,7 @@ static Future<void> _handleUri(Uri uri) async {
     return;
   }
 
-  // 🔑 OAuth normal (Google, etc)
-  if (uri.queryParameters.containsKey('code')) {
-    await Supabase.instance.client.auth.getSessionFromUrl(uri);
-    debugPrint('✅ OAuth session criada');
-  }
+ 
 }
 
 

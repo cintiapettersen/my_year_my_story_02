@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:myyearmystory/utils/access_control.dart';
+import 'package:provider/provider.dart';
+import 'package:myyearmystory/services/purchase_service.dart';
 
 
 
@@ -186,7 +188,17 @@ _benefit(Icons.favorite_rounded, "premium.benefit9".tr(), Color.fromARGB(255, 23
                               ),
                               elevation: 4,
                             ),
-                            onPressed: () => Navigator.pop(context),
+                            onPressed: () async {
+  final purchaseService = context.read<PurchaseService>();
+
+  await purchaseService.buyMonthly();
+
+  if (purchaseService.isPremium) {
+    if (context.mounted) {
+      Navigator.pop(context);
+    }
+  }
+},
                             child: Text(
                               "premium.button".tr(),
                               style: GoogleFonts.inter(

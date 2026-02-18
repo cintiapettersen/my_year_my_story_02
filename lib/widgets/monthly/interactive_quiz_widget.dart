@@ -220,7 +220,9 @@ if (result == null) return;
     setState(() {
   // título do resultado NÃO vem do banco
   // vem do tipo (ou depois você pode mapear pra algo bonito)
-  resultTitleOnPage = winningType.toUpperCase();
+  resultTitleOnPage =
+    _getLocalized(result["title"], result["title_en"]);
+
 
   // descrição REAL vem do quizzes.results
   resultDescOnPage =

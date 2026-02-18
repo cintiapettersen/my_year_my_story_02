@@ -11,75 +11,73 @@ dependencies:
   flutter:
     sdk: flutter
 
-    
-
   # 🔐 Auth / Deep link
   webview_flutter: ^4.7.0
-  flutter_dotenv: ^5.1.0
-
+  flutter_dotenv: ^6.0.0
 
   # 📊 Gráficos e UI
   fl_chart: 1.1.1
-  flutter_svg: 2.0.7
-  smooth_page_indicator: 1.1.0
+  flutter_svg: ^2.2.3
+  smooth_page_indicator: ^2.0.1
 
-  # 🎙️ Áudio e gravação
-  
-  just_audio: 0.9.36
-  path_provider: 2.1.3
+  # 🎙️ Áudio
+  just_audio: ^0.10.5
+  path_provider: ^2.1.5
 
-
-  # 🌍 Localização e internacionalização
+  # 🌍 Localização
   flutter_localizations:
     sdk: flutter
   easy_localization: ^3.0.8
   intl: 0.20.2
   mask_text_input_formatter: ^2.0.0
 
-  # ✨ Ícones e fontes
+  # ✨ Ícones
   cupertino_icons: 1.0.8
-  google_fonts: 6.1.0
+  google_fonts: ^8.0.1
   phosphor_flutter: 2.1.0
   iconsax: 0.0.8
-  
 
-  # 🔐 Autenticação e banco de dados
+  # 🔐 Banco e autenticação
   supabase_flutter: ^2.10.3
-  shared_preferences: 2.3.2
-  google_sign_in: 6.2.1
-  local_auth: ^2.3.0
-  flutter_secure_storage: ^9.2.2
+  shared_preferences: ^2.5.4
+  google_sign_in: ^7.2.0
+  local_auth: ^3.0.0
+  flutter_secure_storage: ^10.0.0
 
-  # 🔗 Navegação e links
-  url_launcher: 6.2.5
+  # 🔗 Links e rede
+  url_launcher: ^6.3.2
   app_links: ^6.4.1
-  connectivity_plus: ^6.0.3
+  connectivity_plus: ^7.0.0
   http: ^1.2.0
 
-  # 🖼️ Imagens e arquivos
-  image_picker: 1.1.2
-  file_picker: 10.3.3
-  share_plus: ^10.0.0
+  # 🖼️ Arquivos
+  image_picker: ^1.2.1
+  file_picker: ^10.3.10
+  share_plus: ^12.0.1
 
   # 📦 Informações do app
   package_info_plus: 9.0.0
   confetti: ^0.8.0
   flutter_animate: ^4.5.2
 
-  # Notificações
-  android_intent_plus: ^4.0.2
+  # 🔔 Notificações
+  android_intent_plus: ^6.0.0
 
+  # ⭐ Avaliação
   in_app_review: ^2.0.8
-  
-  # gemini
+
+  # 🤖 Gemini
   google_generative_ai: ^0.4.0
+
+  # 💎 Premium
+  in_app_purchase: ^3.1.13
+  provider: ^6.1.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: 6.0.0
-  flutter_launcher_icons: 0.13.1
-  
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true

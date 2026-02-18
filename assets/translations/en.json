@@ -285,7 +285,8 @@
     "tab_month": "MONTHLY GOALS",
     "tab_day": "DAILY GOALS",
     "completed": "completed",
-    "view_more": "see more..."
+    "view_more": "see more...",
+    "completed_message": "Well done! ✨"
   },
   "month_menu": {
     "goals": "Monthly Goals",

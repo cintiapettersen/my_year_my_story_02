@@ -299,69 +299,83 @@ child: RemoteDataWrapper(
       const SizedBox(height: 12),
 
       SizedBox(
-        height: 320,
+        height: 340,
         child: PageView.builder(
           controller: _pageController,
           physics: const BouncingScrollPhysics(),
           itemCount: _questions.length,
           onPageChanged: (i) =>
               setState(() => _currentPage = i),
-          itemBuilder: (_, index) => Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.favorite,
-                color: heartColors[index % heartColors.length],
-                size: 22,
-              ),
+          itemBuilder: (_, index) => LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                child: ConstrainedBox(
+                  constraints:
+                      BoxConstraints(minHeight: constraints.maxHeight - 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.favorite,
+                        color: heartColors[index % heartColors.length],
+                        size: 22,
+                      ),
 
-              const SizedBox(height: 8),
+                      const SizedBox(height: 8),
 
-              Text(
-                _questions[index]['text'] ?? '',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFFBD3E7D),
-                  height: 1.4,
-                ),
-              ),
+                      Text(
+                        _questions[index]['text'] ?? '',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFBD3E7D),
+                          height: 1.4,
+                        ),
+                      ),
 
-              const SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
-              TextField(
-                controller: _controllers[index],
-                maxLines: 5,
-                decoration: InputDecoration(
-                  hintText: 'curiosities.answer_hint'.tr(),
-                  filled: true,
-                  fillColor: const Color(0xFFFCEAF4),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
+                      TextField(
+                        controller: _controllers[index],
+                        maxLines: 5,
+                        decoration: InputDecoration(
+                          hintText: 'curiosities.answer_hint'.tr(),
+                          filled: true,
+                          fillColor: const Color(0xFFFCEAF4),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      ElevatedButton(
+                        onPressed: () => _saveCurrentAnswer(index),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFE25BA6),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 32,
+                            vertical: 14,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(28),
+                          ),
+                          elevation: 4,
+                          shadowColor:
+                              const Color(0xFFE25BA6).withOpacity(0.35),
+                        ),
+                        child: Text('curiosities.save'.tr()),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-
-              const SizedBox(height: 16),
-
-              ElevatedButton(
-                onPressed: () => _saveCurrentAnswer(index),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE25BA6),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 36,
-                    vertical: 16,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: Text('curiosities.save'.tr()),
-              ),
-            ],
+              );
+            },
           ),
         ),
       ),

@@ -3,11 +3,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:myyearmystory/theme.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:myyearmystory/widgets/auth/custom_text_field.dart';
 import 'package:myyearmystory/widgets/auth/auth_button.dart';
 import 'package:myyearmystory/screens/auth/forgot_password_screen.dart';
-import 'package:myyearmystory/screens/auth/signup_screen.dart';
+
 import 'package:myyearmystory/services/user_service.dart';
 import 'package:myyearmystory/services/google_auth_service.dart';
 import 'package:myyearmystory/services/app_session.dart';
@@ -36,17 +36,22 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoginSelected = true; // 🔁 toggle restaurado
 
   @override
-  void initState() {
-    super.initState();
-    _loadRememberedEmail();
-  }
+void initState() {
+  super.initState();
+  _loadRememberedEmail();
 
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
+  Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+    final session = data.session;
+
+    if (session != null) {
+      print('🔐 Usuário autenticado');
+
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, '/dashboard');
+
+    }
+  });
+}
 
   // =============================================================
   // REMEMBER ME
@@ -134,6 +139,34 @@ class _LoginScreenState extends State<LoginScreen> {
   //
   // 👉 AuthListener vai receber signedIn
 }
+
+
+
+// =============================================================
+// APPLE LOGIN
+// =============================================================
+Future<void> _signInWithApple() async {
+  print('🟡 Apple login iniciado');
+
+  try {
+    AppSession.flow = AppAuthFlow.authenticating;
+
+    final response =
+        await Supabase.instance.client.auth.signInWithOAuth(
+  OAuthProvider.apple,
+  redirectTo: 'com.myyear.myyearmystory://login-callback',
+);
+
+
+    print('🟢 signInWithApple chamado com sucesso');
+    print('🟢 Response: $response');
+
+  } catch (e, stackTrace) {
+    print('🔴 ERRO no signInWithApple: $e');
+    print(stackTrace);
+  }
+}
+
 
   // =============================================================
   // UI
@@ -224,17 +257,20 @@ Widget build(BuildContext context) {
                         const SizedBox(height: 24),
 
                         AuthButton(
-                          text: 'auth.login.button'.tr(),
-                          isLoading: _isLoading,
-                          onPressed: _signIn,
-                          backgroundColor: const Color(0xFFE2377D),
-                        ),
+  text: 'auth.login.button'.tr(),
+  isLoading: _isLoading,
+  onPressed: _signIn,
+  backgroundColor: const Color(0xFFE2377D),
+),
 
-                        const SizedBox(height: 20),
+const SizedBox(height: 20),
 
-                        _buildGoogleButton(isTablet),
+_buildGoogleButton(isTablet),
 
-                        SizedBox(height: isTablet ? 80 : 40),
+const SizedBox(height: 14),
+
+_buildAppleButton(isTablet),
+
                       ],
                     ),
                   ),
@@ -391,5 +427,41 @@ Widget build(BuildContext context) {
               ],
             ),
     );
+    
   }
+
+
+// =============================================================
+// APPLE BUTTON
+// =============================================================
+Widget _buildAppleButton(bool isTablet) {
+  return OutlinedButton(
+    onPressed: _signInWithApple,
+    style: OutlinedButton.styleFrom(
+      backgroundColor: Colors.black,
+      padding: EdgeInsets.symmetric(vertical: isTablet ? 20 : 14),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+      ),
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.apple, color: Colors.white),
+        const SizedBox(width: 12),
+        const Text(
+          "Continue with Apple",
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+
+
+
 }
