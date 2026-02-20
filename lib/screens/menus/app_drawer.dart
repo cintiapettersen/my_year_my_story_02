@@ -10,15 +10,10 @@ import 'package:myyearmystory/services/profile_service.dart';
 import 'glass_drawer.dart';
 import 'glass_drawer_item.dart';
 import 'premium_button_glass.dart';
-import 'about_modal.dart';
 
-import '../menus/help_screen.dart';
-import '../premium/premium_page.dart';
-import '../menus/language_screen.dart';
 
 import 'package:myyearmystory/services/app_session.dart';
 
-import '../menus/profile_screen.dart';
 
 
 
@@ -266,13 +261,7 @@ if (!isGuest)
            onTap: () => _open(context, '/language'),
          ),
 
-        GlassDrawerItem(
-          icon: Icons.help_outline,
-          color: Colors.white,
-          text: "drawer.help".tr(),
-          onTap: () => _open(context, '/help'),
-        ),
-
+       
         GlassDrawerItem(
           icon: Icons.info_outline,
           color: Colors.white,

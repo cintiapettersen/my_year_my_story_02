@@ -1,260 +1,393 @@
 import 'dart:ui';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:easy_localization/easy_localization.dart';
-import 'package:myyearmystory/utils/access_control.dart';
 import 'package:provider/provider.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:in_app_purchase_storekit/in_app_purchase_storekit.dart';
 import 'package:myyearmystory/services/purchase_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+enum _Plan { monthly, yearly }
 
-
-
-class PremiumPage extends StatelessWidget {
+class PremiumPage extends StatefulWidget {
   const PremiumPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
+  State<PremiumPage> createState() => _PremiumPageState();
+}
 
-      appBar: AppBar(
-  backgroundColor: const Color(0xFFE3B1FC),
-  elevation: 0,
-  centerTitle: true,
+class _PremiumPageState extends State<PremiumPage> {
+  _Plan _selectedPlan = _Plan.yearly;
+  bool _isLoading = false;
+  bool _isRestoring = false;
 
-  iconTheme: const IconThemeData(
-    color: Color(0xFF4B3768), // cor da seta!
-  ),
+  String? _getIntroPrice(ProductDetails? product) {
+    if (product is AppStoreProductDetails) {
+      final intro = product.skProduct.introductoryPrice;
+      if (intro != null) return intro.price;
+    }
+    return null;
+  }
 
-  title: Text(
-    "language.app_name".tr(),
-    style: GoogleFonts.montserrat(
-      fontWeight: FontWeight.w700,
-      fontSize: 18,
-      color: const Color(0xFF4B3768),
-    ),
-  ),
-),
-
-
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFF9E9FF),
-              Color(0xFFFFF4F8),
-            ],
-          ),
-        ),
-
-        child: Center(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 40),
-
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(34),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 34, horizontal: 28),
-
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.45),
-                      borderRadius: BorderRadius.circular(34),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.85),
-                        width: 1.4,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF9B59B6).withOpacity(0.12),
-                          blurRadius: 30,
-                          offset: const Offset(0, 14),
-                        ),
-                      ],
-                    ),
-
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // 🌟 ÍCONE PREMIUM
-                        Container(
-                          padding: const EdgeInsets.all(22),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.55),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.8),
-                              width: 1,
-                            ),
-                          ),
-                          child: const Icon(
-                            Icons.auto_awesome_rounded,
-                            color: Color.fromARGB(255, 232, 100, 190),
-                            size: 46,
-                          ),
-                        ),
-
-                        const SizedBox(height: 28),
-// 🌟 TÍTULO
-                        Text(
-                          "premium.app_name".tr(),
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.montserrat(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: const Color.fromARGB(255, 158, 119, 205),
-                          ),
-                        ),
-
-                        const SizedBox(height: 10),
-                        
-                        // 🌟 TÍTULO
-                        Text(
-                          "premium.title".tr(),
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.inter(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w700,
-                            color: const Color.fromARGB(255, 89, 58, 127),
-                          ),
-                        ),
-
-                        const SizedBox(height: 10),
-
-                        // ✨ FRASE PRINCIPAL
-                        Text(
-                          "premium.main_phrase".tr(),
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.inter(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black87,
-                          ),
-                        ),
-
-                        const SizedBox(height: 8),
-
-                        Text(
-                          "premium.sub_phrase".tr(),
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.inter(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w400,
-                            color: Colors.black54,
-                          ),
-                        ),
-
-                        const SizedBox(height: 28),
-
-                        // DIVISOR PREMIUM
-                        Container(
-                          height: 1.2,
-                          width: double.infinity,
-                          color: Colors.white.withOpacity(0.8),
-                        ),
-
-                        const SizedBox(height: 28),
-
-                        // 🌟 BENEFÍCIOS
-                        _benefit(Icons.favorite_rounded, "premium.benefit1".tr(), Color(0xFFFF4FA3)),
-_benefit(Icons.favorite_rounded, "premium.benefit2".tr(), Color.fromARGB(255, 227, 176, 202)),
-_benefit(Icons.favorite_rounded, "premium.benefit3".tr(), Color.fromARGB(255, 214, 218, 86)),
-_benefit(Icons.favorite_rounded, "premium.benefit4".tr(), Color.fromARGB(255, 124, 151, 224)),
-_benefit(Icons.favorite_rounded, "premium.benefit5".tr(), Color.fromARGB(255, 196, 139, 227)),
-_benefit(Icons.favorite_rounded, "premium.benefit6".tr(), Color.fromARGB(255, 224, 129, 175)),
-_benefit(Icons.favorite_rounded, "premium.benefit7".tr(), Color.fromARGB(255, 209, 86, 183)),
-_benefit(Icons.favorite_rounded, "premium.benefit8".tr(), Color.fromARGB(255, 162, 139, 226)),
-_benefit(Icons.favorite_rounded, "premium.benefit9".tr(), Color.fromARGB(255, 234, 90, 138)),
-                        const SizedBox(height: 36),
-
-                        // 🌟 BOTÃO PREMIUM
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color.fromARGB(255, 223, 97, 164),
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              elevation: 4,
-                            ),
-                            onPressed: () async {
-  final purchaseService = context.read<PurchaseService>();
-
-  await purchaseService.buyMonthly();
-
-  if (purchaseService.isPremium) {
-    if (context.mounted) {
-      Navigator.pop(context);
+  Future<void> _openUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Não foi possível abrir o link")),
+      );
     }
   }
-},
-                            child: Text(
-                              "premium.button".tr(),
-                              style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontSize: 17,
-                                fontWeight: FontWeight.w600,
+
+  @override
+  Widget build(BuildContext context) {
+    final purchaseService = context.watch<PurchaseService>();
+
+    final monthlyProduct = purchaseService.monthlyProduct;
+    final yearlyProduct = purchaseService.yearlyProduct;
+
+    final monthlyPrice = monthlyProduct?.price ?? "";
+    final yearlyPrice = yearlyProduct?.price ?? "";
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF3E6FA),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFE064B4),
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text(
+          "My Year, My Story",
+          style: GoogleFonts.montserrat(
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+      ),
+      
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isTablet = constraints.maxWidth > 700;
+
+            return Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: isTablet ? 560 : 640,
+                ),
+                child: SingleChildScrollView(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight - 36,
+                    ),
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(30),
+                          border: Border.all(
+                            color: const Color.fromARGB(255, 226, 204, 226),
+                            width: 10,
+                          ),
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 24, horizontal: 18),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.9),
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                             Text(
+  tr("premium.main_phrase"),
+  textAlign: TextAlign.center,
+  style: GoogleFonts.monteCarlo(
+  fontSize: 44,
+  fontWeight: FontWeight.w600,
+  height: 1.05, 
+  letterSpacing: -0.5,
+  color: const Color(0xFF4B3768),
+),
+),
+                              const SizedBox(height: 10),
+                              Text(
+                                tr("premium.sub_phrase"),
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(
+                                  fontSize: 15,
+                                  height: 1.35,
+                                  color: Colors.black87,
+                                ),
                               ),
-                            ),
+                              const SizedBox(height: 44),
+
+Container(
+  height: 1,
+  color: Colors.black.withOpacity(0.08),
+),
+
+const SizedBox(height: 22),
+
+Row(
+  children: [
+    Expanded(
+      child: _planCard(
+        title: tr("premium.plan_yearly"),
+
+        
+        price: yearlyPrice,
+        selected: _selectedPlan == _Plan.yearly,
+        highlight: true,
+        onTap: () =>
+            setState(() => _selectedPlan = _Plan.yearly),
+      ),
+    ),
+    const SizedBox(width: 16),
+    Expanded(
+      child: _planCard(
+        title: tr("premium.plan_monthly"),
+        price: monthlyPrice,
+        selected: _selectedPlan == _Plan.monthly,
+        highlight: false,
+        onTap: () =>
+            setState(() => _selectedPlan = _Plan.monthly),
+      ),
+    ),
+  ],
+),
+
+const SizedBox(height: 38),
+
+                              SizedBox(
+                                width: double.infinity,
+                                height: 54,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFE064B4),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    elevation: 8,
+                                  ),
+                                  onPressed: _isLoading
+                                      ? null
+                                      : () async {
+                                          setState(() => _isLoading = true);
+                                          if (_selectedPlan == _Plan.yearly) {
+                                            await purchaseService.buyYearly();
+                                          } else {
+                                            await purchaseService.buyMonthly();
+                                          }
+                                          if (mounted) {
+                                            setState(() => _isLoading = false);
+                                          }
+                                        },
+                                  child: _isLoading
+                                      ? const SizedBox(
+                                          height: 18,
+                                          width: 18,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2.2,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : Text(
+                                          tr("premium.cta_trial"),
+                                          style: GoogleFonts.inter(
+                                            fontSize: 16.5,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                ),
+                              ),
+                              const SizedBox(height: 15),
+                              Text(
+                                tr("premium.renew_line1"),
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color: Colors.black.withOpacity(0.7),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                tr("premium.renew_line2"),
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color: Colors.black.withOpacity(0.7),
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+                              Container(
+                                height: 1,
+                                color: Colors.black.withOpacity(0.08),
+                              ),
+                              const SizedBox(height: 10),
+                              Wrap(
+                                alignment: WrapAlignment.center,
+                                spacing: 12,
+                                runSpacing: 6,
+                                children: [
+                                  TextButton(
+                                    onPressed: _isRestoring
+                                        ? null
+                                        : () async {
+                                            setState(() => _isRestoring = true);
+                                            await InAppPurchase.instance
+                                                .restorePurchases();
+                                            if (mounted) {
+                                              setState(() => _isRestoring = false);
+                                            }
+                                          },
+                                    child: _isRestoring
+                                        ? const SizedBox(
+                                            height: 14,
+                                            width: 14,
+                                            child: CircularProgressIndicator(
+                                                strokeWidth: 2),
+                                          )
+                                        : Text(
+                                            tr("premium.restore_button"),
+                                            style: GoogleFonts.inter(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w700,
+                                              color: const Color(0xFF4B3768),
+                                            ),
+                                          ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => _openUrl(
+                                        "https://sonhodepapel.com/term-of-use-myms/"),
+                                    child: Text(
+                                      tr("premium.terms"),
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF4B3768),
+                                      ),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => _openUrl(
+                                        "https://sonhodepapel.com/my-year-my-story-policy/"),
+                                    child: Text(
+                                      tr("premium.privacy"),
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF4B3768),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text(
+                                  tr("premium.later"),
+                                  style: GoogleFonts.inter(
+                                    color: Colors.black54,
+                                    fontSize: 14.5,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-
-                        const SizedBox(height: 14),
-
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: Text(
-                            "premium.later".tr(),
-                            style: GoogleFonts.inter(
-                              color: Colors.black54,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
   }
 
-  // Widget benefício
-  Widget _benefit(IconData icon, String text, Color color) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 8),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 20, color: color),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            text,
+  Widget _planCard({
+  required String title,
+  required String price,
+  required bool selected,
+  required bool highlight,
+  required VoidCallback onTap,
+}) {
+  return GestureDetector(
+    onTap: onTap,
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
+      decoration: BoxDecoration(
+        gradient: highlight
+            ? const LinearGradient(
+                colors: [
+                  Color.fromARGB(255, 234, 205, 226),
+                  Color.fromARGB(255, 217, 153, 189),
+                ],
+              )
+            : null,
+        color: highlight ? null : const Color.fromARGB(255, 176, 177, 219),
+        borderRadius: BorderRadius.circular(18),
+       
+        border: Border.all(
+          color: selected
+              ? const Color.fromARGB(255, 181, 171, 209)
+              : const Color.fromARGB(255, 167, 167, 170).withOpacity(0.25),
+          width: selected ? 4.4 : 1,
+        ),
+
+
+
+        boxShadow: highlight
+            ? [
+                BoxShadow(
+                  color: const Color.fromARGB(255, 159, 159, 161).withOpacity(0.22),
+                  blurRadius: 20,
+                  offset: const Offset(0, 12),
+                )
+              ]
+            : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 14,
+                  offset: const Offset(0, 8),
+                )
+              ],
+      ),
+      child: Column(
+  mainAxisAlignment: MainAxisAlignment.center,  // centraliza verticalmente
+  crossAxisAlignment: CrossAxisAlignment.center,
+  children: [
+          Text(
+            title,
+            textAlign: TextAlign.center,
             style: GoogleFonts.inter(
-              fontSize: 15.5,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
-              height: 1.3,
+              fontSize: 19,
+              fontWeight: FontWeight.w800,
+              color: highlight ? const Color.fromARGB(255, 255, 255, 255) : const Color.fromARGB(255, 237, 231, 248),
             ),
           ),
-        ),
-      ],
+          const SizedBox(height: 20), 
+          Text(
+            price,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 35,
+              fontWeight: FontWeight.w800,
+              color: highlight ? const Color.fromARGB(255, 250, 250, 250) : Colors.black87,
+            ),
+          ),
+        ],
+      ),
     ),
   );
 }

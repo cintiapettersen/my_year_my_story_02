@@ -5,10 +5,12 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 class PurchaseService extends ChangeNotifier {
   final InAppPurchase _inAppPurchase = InAppPurchase.instance;
 
-  final Set<String> _productIds = {
-    'com.myyear.myyearmystory.premium.monthly',
-    'com.myyear.myyearmystory.premium.yearly',
-  };
+  static const String monthlyId =
+      'com.myyear.myyearmystory.premium.monthly';
+  static const String yearlyId =
+      'com.myyear.myyearmystory.premium.yearly';
+
+  final Set<String> _productIds = {monthlyId, yearlyId};
 
   List<ProductDetails> products = [];
   bool isAvailable = false;
@@ -30,7 +32,7 @@ class PurchaseService extends ChangeNotifier {
       return;
     }
 
-    final ProductDetailsResponse response =
+    final response =
         await _inAppPurchase.queryProductDetails(_productIds);
 
     if (response.error != null) {
@@ -39,10 +41,8 @@ class PurchaseService extends ChangeNotifier {
 
     products = response.productDetails;
 
-    debugPrint("Produtos retornados pela Apple: ${products.length}");
-    debugPrint("IDs retornados: ${products.map((e) => e.id).toList()}");
+    debugPrint("Produtos retornados: ${products.length}");
     debugPrint("IDs não encontrados: ${response.notFoundIDs}");
-
 
     _subscription = _inAppPurchase.purchaseStream.listen(
       _listenToPurchaseUpdated,
@@ -52,6 +52,9 @@ class PurchaseService extends ChangeNotifier {
       },
     );
 
+    // 🔥 Importante: restaurar automaticamente
+    await _inAppPurchase.restorePurchases();
+
     isLoading = false;
     notifyListeners();
   }
@@ -59,11 +62,23 @@ class PurchaseService extends ChangeNotifier {
   void _listenToPurchaseUpdated(
       List<PurchaseDetails> purchaseDetailsList) {
     for (final purchaseDetails in purchaseDetailsList) {
-      if (purchaseDetails.status == PurchaseStatus.purchased ||
-          purchaseDetails.status == PurchaseStatus.restored) {
-        _deliverProduct(purchaseDetails);
-      } else if (purchaseDetails.status == PurchaseStatus.error) {
-        debugPrint("Erro na compra: ${purchaseDetails.error}");
+      switch (purchaseDetails.status) {
+        case PurchaseStatus.purchased:
+        case PurchaseStatus.restored:
+          _handleSuccessfulPurchase(purchaseDetails);
+          break;
+
+        case PurchaseStatus.error:
+          debugPrint("Erro na compra: ${purchaseDetails.error}");
+          break;
+
+        case PurchaseStatus.pending:
+          debugPrint("Compra pendente...");
+          break;
+
+        case PurchaseStatus.canceled:
+          debugPrint("Compra cancelada.");
+          break;
       }
 
       if (purchaseDetails.pendingCompletePurchase) {
@@ -72,7 +87,7 @@ class PurchaseService extends ChangeNotifier {
     }
   }
 
-  void _deliverProduct(PurchaseDetails purchaseDetails) {
+  void _handleSuccessfulPurchase(PurchaseDetails purchaseDetails) {
     if (_productIds.contains(purchaseDetails.productID)) {
       isPremium = true;
       notifyListeners();
@@ -81,11 +96,7 @@ class PurchaseService extends ChangeNotifier {
 
   ProductDetails? get monthlyProduct {
     try {
-      return products.firstWhere(
-        (product) =>
-            product.id ==
-            'com.myyear.myyearmystory.premium.monthly',
-      );
+      return products.firstWhere((p) => p.id == monthlyId);
     } catch (_) {
       return null;
     }
@@ -93,11 +104,7 @@ class PurchaseService extends ChangeNotifier {
 
   ProductDetails? get yearlyProduct {
     try {
-      return products.firstWhere(
-        (product) =>
-            product.id ==
-            'com.myyear.myyearmystory.premium.yearly',
-      );
+      return products.firstWhere((p) => p.id == yearlyId);
     } catch (_) {
       return null;
     }
@@ -107,7 +114,8 @@ class PurchaseService extends ChangeNotifier {
     final product = monthlyProduct;
     if (product == null) return;
 
-    final purchaseParam = PurchaseParam(productDetails: product);
+    final purchaseParam =
+        PurchaseParam(productDetails: product);
 
     await _inAppPurchase.buyNonConsumable(
       purchaseParam: purchaseParam,
@@ -118,7 +126,8 @@ class PurchaseService extends ChangeNotifier {
     final product = yearlyProduct;
     if (product == null) return;
 
-    final purchaseParam = PurchaseParam(productDetails: product);
+    final purchaseParam =
+        PurchaseParam(productDetails: product);
 
     await _inAppPurchase.buyNonConsumable(
       purchaseParam: purchaseParam,

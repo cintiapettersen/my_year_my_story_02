@@ -35,24 +35,16 @@ import 'package:myyearmystory/services/review_service.dart';
 import 'package:myyearmystory/screens/popups/review_popup.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
-
-
-
-
 class DashboardScreen extends StatefulWidget {
   final int month;
   final int year;
 
-  const DashboardScreen({
-    super.key,
-    required this.month,
-    required this.year,
-  });
+  const DashboardScreen({super.key, required this.month, required this.year});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
+
 class _DashboardScreenState extends State<DashboardScreen> {
   // ==============================
   // DEPENDÊNCIAS
@@ -60,18 +52,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final supabase = Supabase.instance.client;
   final quoteService = DailyQuoteService();
 
-
   // ==============================
   // ESTADO
   // ==============================
-   
+
   String userName = "";
   String? dailyInspiration;
 
   String? curiosityQuestion;
   String? curiosityAnswer;
   String? curiosityDate;
-
 
   int metasConcluidas = 0;
   int gratidaoCount = 0;
@@ -82,7 +72,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   bool isLoading = true;
 
-
   String _reviewStatus = 'never';
   DateTime? _lastReviewPrompt;
   Duration _sessionTime = Duration.zero;
@@ -90,10 +79,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Locale? _lastLocale;
 
-    // ==============================
+  // ==============================
   // TEMA
   // ==============================
-  
 
   final List<Color> themeOptions = const [
     Color(0xFFe04cb7),
@@ -103,7 +91,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     Color(0xFFa0378c),
     Color(0xFFBEB6F2),
   ];
-
 
   // ==============================
   // INIT
@@ -125,100 +112,85 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-  
-void _scheduleReviewPopup() {
-  Future.delayed(const Duration(seconds: 5), () async {
-    if (!mounted) return;
+  void _scheduleReviewPopup() {
+    Future.delayed(const Duration(seconds: 5), () async {
+      if (!mounted) return;
 
-    final user = supabase.auth.currentUser;
-    if (user == null) return;
+      final user = supabase.auth.currentUser;
+      if (user == null) return;
 
-    final canShow = ReviewService.canShowReview(
-      reviewStatus: _reviewStatus,
-      lastPrompt: _lastReviewPrompt,
-      sessionTime: _sessionTime,
-      daysSinceFirstOpen: _daysSinceFirstOpen,
-    );
+      final canShow = ReviewService.canShowReview(
+        reviewStatus: _reviewStatus,
+        lastPrompt: _lastReviewPrompt,
+        sessionTime: _sessionTime,
+        daysSinceFirstOpen: _daysSinceFirstOpen,
+      );
 
-    if (!canShow) return;
+      if (!canShow) return;
 
-    // ⛔ pega o context ANTES do await
-    final ctx = context;
+      // ⛔ pega o context ANTES do await
+      final ctx = context;
 
-    showReviewPopup(ctx);
+      showReviewPopup(ctx);
 
+      final prefs = await SharedPreferences.getInstance();
+      final now = DateTime.now();
+
+      await prefs.setString('last_review_prompt', now.toIso8601String());
+
+      _lastReviewPrompt = now;
+    });
+  }
+
+  // ==============================
+  // INIT REVIEW DATA
+  // ==============================
+  Future<void> _initReviewData() async {
     final prefs = await SharedPreferences.getInstance();
-    final now = DateTime.now();
 
-    await prefs.setString(
-      'last_review_prompt',
-      now.toIso8601String(),
-    );
+    final last = prefs.getString('last_review_prompt');
+    _lastReviewPrompt = last != null ? DateTime.parse(last) : null;
 
-    _lastReviewPrompt = now;
-  });
-}
+    // status inicial (pode evoluir depois)
+    _reviewStatus = 'eligible';
 
+    // por enquanto fixo — depois dá pra calcular real
+    _daysSinceFirstOpen = 1;
+    _sessionTime = Duration.zero;
+  }
 
-// ==============================
-// INIT REVIEW DATA
-// ==============================
-Future<void> _initReviewData() async {
-  final prefs = await SharedPreferences.getInstance();
+  Future<void> saveLastReviewPrompt(DateTime date) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('last_review_prompt', date.toIso8601String());
 
-  final last = prefs.getString('last_review_prompt');
-  _lastReviewPrompt = last != null ? DateTime.parse(last) : null;
+    // atualiza o estado local também
+    _lastReviewPrompt = date;
+  }
 
-  // status inicial (pode evoluir depois)
-  _reviewStatus = 'eligible';
-
-  // por enquanto fixo — depois dá pra calcular real
-  _daysSinceFirstOpen = 1;
-  _sessionTime = Duration.zero;
-}
-
-
-
-
-
- Future<void> saveLastReviewPrompt(DateTime date) async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setString(
-    'last_review_prompt',
-    date.toIso8601String(),
-  );
-
-  // atualiza o estado local também
-  _lastReviewPrompt = date;
-}
-
-// ==============================
+  // ==============================
   // SINCRONIZAÇÃO DE IDIOMA
   // ==============================
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-@override
-void didChangeDependencies() {
-  super.didChangeDependencies();
+    final locale = context.locale;
 
-  final locale = context.locale;
-
-  if (_lastLocale != locale) {
-    _lastLocale = locale;
-    loadDailyQuote();
+    if (_lastLocale != locale) {
+      _lastLocale = locale;
+      loadDailyQuote();
+    }
   }
-}
 
-
- // ==============================
+  // ==============================
   //              BUILD
   // ==============================
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
 
-    final diaSemana =
-        DateFormat.EEEE(context.locale.languageCode).format(now);
+    final diaSemana = DateFormat.EEEE(context.locale.languageCode).format(now);
 
     final dataFormatada =
         "$diaSemana, ${now.day} ${getNomeMesCompleto(now.month)} ${now.year}";
@@ -227,36 +199,33 @@ void didChangeDependencies() {
       backgroundColor: const Color(0xFFFDFDFD),
       drawer: const AppDrawer(),
 
-     appBar: PreferredSize(
-  preferredSize: const Size.fromHeight(kToolbarHeight),
-  child: ValueListenableBuilder<Color>(
-    valueListenable: appThemeColor,
-    builder: (_, color, __) {
-      return AppBar(
-        backgroundColor: color,
-        elevation: 0,
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: Text(
-          "My Year, My Story",
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: ValueListenableBuilder<Color>(
+          valueListenable: appThemeColor,
+          builder: (_, color, __) {
+            return AppBar(
+              backgroundColor: color,
+              elevation: 0,
+              centerTitle: true,
+              iconTheme: const IconThemeData(color: Colors.white),
+              title: Text(
+                "My Year, My Story",
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            );
+          },
         ),
-      );
-    },
-  ),
-),
-     bottomNavigationBar: ValueListenableBuilder<Color>(
-  valueListenable: appThemeColor,
-  builder: (_, color, __) {
-    return AppBottomMenu(
-      currentIndex: 0,
-      themeColor: color,
-    );
-  },
-),
+      ),
+      bottomNavigationBar: ValueListenableBuilder<Color>(
+        valueListenable: appThemeColor,
+        builder: (_, color, __) {
+          return AppBottomMenu(currentIndex: 0, themeColor: color);
+        },
+      ),
       body: RefreshIndicator(
         onRefresh: _loadDashboardData,
         child: SingleChildScrollView(
@@ -268,7 +237,10 @@ void didChangeDependencies() {
               children: [
                 // 🌸 SAUDAÇÃO
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF5E1F7),
                     borderRadius: BorderRadius.circular(28),
@@ -312,30 +284,37 @@ void didChangeDependencies() {
 
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: themeOptions.map((color) {
-                        return GestureDetector(
-                          onTap: () {
-                            appThemeColor.value = color;
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 6),
-                            width: 22,
-                            height: 22,
-                            decoration: BoxDecoration(
-                              color: color,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-  color: appThemeColor.value == color
-      ? const Color.fromARGB(255, 231, 225, 230)
-      : Colors.transparent,
-  width: 2,
-
-
+                      children:
+                          themeOptions.map((color) {
+                            return GestureDetector(
+                              onTap: () {
+                                appThemeColor.value = color;
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                ),
+                                width: 22,
+                                height: 22,
+                                decoration: BoxDecoration(
+                                  color: color,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color:
+                                        appThemeColor.value == color
+                                            ? const Color.fromARGB(
+                                              255,
+                                              231,
+                                              225,
+                                              230,
+                                            )
+                                            : Colors.transparent,
+                                    width: 2,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
+                            );
+                          }).toList(),
                     ),
 
                     const SizedBox(height: 40),
@@ -363,24 +342,23 @@ void didChangeDependencies() {
                       onTap: () {
                         context.push(
                           '/current_month',
-                          extra: {
-                            'month': index + 1,
-                            'year': selectedYear,
-                          },
+                          extra: {'month': index + 1, 'year': selectedYear},
                         );
                       },
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 250),
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: isActive
-                              ? getMonthColor(index + 1)
-                              : const Color.fromARGB(255, 255, 253, 254),
+                          color:
+                              isActive
+                                  ? getMonthColor(index + 1)
+                                  : const Color.fromARGB(255, 255, 253, 254),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: isActive
-                                ? getMonthColor(index + 1)
-                                : const Color.fromARGB(255, 119, 118, 118),
+                            color:
+                                isActive
+                                    ? getMonthColor(index + 1)
+                                    : const Color.fromARGB(255, 119, 118, 118),
                             width: isActive ? 2.2 : 1.4,
                           ),
                         ),
@@ -408,7 +386,10 @@ void didChangeDependencies() {
 
                 // 🌸 ETIQUETA SEU MÊS
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF3F3F3),
                     borderRadius: BorderRadius.circular(10),
@@ -438,7 +419,8 @@ void didChangeDependencies() {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
-                    (dailyInspiration == null || dailyInspiration!.trim().isEmpty)
+                    (dailyInspiration == null ||
+                            dailyInspiration!.trim().isEmpty)
                         ? tr('dashboard.daily_inspiration')
                         : dailyInspiration!,
                     textAlign: TextAlign.center,
@@ -460,7 +442,6 @@ void didChangeDependencies() {
     );
   }
 
-
   // ==============================
   // ATUALIZAÇÃO DE WIDGET
   // ==============================
@@ -478,12 +459,23 @@ void didChangeDependencies() {
 
     final nomesMes = [
       "",
-      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
     ];
 
     return "${nomesMes[m]} $ano";
   }
+
   // ================= ALERTA DIÁRIO =================
   Future<void> checkAndShowDailyAlert() async {
     final user = supabase.auth.currentUser;
@@ -541,88 +533,84 @@ void didChangeDependencies() {
     }
   }
 
- 
   // ============================
-//       NOME DO USUÁRIO
-// ============================
-Future<void> _loadUserName() async {
-  final supabase = Supabase.instance.client;
-  final user = supabase.auth.currentUser;
+  //       NOME DO USUÁRIO
+  // ============================
+  Future<void> _loadUserName() async {
+    final supabase = Supabase.instance.client;
+    final user = supabase.auth.currentUser;
 
-  // 🔸 Se não estiver logada -> Guest
-  if (user == null) {
-    if (!mounted) return;
-    setState(() {
-      userName = tr("dashboard.guest_user");
-    });
-    return;
+    // 🔸 Se não estiver logada -> Guest
+    if (user == null) {
+      if (!mounted) return;
+      setState(() {
+        userName = tr("dashboard.guest_user");
+      });
+      return;
+    }
+
+    try {
+      final profile =
+          await supabase
+              .from("profiles")
+              .select("full_name")
+              .eq("id", user.id)
+              .single();
+
+      if (!mounted) return;
+
+      final fullName = profile["full_name"];
+
+      final firstName =
+          (fullName != null && fullName.toString().trim().isNotEmpty)
+              ? fullName.split(" ").first
+              : tr("dashboard.guest_user");
+
+      setState(() {
+        userName = firstName;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        userName = tr("dashboard.guest_user");
+      });
+    }
   }
-
-  try {
-    final profile = await supabase
-        .from("profiles")
-        .select("full_name")
-        .eq("id", user.id)
-        .single();
-
-    if (!mounted) return;
-
-    final fullName = profile["full_name"];
-
-    final firstName =
-        (fullName != null && fullName.toString().trim().isNotEmpty)
-            ? fullName.split(" ").first
-            : tr("dashboard.guest_user");
-
-    setState(() {
-      userName = firstName;
-    });
-  } catch (e) {
-    if (!mounted) return;
-    setState(() {
-      userName = tr("dashboard.guest_user");
-    });
-  }
-}
-
-
-
 
   // ==============================
   //     FRASE DO DIA
   // ==============================
   Future<void> loadDailyQuote() async {
-  // 🟡 Convidado: não tenta buscar no serviço
-  if (AppSession.isGuest) {
-    setState(() {
-      dailyInspiration = tr("dashboard.daily_inspiration_guest");
-    });
-    return;
+    // 🟡 Convidado: não tenta buscar no serviço
+    if (AppSession.isGuest) {
+      setState(() {
+        dailyInspiration = tr("dashboard.daily_inspiration_guest");
+      });
+      return;
+    }
+
+    try {
+      final lang = context.locale.languageCode;
+      final quote = await quoteService.getRandomQuote(lang);
+
+      if (!mounted) return;
+
+      final text = quote?["text"]?.toString().trim();
+
+      setState(() {
+        dailyInspiration =
+            (text != null && text.isNotEmpty)
+                ? text
+                : tr("dashboard.daily_inspiration");
+      });
+    } catch (_) {
+      if (!mounted) return;
+
+      setState(() {
+        dailyInspiration = tr("dashboard.daily_inspiration");
+      });
+    }
   }
-
-  try {
-    final lang = context.locale.languageCode;
-    final quote = await quoteService.getRandomQuote(lang);
-
-    if (!mounted) return;
-
-    final text = quote?["text"]?.toString().trim();
-
-    setState(() {
-      dailyInspiration =
-          (text != null && text.isNotEmpty)
-              ? text
-              : tr("dashboard.daily_inspiration");
-    });
-  } catch (_) {
-    if (!mounted) return;
-
-    setState(() {
-      dailyInspiration = tr("dashboard.daily_inspiration");
-    });
-  }
-}
-
 
   // ==============================
   //     SINCRONIZAR IDIOMA
@@ -641,303 +629,289 @@ Future<void> _loadUserName() async {
     } catch (_) {}
   }
 
-
-
-// ==============================
-//  Função de normalização da curiosidade
-// ==============================
-
+  // ==============================
+  //  Função de normalização da curiosidade
+  // ==============================
 
   Map<String, dynamic>? _normalizeCuriosity(dynamic raw) {
-  if (raw == null) return null;
+    if (raw == null) return null;
 
-  // Caso 1: já veio como Map
-  if (raw is Map) {
-    return Map<String, dynamic>.from(raw);
-  }
-
-  // Caso 2: veio como String (json serializado)
-  if (raw is String) {
-
-
-    try {
-      final decoded = jsonDecode(raw);
-      if (decoded is Map) {
-        return Map<String, dynamic>.from(decoded);
-      }
-    } catch (_) {
-      return null;
+    // Caso 1: já veio como Map
+    if (raw is Map) {
+      return Map<String, dynamic>.from(raw);
     }
-  }
 
-  // Qualquer outro formato inesperado
-  return null;
-}
+    // Caso 2: veio como String (json serializado)
+    if (raw is String) {
+      try {
+        final decoded = jsonDecode(raw);
+        if (decoded is Map) {
+          return Map<String, dynamic>.from(decoded);
+        }
+      } catch (_) {
+        return null;
+      }
+    }
+
+    // Qualquer outro formato inesperado
+    return null;
+  }
 
   // ==============================
   //     CARREGAR DADOS DO DASHBOARD
   // ==============================
 
   Future<void> _loadDashboardData() async {
-  if (!mounted) return;
+    if (!mounted) return;
 
-  final lang = Localizations.localeOf(context).languageCode;
+    final lang = Localizations.localeOf(context).languageCode;
 
-  setState(() => isLoading = true);
+    setState(() => isLoading = true);
 
-  final user = supabase.auth.currentUser;
-  if (user == null) {
+    final user = supabase.auth.currentUser;
+    if (user == null) {
+      if (!mounted) return;
+      setState(() => isLoading = false);
+      return;
+    }
+
+    try {
+      // ==============================
+      // METAS
+      // ==============================
+      final metas = await supabase
+          .from("metas")
+          .select()
+          .eq("user_id", user.id)
+          .eq("mes", selectedMonth)
+          .eq("ano", selectedYear)
+          .eq("concluida", true);
+
+      metasConcluidas = metas.length;
+
+      // ==============================
+      // ENTRIES DO MÊS (resposta do usuário)
+      // ==============================
+      final entryRow =
+          await supabase
+              .from("entries")
+              .select("curiosities, month, year")
+              .eq("user_id", user.id)
+              .eq("month", selectedMonth)
+              .eq("year", selectedYear)
+              .maybeSingle();
+
+      // ==============================
+      // CURIOSITIES_ENTRIES (perguntas do mês)
+      // ==============================
+      final curiositiesSource =
+          await supabase
+              .from("curiosities_entries")
+              .select("questions, questions_en")
+              .eq("month", selectedMonth)
+              .eq("year", selectedYear)
+              .maybeSingle();
+
+      if (!mounted) return;
+
+      // ==============================
+      // CURIOSIDADES (PERGUNTA + RESPOSTA)
+      // ==============================
+
+      // perguntas do mês vindas do banco
+      final List questionsFromDb =
+          lang == 'en'
+              ? (curiositiesSource?['questions_en'] ?? [])
+              : (curiositiesSource?['questions'] ?? []);
+
+      // fallback por mês
+      final List<String> fallbackQuestions =
+          lang == 'en'
+              ? (curiosityFallbackQuestionsEn[selectedMonth] ?? [])
+              : (curiosityFallbackQuestionsPt[selectedMonth] ?? []);
+
+      // lista final de perguntas
+      final List<String> questionsList =
+          questionsFromDb.isNotEmpty
+              ? List<String>.from(questionsFromDb)
+              : fallbackQuestions;
+
+      // respostas do usuário (jsonb em entries.curiosities)
+      final curiosityJson = entryRow?['curiosities'];
+
+      String? answer;
+      int? answeredIndex;
+
+      Map<String, dynamic>? selected;
+
+      if (curiosityJson is List && curiosityJson.isNotEmpty) {
+        for (final item in curiosityJson) {
+          if (item is Map && item['index'] == 0) {
+            selected = Map<String, dynamic>.from(item);
+            break;
+          }
+        }
+      }
+
+      if (selected != null) {
+        answer = selected['answer']?.toString().trim();
+        answeredIndex = selected['index'];
+      }
+
+      if (!mounted) return;
+
+      setState(() {
+        // 🟣 PERGUNTA
+        if (answeredIndex != null &&
+            answeredIndex >= 0 &&
+            answeredIndex < questionsList.length) {
+          curiosityQuestion = questionsList[answeredIndex];
+        } else {
+          curiosityQuestion = null;
+        }
+
+        // 🟣 RESPOSTA
+        if (answer != null && answer.isNotEmpty) {
+          curiosityAnswer = answer;
+
+          curiosityDate = tr(
+            "dashboard.answered_in",
+            namedArgs: {
+              "date": _formatarMesAno(
+                entryRow!['month'].toString(),
+                entryRow['year'].toString(),
+              ),
+            },
+          );
+        } else {
+          curiosityAnswer = null;
+          curiosityDate = null;
+        }
+      });
+    } catch (e) {
+      // se quiser, depois colocamos log aqui
+      // Error loading dashboard data
+    }
+
     if (!mounted) return;
     setState(() => isLoading = false);
-    return;
   }
 
-  try {
-    // ==============================
-    // METAS
-    // ==============================
-    final metas = await supabase
-        .from("metas")
-        .select()
-        .eq("user_id", user.id)
-        .eq("mes", selectedMonth)
-        .eq("ano", selectedYear)
-        .eq("concluida", true);
-
-    metasConcluidas = metas.length;
-
-    // ==============================
-    // ENTRIES DO MÊS (resposta do usuário)
-    // ==============================
-    final entryRow = await supabase
-        .from("entries")
-        .select("curiosities, month, year")
-        .eq("user_id", user.id)
-        .eq("month", selectedMonth)
-        .eq("year", selectedYear)
-        .maybeSingle();
-
-    // ==============================
-    // CURIOSITIES_ENTRIES (perguntas do mês)
-    // ==============================
-    final curiositiesSource = await supabase
-        .from("curiosities_entries")
-        .select("questions, questions_en")
-        .eq("month", selectedMonth)
-        .eq("year", selectedYear)
-        .maybeSingle();
-
-    if (!mounted) return;
-
-   // ==============================
-// CURIOSIDADES (PERGUNTA + RESPOSTA)
-// ==============================
-
-// perguntas do mês vindas do banco
-final List questionsFromDb =
-    lang == 'en'
-        ? (curiositiesSource?['questions_en'] ?? [])
-        : (curiositiesSource?['questions'] ?? []);
-
-// fallback por mês
-final List<String> fallbackQuestions =
-    lang == 'en'
-        ? (curiosityFallbackQuestionsEn[selectedMonth] ?? [])
-        : (curiosityFallbackQuestionsPt[selectedMonth] ?? []);
-
-// lista final de perguntas
-final List<String> questionsList =
-    questionsFromDb.isNotEmpty
-        ? List<String>.from(questionsFromDb)
-        : fallbackQuestions;
-
-
-// respostas do usuário (jsonb em entries.curiosities)
-final curiosityJson = entryRow?['curiosities'];
-
-String? answer;
-int? answeredIndex;
-
-Map<String, dynamic>? selected;
-
-if (curiosityJson is List && curiosityJson.isNotEmpty) {
-  for (final item in curiosityJson) {
-    if (item is Map && item['index'] == 0) {
-      selected = Map<String, dynamic>.from(item);
-      break;
-    }
-  }
-}
-
-if (selected != null) {
-  answer = selected['answer']?.toString().trim();
-  answeredIndex = selected['index'];
-}
-
-
-if (!mounted) return;
-
-
-
-
-setState(() {
-  // 🟣 PERGUNTA
-  if (answeredIndex != null &&
-      answeredIndex >= 0 &&
-      answeredIndex < questionsList.length) {
-    curiosityQuestion = questionsList[answeredIndex];
-  } else {
-    curiosityQuestion = null;
-  }
-
-  // 🟣 RESPOSTA
-  if (answer != null && answer.isNotEmpty) {
-    curiosityAnswer = answer;
-
-    curiosityDate = tr(
-      "dashboard.answered_in",
-      namedArgs: {
-        "date": _formatarMesAno(
-          entryRow!['month'].toString(),
-          entryRow['year'].toString(),
-        ),
-      },
-    );
-  } else {
-    curiosityAnswer = null;
-    curiosityDate = null;
-  }
-});
-
-
-  } catch (e) {
-    // se quiser, depois colocamos log aqui
-    // Error loading dashboard data
-  }
-
-  if (!mounted) return;
-  setState(() => isLoading = false);
-}
-
- 
   // =====================================================
   // 🔸 BLOCO DE CURIOSIDADE
   // =====================================================
- Widget _buildCuriosityBlock() {
-  final screenWidth = MediaQuery.of(context).size.width;
-  final isTablet = screenWidth > 600;
-  final double cardWidth = isTablet ? screenWidth * 0.85 : 300;
+  Widget _buildCuriosityBlock() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
+    final double cardWidth = isTablet ? screenWidth * 0.85 : 300;
 
-  return Align(
-    alignment: Alignment.center,
-    child: ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: cardWidth),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(32),
-        onTap: () {
-          context.push(
-            '/curiosities',
-            extra: {
-              'month': selectedMonth,
-              'year': selectedYear,
-            },
-          );
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF3D6E5),
-            borderRadius: BorderRadius.circular(40),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 5,
-                offset: Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.favorite,
-                size: 20,
-                color: Color.fromARGB(221, 217, 60, 126),
-              ),
-
-              const SizedBox(height: 8),
-
-              // 🟣 TÍTULO FIXO DO CARD
-              Text(
-                tr("dashboard.curiosity_title"),
-                style: GoogleFonts.courierPrime(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+    return Align(
+      alignment: Alignment.center,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: cardWidth),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(32),
+          onTap: () {
+            context.push(
+              '/curiosities',
+              extra: {'month': selectedMonth, 'year': selectedYear},
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF3D6E5),
+              borderRadius: BorderRadius.circular(40),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 5,
+                  offset: Offset(0, 2),
                 ),
-                textAlign: TextAlign.center,
-              ),
-
-              const SizedBox(height: 12),
-              const Divider(color: Colors.black26, thickness: 1),
-              const SizedBox(height: 8),
-
-              // ❓ PERGUNTA (se existir)
-              if (curiosityQuestion != null) ...[
-                Text(
-                  curiosityQuestion!,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.courierPrime(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 10),
               ],
-
-              // 📝 RESPOSTA ou CTA
-              if (curiosityAnswer != null && curiosityAnswer!.isNotEmpty) ...[
-                Text(
-                  curiosityAnswer!,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.courierPrime(
-                    fontSize: 14,
-                    color: Colors.black87,
-                    height: 1.4,
-                  ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.favorite,
+                  size: 20,
+                  color: Color.fromARGB(221, 217, 60, 126),
                 ),
 
                 const SizedBox(height: 8),
 
-                if (curiosityDate != null)
+                // 🟣 TÍTULO FIXO DO CARD
+                Text(
+                  tr("dashboard.curiosity_title"),
+                  style: GoogleFonts.courierPrime(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 12),
+                const Divider(color: Colors.black26, thickness: 1),
+                const SizedBox(height: 8),
+
+                // ❓ PERGUNTA (se existir)
+                if (curiosityQuestion != null) ...[
                   Text(
-                    curiosityDate!,
+                    curiosityQuestion!,
+                    textAlign: TextAlign.center,
                     style: GoogleFonts.courierPrime(
-                      fontSize: 12,
-                      color: Colors.black45,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                      height: 1.4,
                     ),
                   ),
-              ] else ...[
-                Text(
-                  tr("dashboard.curiosity_cta"),
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.courierPrime(
-                    fontSize: 13,
-                    color: Colors.black87,
-                    height: 1.3,
+                  const SizedBox(height: 10),
+                ],
+
+                // 📝 RESPOSTA ou CTA
+                if (curiosityAnswer != null && curiosityAnswer!.isNotEmpty) ...[
+                  Text(
+                    curiosityAnswer!,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.courierPrime(
+                      fontSize: 14,
+                      color: Colors.black87,
+                      height: 1.4,
+                    ),
                   ),
-                ),
+
+                  const SizedBox(height: 8),
+
+                  if (curiosityDate != null)
+                    Text(
+                      curiosityDate!,
+                      style: GoogleFonts.courierPrime(
+                        fontSize: 12,
+                        color: Colors.black45,
+                      ),
+                    ),
+                ] else ...[
+                  Text(
+                    tr("dashboard.curiosity_cta"),
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.courierPrime(
+                      fontSize: 13,
+                      color: Colors.black87,
+                      height: 1.3,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
- // ==============================
+  // ==============================
   //      LABEL DO CALENDÁRIO
   // ==============================
   Widget _calendarLabel() {
@@ -958,230 +932,217 @@ setState(() {
       ),
     );
   }
- 
-// =====================================================
+
+  // =====================================================
   // 🔸 FUNÇÃO DE CRIAÇÃO DE CARD
   // =====================================================
-Widget _buildCard({
-  required BuildContext context,
-  required String title,
-  required IconData icon,
-  required Color color,
-  Color? iconColor,
-  Color? textColor,
-  required String route,
-}) {
-  // 🔹 Responsividade
-  final double iconSize =
-      (MediaQuery.of(context).size.width * 0.06).clamp(28, 42);
+  Widget _buildCard({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required Color color,
+    Color? iconColor,
+    Color? textColor,
+    required String route,
+  }) {
+    // 🔹 Responsividade
+    final double iconSize = (MediaQuery.of(context).size.width * 0.06).clamp(
+      28,
+      42,
+    );
 
-  final double textSize =
-      (MediaQuery.of(context).size.width * 0.028).clamp(14, 16);
+    final double textSize = (MediaQuery.of(context).size.width * 0.028).clamp(
+      14,
+      16,
+    );
 
-  return GestureDetector(
-    onTap: () {
-      Widget target;
+    return GestureDetector(
+      onTap: () {
+        Widget target;
 
-      switch (route) {
-        case '/monthly_goals':
-          target = MonthlyGoalsWidget(
-            month: selectedMonth,
-            year: selectedYear,
-          );
-          break;
+        switch (route) {
+          case '/monthly_goals':
+            target = MonthlyGoalsWidget(
+              month: selectedMonth,
+              year: selectedYear,
+            );
+            break;
 
-        case '/mood_summary':
-          target = MoodScreen(
-            month: selectedMonth,
-            year: selectedYear,
-          );
-          break;
+          case '/mood_summary':
+            target = MoodScreen(month: selectedMonth, year: selectedYear);
+            break;
 
-        case '/diary_entries':
-          target = DiaryScreen(date: DateTime.now());
-          break;
+          case '/diary':
+            target = DiaryScreen(date: DateTime.now());
+            break;
 
-        case '/interactive_quiz':
-          target = InteractiveQuizStandalone(
-            month: selectedMonth,
-            year: selectedYear,
-          );
-          break;
+          case '/interactive_quiz':
+            target = InteractiveQuizStandalone(
+              month: selectedMonth,
+              year: selectedYear,
+            );
+            break;
 
-        case '/gratitude':
-          target = GratitudeWidget(
-            month: selectedMonth,
-            year: selectedYear,
-          );
-          break;
+          case '/gratitude':
+            target = GratitudeWidget(month: selectedMonth, year: selectedYear);
+            break;
 
-        case '/curiosities':
-          target = CuriositiesWidget(
-            month: selectedMonth,
-            year: selectedYear,
-          );
-          break;
+          case '/curiosities':
+            target = CuriositiesWidget(
+              month: selectedMonth,
+              year: selectedYear,
+            );
+            break;
 
-        case '/did_you_know':
-          target = DidYouKnowWidget(
-            month: selectedMonth,
-            year: selectedYear,
-          );
-          break;
+          case '/did_you_know':
+            target = DidYouKnowWidget(month: selectedMonth, year: selectedYear);
+            break;
 
           case '/central_messages':
-          target = const CentralMessagesPage();
-          break;
+            target = const CentralMessagesPage();
+            break;
 
-        case '/calendar_page':
-          target = CalendarPage(
-            month: selectedMonth,
-            year: selectedYear,
-          );
-          break;
+          case '/calendar_page':
+            target = CalendarPage(month: selectedMonth, year: selectedYear);
+            break;
 
-        default:
-          return;
-      }
+          default:
+            return;
+        }
 
-      // Rotas com argumentos de mês/ano
-      final args = {
-        'month': selectedMonth,
-        'year': selectedYear,
-      };
+        // Rotas com argumentos de mês/ano
+        final args = {'month': selectedMonth, 'year': selectedYear};
 
-      switch (route) {
-        case '/central_messages':
-          context.push('/central_messages');
-          return;
-        case '/calendar_page':
-          context.push('/calendar_page', extra: args);
-          return;
-        default:
-          context.push(route, extra: args);
-          return;
-      }
-    },
-    child: Container(
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: iconSize,
-            color: iconColor ?? Colors.white,
-          ),
-          const SizedBox(height: 6),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: textSize,
-              fontWeight: FontWeight.w600,
-              color: textColor ?? Colors.white,
+        switch (route) {
+          case '/central_messages':
+            context.push('/central_messages');
+            return;
+          case '/calendar_page':
+            context.push('/calendar_page', extra: args);
+            return;
+          case '/mood_summary':
+            context.push('/mood', extra: args);
+            return;
+          case '/diary':
+            context.push('/diary', extra: DateTime.now());
+            return;
+          default:
+            context.push(route, extra: args);
+            return;
+        }
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
             ),
-          ),
-        ],
+          ],
+        ),
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: iconSize, color: iconColor ?? Colors.white),
+            const SizedBox(height: 6),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: textSize,
+                fontWeight: FontWeight.w600,
+                color: textColor ?? Colors.white,
+              ),
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-}
-
-
+    );
+  }
 
   // =====================================================
   // 🔸 CARDS DO DASHBOARD
   // =====================================================
   Widget _buildCards(BuildContext context) {
-  return GridView.count(
-    shrinkWrap: true,
-    physics: const NeverScrollableScrollPhysics(),
-    crossAxisCount: 3,
-    crossAxisSpacing: 12,
-    mainAxisSpacing: 14,
-    children: [
-      _buildCard(
-        context: context,
-        title: tr('dashboard.goals'),
-        icon: PhosphorIconsRegular.target,
-        color: const Color(0xFFe04cb7),
-        route: '/monthly_goals',
-      ),
-      _buildCard(
-        context: context,
-        title: tr('dashboard.mood'),
-        icon: PhosphorIconsRegular.smiley,
-        color: const Color(0xFFfbcce9),
-        iconColor: const Color(0xFF943482),
-        textColor: const Color(0xFF943482),
-        route: '/mood_summary',
-      ),
-      _buildCard(
-        context: context,
-        title: tr('dashboard.diary'),
-        icon: PhosphorIconsRegular.notebook,
-        color: const Color(0xFFa0378c),
-        route: '/diary_entries',
-      ),
-      _buildCard(
-        context: context,
-        title: tr('dashboard.did_you_know'),
-        icon: PhosphorIconsRegular.lightbulb,
-        color: const Color(0xFFdbaf35),
-        route: '/did_you_know',
-      ),
-      _buildCard(
-        context: context,
-        title: tr('dashboard.central_messages'),
-        icon: PhosphorIconsRegular.bookBookmark,
-        color: const Color(0xFF74a192),
-        route: '/central_messages',
-      ),
-      _buildCard(
-        context: context,
-        title: tr('dashboard.calendar_page'),
-        icon: PhosphorIconsRegular.calendarDots,
-        color: const Color(0xFFbeb6f2),
-        route: '/calendar_page',
-      ),
-      _buildCard(
-        context: context,
-        title: tr('dashboard.monthly_quiz'),
-        icon: PhosphorIconsRegular.star,
-        color: const Color(0xFFdd97b7),
-        route: '/interactive_quiz',
-      ),
-      _buildCard(
-        context: context,
-        title: tr('dashboard.gratitude'),
-        icon: PhosphorIconsRegular.heart,
-        color: const Color(0xFFe2377d),
-        route: '/gratitude',
-      ),
-      _buildCard(
-        context: context,
-        title: tr('dashboard.about_me'),
-        icon: PhosphorIconsRegular.userCircle,
-        color: const Color(0xFFcf8ee8),
-        route: '/curiosities',
-      ),
-    ],
-  );
-}
-
-
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 3,
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 14,
+      children: [
+        _buildCard(
+          context: context,
+          title: tr('dashboard.goals'),
+          icon: PhosphorIconsRegular.target,
+          color: const Color(0xFFe04cb7),
+          route: '/monthly_goals',
+        ),
+        _buildCard(
+          context: context,
+          title: tr('dashboard.mood'),
+          icon: PhosphorIconsRegular.smiley,
+          color: const Color(0xFFfbcce9),
+          iconColor: const Color(0xFF943482),
+          textColor: const Color(0xFF943482),
+          route: '/mood_summary',
+        ),
+        _buildCard(
+          context: context,
+          title: tr('dashboard.diary'),
+          icon: PhosphorIconsRegular.notebook,
+          color: const Color(0xFFa0378c),
+          route: '/diary',
+        ),
+        _buildCard(
+          context: context,
+          title: tr('dashboard.did_you_know'),
+          icon: PhosphorIconsRegular.lightbulb,
+          color: const Color(0xFFdbaf35),
+          route: '/did_you_know',
+        ),
+        _buildCard(
+          context: context,
+          title: tr('dashboard.central_messages'),
+          icon: PhosphorIconsRegular.bookBookmark,
+          color: const Color(0xFF74a192),
+          route: '/central_messages',
+        ),
+        _buildCard(
+          context: context,
+          title: tr('dashboard.calendar_page'),
+          icon: PhosphorIconsRegular.calendarDots,
+          color: const Color(0xFFbeb6f2),
+          route: '/calendar_page',
+        ),
+        _buildCard(
+          context: context,
+          title: tr('dashboard.monthly_quiz'),
+          icon: PhosphorIconsRegular.star,
+          color: const Color(0xFFdd97b7),
+          route: '/interactive_quiz',
+        ),
+        _buildCard(
+          context: context,
+          title: tr('dashboard.gratitude'),
+          icon: PhosphorIconsRegular.heart,
+          color: const Color(0xFFe2377d),
+          route: '/gratitude',
+        ),
+        _buildCard(
+          context: context,
+          title: tr('dashboard.about_me'),
+          icon: PhosphorIconsRegular.userCircle,
+          color: const Color(0xFFcf8ee8),
+          route: '/curiosities',
+        ),
+      ],
+    );
+  }
 
   // =====================================================
   // 🔎 BUSCA DE DATAS
@@ -1245,14 +1206,16 @@ Widget _buildCard({
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             IconButton(
-                              onPressed: selectedYear > 2025
-                                  ? () => setStateSB(() => selectedYear--)
-                                  : null,
+                              onPressed:
+                                  selectedYear > 2025
+                                      ? () => setStateSB(() => selectedYear--)
+                                      : null,
                               icon: Icon(
                                 Icons.chevron_left,
-                                color: selectedYear > 2025
-                                    ? Colors.black87
-                                    : Colors.black26,
+                                color:
+                                    selectedYear > 2025
+                                        ? Colors.black87
+                                        : Colors.black26,
                               ),
                             ),
                             Text(
@@ -1264,8 +1227,10 @@ Widget _buildCard({
                             ),
                             IconButton(
                               onPressed: () => setStateSB(() => selectedYear++),
-                              icon: const Icon(Icons.chevron_right,
-                                  color: Colors.black87),
+                              icon: const Icon(
+                                Icons.chevron_right,
+                                color: Colors.black87,
+                              ),
                             ),
                           ],
                         ),
@@ -1280,15 +1245,25 @@ Widget _buildCard({
                           padding: const EdgeInsets.symmetric(horizontal: 4),
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            childAspectRatio: 1.6,
-                            mainAxisSpacing: 10,
-                            crossAxisSpacing: 10,
-                          ),
+                                crossAxisCount: 3,
+                                childAspectRatio: 1.6,
+                                mainAxisSpacing: 10,
+                                crossAxisSpacing: 10,
+                              ),
                           itemBuilder: (_, index) {
                             final shortNames = [
-                              "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+                              "Jan",
+                              "Feb",
+                              "Mar",
+                              "Apr",
+                              "May",
+                              "Jun",
+                              "Jul",
+                              "Aug",
+                              "Sep",
+                              "Oct",
+                              "Nov",
+                              "Dec",
                             ];
 
                             return GestureDetector(
@@ -1361,10 +1336,7 @@ Widget _buildCard({
             const SizedBox(width: 8),
             Text(
               tr('dashboard.search_previous_dates'),
-              style: const TextStyle(
-                color: Colors.black54,
-                fontSize: 15,
-              ),
+              style: const TextStyle(color: Colors.black54, fontSize: 15),
             ),
           ],
         ),

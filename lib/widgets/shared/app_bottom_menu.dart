@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 
-import 'package:myyearmystory/screens/dashboard/dashboard_screen.dart';
-import 'package:myyearmystory/screens/monthly/current_month_screen.dart';
-import 'package:myyearmystory/screens/diary/diary_screen.dart';
-import 'package:myyearmystory/screens/mood/mood_screen.dart';
+import 'package:go_router/go_router.dart';
 
 class AppBottomMenu extends StatelessWidget {
   final int? currentIndex;
@@ -26,14 +23,11 @@ class AppBottomMenu extends StatelessWidget {
     // 📐 Responsividade base
     final double screenWidth = MediaQuery.of(context).size.width;
 
-    final double iconSizeInactive =
-        (screenWidth * 0.055).clamp(22, 28);
+    final double iconSizeInactive = (screenWidth * 0.055).clamp(22, 28);
 
-    final double iconSizeActive =
-        (screenWidth * 0.065).clamp(26, 32);
+    final double iconSizeActive = (screenWidth * 0.065).clamp(26, 32);
 
-    final double labelFontSize =
-        (screenWidth * 0.026).clamp(11, 13);
+    final double labelFontSize = (screenWidth * 0.026).clamp(11, 13);
 
     // -------------------------------------
     // SEGURANÇA: evita erro de índice
@@ -70,51 +64,38 @@ class AppBottomMenu extends StatelessWidget {
             onTap: (index) {
               if (!highlightDisabled && index == safeIndex) return;
 
-              Widget nextScreen;
               switch (index) {
                 case 0:
-                  nextScreen = DashboardScreen(
-                    month: currentMonth,
-                    year: currentYear,
+                  context.go('/dashboard');
+                  break;
+                case 1:
+                  context.go(
+                    '/current_month',
+                    extra: {'month': currentMonth, 'year': currentYear},
                   );
                   break;
-
-                case 1:
-                  nextScreen = const CurrentMonthScreen();
-                  break;
-
                 case 2:
-                  nextScreen = DiaryScreen(date: DateTime.now());
+                  context.go('/diary', extra: DateTime.now());
                   break;
-
                 case 3:
-                  nextScreen =
-                      MoodScreen(month: currentMonth, year: currentYear);
+                  context.go(
+                    '/mood',
+                    extra: {'month': currentMonth, 'year': currentYear},
+                  );
                   break;
-
                 default:
                   return;
               }
-
-              Navigator.pushReplacement(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (_, __, ___) => nextScreen,
-                  transitionDuration: const Duration(milliseconds: 300),
-                  transitionsBuilder: (_, anim, __, child) {
-                    return FadeTransition(opacity: anim, child: child);
-                  },
-                ),
-              );
             },
 
             type: BottomNavigationBarType.fixed,
             backgroundColor: themeColor,
             elevation: 0,
 
-            selectedItemColor: highlightDisabled
-                ? Colors.white
-                : const Color.fromARGB(255, 87, 24, 77),
+            selectedItemColor:
+                highlightDisabled
+                    ? Colors.white
+                    : const Color.fromARGB(255, 87, 24, 77),
 
             unselectedItemColor: Colors.white,
             showUnselectedLabels: true,
@@ -188,9 +169,8 @@ class AppBottomMenu extends StatelessWidget {
       icon: Icon(
         isActive ? activeIcon : icon,
         size: isActive ? activeIconSize : iconSize,
-        color: isActive
-            ? const Color.fromARGB(255, 229, 213, 35)
-            : Colors.white,
+        color:
+            isActive ? const Color.fromARGB(255, 229, 213, 35) : Colors.white,
       ),
     );
   }

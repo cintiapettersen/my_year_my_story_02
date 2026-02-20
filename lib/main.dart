@@ -19,6 +19,7 @@ import 'package:myyearmystory/screens/dashboard/dashboard_screen.dart';
 import 'package:myyearmystory/screens/diary/diary_screen.dart';
 import 'package:myyearmystory/screens/monthly/current_month_screen.dart';
 import 'package:myyearmystory/screens/mood/mood_screen.dart';
+import 'package:myyearmystory/screens/quiz/standalone.dart';
 import 'package:myyearmystory/screens/premium/premium_page.dart';
 import 'package:myyearmystory/screens/auth/reset_password_screen.dart';
 
@@ -61,17 +62,12 @@ Future<void> main() async {
       path: 'assets/translations',
       fallbackLocale: const Locale('pt'),
       child: MultiProvider(
-        providers: [
-          ChangeNotifierProvider(
-            create: (_) => PurchaseService(),
-          ),
-        ],
+        providers: [ChangeNotifierProvider(create: (_) => PurchaseService())],
         child: const MyApp(),
       ),
     ),
   );
 }
-
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -92,10 +88,7 @@ class _MyAppState extends State<MyApp> {
         path: '/splash',
         builder: (_, __) => const SplashTransitionScreen(),
       ),
-      GoRoute(
-        path: '/login',
-        builder: (_, __) => const AuthPageView(),
-      ),
+      GoRoute(path: '/login', builder: (_, __) => const AuthPageView()),
       GoRoute(
         path: '/login-callback',
         builder: (_, __) => const SizedBox.shrink(),
@@ -110,31 +103,17 @@ class _MyAppState extends State<MyApp> {
       ),
       GoRoute(
         path: '/dashboard',
-        builder: (_, __) => DashboardScreen(
-          month: DateTime.now().month,
-          year: DateTime.now().year,
-        ),
+        builder:
+            (_, __) => DashboardScreen(
+              month: DateTime.now().month,
+              year: DateTime.now().year,
+            ),
       ),
-      GoRoute(
-        path: '/profile',
-        builder: (_, __) => ProfileScreen(),
-      ),
-      GoRoute(
-        path: '/help',
-        builder: (_, __) => HelpScreen(),
-      ),
-      GoRoute(
-        path: '/language',
-        builder: (_, __) => const LanguageScreen(),
-      ),
-      GoRoute(
-        path: '/about',
-        builder: (_, __) => const AboutAppScreen(),
-      ),
-      GoRoute(
-        path: '/premium',
-        builder: (_, __) => const PremiumPage(),
-      ),
+      GoRoute(path: '/profile', builder: (_, __) => ProfileScreen()),
+      GoRoute(path: '/help', builder: (_, __) => HelpScreen()),
+      GoRoute(path: '/language', builder: (_, __) => const LanguageScreen()),
+      GoRoute(path: '/about', builder: (_, __) => const AboutAppScreen()),
+      GoRoute(path: '/premium', builder: (_, __) => const PremiumPage()),
       GoRoute(
         path: '/daily_notifications',
         builder: (_, __) => const NotificationsPage(),
@@ -174,109 +153,113 @@ class _MyAppState extends State<MyApp> {
         },
       ),
       GoRoute(
+        path: '/interactive_quiz',
+        builder: (_, state) {
+          final args = (state.extra as Map?) ?? {};
+          return InteractiveQuizStandalone(
+            month: args['month'] ?? DateTime.now().month,
+            year: args['year'] ?? DateTime.now().year,
+          );
+        },
+      ),
+      GoRoute(
         path: '/monthly_goals',
-        builder: (_, state) => _monthlyWithArgs(
-          state,
-          (args) => MonthlyGoalsWidget(
-            month: args['month'],
-            year: args['year'],
-          ),
-        ),
+        builder:
+            (_, state) => _monthlyWithArgs(
+              state,
+              (args) =>
+                  MonthlyGoalsWidget(month: args['month'], year: args['year']),
+            ),
       ),
       GoRoute(
         path: '/gratitude',
-        builder: (_, state) => _monthlyWithArgs(
-          state,
-          (args) => GratitudeWidget(
-            month: args['month'],
-            year: args['year'],
-          ),
-        ),
+        builder:
+            (_, state) => _monthlyWithArgs(
+              state,
+              (args) =>
+                  GratitudeWidget(month: args['month'], year: args['year']),
+            ),
       ),
       GoRoute(
         path: '/reflections',
-        builder: (_, state) => _monthlyWithArgs(
-          state,
-          (args) => ReflectionsWidget(
-            month: args['month'],
-            year: args['year'],
-          ),
-        ),
+        builder:
+            (_, state) => _monthlyWithArgs(
+              state,
+              (args) =>
+                  ReflectionsWidget(month: args['month'], year: args['year']),
+            ),
       ),
       GoRoute(
         path: '/curiosities',
-        builder: (_, state) => _monthlyWithArgs(
-          state,
-          (args) => CuriositiesWidget(
-            month: args['month'],
-            year: args['year'],
-          ),
-        ),
+        builder:
+            (_, state) => _monthlyWithArgs(
+              state,
+              (args) =>
+                  CuriositiesWidget(month: args['month'], year: args['year']),
+            ),
       ),
       GoRoute(
         path: '/zodiac',
-        builder: (_, state) => _monthlyWithArgs(
-          state,
-          (args) => ZodiacWidget(
-            month: args['month'],
-            year: args['year'],
-          ),
-        ),
+        builder:
+            (_, state) => _monthlyWithArgs(
+              state,
+              (args) => ZodiacWidget(month: args['month'], year: args['year']),
+            ),
       ),
       GoRoute(
         path: '/skills_development',
-        builder: (_, state) => _monthlyWithArgs(
-          state,
-          (args) => SkillsDevelopmentWidget(
-            month: args['month'],
-            year: args['year'],
-          ),
-        ),
+        builder:
+            (_, state) => _monthlyWithArgs(
+              state,
+              (args) => SkillsDevelopmentWidget(
+                month: args['month'],
+                year: args['year'],
+              ),
+            ),
       ),
       GoRoute(
         path: '/did_you_know',
-        builder: (_, state) => _monthlyWithArgs(
-          state,
-          (args) => DidYouKnowWidget(
-            month: args['month'],
-            year: args['year'],
-          ),
-        ),
+        builder:
+            (_, state) => _monthlyWithArgs(
+              state,
+              (args) =>
+                  DidYouKnowWidget(month: args['month'], year: args['year']),
+            ),
       ),
       GoRoute(
         path: '/interview',
-        builder: (_, state) => _monthlyWithArgs(
-          state,
-          (args) => InterviewScreen(
-            month: args['month'],
-            year: args['year'],
-          ),
-        ),
+        builder:
+            (_, state) => _monthlyWithArgs(
+              state,
+              (args) =>
+                  InterviewScreen(month: args['month'], year: args['year']),
+            ),
       ),
       GoRoute(
         path: '/monthly_lists',
-        builder: (_, state) => _monthlyWithArgs(
-          state,
-          (args) => MonthlyListsWidget(
-            month: args['month'],
-            year: args['year'],
-          ),
-        ),
+        builder:
+            (_, state) => _monthlyWithArgs(
+              state,
+              (args) =>
+                  MonthlyListsWidget(month: args['month'], year: args['year']),
+            ),
       ),
       GoRoute(
         path: '/monthly_photo_gallery',
-        builder: (_, state) => _monthlyWithArgs(
-          state,
-          (args) => MonthlyPhotoGallery(
-            month: args['month'],
-            year: args['year'],
-          ),
-        ),
+        builder:
+            (_, state) => _monthlyWithArgs(
+              state,
+              (args) =>
+                  MonthlyPhotoGallery(month: args['month'], year: args['year']),
+            ),
       ),
       GoRoute(
         path: '/diary',
         builder: (_, state) {
-          final date = state.extra is DateTime ? state.extra as DateTime : DateTime.now();
+          final date =
+              state.extra is DateTime
+                  ? state.extra as DateTime
+                  : DateTime.now();
           return DiaryScreen(date: date);
         },
       ),
@@ -334,9 +317,10 @@ class _MyAppState extends State<MyApp> {
         await profileService.ensureProfile();
         await profileService.load();
         AppSession.flow = AppAuthFlow.authenticated;
-        final destination = profileService.isProfileComplete
-            ? '/dashboard'
-            : '/complete-profile';
+        final destination =
+            profileService.isProfileComplete
+                ? '/dashboard'
+                : '/complete-profile';
         _router.go(destination);
         break;
       case AuthChangeEvent.signedOut:
@@ -381,10 +365,8 @@ Widget _monthlyWithArgs(
   GoRouterState state,
   Widget Function(Map<String, dynamic>) builder,
 ) {
-  final args = (state.extra as Map?) ??
-      {
-        'month': DateTime.now().month,
-        'year': DateTime.now().year,
-      };
+  final args =
+      (state.extra as Map?) ??
+      {'month': DateTime.now().month, 'year': DateTime.now().year};
   return builder(args.cast<String, dynamic>());
 }

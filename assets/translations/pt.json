@@ -157,8 +157,8 @@
   "premium": {
     
   "app_name": "My Year, my Story",
-  "title": "Experiência Premium",
-  "main_phrase": "Crie memórias para levar pra vida inteira.",
+  "title": "Desbloqueie Toda a Sua História",
+  "main_phrase": "Crie memórias\n para levar pra vida inteira.",
   "sub_phrase": "Desbloqueie recursos especiais e torne sua experiência ainda mais mágica.",
 
 "benefit1": "Acesso ilimitado aos conteúdos mensais",
@@ -170,8 +170,33 @@
 "benefit7": "Espaço livre para escrever e refletir",
 "benefit8": "Calendário do humor com estatística mensal",
 "benefit9": "Calendário com notas e alertas",
+"benefit10": "Experiência de IA aprimorada",
 "button": "QUERO SER PREMIUM ✨",
-"later": "Talvez depois"
+"later": "Talvez depois",
+"plan_monthly": "Plano Mensal",
+"plan_yearly": "Plano Anual",
+"plan_monthly_price": "{0} por mês",
+"plan_yearly_price": "{0} por ano",
+"plan_unavailable": "Preço indisponível",
+"trial_title": "7 dias gratuitos",
+"trial_subtitle": "Depois {0} / mês",
+"renew_line1": "Renova automaticamente, a menos que seja cancelado com 24h de antecedência.",
+"renew_line2": "Gerencie ou cancele a qualquer momento nas configurações do seu ID Apple.",
+"see_all": "Ver todos os benefícios",
+"see_less": "Menos benefícios",
+"footer_links": "Restaurar Compras | Termos de Uso | Política de Privacidade",
+"trial_line_monthly": "7 dias grátis. Depois {0} por mês.",
+"trial_line_yearly": "7 dias grátis. Depois {0} por ano.",
+"best_value": "Melhor valor",
+"restore_button": "Restaurar compras",
+"restore_success": "Compras restauradas com sucesso!",
+"restore_none": "Nenhuma compra encontrada.",
+"restore_error": "Não foi possível restaurar as compras.",
+"cta_trial": "Começar 7 dias grátis",
+"cta_subscribe": "Assinar agora",
+"terms": "Termos de Uso",
+"privacy": "Política de Privacidade",
+"link_error": "Não foi possível abrir o link."
 
   },
 "signup": {
