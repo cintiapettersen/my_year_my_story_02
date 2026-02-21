@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PurchaseService extends ChangeNotifier {
   final InAppPurchase _inAppPurchase = InAppPurchase.instance;
@@ -24,6 +25,13 @@ class PurchaseService extends ChangeNotifier {
   }
 
   Future<void> _initialize() async {
+    // 🔹 1. Carrega estado salvo localmente
+    final prefs = await SharedPreferences.getInstance();
+    isPremium = prefs.getBool('isPremium') ?? false;
+
+    notifyListeners();
+
+    // 🔹 2. Verifica se StoreKit está disponível
     isAvailable = await _inAppPurchase.isAvailable();
 
     if (!isAvailable) {
@@ -32,18 +40,13 @@ class PurchaseService extends ChangeNotifier {
       return;
     }
 
+    // 🔹 3. Busca produtos
     final response =
         await _inAppPurchase.queryProductDetails(_productIds);
 
-    if (response.error != null) {
-      debugPrint("Erro ao buscar produtos: ${response.error}");
-    }
-
     products = response.productDetails;
 
-    debugPrint("Produtos retornados: ${products.length}");
-    debugPrint("IDs não encontrados: ${response.notFoundIDs}");
-
+    // 🔹 4. Escuta compras
     _subscription = _inAppPurchase.purchaseStream.listen(
       _listenToPurchaseUpdated,
       onDone: () => _subscription?.cancel(),
@@ -52,7 +55,7 @@ class PurchaseService extends ChangeNotifier {
       },
     );
 
-    // 🔥 Importante: restaurar automaticamente
+    // 🔹 5. Restaura compras automaticamente
     await _inAppPurchase.restorePurchases();
 
     isLoading = false;
@@ -87,9 +90,14 @@ class PurchaseService extends ChangeNotifier {
     }
   }
 
-  void _handleSuccessfulPurchase(PurchaseDetails purchaseDetails) {
+  Future<void> _handleSuccessfulPurchase(
+      PurchaseDetails purchaseDetails) async {
     if (_productIds.contains(purchaseDetails.productID)) {
       isPremium = true;
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isPremium', true);
+
       notifyListeners();
     }
   }

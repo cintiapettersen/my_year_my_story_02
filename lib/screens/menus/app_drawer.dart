@@ -10,8 +10,8 @@ import 'package:myyearmystory/services/profile_service.dart';
 import 'glass_drawer.dart';
 import 'glass_drawer_item.dart';
 import 'premium_button_glass.dart';
-
-
+import 'package:myyearmystory/services/purchase_service.dart';
+import 'package:provider/provider.dart';
 import 'package:myyearmystory/services/app_session.dart';
 
 
@@ -19,6 +19,8 @@ import 'package:myyearmystory/services/app_session.dart';
 
 
 final storage = const FlutterSecureStorage();
+
+
 
 class AppDrawer extends StatefulWidget {
   const AppDrawer({super.key});
@@ -119,6 +121,8 @@ class _AppDrawerState extends State<AppDrawer> {
   // ------------------------------------------------------
   @override
   Widget build(BuildContext context) {
+
+    final purchaseService = context.watch<PurchaseService>();
     final user = Supabase.instance.client.auth.currentUser;
     final bool isGuest = user == null;
 
@@ -224,16 +228,19 @@ class _AppDrawerState extends State<AppDrawer> {
         // ------------------------------------------------------
         // PREMIUM BUTTON
         // ------------------------------------------------------
-        PremiumButtonGlass(
-          onTap: () {
-            context.pop();
-            context.push('/premium');
-          },
-        ),
+       const SizedBox(height: 34),
+       
+       PremiumButtonGlass(
+  isPremium: purchaseService.isPremium,
+  onTap: () {
+    context.pop();
 
-         const SizedBox(height: 24), // ou 32 se quiser maior
-
-         
+    if (!purchaseService.isPremium) {
+      context.push('/premium');
+    }
+  },
+),
+         const SizedBox(height: 34),
         // ------------------------------------------------------
         // MENU ITEMS
         // ------------------------------------------------------

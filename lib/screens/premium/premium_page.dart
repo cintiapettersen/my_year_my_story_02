@@ -43,6 +43,16 @@ class _PremiumPageState extends State<PremiumPage> {
   Widget build(BuildContext context) {
     final purchaseService = context.watch<PurchaseService>();
 
+
+
+
+ if (purchaseService.isLoading) {
+    return const Scaffold(
+      body: Center(child: CircularProgressIndicator()),
+    );
+  }
+
+
     final monthlyProduct = purchaseService.monthlyProduct;
     final yearlyProduct = purchaseService.yearlyProduct;
 
@@ -103,6 +113,13 @@ class _PremiumPageState extends State<PremiumPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
+
+                Text(
+      "Produtos: ${purchaseService.products.length}",
+      textAlign: TextAlign.center,
+    ),
+
+
                              Text(
   tr("premium.main_phrase"),
   textAlign: TextAlign.center,
@@ -133,33 +150,33 @@ Container(
 
 const SizedBox(height: 22),
 
-Row(
-  children: [
-    Expanded(
-      child: _planCard(
-        title: tr("premium.plan_yearly"),
 
-        
-        price: yearlyPrice,
-        selected: _selectedPlan == _Plan.yearly,
-        highlight: true,
-        onTap: () =>
-            setState(() => _selectedPlan = _Plan.yearly),
+   if (!purchaseService.isPremium)
+  Row(
+    children: [
+      Expanded(
+        child: _planCard(
+          title: tr("premium.plan_yearly"),
+          price: yearlyPrice,
+          selected: _selectedPlan == _Plan.yearly,
+          highlight: _selectedPlan == _Plan.yearly,
+          onTap: () =>
+              setState(() => _selectedPlan = _Plan.yearly),
+        ),
       ),
-    ),
-    const SizedBox(width: 16),
-    Expanded(
-      child: _planCard(
-        title: tr("premium.plan_monthly"),
-        price: monthlyPrice,
-        selected: _selectedPlan == _Plan.monthly,
-        highlight: false,
-        onTap: () =>
-            setState(() => _selectedPlan = _Plan.monthly),
+      const SizedBox(width: 16),
+      Expanded(
+        child: _planCard(
+          title: tr("premium.plan_monthly"),
+          price: monthlyPrice,
+          selected: _selectedPlan == _Plan.monthly,
+          highlight: false,
+          onTap: () =>
+              setState(() => _selectedPlan = _Plan.monthly),
+        ),
       ),
-    ),
-  ],
-),
+    ],
+  ),
 
 const SizedBox(height: 38),
 
@@ -174,9 +191,9 @@ const SizedBox(height: 38),
                                     ),
                                     elevation: 8,
                                   ),
-                                  onPressed: _isLoading
-                                      ? null
-                                      : () async {
+                                  onPressed: _isLoading || purchaseService.isPremium
+    ? null
+    : () async {
                                           setState(() => _isLoading = true);
                                           if (_selectedPlan == _Plan.yearly) {
                                             await purchaseService.buyYearly();
@@ -197,7 +214,9 @@ const SizedBox(height: 38),
                                           ),
                                         )
                                       : Text(
-                                          tr("premium.cta_trial"),
+    purchaseService.isPremium
+        ? "✨ Conta Premium ativa"
+        : tr("premium.cta_trial"),
                                           style: GoogleFonts.inter(
                                             fontSize: 16.5,
                                             fontWeight: FontWeight.w700,
@@ -322,74 +341,89 @@ const SizedBox(height: 38),
   required VoidCallback onTap,
 }) {
   return GestureDetector(
-    onTap: onTap,
-    child: AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
-      decoration: BoxDecoration(
-        gradient: highlight
-            ? const LinearGradient(
-                colors: [
-                  Color.fromARGB(255, 234, 205, 226),
-                  Color.fromARGB(255, 217, 153, 189),
-                ],
-              )
-            : null,
-        color: highlight ? null : const Color.fromARGB(255, 176, 177, 219),
-        borderRadius: BorderRadius.circular(18),
-       
-        border: Border.all(
-          color: selected
-              ? const Color.fromARGB(255, 181, 171, 209)
-              : const Color.fromARGB(255, 167, 167, 170).withOpacity(0.25),
-          width: selected ? 4.4 : 1,
-        ),
-
-
-
-        boxShadow: highlight
-            ? [
-                BoxShadow(
-                  color: const Color.fromARGB(255, 159, 159, 161).withOpacity(0.22),
-                  blurRadius: 20,
-                  offset: const Offset(0, 12),
-                )
-              ]
-            : [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 14,
-                  offset: const Offset(0, 8),
-                )
+  onTap: onTap,
+  child: AnimatedContainer(
+  duration: const Duration(milliseconds: 200),
+  constraints: const BoxConstraints(minHeight: 130),
+    decoration: BoxDecoration(
+      gradient: selected
+          ? const LinearGradient(
+              colors: [
+                Color(0xFFEACDE2),
+                Color(0xFFD999BD),
               ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            )
+          : null,
+      color: selected ? null : const Color(0xFFEAEAF4),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(
+        color: selected
+            ? const Color(0xFFB5ABD1)
+            : Colors.transparent,
+        width: selected ? 3 : 1,
       ),
-      child: Column(
-  mainAxisAlignment: MainAxisAlignment.center,  // centraliza verticalmente
-  crossAxisAlignment: CrossAxisAlignment.center,
-  children: [
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              fontSize: 19,
-              fontWeight: FontWeight.w800,
-              color: highlight ? const Color.fromARGB(255, 255, 255, 255) : const Color.fromARGB(255, 237, 231, 248),
-            ),
-          ),
-          const SizedBox(height: 20), 
-          Text(
-            price,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              fontSize: 35,
-              fontWeight: FontWeight.w800,
-              color: highlight ? const Color.fromARGB(255, 250, 250, 250) : Colors.black87,
-            ),
-          ),
-        ],
-      ),
+      boxShadow: [
+        BoxShadow(
+          color: selected
+              ? Colors.black.withOpacity(0.25)
+              : Colors.black.withOpacity(0.05),
+          blurRadius: selected ? 18 : 8,
+          offset: Offset(0, selected ? 10 : 4),
+        )
+      ],
     ),
-  );
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+  title,
+  maxLines: 2,
+  textAlign: TextAlign.center,
+  style: GoogleFonts.inter(
+    fontSize: 18,
+    fontWeight: FontWeight.w600,
+    color: selected
+        ? Colors.white
+        : Colors.black.withOpacity(0.7),
+  ),
+),
+        const SizedBox(height: 16),
+        const SizedBox(height: 16),
+
+Text(
+  price,
+  maxLines: 1,
+  overflow: TextOverflow.ellipsis,
+  textAlign: TextAlign.center,
+  style: GoogleFonts.inter(
+    fontSize: 22,
+    fontWeight: FontWeight.w800,
+    color: selected
+        ? Colors.white
+        : Colors.black,
+  ),
+),
+
+if (highlight) ...[
+  const SizedBox(height: 6),
+  Text(
+    "Economize 33%",
+    textAlign: TextAlign.center,
+    style: GoogleFonts.inter(
+      fontSize: 12,
+      fontWeight: FontWeight.w500,
+      color: selected
+          ? Colors.white.withOpacity(0.9)
+          : const Color(0xFF4B3768),
+    ),
+  ),
+],
+      ],
+    ),
+  ),
+);
 }
 
 }

@@ -3,8 +3,13 @@ import 'package:easy_localization/easy_localization.dart';
 
 class PremiumButtonGlass extends StatefulWidget {
   final VoidCallback onTap;
+  final bool isPremium;
 
-  const PremiumButtonGlass({super.key, required this.onTap});
+  const PremiumButtonGlass({
+    super.key,
+    required this.onTap,
+    required this.isPremium,
+  });
 
   @override
   State<PremiumButtonGlass> createState() => _PremiumButtonGlassState();
@@ -12,20 +17,37 @@ class PremiumButtonGlass extends StatefulWidget {
 
 class _PremiumButtonGlassState extends State<PremiumButtonGlass>
     with SingleTickerProviderStateMixin {
+
   late AnimationController _controller;
   late Animation<double> _pulse;
 
   @override
   void initState() {
     super.initState();
+
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
-    )..repeat(reverse: true);
+    );
 
     _pulse = Tween<double>(begin: 1.0, end: 1.06).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
+
+    if (!widget.isPremium) {
+      _controller.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant PremiumButtonGlass oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.isPremium && _controller.isAnimating) {
+      _controller.stop();
+    } else if (!widget.isPremium && !_controller.isAnimating) {
+      _controller.repeat(reverse: true);
+    }
   }
 
   @override
@@ -38,48 +60,61 @@ class _PremiumButtonGlassState extends State<PremiumButtonGlass>
   Widget build(BuildContext context) {
     return ScaleTransition(
       scale: _pulse,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+      child: GestureDetector(
+        onTap: widget.isPremium ? null : widget.onTap,
         child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(
+  vertical: 10,
+  horizontal: 18,
+),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: const Color.fromARGB(255, 228, 181, 197).withOpacity(0.5),
-              width: 1.8,
-            ),
-            gradient: LinearGradient(
-              colors: [
-                Colors.white.withOpacity(0.30),
-                Colors.pink.shade50.withOpacity(0.40),
-                Colors.white.withOpacity(0.12),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(22),
-            onTap: widget.onTap,
-            child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text("", style: TextStyle(fontSize: 18)),
-                  const SizedBox(width: 6),
-                  Text(
-                    "drawer.go_premium".tr(),
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: const Color.fromARGB(255, 185, 18, 152),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+  borderRadius: BorderRadius.circular(30),
+
+  // efeito glass
+  color: widget.isPremium
+      ? Colors.white.withOpacity(0.18)
+      : Colors.white.withOpacity(0.12),
+
+  border: Border.all(
+    color: Colors.white.withOpacity(0.25),
+  ),
+
+  boxShadow: [
+    BoxShadow(
+      color: Colors.black.withOpacity(0.08),
+      blurRadius: 18,
+      offset: const Offset(0, 10),
+    ),
+  ],
+),
+
+alignment: Alignment.center,
+
+child: Row(
+  mainAxisAlignment: MainAxisAlignment.center,
+  children: [
+    if (widget.isPremium) ...[
+      const Icon(
+        Icons.workspace_premium,
+        color: Colors.white,
+        size: 18,
+      ),
+      const SizedBox(width: 8),
+    ],
+    Text(
+      widget.isPremium
+          ? "Conta Premium"
+          : "Quero ser Premium",
+      style: const TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w700,
+        fontSize: 16,
+      ),
+    ),
+  ],
+),
+         
         ),
       ),
     );

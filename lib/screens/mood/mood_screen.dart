@@ -234,7 +234,13 @@ class _MoodScreenState extends State<MoodScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader({required bool isTablet}) {
+    final double titleSize = isTablet ? 40 : 32;
+    final double descriptionSize = isTablet ? 16 : 13;
+    final double topEmojiFont = isTablet ? 30 : 22;
+    final double topEmojiRadiusOuter = isTablet ? 32 : 24;
+    final double topEmojiRadiusInner = isTablet ? 26 : 20;
+
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -253,7 +259,7 @@ class _MoodScreenState extends State<MoodScreen> {
                 
                 style: GoogleFonts.monteCarlo(
                   color: Colors.black,
-                  fontSize: 32,
+                  fontSize: titleSize,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 1.3,
           
@@ -273,7 +279,7 @@ class _MoodScreenState extends State<MoodScreen> {
                 "mood.page_description".tr(),
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
-                  fontSize: 13,
+                  fontSize: descriptionSize,
                   color: Colors.black54,
                   height: 1.45,
                 ),
@@ -286,12 +292,12 @@ class _MoodScreenState extends State<MoodScreen> {
           left: 0,
           right: 0,
           child: CircleAvatar(
-            radius: 24,
+            radius: topEmojiRadiusOuter,
             backgroundColor: Colors.white.withOpacity(0.7),
             child: CircleAvatar(
-              radius: 20,
+              radius: topEmojiRadiusInner,
               backgroundColor: const Color(0xFFE6BDEA),
-              child: const Text("😊", style: TextStyle(fontSize: 22)),
+              child: Text("😊", style: TextStyle(fontSize: topEmojiFont)),
             ),
           ),
         ),
@@ -328,7 +334,13 @@ class _MoodScreenState extends State<MoodScreen> {
     );
   }
 
-  Widget _buildMoodGrid(List<Map<String, dynamic>> moodList) {
+  Widget _buildMoodGrid(List<Map<String, dynamic>> moodList, {required bool isTablet}) {
+    final double emojiSize = isTablet ? 30 : 22;
+    final double labelSize = isTablet ? 16 : 14;
+    final double avatarOuter = isTablet ? 30 : 22;
+    final double avatarInner = isTablet ? 24 : 18;
+    final double cardTopPadding = isTablet ? 28 : 22;
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -351,7 +363,7 @@ class _MoodScreenState extends State<MoodScreen> {
             clipBehavior: Clip.none,
             children: [
               Container(
-                padding: const EdgeInsets.only(top: 22),
+                padding: EdgeInsets.only(top: cardTopPadding),
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.30),
                   borderRadius: BorderRadius.circular(18),
@@ -360,7 +372,7 @@ class _MoodScreenState extends State<MoodScreen> {
                 child: Text(
                   trMood(moodKey),
                   style: GoogleFonts.poppins(
-                    fontSize: 14,
+                    fontSize: labelSize,
                     fontWeight: FontWeight.w600,
                   ),
                   textAlign: TextAlign.center,
@@ -371,12 +383,12 @@ class _MoodScreenState extends State<MoodScreen> {
                 left: 0,
                 right: 0,
                 child: CircleAvatar(
-                  radius: 22,
+                  radius: avatarOuter,
                   backgroundColor: Colors.white.withOpacity(0.6),
                   child: CircleAvatar(
-                    radius: 18,
+                    radius: avatarInner,
                     backgroundColor: color,
-                    child: Text(emoji, style: const TextStyle(fontSize: 22)),
+                    child: Text(emoji, style: TextStyle(fontSize: emojiSize)),
                   ),
                 ),
               ),
@@ -620,6 +632,7 @@ Widget _buildGuestStatsCard() {
   @override
   Widget build(BuildContext context) {
     final user = supabase.auth.currentUser;
+    final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
 
     final Map<String, String> moodEmojiMap = {
       for (var m in moods) m['key']: m['emoji'],
@@ -634,7 +647,7 @@ Widget _buildGuestStatsCard() {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
             child: Column(
               children: [
-                _buildHeader(),
+                _buildHeader(isTablet: isTablet),
                 const SizedBox(height: 20),
 
                 MoodCalendar(
@@ -653,9 +666,9 @@ Widget _buildGuestStatsCard() {
                 _buildMoodNavigatorButton(),
                 const SizedBox(height: 30),
 
-                _buildMoodGrid(mainMoods),
+                _buildMoodGrid(mainMoods, isTablet: isTablet),
                 const SizedBox(height: 20),
-                _buildMoodGrid(extraMoods),
+                _buildMoodGrid(extraMoods, isTablet: isTablet),
 
 
                 const SizedBox(height: 30),

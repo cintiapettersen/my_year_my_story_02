@@ -77,8 +77,13 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+
+
   late final GoRouter _router = GoRouter(
     initialLocation: '/splash',
+
+
+    
     refreshListenable: GoRouterRefreshStream(
       // atualiza o router quando o estado de auth mudar
       AuthListener.stream.map((event) => event.session),
@@ -267,6 +272,11 @@ class _MyAppState extends State<MyApp> {
     redirect: (_, state) {
       final session = Supabase.instance.client.auth.currentSession;
       final loc = state.matchedLocation;
+
+      // 👇 TRATAR RAIZ
+  if (loc == '/') {
+    return '/splash';
+  }
 
       final isAuthRoute = loc.startsWith('/login');
       final isSplash = loc == '/splash';

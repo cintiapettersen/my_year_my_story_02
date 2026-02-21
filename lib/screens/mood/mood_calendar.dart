@@ -314,7 +314,15 @@ Future<void> _deleteMood(int day) async {
   Widget build(BuildContext context) {
     final totalDays = DateTime(widget.year, widget.month + 1, 0).day;
     final firstWeekday =
-    DateTime(widget.year, widget.month, 1).weekday;
+        DateTime(widget.year, widget.month, 1).weekday;
+
+    final media = MediaQuery.of(context);
+    final bool isTablet = media.size.shortestSide >= 600;
+    final double cellSize = isTablet ? 68 : 48;
+    final double emojiFontSize = isTablet ? 30 : 20;
+    final double dayFontSize = isTablet ? 18 : 14;
+    final double borderWidthToday = isTablet ? 2.2 : 2.0;
+    final double borderWidthDefault = isTablet ? 1.2 : 1.0;
 
 
 
@@ -325,7 +333,7 @@ Future<void> _deleteMood(int day) async {
     List<Widget> grid = [];
 
     for (int i = 1; i < firstWeekday; i++) {
-    grid.add(Container());
+      grid.add(Container());
 
 
     }
@@ -340,7 +348,7 @@ Future<void> _deleteMood(int day) async {
       
 
       grid.add(
-  GestureDetector(
+      GestureDetector(
     onTap: () {
       setState(() => selectedDay = day);
 
@@ -368,27 +376,27 @@ Future<void> _deleteMood(int day) async {
       widget.onDaySelected?.call(day);
     },
     child: Container(
-      width: 40,
-      height: 40,
+      width: cellSize,
+      height: cellSize,
       decoration: BoxDecoration(
         color: isSelected ? Colors.pink.withOpacity(0.2) : Colors.white,
-        borderRadius: BorderRadius.circular(40),
+        borderRadius: BorderRadius.circular(cellSize),
         border: isToday
-            ? Border.all(color: Colors.pinkAccent, width: 2)
-            : Border.all(color: Colors.black12, width: 1),
+            ? Border.all(color: Colors.pinkAccent, width: borderWidthToday)
+            : Border.all(color: Colors.black12, width: borderWidthDefault),
       ),
       alignment: Alignment.center,
       child: emoji == null
           ? Text(
               "$day",
               style: GoogleFonts.poppins(
-                fontSize: 14,
+                fontSize: dayFontSize,
                 fontWeight: FontWeight.w600,
               ),
             )
           : Text(
               emoji,
-              style: const TextStyle(fontSize: 20),
+              style: TextStyle(fontSize: emojiFontSize),
             ),
     ),
   ),

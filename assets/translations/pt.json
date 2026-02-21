@@ -158,8 +158,8 @@
     
   "app_name": "My Year, my Story",
   "title": "Desbloqueie Toda a Sua História",
-  "main_phrase": "Crie memórias\n para levar pra vida inteira.",
-  "sub_phrase": "Desbloqueie recursos especiais e torne sua experiência ainda mais mágica.",
+  "main_phrase": "Crie memórias\npara levar pra vida inteira.",
+  "sub_phrase": "Desbloqueie recursos especiais e\ntorne sua experiência ainda mais mágica.",
 
 "benefit1": "Acesso ilimitado aos conteúdos mensais",
 "benefit2": "Experiência aprimorada na Mensagem do Dia",
@@ -196,7 +196,8 @@
 "cta_subscribe": "Assinar agora",
 "terms": "Termos de Uso",
 "privacy": "Política de Privacidade",
-"link_error": "Não foi possível abrir o link."
+"link_error": "Não foi possível abrir o link.",
+"already_premium": "Você já é Premium 💜"
 
   },
 "signup": {
