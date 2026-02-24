@@ -3,8 +3,6 @@ import 'package:app_links/app_links.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:myyearmystory/services/app_session.dart';
 
-import 'package:flutter/foundation.dart';
-
 
 
 class OAuthDeepLinkHandler {
@@ -20,19 +18,15 @@ class OAuthDeepLinkHandler {
     final Uri? initialUri = await _appLinks.getInitialLink();
 
     if (initialUri != null) {
-      print('🔗 Initial deep link: $initialUri');
       await _handleUri(initialUri);
     }
 
     // 2️⃣ Caso app já esteja aberto
     _sub = _appLinks.uriLinkStream.listen(
       (Uri uri) async {
-        print('🔗 Stream deep link: $uri');
         await _handleUri(uri);
       },
-      onError: (err) {
-        print('❌ Erro no deep link stream: $err');
-      },
+      onError: (err) {},
     );
   }
 
@@ -47,7 +41,6 @@ static Future<void> _handleUri(Uri uri) async {
 
     await Supabase.instance.client.auth.getSessionFromUrl(uri);
 
-    debugPrint('✅ Recovery session criada via deep link');
     return;
   }
 

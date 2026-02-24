@@ -40,10 +40,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data
-                    android:scheme="com.myyear.myyearmystory"
-                    android:host="auth"
-                    android:pathPrefix="/callback" />
+                <data android:scheme="com.myyear.myyearmystory" />
             </intent-filter>
 
         </activity>

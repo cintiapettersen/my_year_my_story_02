@@ -21,7 +21,6 @@ class ReflectionsService {
       }
       return <String, String>{};
     } catch (e) {
-      print('Error fetching reflections from entries: $e');
       return <String, String>{};
     }
   }
@@ -53,7 +52,6 @@ class ReflectionsService {
       }
       return true;
     } catch (e) {
-      print('Error saving reflections to entries: $e');
       return false;
     }
   }

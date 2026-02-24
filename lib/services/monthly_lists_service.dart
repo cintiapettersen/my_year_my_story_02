@@ -1,6 +1,4 @@
 import 'package:myyearmystory/supabase/supabase_config.dart';
-import 'package:flutter/foundation.dart';
-
 
 class MonthlyListsService {
   static final _supabase = SupabaseConfig.client;
@@ -29,7 +27,6 @@ class MonthlyListsService {
       }
       return <String, List<String>>{};
     } catch (e) {
-      print('Error fetching lists from entries: $e');
       return <String, List<String>>{};
     }
   }
@@ -69,7 +66,6 @@ class MonthlyListsService {
           .select(); // 🔴 força erro
     }
   } catch (e) {
-    print('Erro ao salvar listas: $e');
     rethrow;
   }
 }

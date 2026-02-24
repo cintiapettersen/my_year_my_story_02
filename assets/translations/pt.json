@@ -111,7 +111,9 @@
   "choose_icon":" Escolha seu ícone de hoje",
   "language": "Idioma",
   "guest_name": "Visitante",
-  "login_or_create": "Sign in or create account"
+  "login_or_create": "Sign in or create account",
+  "premium_active": "Você é Premium!",
+  "premium_cta": "Quero ser Premium"
   
   
 },
@@ -197,7 +199,8 @@
 "terms": "Termos de Uso",
 "privacy": "Política de Privacidade",
 "link_error": "Não foi possível abrir o link.",
-"already_premium": "Você já é Premium 💜"
+"already_premium": "Você já é Premium 💜",
+"save_percent": "Economize {}%"
 
   },
 "signup": {

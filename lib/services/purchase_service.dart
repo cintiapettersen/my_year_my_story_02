@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:myyearmystory/services/profile_service.dart';
 
 class PurchaseService extends ChangeNotifier {
   final InAppPurchase _inAppPurchase = InAppPurchase.instance;
@@ -50,9 +52,7 @@ class PurchaseService extends ChangeNotifier {
     _subscription = _inAppPurchase.purchaseStream.listen(
       _listenToPurchaseUpdated,
       onDone: () => _subscription?.cancel(),
-      onError: (error) {
-        debugPrint("Erro na purchaseStream: $error");
-      },
+      onError: (error) {},
     );
 
     // 🔹 5. Restaura compras automaticamente
@@ -72,15 +72,12 @@ class PurchaseService extends ChangeNotifier {
           break;
 
         case PurchaseStatus.error:
-          debugPrint("Erro na compra: ${purchaseDetails.error}");
           break;
 
         case PurchaseStatus.pending:
-          debugPrint("Compra pendente...");
           break;
 
         case PurchaseStatus.canceled:
-          debugPrint("Compra cancelada.");
           break;
       }
 
@@ -90,17 +87,30 @@ class PurchaseService extends ChangeNotifier {
     }
   }
 
-  Future<void> _handleSuccessfulPurchase(
-      PurchaseDetails purchaseDetails) async {
-    if (_productIds.contains(purchaseDetails.productID)) {
-      isPremium = true;
+ Future<void> _handleSuccessfulPurchase(
+    PurchaseDetails purchaseDetails) async {
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isPremium', true);
+  if (_productIds.contains(purchaseDetails.productID)) {
 
-      notifyListeners();
+    isPremium = true;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isPremium', true);
+
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user != null) {
+      await Supabase.instance.client
+          .from('profiles')
+          .update({'is_premium': true})
+          .eq('id', user.id);
+
+      // 🔥 FORÇA RELOAD DO PROFILE
+      await profileService.load();
     }
+
+    notifyListeners();
   }
+}
 
   ProductDetails? get monthlyProduct {
     try {

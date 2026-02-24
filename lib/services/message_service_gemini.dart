@@ -1,5 +1,4 @@
 import 'package:google_generative_ai/google_generative_ai.dart';
-import 'package:flutter/foundation.dart';
 
 
 
@@ -35,9 +34,7 @@ class MessageServiceGemini {
     }
 
     return text;
-  } catch (e, s) {
-    debugPrint('❌ GEMINI ERROR: $e');
-    debugPrint('📌 STACKTRACE:\n$s');
+  } catch (e) {
     return null;
   }
 }

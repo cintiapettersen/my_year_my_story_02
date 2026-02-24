@@ -27,5 +27,4 @@ const token = jwt.sign(
   }
 );
 
-
-console.log(token);
+module.exports = token;

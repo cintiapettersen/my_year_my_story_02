@@ -11,9 +11,6 @@ class GoogleAuthService {
     try {
       final redirectUrl = _getRedirectUrl();
 
-      print('🌍 Iniciando login com Google...');
-      print('🔗 Redirect URL: $redirectUrl');
-
       await _supabase.auth.signInWithOAuth(
         OAuthProvider.google,
         redirectTo: redirectUrl,
@@ -23,7 +20,6 @@ class GoogleAuthService {
       return {'success': true};
 
     } catch (e) {
-      print('❌ Erro no login com Google: $e');
       return {
         'success': false,
         'message': e.toString(),

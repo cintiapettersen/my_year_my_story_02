@@ -13,11 +13,9 @@ class StorageService {
       // 🟡 Convidado → salva localmente
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(key, jsonEncode(data));
-      print('💾 Dados salvos localmente: $key');
     } else {
       // 🟢 Usuário logado → salva no Supabase
       await _supabase.from('entries').upsert(data);
-      print('☁️ Dados salvos no Supabase: $key');
     }
   }
 

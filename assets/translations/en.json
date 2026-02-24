@@ -120,7 +120,7 @@
     "language": "Language",
     "guest_name": "Guest",
     "login_or_create": "Sign in or create account",
-    "premium_active": "Premium Account",
+    "premium_active": "You're Premium!",
     "premium_cta": "Go Premium"
   },
 
@@ -208,7 +208,8 @@
     "terms": "Terms of Use",
     "privacy": "Privacy Policy",
     "link_error": "Could not open link.",
-    "already_premium": "You are already Premium 💜"
+    "already_premium": "You are already Premium 💜",
+    "save_percent": "Save {}%"
   },
 
   "signup": {

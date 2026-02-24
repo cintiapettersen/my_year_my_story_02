@@ -104,8 +104,8 @@ child: Row(
     ],
     Text(
       widget.isPremium
-          ? "Conta Premium"
-          : "Quero ser Premium",
+          ? tr("drawer.premium_active")
+          : tr("drawer.premium_cta"),
       style: const TextStyle(
         color: Colors.white,
         fontWeight: FontWeight.w700,

@@ -11,7 +11,6 @@ import 'package:myyearmystory/screens/auth/forgot_password_screen.dart';
 import 'package:myyearmystory/services/user_service.dart';
 import 'package:myyearmystory/services/google_auth_service.dart';
 import 'package:myyearmystory/services/app_session.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class LoginScreen extends StatefulWidget {
   final VoidCallback onCreateAccountTap;
@@ -129,22 +128,15 @@ class _LoginScreenState extends State<LoginScreen> {
   // APPLE LOGIN
   // =============================================================
   Future<void> _signInWithApple() async {
-    print('🟡 Apple login iniciado');
-
     try {
       AppSession.flow = AppAuthFlow.authenticating;
 
-      final response = await Supabase.instance.client.auth.signInWithOAuth(
+      await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.apple,
         redirectTo: 'com.myyear.myyearmystory://login-callback',
         authScreenLaunchMode: LaunchMode.externalApplication,
       );
-
-      print('🟢 signInWithApple chamado com sucesso');
-      print('🟢 Response: $response');
-    } catch (e, stackTrace) {
-      print('🔴 ERRO no signInWithApple: $e');
-      print(stackTrace);
+    } catch (e) {
     }
   }
 

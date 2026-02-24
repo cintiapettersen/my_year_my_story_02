@@ -19,7 +19,6 @@ class MoodEntryService {
 
       return response.map<MoodEntry>((json) => MoodEntry.fromJson(json)).toList();
     } catch (e) {
-      print('Error fetching mood entries: $e');
       return [];
     }
   }
@@ -39,7 +38,6 @@ class MoodEntryService {
 
       return response.map<MoodEntry>((json) => MoodEntry.fromJson(json)).toList();
     } catch (e) {
-      print('Error fetching daily moods: $e');
       return [];
     }
   }
@@ -58,7 +56,6 @@ class MoodEntryService {
 
       return MoodEntry.fromJson(response);
     } catch (e) {
-      print('Error creating mood entry: $e');
       return null;
     }
   }
@@ -73,7 +70,6 @@ class MoodEntryService {
 
       return true;
     } catch (e) {
-      print('Error deleting mood entry: $e');
       return false;
     }
   }

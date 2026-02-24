@@ -16,7 +16,6 @@ class MonthlyDataService {
 
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
-      print('Error fetching diary entries: $e');
       return [];
     }
   }
@@ -32,7 +31,6 @@ class MonthlyDataService {
       });
       return true;
     } catch (e) {
-      print('Error saving diary entry: $e');
       return false;
     }
   }
@@ -52,7 +50,6 @@ class MonthlyDataService {
 
       return Map<String, String>.from(response['answers'] ?? {});
     } catch (e) {
-      print('Error fetching fun facts: $e');
       return {};
     }
   }
@@ -67,7 +64,6 @@ class MonthlyDataService {
       });
       return true;
     } catch (e) {
-      print('Error saving fun facts: $e');
       return false;
     }
   }
@@ -85,7 +81,6 @@ class MonthlyDataService {
 
       return response;
     } catch (e) {
-      print('Error fetching quiz result: $e');
       return null;
     }
   }
@@ -101,7 +96,6 @@ class MonthlyDataService {
       });
       return true;
     } catch (e) {
-      print('Error saving quiz result: $e');
       return false;
     }
   }
@@ -129,7 +123,6 @@ class MonthlyDataService {
       }
       return result;
     } catch (e) {
-      print('Error fetching monthly lists: $e');
       return {};
     }
   }
@@ -161,7 +154,6 @@ class MonthlyDataService {
       }
       return true;
     } catch (e) {
-      print('Error saving monthly lists: $e');
       return false;
     }
   }
@@ -187,7 +179,6 @@ class MonthlyDataService {
       }
       return {};
     } catch (e) {
-      print('Error fetching interview: $e');
       return {};
     }
   }
@@ -224,7 +215,6 @@ class MonthlyDataService {
       }
       return true;
     } catch (e) {
-      print('Error saving interview: $e');
       return false;
     }
   }
@@ -247,7 +237,6 @@ class MonthlyDataService {
       }
       return [];
     } catch (e) {
-      print('Error fetching gratitude list: $e');
       return [];
     }
   }
@@ -279,7 +268,6 @@ class MonthlyDataService {
       }
       return true;
     } catch (e) {
-      print('Error saving gratitude list: $e');
       return false;
     }
   }
@@ -303,7 +291,6 @@ class MonthlyDataService {
       }
       return {};
     } catch (e) {
-      print('Error fetching reflections: $e');
       return {};
     }
   }
@@ -335,7 +322,6 @@ class MonthlyDataService {
       }
       return true;
     } catch (e) {
-      print('Error saving reflections: $e');
       return false;
     }
   }
@@ -366,7 +352,6 @@ class MonthlyDataService {
 
       return photos;
     } catch (e) {
-      print('Error fetching photos: $e');
       return [];
     }
   }
@@ -385,7 +370,6 @@ class MonthlyDataService {
       });
       return true;
     } catch (e) {
-      print('Error saving photos: $e');
       return false;
     }
   }

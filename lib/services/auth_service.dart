@@ -31,7 +31,6 @@ class AuthService {
       // 3️⃣ Sessão restaurada com sucesso
       if (session != null) {
         await SecureStorageService.saveSession(session);
-        print('🔥 Sessão restaurada com sucesso');
         return true;
       }
 
@@ -40,7 +39,6 @@ class AuthService {
     } catch (e) {
       // ❗ Nunca faz signOut aqui
       // ❗ Nunca navega
-      print('❌ Erro ao restaurar sessão: $e');
       return false;
     }
   }

@@ -31,8 +31,6 @@ class GratitudeService {
 
       return <String>[];
     } catch (e) {
-      // log técnico, sem quebrar UX
-      print('Error fetching gratitude_entries: $e');
       return <String>[];
     }
   }
@@ -75,7 +73,6 @@ class GratitudeService {
 
       return true;
     } catch (e) {
-      print('Error saving gratitude_entries: $e');
       return false;
     }
   }

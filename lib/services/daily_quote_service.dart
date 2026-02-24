@@ -7,7 +7,6 @@ class DailyQuoteService {
   Future<Map<String, dynamic>?> getRandomQuote(String lang) async {
     // 🛑 BLOQUEIO CRÍTICO — evita JWT expirado
     if (!AppSession.isAuthenticated) {
-      print('⏸️ DailyQuoteService ignorado — usuário não autenticado');
       return null; // ou {"text": "..."} se quiser fallback
     }
 
@@ -19,7 +18,6 @@ class DailyQuoteService {
           .limit(200);
 
       if (response.isEmpty) {
-        print("⚠️ Nenhuma frase encontrada.");
         return null;
       }
 
@@ -40,7 +38,6 @@ class DailyQuoteService {
 
       return {"text": ""};
     } catch (e) {
-      print("❌ ERRO NO DailyQuoteService: $e");
       return null;
     }
   }

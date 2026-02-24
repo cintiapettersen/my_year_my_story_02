@@ -4,11 +4,6 @@ import '../models/message_category.dart';
 
 import 'package:easy_localization/easy_localization.dart';
 
-import 'package:flutter/widgets.dart';
-
-
-
-
 class MessageServiceSupabase {
   final SupabaseClient _client;
   
@@ -135,7 +130,6 @@ Future<MessageCard> getCardByType(
 
     return result;
   } catch (e) {
-    debugPrint('❌ SUPABASE FUNCTION ERROR: $e');
     return null;
   }
 }

@@ -24,11 +24,9 @@ class SupabaseConfig {
   /// 🚀 Inicializa o Supabase (somente uma vez)
   static Future<void> initialize() async {
     if (_initialized) {
-      print('⚙️ Supabase já estava inicializado.');
       return;
     }
 
-    print('🚀 Inicializando Supabase...');
     try {
   await Supabase.initialize(
   url: supabaseUrl,
@@ -43,9 +41,7 @@ class SupabaseConfig {
 
 
       _initialized = true;
-      print('✅ Supabase inicializado com sucesso!');
     } catch (e) {
-      print('❌ Erro ao inicializar Supabase: $e');
       rethrow;
     }
   }
@@ -57,13 +53,10 @@ class SupabaseConfig {
         email: email.trim(),
         password: password.trim(),
       );
-      print('✅ Login realizado com sucesso para $email');
       return response;
     } on AuthException catch (e) {
-      print('❌ Erro de autenticação: ${e.message}');
       rethrow;
     } catch (e) {
-      print('⚠️ Erro inesperado: $e');
       rethrow;
     }
   }
@@ -75,13 +68,10 @@ class SupabaseConfig {
         email: email.trim(),
         password: password.trim(),
       );
-      print('✅ Usuário criado com sucesso: $email');
       return response;
     } on AuthException catch (e) {
-      print('❌ Erro no cadastro: ${e.message}');
       rethrow;
     } catch (e) {
-      print('⚠️ Erro inesperado no cadastro: $e');
       rethrow;
     }
   }
@@ -91,13 +81,11 @@ class SupabaseConfig {
     try {
       await client.auth.signOut();
       await clearAllCache();
-      print('👋 Logout realizado com sucesso.');
 
       if (context.mounted) {
         Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
       }
     } catch (e) {
-      print('⚠️ Erro ao sair da conta: $e');
     }
   }
 
@@ -106,18 +94,12 @@ class SupabaseConfig {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
-      if (!silent) print('✅ SharedPreferences limpo.');
-    } catch (e) {
-      if (!silent) print('⚠️ Erro ao limpar SharedPreferences: $e');
-    }
+    } catch (e) {}
 
     if (kIsWeb) {
       try {
         WebStorage.clear();
-        if (!silent) print('✅ Browser storage limpo.');
-      } catch (e) {
-        if (!silent) print('⚠️ Erro ao limpar browser storage: $e');
-      }
+      } catch (e) {}
     }
   }
 }

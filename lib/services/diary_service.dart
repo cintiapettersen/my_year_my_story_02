@@ -12,17 +12,12 @@ class DiaryService {
     if (user == null) return;
 
     try {
-      print("DiaryService → Deleting entry $entryId");
-
       await _supabase
           .from('diary_entries')
           .delete()
           .eq('id', entryId)
           .eq('user_id', user.id);
-
-      print("DiaryService → Entry deleted");
     } catch (e) {
-      print("DiaryService → Error deleting entry: $e");
       rethrow;
     }
   }
@@ -34,13 +29,10 @@ class DiaryService {
     final user = _supabase.auth.currentUser;
 
     if (user == null) {
-      print('DiaryService → Guest user, returning empty list');
       return [];
     }
 
     try {
-      print('DiaryService → Fetching entries for user ${user.id}');
-
       final response = await _supabase
           .from('diary_entries')
           .select()
@@ -51,10 +43,8 @@ class DiaryService {
           .map((entry) => DiaryEntryModel.fromJson(entry))
           .toList();
 
-      print('DiaryService → Parsed ${entries.length} entries');
       return entries;
     } catch (e) {
-      print('DiaryService → Error fetching diary entries: $e');
       rethrow;
     }
   }
@@ -73,8 +63,6 @@ class DiaryService {
     }
 
     try {
-      print('DiaryService → Creating entry (user: ${user.id}, mood: $moodIcon)');
-
       final response = await _supabase
           .from('diary_entries')
           .insert({
@@ -91,10 +79,8 @@ class DiaryService {
           .select()
           .single();
 
-      print('DiaryService → Entry created: ${response['id']}');
       return DiaryEntryModel.fromJson(response);
     } catch (e) {
-      print('DiaryService → Error creating entry: $e');
       rethrow;
     }
   }
@@ -114,8 +100,6 @@ class DiaryService {
   }
 
   try {
-    print('DiaryService → Updating entry $entryId');
-
     // Monta o payload dinamicamente
     final updateData = {
       'entry_date': entryDate.toIso8601String(),
@@ -140,10 +124,8 @@ class DiaryService {
         .select()
         .single();
 
-    print('DiaryService → Entry updated successfully');
     return DiaryEntryModel.fromJson(response);
   } catch (e) {
-    print('DiaryService → Error updating entry: $e');
     rethrow;
   }
 }
@@ -171,7 +153,6 @@ class DiaryService {
           .map((entry) => DiaryEntryModel.fromJson(entry))
           .toList();
     } catch (e) {
-      print('DiaryService → Error fetching entries by date: $e');
       rethrow;
     }
   }

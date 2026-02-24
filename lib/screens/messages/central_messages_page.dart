@@ -13,10 +13,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter/foundation.dart';
-
-
-
 
 class CentralMessagesPage extends StatefulWidget {
   const CentralMessagesPage({super.key});
@@ -59,11 +55,6 @@ void initState() {
 
   try {
     final outputLanguage = resolveOutputLanguage(context);
-
-    if (kDebugMode) {
-  debugPrint('OUTPUT LANGUAGE (UI): $outputLanguage');
-}
-
 
     final card = await _messageService.getCardByType(
       _activeType,
@@ -132,10 +123,6 @@ void initState() {
 
 Future<void> _saveCardAsImage() async {
   if (_cardKey.currentContext == null) {
-   if (kDebugMode) {
-  debugPrint('Erro ao salvar imagem: $e');
-}
-
     return;
   }
   try {
@@ -177,10 +164,6 @@ ScaffoldMessenger.of(context).showSnackBar(
 
 
   } catch (e) {
-    if (kDebugMode) {
-  debugPrint('RepaintBoundary não está pronto');
-}
-
   }
 }
 

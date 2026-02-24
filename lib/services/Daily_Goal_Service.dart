@@ -31,7 +31,6 @@ class DailyGoalService {
 
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
-      print('DailyGoalService.getAllByMonth error: $e');
       return [];
     }
   }
@@ -53,9 +52,7 @@ class DailyGoalService {
         'content': content,
         'completed': false,
       });
-    } catch (e) {
-      print('DailyGoalService.createGoal error: $e');
-    }
+    } catch (e) {}
   }
 
   // --------------------------------------------------
@@ -74,9 +71,7 @@ class DailyGoalService {
           .update({'completed': completed})
           .eq('id', goalId)
           .eq('user_id', user.id);
-    } catch (e) {
-      print('DailyGoalService.toggleCompleted error: $e');
-    }
+    } catch (e) {}
   }
 
   // --------------------------------------------------
@@ -92,9 +87,7 @@ class DailyGoalService {
           .delete()
           .eq('id', goalId)
           .eq('user_id', user.id);
-    } catch (e) {
-      print('DailyGoalService.deleteGoal error: $e');
-    }
+    } catch (e) {}
   }
 
   // --------------------------------------------------

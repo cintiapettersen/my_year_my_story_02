@@ -39,33 +39,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // LOAD PROFILE
   // -------------------------------------------------------
   Future<void> _loadProfile() async {
-    final user = SupabaseConfig.client.auth.currentUser;
-    if (user == null) return;
+  final user = SupabaseConfig.client.auth.currentUser;
+  if (user == null) return;
 
-    final response = await SupabaseConfig.client
-        .from('profiles')
-        .select('full_name, email, birth_date, avatar_emoji, is_premium')
-        .eq('id', user.id)
-        .maybeSingle();
+  final response = await SupabaseConfig.client
+      .from('profiles')
+      .select('full_name, email, birth_date, avatar_emoji')
+      .eq('id', user.id)
+      .maybeSingle();
 
-    if (response != null) {
-      nameController.text = response['full_name'] ?? '';
-      emailController.text = response['email'] ?? '';
-      selectedEmoji = response['avatar_emoji'] ?? "🌸";
+  // 🔥 usa a instância global
+  final bool isPremiumLocal = profileService.isPremium;
 
-      planType = (response["is_premium"] == true)
-          ? "profile.premium_plan".tr()
-          : "profile.free_plan".tr();
+  if (response != null) {
+    nameController.text = response['full_name'] ?? '';
+    emailController.text = response['email'] ?? '';
+    selectedEmoji = response['avatar_emoji'] ?? "🌸";
 
-      if (response['birth_date'] != null) {
-        selectedBirthDate = DateTime.parse(response['birth_date']);
-        birthDateController.text = formatDisplayDate(selectedBirthDate!);
-      }
+    planType = isPremiumLocal
+        ? "profile.premium_plan".tr()
+        : "profile.free_plan".tr();
 
-      setState(() {});
+    if (response['birth_date'] != null) {
+      selectedBirthDate = DateTime.parse(response['birth_date']);
+      birthDateController.text = formatDisplayDate(selectedBirthDate!);
     }
-  }
 
+    setState(() {});
+  }
+}
   // -------------------------------------------------------
   // SAVE PROFILE
   // -------------------------------------------------------

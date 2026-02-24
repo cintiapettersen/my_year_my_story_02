@@ -28,7 +28,6 @@ class MonthlyGoalService {
           .map((e) => MonthlyGoal.fromJson(e))
           .toList();
     } catch (e) {
-      print('MonthlyGoalService.getGoalsByMonth error: $e');
       return [];
     }
   }
@@ -60,7 +59,6 @@ class MonthlyGoalService {
 
       return MonthlyGoal.fromJson(response);
     } catch (e) {
-      print('MonthlyGoalService.createGoal error: $e');
       return null;
     }
   }
@@ -91,7 +89,6 @@ class MonthlyGoalService {
 
       return MonthlyGoal.fromJson(response);
     } catch (e) {
-      print('MonthlyGoalService.updateGoal error: $e');
       return null;
     }
   }
@@ -113,7 +110,6 @@ class MonthlyGoalService {
 
       return true;
     } catch (e) {
-      print('MonthlyGoalService.deleteGoal error: $e');
       return false;
     }
   }
