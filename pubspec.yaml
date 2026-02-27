@@ -2,7 +2,7 @@ name: myyearmystory
 description: "Diário interativo mensal para registro de histórias, emoções e reflexões."
 publish_to: "none"
 
-version: 1.0.0+37
+version: 1.0.0+38
 
 environment:
   sdk: ">=3.7.0 <4.0.0"
@@ -43,6 +43,7 @@ dependencies:
   google_sign_in: ^7.2.0
   local_auth: ^3.0.0
   flutter_secure_storage: ^10.0.0
+  sign_in_with_apple: ^5.0.0
 
   # 🔗 Links e rede
   url_launcher: ^6.3.2

@@ -3,7 +3,7 @@ const fs = require('fs');
 
 const teamId = '2HQ9UU2UV4';
 const clientId = 'com.myyear.myyearmystory.signin';
-const keyId = 'AKJ9ZJC9NY';
+const keyId = '45VJPH9Y74';
 
 const privateKey = fs.readFileSync('./AuthKey.p8');
 
@@ -27,4 +27,4 @@ const token = jwt.sign(
   }
 );
 
-module.exports = token;
+console.log(token);

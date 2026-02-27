@@ -34,16 +34,18 @@
 				<string>com.myyear.myyearmystory</string>
 			</array>
 		</dict>
+		
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
-	<key>LSApplicationCategoryType</key>
-	<string></string>
 	<key>LSApplicationQueriesSchemes</key>
-	<array>
-		<string>googlechrome</string>
-		<string>googlechromes</string>
-	</array>
+<array>
+    <string>googlechrome</string>
+    <string>googlechromes</string>
+    <string>https</string>
+    <string>http</string>
+</array>
+
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>

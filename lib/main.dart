@@ -9,7 +9,7 @@ import 'package:myyearmystory/theme.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:myyearmystory/services/app_session.dart';
 import 'package:myyearmystory/services/auth_listener.dart';
-import 'package:myyearmystory/services/profile_service.dart';
+
 import 'package:myyearmystory/services/app_navigator.dart';
 
 import 'package:myyearmystory/screens/splash/splash_transition.dart';
@@ -80,32 +80,33 @@ class _MyAppState extends State<MyApp> {
 
 
   late final GoRouter _router = GoRouter(
-    initialLocation: '/splash',
+  initialLocation: '/splash',
+  debugLogDiagnostics: true,
 
-
-    
-    refreshListenable: GoRouterRefreshStream(
-      // atualiza o router quando o estado de auth mudar
-      AuthListener.stream.map((event) => event.session),
-    ),
+  refreshListenable: GoRouterRefreshStream(
+    Supabase.instance.client.auth.onAuthStateChange,
+  ),
+ 
     routes: [
       GoRoute(
         path: '/splash',
         builder: (_, __) => const SplashTransitionScreen(),
       ),
-      GoRoute(path: '/login', builder: (_, __) => const AuthPageView()),
+      
+      GoRoute(path: '/login', 
+      builder: (_, __) => const AuthPageView()),
+
       GoRoute(
-        path: '/login-callback',
-        builder: (_, __) => const SizedBox.shrink(),
-      ),
+    path: '/login-callback',
+    builder: (_, __) => const SizedBox.shrink(),
+     ),
+     
       GoRoute(
         path: '/reset-password',
         builder: (_, __) => const ResetPasswordScreen(),
       ),
-      GoRoute(
-        path: '/complete-profile',
-        builder: (_, __) => const CompleteProfileScreen(),
-      ),
+
+
       GoRoute(
         path: '/dashboard',
         builder:
@@ -269,31 +270,51 @@ class _MyAppState extends State<MyApp> {
         },
       ),
     ],
-    redirect: (_, state) {
-      final session = Supabase.instance.client.auth.currentSession;
-      final loc = state.matchedLocation;
 
-      // 👇 TRATAR RAIZ
-  if (loc == '/') {
-    return '/splash';
+  redirect: (_, state) {
+  final session = Supabase.instance.client.auth.currentSession;
+  final loc = state.matchedLocation;
+
+  final isLogin = loc == '/login';
+  final isSplash = loc == '/splash';
+  final isCallback = loc == '/login-callback';
+
+  // Nunca interfere no callback
+  if (isCallback) return null;
+
+  // Se não tem sessão → vai pro login
+  if (session == null) {
+    if (isLogin || isSplash) return null;
+    return '/login';
   }
 
-      final isAuthRoute = loc.startsWith('/login');
-      final isSplash = loc == '/splash';
-      final isReset = loc == '/reset-password';
+  // Se tem sessão e está no login ou splash → vai pro dashboard
+  if (isLogin || isSplash) {
+    return '/dashboard';
+  }
 
-      if (session == null) {
-        // sem sessão: deixa reset passar, demais vão para login
-        if (isReset || isAuthRoute) return null;
-        return '/login';
-      }
+  return null;
+},
+    // 🔥 AQUI ESTÁ A MÁGICA
+  errorBuilder: (_, state) {
+    final uri = state.uri.toString();
 
-      // sessão existe: evita voltar para login/splash
-      if (isSplash || isAuthRoute) return '/dashboard';
-      return null;
-    },
-  );
+    // Se for deep link do Supabase, não quebra o app
+    if (uri.startsWith('com.myyear.myyearmystory://')) {
+      return const SizedBox.shrink();
+    }
 
+    // Qualquer outro erro real
+    return Scaffold(
+      body: Center(
+        child: Text('Page not found: ${state.uri}'),
+      ),
+    );
+  },
+);
+
+
+ 
   StreamSubscription<AuthState>? _authSub;
 
   @override
@@ -317,26 +338,36 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _handleAuthChange(AuthState data) async {
-    final event = data.event;
-    final session = data.session;
+  print("=== AUTH EVENT ===");
+  print("EVENT: ${data.event}");
+  print("SESSION NULL? ${data.session == null}");
+  print("FLOW: ${AppSession.flow}");
+  print("==================");
 
-    switch (event) {
-      case AuthChangeEvent.signedIn:
-        if (session == null) return;
-        AppSession.flow = AppAuthFlow.authenticating;
-        await profileService.ensureProfile();
-        await profileService.load();
-        AppSession.flow = AppAuthFlow.authenticated;
-        final destination =
-            profileService.isProfileComplete
-                ? '/dashboard'
-                : '/complete-profile';
-        _router.go(destination);
-        break;
-      case AuthChangeEvent.signedOut:
-        AppSession.flow = AppAuthFlow.splash;
-        _router.go('/login');
-        break;
+  final event = data.event;
+  final session = data.session;
+
+  // 🔥 ADICIONE ISSO AQUI (não substitui nada)
+  if (event == AuthChangeEvent.signedIn &&
+      AppSession.flow == AppAuthFlow.authenticated) {
+    print("⚠️ Ignorando signedIn duplicado");
+    return;
+  }
+
+  switch (event) {
+        
+       
+       case AuthChangeEvent.signedOut:
+  // Evita logout fantasma logo após login OAuth
+  if (AppSession.flow == AppAuthFlow.authenticating) {
+    return;
+  }
+
+  AppSession.flow = AppAuthFlow.splash;
+  _router.go('/login');
+  break;
+
+
       case AuthChangeEvent.passwordRecovery:
         if (session == null) return;
         AppSession.flow = AppAuthFlow.resettingPassword;

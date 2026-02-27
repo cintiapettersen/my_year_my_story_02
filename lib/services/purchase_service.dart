@@ -27,9 +27,6 @@ class PurchaseService extends ChangeNotifier {
   }
 
   Future<void> _initialize() async {
-    // 🔹 1. Carrega estado salvo localmente
-    final prefs = await SharedPreferences.getInstance();
-    isPremium = prefs.getBool('isPremium') ?? false;
 
     notifyListeners();
 
@@ -94,8 +91,7 @@ class PurchaseService extends ChangeNotifier {
 
     isPremium = true;
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isPremium', true);
+  
 
     final user = Supabase.instance.client.auth.currentUser;
     if (user != null) {

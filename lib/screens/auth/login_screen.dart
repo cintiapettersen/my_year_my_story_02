@@ -11,6 +11,10 @@ import 'package:myyearmystory/screens/auth/forgot_password_screen.dart';
 import 'package:myyearmystory/services/user_service.dart';
 import 'package:myyearmystory/services/google_auth_service.dart';
 import 'package:myyearmystory/services/app_session.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+
+
 
 class LoginScreen extends StatefulWidget {
   final VoidCallback onCreateAccountTap;
@@ -93,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       // ❌ não navega — AuthListener assume
     } else {
-      AppSession.flow = AppAuthFlow.splash;
+    
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -110,35 +114,68 @@ class _LoginScreenState extends State<LoginScreen> {
   // GOOGLE LOGIN
   // =============================================================
   Future<void> _signInWithGoogle() async {
-    // 🔔 Marca fluxo
-    AppSession.flow = AppAuthFlow.authenticating;
+  AppSession.flow = AppAuthFlow.authenticating;
 
-    // ⚠️ NÃO usa loading aqui
-    // OAuth mobile não retorna normalmente
-    await GoogleAuthService.signInWithGoogle();
+  try {
+    final result = await GoogleAuthService.signInWithGoogle();
 
-    // ❌ NÃO setState
-    // ❌ NÃO navega
-    // ❌ NÃO faz nada depois disso
-    //
-    // 👉 AuthListener vai receber signedIn
+    if (result['success'] != true) {
+      AppSession.flow = AppAuthFlow.splash;
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro no login Google: ${result['message']}'),
+          backgroundColor: Colors.red.shade600,
+        ),
+      );
+    }
+  } catch (e) {
+    AppSession.flow = AppAuthFlow.splash;
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Erro no login Google: $e'),
+        backgroundColor: Colors.red.shade600,
+      ),
+    );
   }
+
+  setState(() {});
+}
 
   // =============================================================
   // APPLE LOGIN
   // =============================================================
-  Future<void> _signInWithApple() async {
-    try {
-      AppSession.flow = AppAuthFlow.authenticating;
+Future<void> _signInWithApple() async {
+  AppSession.flow = AppAuthFlow.authenticating;
 
-      await Supabase.instance.client.auth.signInWithOAuth(
-        OAuthProvider.apple,
-        redirectTo: 'com.myyear.myyearmystory://login-callback',
-        authScreenLaunchMode: LaunchMode.externalApplication,
-      );
-    } catch (e) {
+  try {
+    final credential = await SignInWithApple.getAppleIDCredential(
+      scopes: [
+        AppleIDAuthorizationScopes.email,
+        AppleIDAuthorizationScopes.fullName,
+      ],
+    );
+
+    final idToken = credential.identityToken;
+
+    if (idToken == null) {
+      throw Exception('Apple identity token is null');
     }
+
+    await Supabase.instance.client.auth.signInWithIdToken(
+  provider: OAuthProvider.apple,
+  idToken: credential.identityToken!,
+  accessToken: credential.authorizationCode,
+);
+
+  } catch (e) {
+    AppSession.flow = AppAuthFlow.splash;
+    debugPrint('Apple login error: $e');
   }
+
+  setState(() {});
+}
 
   // =============================================================
   // UI

@@ -151,6 +151,10 @@ class UserService {
   // 🚪 LOGOUT
   // -----------------------------------------------------------
   static Future<void> signOut() async {
-    await SupabaseConfig.client.auth.signOut(scope: SignOutScope.local);
-  }
+
+    print('🔥 SIGNOUT FOI CHAMADO AQUI');
+    await SupabaseConfig.client.auth.signOut(
+  scope: SignOutScope.global,
+);
 }
+} 

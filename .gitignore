@@ -22,3 +22,4 @@ androidold/app/build/
 key.properties
 
 .env
+*.dmg

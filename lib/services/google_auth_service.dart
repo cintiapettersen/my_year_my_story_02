@@ -1,4 +1,4 @@
-import 'dart:io' show Platform;
+
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -12,10 +12,11 @@ class GoogleAuthService {
       final redirectUrl = _getRedirectUrl();
 
       await _supabase.auth.signInWithOAuth(
-        OAuthProvider.google,
-        redirectTo: redirectUrl,
-        authScreenLaunchMode: LaunchMode.externalApplication,
-      );
+  OAuthProvider.google,
+  redirectTo: redirectUrl,
+ authScreenLaunchMode: LaunchMode.externalApplication,
+  
+);
 
       return {'success': true};
 

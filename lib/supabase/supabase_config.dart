@@ -33,10 +33,9 @@ class SupabaseConfig {
   anonKey: supabaseAnonKey,
   debug: true,
   authOptions: const FlutterAuthClientOptions(
-    autoRefreshToken: true,
-    detectSessionInUri: true, // ✅ ESSENCIAL
-    authFlowType: AuthFlowType.pkce,
-  ),
+  autoRefreshToken: true,
+  detectSessionInUri: true,
+),
 );
 
 
