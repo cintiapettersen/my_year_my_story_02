@@ -716,7 +716,22 @@
     "delete_success": "Entry deleted successfully!",
     "saved_success": "Entry saved successfully!",
     "no_entries": "No entries yet.\nStart writing something special today!",
-    "no_entries_day": "No entries yet.\nStart writing something special today!"
+    "no_entries_day": "No entries yet.\nStart writing something special today!",
+    "ai_action_button": "Reflect on my text",
+    "ai_min_characters": "Write at least 100 characters to use AI.",
+    "ai_option_reflection_title": "Understand what I'm feeling",
+    "ai_option_reflection_subtitle": "Get a gentle reading and new ideas to keep writing.",
+    "ai_option_writing_title": "Improve my writing",
+    "ai_option_writing_subtitle": "Make your text clearer and more expressive.",
+    "ai_error_generic": "Could not generate a response right now. Please try again.",
+    "ai_cooldown": "Please wait 30 seconds before using AI again.",
+    "ai_premium_daily_limit": "You’ve already used today’s AI for this option. Try the other one or come back tomorrow.",
+    "words_count": "{{0}} words",
+    "more_than_yesterday": "You’ve written more than yesterday",
+    "yesterday_words_count": "Yesterday: {{0}} words",
+    "language_hint": "Tip: it looks like you're writing in {{0}}.",
+    "language_english": "English",
+    "language_portuguese": "Portuguese"
   },
 
   "notifications": {

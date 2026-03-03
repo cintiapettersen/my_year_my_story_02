@@ -1,5 +1,7 @@
 import 'package:myyearmystory/models/diary_entry.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class DiaryService {
   static final _supabase = SupabaseConfig.client;
@@ -130,6 +132,53 @@ class DiaryService {
   }
 }
 
+
+
+//
+// generate Diario
+
+
+static Future<String?> generateDiaryWithAI(String prompt) async {
+  final user = _supabase.auth.currentUser;
+  if (user == null) {
+    throw Exception('Guest cannot use AI diary');
+  }
+
+  final session = _supabase.auth.currentSession;
+  final accessToken = session?.accessToken;
+
+  if (accessToken == null) {
+    throw Exception('No access token found');
+  }
+
+  final url =
+      'https://abrctowsfsgfxdoszmdq.functions.supabase.co/generate-diary';
+
+  final response = await http.post(
+    Uri.parse(url),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $accessToken',
+    },
+    body: jsonEncode({
+      'prompt': prompt,
+    }),
+  );
+
+  print("🔎 STATUS CODE: ${response.statusCode}");
+  print("🔎 BODY: ${response.body}");
+
+  if (response.statusCode != 200) {
+    throw Exception('AI request failed');
+  }
+
+  final data = jsonDecode(response.body);
+
+final text =
+    data['raw']?['candidates']?[0]?['content']?['parts']?[0]?['text'];
+print("🧠 TEXTO EXTRAÍDO: $text");
+return text;
+}
   // ===============================
   // GET ENTRIES BY DATE RANGE
   // ===============================
