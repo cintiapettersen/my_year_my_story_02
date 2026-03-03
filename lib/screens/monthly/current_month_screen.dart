@@ -9,7 +9,6 @@ import 'package:myyearmystory/widgets/shared/main_scaffold.dart';
 import 'package:myyearmystory/widgets/monthly/month_menu.dart';
 import 'package:myyearmystory/widgets/monthly/monthly_goals_widget.dart';
 import 'package:myyearmystory/widgets/monthly/curiosities_widget.dart';
-import 'package:myyearmystory/widgets/monthly/interactive_quiz_widget.dart';
 import 'package:myyearmystory/widgets/monthly/zodiac_widget.dart';
 
 import 'package:myyearmystory/widgets/monthly/skills_development_widget.dart';

@@ -14,7 +14,6 @@ import 'package:myyearmystory/services/app_navigator.dart';
 
 import 'package:myyearmystory/screens/splash/splash_transition.dart';
 import 'package:myyearmystory/screens/auth/auth_page_view.dart';
-import 'package:myyearmystory/screens/auth/complete_profile_screen.dart';
 import 'package:myyearmystory/screens/dashboard/dashboard_screen.dart';
 import 'package:myyearmystory/screens/diary/diary_screen.dart';
 import 'package:myyearmystory/screens/monthly/current_month_screen.dart';

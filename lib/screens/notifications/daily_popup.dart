@@ -16,7 +16,7 @@ class DailyPopup {
 class _DailyPopupContent extends StatefulWidget {
   final Map<String, dynamic> event;
 
-  const _DailyPopupContent({super.key, required this.event});
+  const _DailyPopupContent({required this.event});
 
   @override
   State<_DailyPopupContent> createState() => _DailyPopupContentState();

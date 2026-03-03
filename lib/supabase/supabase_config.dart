@@ -53,7 +53,7 @@ class SupabaseConfig {
         password: password.trim(),
       );
       return response;
-    } on AuthException catch (e) {
+    } on AuthException {
       rethrow;
     } catch (e) {
       rethrow;
@@ -68,7 +68,7 @@ class SupabaseConfig {
         password: password.trim(),
       );
       return response;
-    } on AuthException catch (e) {
+    } on AuthException {
       rethrow;
     } catch (e) {
       rethrow;

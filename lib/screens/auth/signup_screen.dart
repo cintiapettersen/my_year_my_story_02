@@ -2,14 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 
 import 'package:myyearmystory/widgets/auth/custom_text_field.dart';
 import 'package:myyearmystory/widgets/auth/auth_button.dart';
 import 'package:myyearmystory/widgets/auth/divider_with_text.dart';
 import 'package:myyearmystory/services/user_service.dart';
-import 'package:myyearmystory/screens/auth/auth_page_view.dart';
-import 'package:myyearmystory/screens/splash/fade_page_transition.dart';
 import 'package:go_router/go_router.dart';
 
 class SignupScreen extends StatefulWidget {

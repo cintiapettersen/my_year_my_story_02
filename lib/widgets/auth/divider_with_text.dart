@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:myyearmystory/theme.dart';
 
 class DividerWithText extends StatelessWidget {
   final String text;

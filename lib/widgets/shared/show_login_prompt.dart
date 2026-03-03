@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 
-import 'package:myyearmystory/screens/auth/login_screen.dart';
 import 'package:myyearmystory/screens/splash/fade_page_transition.dart';
 import 'package:myyearmystory/screens/auth/auth_page_view.dart';
 import 'package:myyearmystory/services/app_session.dart';

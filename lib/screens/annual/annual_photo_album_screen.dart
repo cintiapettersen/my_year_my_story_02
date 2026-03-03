@@ -72,8 +72,6 @@ class _AnnualPhotoAlbumScreenState extends State<AnnualPhotoAlbumScreen> {
 
       if (!mounted) return;
       setState(() => _photosByMonth = grouped);
-    } catch (e) {
-     
     } finally {
       if (!mounted) return;
       setState(() => _isLoading = false);

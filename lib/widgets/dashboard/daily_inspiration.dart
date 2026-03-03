@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
 
 class DailyInspiration extends StatelessWidget {
   const DailyInspiration({super.key});

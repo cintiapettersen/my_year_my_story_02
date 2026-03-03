@@ -17,7 +17,7 @@ import 'package:flutter/foundation.dart';
 import 'package:myyearmystory/utils/app_theme.dart';
 
 class DailyLuckPage extends StatefulWidget {
-  const DailyLuckPage({Key? key}) : super(key: key);
+  const DailyLuckPage({super.key});
 
   @override
   State<DailyLuckPage> createState() => _DailyLuckPageState();

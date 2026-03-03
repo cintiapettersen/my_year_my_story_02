@@ -11,7 +11,6 @@ import 'package:myyearmystory/screens/diary/diary_screen.dart';
 import 'package:myyearmystory/screens/mood/mood_screen.dart';
 import 'package:myyearmystory/widgets/monthly/monthly_goals_widget.dart';
 import 'package:myyearmystory/widgets/monthly/gratitude_widget.dart';
-import 'package:myyearmystory/screens/monthly/current_month_screen.dart';
 import '../../widgets/monthly/curiosities_widget.dart';
 import 'package:myyearmystory/widgets/monthly/did_you_know_widget.dart';
 
@@ -21,7 +20,6 @@ import 'package:myyearmystory/widgets/shared/app_bottom_menu.dart';
 import 'package:myyearmystory/screens/menus/app_drawer.dart';
 import 'package:myyearmystory/screens/messages/central_messages_page.dart';
 
-import 'package:go_router/go_router.dart';
 import 'package:myyearmystory/screens/notifications/daily_popup.dart';
 import 'package:myyearmystory/services/daily_quote_service.dart';
 import 'package:myyearmystory/utils/month_colors.dart';

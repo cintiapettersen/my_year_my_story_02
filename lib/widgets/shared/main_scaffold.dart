@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:myyearmystory/widgets/shared/app_bottom_menu.dart';
 import 'package:myyearmystory/utils/app_theme.dart';
 
-class MainScaffold extends StatelessWidget {
+class MainScaffold extends StatefulWidget {
   const MainScaffold({
     super.key,
     this.currentIndex,
@@ -16,12 +16,39 @@ class MainScaffold extends StatelessWidget {
   final String? title;
 
   @override
+  State<MainScaffold> createState() => _MainScaffoldState();
+}
+
+class _MainScaffoldState extends State<MainScaffold> {
+  bool _backBusy = false;
+
+  void _requestBackPop(BuildContext context) {
+    if (_backBusy) return;
+    setState(() => _backBusy = true);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        if (!mounted) return;
+        final navigator = Navigator.of(context);
+        if (!navigator.canPop()) return;
+        await navigator.maybePop();
+      } on AssertionError catch (e) {
+        debugPrint('MainScaffold back pop blocked (navigator locked): $e');
+      } catch (e) {
+        debugPrint('MainScaffold back pop failed: $e');
+      } finally {
+        if (mounted) setState(() => _backBusy = false);
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final bool showBottomMenu = currentIndex != null;
+    final bool showBottomMenu = widget.currentIndex != null;
 
     return ValueListenableBuilder<Color>(
       valueListenable: appThemeColor,
-      builder: (_, color, __) {
+      builder: (context, color, child) {
         return Scaffold(
           backgroundColor: const Color(0xFFFCE9EF),
 
@@ -30,7 +57,7 @@ class MainScaffold extends StatelessWidget {
             backgroundColor: color,
             elevation: 0,
             title: Text(
-              title ?? 'My Year, My Story',
+              widget.title ?? 'My Year, My Story',
               style: GoogleFonts.cinzel(
                 textStyle: const TextStyle(
                   color: Colors.white,
@@ -43,16 +70,16 @@ class MainScaffold extends StatelessWidget {
             leading: Navigator.of(context).canPop()
                 ? IconButton(
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: _backBusy ? null : () => _requestBackPop(context),
                   )
                 : null,
           ),
 
-          body: SafeArea(child: body),
+          body: SafeArea(child: widget.body),
 
           bottomNavigationBar: showBottomMenu
               ? AppBottomMenu(
-                  currentIndex: currentIndex,
+                  currentIndex: widget.currentIndex,
                   themeColor: color,
                 )
               : null,

@@ -31,7 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
 
   bool _isLoading = false;
-  bool _isGoogleLoading = false;
+  final bool _isGoogleLoading = false;
   bool _rememberMe = false;
   bool _isLoginSelected = true; // 🔁 toggle restaurado
 

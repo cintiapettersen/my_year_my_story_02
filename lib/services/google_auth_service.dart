@@ -1,7 +1,6 @@
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class GoogleAuthService {
   static final _supabase = Supabase.instance.client;

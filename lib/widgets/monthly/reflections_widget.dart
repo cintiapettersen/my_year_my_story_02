@@ -119,8 +119,6 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
           _controllers[key]!.text = value;
         }
       });
-    } catch (e) {
-     
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

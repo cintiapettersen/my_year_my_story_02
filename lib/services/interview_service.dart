@@ -1,6 +1,4 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
-import 'package:flutter/material.dart';
 
 class InterviewService {
   static final _client = SupabaseConfig.client;

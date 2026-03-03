@@ -27,7 +27,7 @@ class InteractiveQuizStandalone extends StatelessWidget {
       year: year,
       title: "",
       pageLabel: "month_menu.quiz".tr(),
-      labelColor: const Color(0xFFFDD97B7),
+      labelColor: const Color(0xfffdd97b7),
       description: "quiz.description".tr(),
       
       child: MonthlyQuizWidget(

@@ -2,7 +2,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/message_card.dart';
 import '../models/message_category.dart';
 
-import 'package:easy_localization/easy_localization.dart';
 
 class MessageServiceSupabase {
   final SupabaseClient _client;

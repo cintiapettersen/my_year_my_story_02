@@ -288,7 +288,7 @@ Widget build(BuildContext context) {
                       ],
                     ),
                   );
-                }).toList(),
+                }),
 
                 const SizedBox(height: 24),
 

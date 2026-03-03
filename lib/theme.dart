@@ -7,7 +7,6 @@ ThemeData get lightTheme => ThemeData(
 
   scaffoldBackgroundColor: Colors.white,
   canvasColor: Colors.white,
-  dialogBackgroundColor: Colors.white,
 
   appBarTheme: const AppBarTheme(
     backgroundColor: Colors.white,
@@ -18,5 +17,5 @@ ThemeData get lightTheme => ThemeData(
   textTheme: GoogleFonts.interTextTheme().apply(
     bodyColor: Colors.black,
     displayColor: Colors.black,
-  ),
+  ), dialogTheme: DialogThemeData(backgroundColor: Colors.white),
 );

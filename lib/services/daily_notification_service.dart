@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:myyearmystory/services/alerts_history_service.dart';
-import 'package:myyearmystory/services/calendar_event_service.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
 
 /// ===========================================================

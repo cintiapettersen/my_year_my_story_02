@@ -208,8 +208,7 @@ void _confirmDeleteAccount() {
               primary: Color(0xFFE15C8C),
               onPrimary: Colors.white,
               onSurface: Color(0xFF4A266A),
-            ),
-            dialogBackgroundColor: Color(0xFFF9E9FF),
+            ), dialogTheme: DialogThemeData(backgroundColor: Color(0xFFF9E9FF)),
           ),
           child: child!,
         );

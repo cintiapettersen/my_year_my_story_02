@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:easy_localization/easy_localization.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:go_router/go_router.dart';
 
 import 'login_screen.dart';
 import 'signup_screen.dart';
 
-import 'package:myyearmystory/services/app_session.dart';
 
 class AuthPageView extends StatefulWidget {
   const AuthPageView({super.key});

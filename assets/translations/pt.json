@@ -951,6 +951,7 @@
 	    "no_entries": "Sem entradas ainda.\nComece escrevendo algo especial hoje!",
 	    "no_entries_day": "Sem entradas ainda.\nComece escrevendo algo especial hoje!",
 	    "ai_action_button": "Refletir sobre meu texto",
+	    "ai_action_button_read_reflection": "Ler reflexão",
 	    "ai_min_characters": "Escreva pelo menos 100 caracteres para refletir com a IA.",
 	    "ai_option_reflection_title": "Entender melhor o que estou sentindo",
 	    "ai_option_reflection_subtitle": "Receba uma leitura acolhedora e novas palavras para continuar escrevendo.",
@@ -965,6 +966,7 @@
 	    "language_hint": "Dica: parece que você está escrevendo em {{0}}.",
 	    "language_english": "inglês",
 	    "language_portuguese": "português",
+	    "ai_helper_private": "Reflexão automática e privada.",
 	    "guest_save_warning": "Você pode escrever e explorar o diário, mas suas entradas não serão salvas. Faça login para guardar suas memórias.",
 	    "guest_login_action": "Fazer login",
 

@@ -30,6 +30,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
   List<DiaryEntryModel> _entries = [];
 
   bool _isLoading = false;
+  bool _isSavingEntry = false;
   bool _isPremiumUser = false;
   DiaryEntryModel? _editingEntry;
 
@@ -37,6 +38,8 @@ class _DiaryScreenState extends State<DiaryScreen> {
   List<String> _suggestedWords = [];
   bool _isLoadingAi = false;
   StateSetter? _entryModalSetState;
+  String? _reflectionSourceText;
+  bool _isReflectionVisible = false;
 
   Timer? _draftAutosaveTimer;
   String? _detectedTextLanguageCode;
@@ -49,13 +52,21 @@ class _DiaryScreenState extends State<DiaryScreen> {
   }
 
   void _updateEntryModal(VoidCallback fn) {
-    final setter = _entryModalSetState;
-    if (setter != null) {
+  final setter = _entryModalSetState;
+
+  if (setter != null && mounted) {
+    try {
       setter(fn);
       return;
+    } catch (_) {
+      _entryModalSetState = null;
     }
-    if (mounted) setState(fn);
   }
+
+  if (mounted) {
+    setState(fn);
+  }
+}
 
   String? _detectLanguageCode(String text) {
     // Very small heuristic: compares common stop-words.
@@ -149,6 +160,26 @@ class _DiaryScreenState extends State<DiaryScreen> {
     });
   }
 
+  void _handleEntryTextChanged(String value) {
+    _updateDetectedLanguageHint();
+    _scheduleDraftAutosave();
+
+    final trimmed = value.trim();
+    final hadReflection = _reflectionSourceText != null && _aiResponse != null;
+    final reflectionStillMatches =
+        _reflectionSourceText != null && trimmed == _reflectionSourceText;
+
+    // If the user changes the text after generating, allow a new generation.
+    if (hadReflection && !reflectionStillMatches) {
+      _updateEntryModal(() {
+        _aiResponse = null;
+        _suggestedWords = [];
+        _reflectionSourceText = null;
+        _isReflectionVisible = false;
+      });
+    }
+  }
+
   void _updateDetectedLanguageHint() {
     final detected = _detectLanguageCode(_entryController.text);
     _updateEntryModal(() {
@@ -230,11 +261,6 @@ void initState() {
     setState(() {
       _entries = entries;
     });
-  } catch (e) {
-   
-
-   
-
   } finally {
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -561,10 +587,7 @@ void initState() {
                         smartQuotesType: SmartQuotesType.enabled,
                         smartDashesType: SmartDashesType.enabled,
                         maxLines: null,
-                        onChanged: (_) {
-                          _updateDetectedLanguageHint();
-                          _scheduleDraftAutosave();
-                        },
+                        onChanged: _handleEntryTextChanged,
                         decoration: InputDecoration(
                           hintText: 'diary.hint_text'.tr(),
                           filled: true,
@@ -624,10 +647,25 @@ void initState() {
 		                            ],
 		                          ),
 		                          child: ElevatedButton.icon(
-		                            onPressed: _onReflectPressed,
-		                            icon: const Icon(Icons.favorite_rounded,
-		                                size: 18),
-		                            label: Text('diary.ai_action_button'.tr()),
+		                            onPressed: _onReflectionButtonPressed,
+		                            icon: Icon(
+		                              (_reflectionSourceText ==
+		                                          _entryController.text.trim() &&
+		                                      _aiResponse != null)
+		                                  ? (_isReflectionVisible
+		                                      ? Icons.expand_less
+		                                      : Icons.expand_more)
+		                                  : Icons.favorite_rounded,
+		                              size: 18,
+		                            ),
+		                            label: Text(
+		                              (_reflectionSourceText ==
+		                                          _entryController.text.trim() &&
+		                                      _aiResponse != null)
+		                                  ? 'diary.ai_action_button_read_reflection'
+		                                      .tr()
+		                                  : 'diary.ai_action_button'.tr(),
+		                            ),
 		                            style: ElevatedButton.styleFrom(
 		                              backgroundColor: Colors.transparent,
 		                              shadowColor: Colors.transparent,
@@ -643,11 +681,20 @@ void initState() {
 	                                fontWeight: FontWeight.w700,
 	                              ),
 	                            ),
-	                          ),
-	                        ),
-	                      ),
+		                          ),
+		                        ),
+		                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'diary.ai_helper_private'.tr(),
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          height: 1.25,
+                          color: Colors.black.withOpacity(0.55),
+                        ),
+                      ),
 
-                      const SizedBox(height: 12),
+	                      const SizedBox(height: 12),
 
                       /// Loading
                       if (_isLoadingAi)
@@ -659,7 +706,7 @@ void initState() {
                         ),
 
                       /// Resposta da IA
-                      if (_aiResponse != null && !_isLoadingAi)
+                      if (_aiResponse != null && !_isLoadingAi && _isReflectionVisible)
                         Padding(
                           padding: const EdgeInsets.only(top: 8),
                           child: Card(
@@ -750,17 +797,29 @@ void initState() {
 
               /// 🔹 BOTÃO FIXO NA BASE
               ElevatedButton(
-                onPressed: () async {
-                  final user =
-                      SupabaseConfig.client.auth.currentUser;
+                onPressed: _isSavingEntry
+                    ? null
+                    : () async {
+                        if (_isSavingEntry) return;
+                        setState(() => _isSavingEntry = true);
+                        try {
+                          final user =
+                              SupabaseConfig.client.auth.currentUser;
+                          if (user == null) {
+                            showLoginPrompt(context);
+                            return;
+                          }
 
-                  if (user == null) return;
+                          await _saveEntry();
+                          if (!context.mounted) return;
 
-                  await _saveEntry();
-                  if (!mounted) return;
+                          await Navigator.of(context).maybePop();
+                        } finally {
+                          if (mounted) setState(() => _isSavingEntry = false);
+                        }
+                      },
 
-                  Navigator.of(context).pop();
-                },
+
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _userThemeColor,
                   foregroundColor: Colors.white,
@@ -820,159 +879,77 @@ void initState() {
 }
 
 
-  void _onReflectPressed() {
+  Future<void> _onReflectionButtonPressed() async {
     final text = _entryController.text.trim();
     if (text.length < 100) {
       ScaffoldMessenger.of(context).showSnackBar(
-	        SnackBar(
-	          content: Text('diary.ai_min_characters'.tr()),
-	        ),
-	      );
-	      return;
-	    }
-
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => _buildAiOptionsSheet(text),
-    );
-  }
-
-  Widget _buildAiOptionsSheet(String text) {
-    const heartPink = Color(0xFFFF4F8B);
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 44,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.black12,
-                borderRadius: BorderRadius.circular(99),
-              ),
-            ),
-            const SizedBox(height: 14),
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(18),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  _callDiaryAi(text, mode: _DiaryAiMode.reflection);
-                },
-                child: Ink(
-                  decoration: BoxDecoration(
-                    color: heartPink.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: heartPink.withOpacity(0.18)),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(14, 16, 14, 16),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: heartPink.withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(14),
-                            border:
-                                Border.all(color: heartPink.withOpacity(0.22)),
-                          ),
-                          child: Icon(
-                            Icons.favorite_rounded,
-                            color: heartPink,
-                            size: 22,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'diary.ai_option_reflection_title'.tr(),
-                                style: const TextStyle(
-                                  fontSize: 19,
-                                  fontWeight: FontWeight.w800,
-                                  height: 1.18,
-                                ),
-                              ),
-                              const SizedBox(height: 7),
-                              Text(
-                                'diary.ai_option_reflection_subtitle'.tr(),
-                                style: TextStyle(
-                                  fontSize: 13.5,
-                                  height: 1.25,
-                                  color: Colors.black.withOpacity(0.62),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Icon(
-                          Icons.chevron_right,
-                          color: heartPink.withOpacity(0.75),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
+        SnackBar(
+          content: Text('diary.ai_min_characters'.tr()),
         ),
-      ),
-    );
+      );
+      return;
+    }
+
+    final hasReflectionForCurrentText =
+        _reflectionSourceText != null && _reflectionSourceText == text && _aiResponse != null;
+
+    if (hasReflectionForCurrentText) {
+      _updateEntryModal(() {
+        _isReflectionVisible = !_isReflectionVisible;
+      });
+      return;
+    }
+
+    final user = SupabaseConfig.client.auth.currentUser;
+    if (user == null) {
+      showLoginPrompt(context);
+      return;
+    }
+
+    await _callDiaryAi(text);
   }
 
   // DIARIO INTELIGENTE
 
-  Future<void> _callDiaryAi(String text, {required _DiaryAiMode mode}) async {
-    print("🔥 AI CALL INICIADO");
-    _updateEntryModal(() {
-      _isLoadingAi = true;
-      _aiResponse = null;
-      _suggestedWords = [];
-    });
+  Future<void> _callDiaryAi(String text) async {
+  if (text.trim().isEmpty) return;
 
-    final prompt = _buildPrompt(text, mode);
+  print("🔥 AI CALL INICIADO");
 
-    try {
-      final response = await DiaryService.generateDiaryWithAI(prompt);
+  _updateEntryModal(() {
+    _isLoadingAi = true;
+    _aiResponse = null;
+    _suggestedWords = [];
+  });
 
-      if (!mounted) return;
+  try {
+    final prompt = _buildPrompt(text);
 
-      if (response != null) {
-        _handleAiResponse(response);
-      } else {
-        throw Exception("Empty AI response");
-      }
-    } catch (e) {
-      if (!mounted) return;
+    final response =
+        await DiaryService.generateDiaryWithAI(prompt);
 
-	      ScaffoldMessenger.of(context).showSnackBar(
-	        SnackBar(
-	          content: Text('diary.ai_error_generic'.tr()),
-	        ),
-	      );
-	    } finally {
-	      _updateEntryModal(() {
-	        _isLoadingAi = false;
-      });
-    }
-  }
+    if (!mounted) return;
 
-  String _buildPrompt(String text, _DiaryAiMode mode) {
-    if (mode == _DiaryAiMode.reflection) {
-  
+	    _updateEntryModal(() {
+	      _aiResponse = response;
+	      _reflectionSourceText = text.trim();
+	      _isReflectionVisible = true;
+	      _isLoadingAi = false;
+	    });
+	  } catch (e) {
+	    if (!mounted) return;
+
+	    _updateEntryModal(() {
+	      _aiResponse =
+	          "Não foi possível gerar a reflexão agora. Tente novamente em instantes.";
+	      _reflectionSourceText = null;
+	      _isReflectionVisible = false;
+	      _isLoadingAi = false;
+	    });
+	  }
+	}
+
+ String _buildPrompt(String text) {
  return '''Leia o texto do diário abaixo.
 
 Regras:
@@ -983,6 +960,9 @@ Regras:
 - Não use emojis.
 - Evite tom de lição de vida.
 - Termine com UMA pergunta simples que incentive a continuar escrevendo.
+- Prioritize a calm and grounding tone.
+- Aim to leave the reader with a sense of relief or emotional settling.
+- Avoid intensifying emotions.
 
 Estrutura:
 1) Mostre que entendeu o texto.
@@ -996,31 +976,7 @@ Texto:
 $text
 """''';
 }
-return '''Leia o texto do diário abaixo.
 
-Regras:
-- Responda no mesmo idioma do texto.
-- Use linguagem leve e acessível para adolescentes.
-- Responda em até 110 palavras.
-- Não reescreva o texto inteiro.
-- Não use emojis.
-- Não faça validação emocional.
-- Não interprete sentimentos.
-- Não elogie o texto.
-- Vá direto às sugestões técnicas.
-
-Estrutura:
-1) Comece com uma frase neutra introduzindo as sugestões.
-2) Aponte até 2 trechos que podem ficar mais claros.
-3) Sugira versões melhoradas dessas frases completas.
-4) Ofereça 1 ou 2 sinônimos úteis, se fizer sentido.
-5) Se incluir uma palavra mais elaborada, explique brevemente o significado.
-
-Texto:
-"""
-$text
-"""''';
-  }
 
   void _handleAiResponse(String raw) {
     print("🟢 HANDLE AI RESPONSE CHAMADO");
@@ -1076,13 +1032,15 @@ void _openEntryModal({bool isEditing = false}) {
     _selectedMoodIcon = "😊";
     _editingEntry = null;
   }
-  _aiResponse = null;
-  _suggestedWords = [];
-  _isLoadingAi = false;
-  _entryModalSetState = null;
-  _draftAutosaveTimer?.cancel();
-  _draftAutosaveTimer = null;
-  _detectedTextLanguageCode = _detectLanguageCode(_entryController.text);
+	  _aiResponse = null;
+	  _suggestedWords = [];
+	  _isLoadingAi = false;
+	  _reflectionSourceText = null;
+	  _isReflectionVisible = false;
+	  _entryModalSetState = null;
+	  _draftAutosaveTimer?.cancel();
+	  _draftAutosaveTimer = null;
+	  _detectedTextLanguageCode = _detectLanguageCode(_entryController.text);
 
   final future = showModalBottomSheet(
     context: context,
@@ -1201,9 +1159,13 @@ Widget _buildEmptyState() {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () {
-                          Navigator.of(dialogContext).pop();
-                          showLoginPrompt(context);
-                        },
+  Navigator.of(dialogContext).pop();
+
+  Future.microtask(() {
+    if (!mounted) return;
+    showLoginPrompt(context);
+  });
+},
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFCD4B78),
                           padding:
@@ -1230,7 +1192,9 @@ Widget _buildEmptyState() {
                     TextButton(
                       onPressed: () {
                         Navigator.of(dialogContext).pop();
-                        _openEntryModal();
+Future.microtask(() {
+  _openEntryModal();
+});
                       },
                       child: Text(
                         'diary.guest_continue'.tr(),

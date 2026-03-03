@@ -447,7 +447,7 @@ class _CalendarPageState extends State<CalendarPage> {
                   onTap: () => _openDayEntry(e['day']),
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       );
@@ -490,7 +490,7 @@ class _CalendarPageState extends State<CalendarPage> {
                 onTap: () => _openDayEntry(e['day']),
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     );

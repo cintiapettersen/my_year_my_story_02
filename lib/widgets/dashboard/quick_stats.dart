@@ -101,7 +101,7 @@ class _QuickStatsState extends State<QuickStats> {
               child: _buildStatCard(
                 icon: Icons.emoji_emotions,
                 title: 'Humor Médio',
-                value: '$_moodAverage',
+                value: _moodAverage,
                 subtitle: 'Geral',
                 color: Colors.pink,
               ),

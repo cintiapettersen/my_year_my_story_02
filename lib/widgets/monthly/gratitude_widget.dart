@@ -62,7 +62,6 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
   // ❤️ animação do coração
   void _showHeartAnimation() {
     final overlay = Overlay.of(context);
-    if (overlay == null) return;
 
     final randomX = MediaQuery.of(context).size.width *
         (0.2 + (0.6 * (DateTime.now().millisecond % 100) / 100));

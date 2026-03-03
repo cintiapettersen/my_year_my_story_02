@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:myyearmystory/theme.dart';
 import 'package:myyearmystory/widgets/auth/custom_text_field.dart';
 import 'package:myyearmystory/widgets/auth/auth_button.dart';
 import 'package:myyearmystory/services/user_service.dart';

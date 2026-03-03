@@ -270,7 +270,7 @@ Widget build(BuildContext context) {
                     const SizedBox(height: 28),
                   ],
                 );
-              }).toList(),
+              }),
 
               // 🔹 BOTÃO REFRESH
               GestureDetector(

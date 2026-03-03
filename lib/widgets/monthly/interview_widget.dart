@@ -34,7 +34,7 @@ class _InterviewScreenState extends State<InterviewScreen>
   bool _isSaving = false;
 
   bool _isPremiumUser = false;
-  bool _showAllQuestions = false;
+  final bool _showAllQuestions = false;
 
   final List<TextEditingController> _controllers = [];
   final TextEditingController _nameController = TextEditingController();

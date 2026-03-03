@@ -1,4 +1,3 @@
-import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:myyearmystory/models/memory_media_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

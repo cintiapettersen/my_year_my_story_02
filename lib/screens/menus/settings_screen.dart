@@ -161,7 +161,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               : 'Fazer login automático ao abrir o app'),
           value: _rememberMeEnabled,
           onChanged: (value) => _toggleRememberMe(value),
-          activeColor: Theme.of(context).primaryColor,
+          activeThumbColor: Theme.of(context).primaryColor,
           secondary: Icon(
             _rememberMeEnabled ? Icons.login : Icons.logout,
             color: _rememberMeEnabled ? Theme.of(context).primaryColor : Colors.grey,
@@ -315,7 +315,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       subtitle: Text(subtitle),
       value: value,
       onChanged: onChanged,
-      activeColor: Theme.of(context).primaryColor,
+      activeThumbColor: Theme.of(context).primaryColor,
       secondary: Icon(
         value ? Icons.notifications_active : Icons.notifications_off,
         color: onChanged != null 

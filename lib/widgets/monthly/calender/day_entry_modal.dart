@@ -216,7 +216,7 @@ Row(
 
                   // HOUR
                   DropdownButtonFormField<int>(
-                    value: _hour,
+                    initialValue: _hour,
                     dropdownColor: Colors.white,
                     decoration: InputDecoration(
                       filled: true,
@@ -288,7 +288,7 @@ Row(
 
                   // REPEAT
                   DropdownButtonFormField<String>(
-                    value: _repeatType,
+                    initialValue: _repeatType,
                     dropdownColor: Colors.white,
                     decoration: InputDecoration(
                       filled: true,
