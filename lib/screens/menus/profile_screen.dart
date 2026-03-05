@@ -500,13 +500,17 @@ const SizedBox(height: 80),
     VoidCallback? onTap,
     List<TextInputFormatter>? inputFormatters,
     TextInputType keyboardType = TextInputType.text,
-  }) {
-    return TextField(
-      controller: controller,
-      readOnly: readOnly,
-      onTap: onTap,
-      keyboardType: keyboardType,
-      inputFormatters: inputFormatters,
+	  }) {
+	    return TextField(
+	      controller: controller,
+	      autocorrect: true,
+	      enableSuggestions: true,
+	      smartQuotesType: SmartQuotesType.enabled,
+	      smartDashesType: SmartDashesType.enabled,
+	      readOnly: readOnly,
+	      onTap: onTap,
+	      keyboardType: keyboardType,
+	      inputFormatters: inputFormatters,
       cursorColor: const Color(0xFF4A266A),
       style: const TextStyle(
         color: Color(0xFF4A266A),

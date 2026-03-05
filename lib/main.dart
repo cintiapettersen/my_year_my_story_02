@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -278,22 +279,28 @@ class _MyAppState extends State<MyApp> {
   final isSplash = loc == '/splash';
   final isCallback = loc == '/login-callback';
 
-  // Nunca interfere no callback
+  // nunca interfere no callback
   if (isCallback) return null;
 
-  // Se não tem sessão → vai pro login
+  // 🟢 PERMITE CONVIDADO
+  if (AppSession.flow == AppAuthFlow.guest) {
+    return null;
+  }
+
+  // sem sessão → login
   if (session == null) {
     if (isLogin || isSplash) return null;
     return '/login';
   }
 
-  // Se tem sessão e está no login ou splash → vai pro dashboard
+  // com sessão → dashboard
   if (isLogin || isSplash) {
     return '/dashboard';
   }
 
   return null;
 },
+
     // 🔥 AQUI ESTÁ A MÁGICA
   errorBuilder: (_, state) {
     final uri = state.uri.toString();
@@ -337,11 +344,13 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _handleAuthChange(AuthState data) async {
-  print("=== AUTH EVENT ===");
-  print("EVENT: ${data.event}");
-  print("SESSION NULL? ${data.session == null}");
-  print("FLOW: ${AppSession.flow}");
-  print("==================");
+  if (kDebugMode) {
+    debugPrint("=== AUTH EVENT ===");
+    debugPrint("EVENT: ${data.event}");
+    debugPrint("SESSION NULL? ${data.session == null}");
+    debugPrint("FLOW: ${AppSession.flow}");
+    debugPrint("==================");
+  }
 
   final event = data.event;
   final session = data.session;
@@ -349,7 +358,7 @@ class _MyAppState extends State<MyApp> {
   // 🔥 ADICIONE ISSO AQUI (não substitui nada)
   if (event == AuthChangeEvent.signedIn &&
       AppSession.flow == AppAuthFlow.authenticated) {
-    print("⚠️ Ignorando signedIn duplicado");
+    if (kDebugMode) debugPrint("⚠️ Ignorando signedIn duplicado");
     return;
   }
 

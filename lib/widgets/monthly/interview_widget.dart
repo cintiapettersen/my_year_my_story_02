@@ -361,13 +361,17 @@ class _InterviewScreenState extends State<InterviewScreen>
                   ),
                 ),
                 const SizedBox(height: 10),
-                TextField(
-                  controller: _controllers[index],
-                  maxLines: null,
-                  decoration: InputDecoration(
-                    hintText: "interview.answer_hint".tr(),
-                    filled: true,
-                    fillColor: Colors.white,
+	                TextField(
+	                  controller: _controllers[index],
+	                  autocorrect: true,
+	                  enableSuggestions: true,
+	                  smartQuotesType: SmartQuotesType.enabled,
+	                  smartDashesType: SmartDashesType.enabled,
+	                  maxLines: null,
+	                  decoration: InputDecoration(
+	                    hintText: "interview.answer_hint".tr(),
+	                    filled: true,
+	                    fillColor: Colors.white,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -412,14 +416,18 @@ class _InterviewScreenState extends State<InterviewScreen>
   Widget _buildFieldBase({
     required TextEditingController controller,
     required String hint,
-  }) =>
-      TextField(
-        controller: controller,
-        decoration: InputDecoration(
-          hintText: hint,
-          filled: true,
-          fillColor: Colors.white,
-          border:
+	  }) =>
+	      TextField(
+	        controller: controller,
+	        autocorrect: true,
+	        enableSuggestions: true,
+	        smartQuotesType: SmartQuotesType.enabled,
+	        smartDashesType: SmartDashesType.enabled,
+	        decoration: InputDecoration(
+	          hintText: hint,
+	          filled: true,
+	          fillColor: Colors.white,
+	          border:
               OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );

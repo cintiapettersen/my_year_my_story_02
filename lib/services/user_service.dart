@@ -2,6 +2,7 @@ import 'package:myyearmystory/services/secure_storage_service.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 
 class UserService {
   // -----------------------------------------------------------
@@ -152,7 +153,7 @@ class UserService {
   // -----------------------------------------------------------
   static Future<void> signOut() async {
 
-    print('🔥 SIGNOUT FOI CHAMADO AQUI');
+    if (kDebugMode) debugPrint('🔥 SIGNOUT FOI CHAMADO AQUI');
     await SupabaseConfig.client.auth.signOut(
   scope: SignOutScope.global,
 );

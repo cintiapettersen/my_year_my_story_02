@@ -22,23 +22,13 @@ final reflectionGeminiModel = GenerativeModel(
 
 
 Future<String> generateDiaryResponse(String prompt) async {
-  print("==== GEMINI DIARY CALL ====");
-  print("Prompt enviado:");
-  print(prompt);
-
   try {
     final response = await reflectionGeminiModel.generateContent(
       [Content.text(prompt)],
     );
 
-    print("Resposta bruta:");
-    print(response.text);
-
     return response.text?.trim() ?? '';
-  } catch (e, stack) {
-    print("ERRO GEMINI:");
-    print(e);
-    print(stack);
+  } catch (e) {
     rethrow;
   }
 

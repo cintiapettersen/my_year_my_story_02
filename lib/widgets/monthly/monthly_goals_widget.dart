@@ -236,19 +236,19 @@ final TextStyle tabTextStyle = const TextStyle(
   // color NÃO entra aqui porque muda conforme ativo/inativo
 );
 
-Widget _tabs() {
-  Widget tab(String text, int index) {
-    final active = _currentTab == index;
-    const accent = _MonthlyGoalsWidgetState._completedColor;
+	Widget _tabs() {
+	  Widget tab(String text, int index) {
+	    final active = _currentTab == index;
+	    const accent = _MonthlyGoalsWidgetState._completedColor;
 
-    return GestureDetector(
-      onTap: () => setState(() => _currentTab = index),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-        decoration: BoxDecoration(
-          color: active ? accent : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
+	    return GestureDetector(
+	      onTap: () => setState(() => _currentTab = index),
+	      child: Container(
+	        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+	        decoration: BoxDecoration(
+	          color: active ? accent : Colors.transparent,
+	          borderRadius: BorderRadius.circular(12),
+	          border: Border.all(
             color: active
                 ? accent
                 : const Color(0xFFE25BA6),
@@ -261,26 +261,45 @@ Widget _tabs() {
                     offset: const Offset(0, 4),
                   ),
                 ]
-              : [],
-        ),
-        child: Text(
-          text,
-          style: tabTextStyle.copyWith(
-            color: active ? Colors.white : const Color(0xFFE25BA6),
-          ),
-        ),
-      ),
-    );
-  }
+	              : [],
+	        ),
+	        child: Center(
+	          child: Text(
+	            text,
+	            maxLines: 1,
+	            overflow: TextOverflow.ellipsis,
+	            softWrap: false,
+	            style: tabTextStyle.copyWith(
+	              color: active ? Colors.white : const Color(0xFFE25BA6),
+	            ),
+	          ),
+	        ),
+	      ),
+	    );
+	  }
 
-  return Row(
-    children: [
-      tab('monthly_goals.tab_month'.tr(), 0),
-      const SizedBox(width: 9),
-      tab('monthly_goals.tab_day'.tr(), 1),
-    ],
-  );
-}
+	  return LayoutBuilder(
+	    builder: (context, constraints) {
+	      final isNarrow = constraints.maxWidth < 340;
+	      return Row(
+	        children: [
+	          Expanded(
+	            child: Padding(
+	              padding: EdgeInsets.only(right: isNarrow ? 6 : 9),
+	              child: tab('monthly_goals.tab_month'.tr(), 0),
+	            ),
+	          ),
+	          Expanded(
+	            child: Padding(
+	              padding: EdgeInsets.only(left: isNarrow ? 6 : 0),
+	              child: tab('monthly_goals.tab_day'.tr(), 1),
+	            ),
+	          ),
+	        ],
+	      );
+	    },
+	  );
+	}
 
   // --------------------------------------------------
   // 📌 CONTEÚDO — METAS DO MÊS
@@ -294,12 +313,16 @@ Widget _tabs() {
       Row(
         children: [
           Expanded(
-            child: TextField(
-              controller: _monthlyController,
-              decoration: InputDecoration(
-                hintText: 'monthly_goals.add_monthly'.tr(),
-                filled: true,
-                fillColor: Colors.white,
+	            child: TextField(
+	              controller: _monthlyController,
+	              autocorrect: true,
+	              enableSuggestions: true,
+	              smartQuotesType: SmartQuotesType.enabled,
+	              smartDashesType: SmartDashesType.enabled,
+	              decoration: InputDecoration(
+	                hintText: 'monthly_goals.add_monthly'.tr(),
+	                filled: true,
+	                fillColor: Colors.white,
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide:
@@ -414,12 +437,16 @@ Widget _tabs() {
         Row(
           children: [
             Expanded(
-              child: TextField(
-                controller: _dailyController,
-                decoration: InputDecoration(
-                  hintText: 'monthly_goals.add_daily'.tr(),
-                  filled: true,
-                  fillColor: Colors.white,
+	              child: TextField(
+	                controller: _dailyController,
+	                autocorrect: true,
+	                enableSuggestions: true,
+	                smartQuotesType: SmartQuotesType.enabled,
+	                smartDashesType: SmartDashesType.enabled,
+	                decoration: InputDecoration(
+	                  hintText: 'monthly_goals.add_daily'.tr(),
+	                  filled: true,
+	                  fillColor: Colors.white,
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide:

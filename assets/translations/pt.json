@@ -963,7 +963,7 @@
 	    "words_count": "{{0}} palavras",
 	    "more_than_yesterday": "Você já escreveu mais que ontem",
 	    "yesterday_words_count": "Ontem: {{0}} palavras",
-	    "language_hint": "Dica: parece que você está escrevendo em {{0}}.",
+	    "language_hint": "Dica: parece que você está escrevendo em {}.",
 	    "language_english": "inglês",
 	    "language_portuguese": "português",
 	    "ai_helper_private": "Reflexão automática e privada.",

@@ -262,6 +262,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           controller: _emailController,
                           labelText: 'signup.email'.tr(),
                           prefixIcon: Icons.email_outlined,
+                          keyboardType: TextInputType.emailAddress,
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
                               return 'signup.error_email_required'.tr();

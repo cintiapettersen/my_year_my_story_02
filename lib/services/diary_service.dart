@@ -165,20 +165,16 @@ static Future<String?> generateDiaryWithAI(String prompt) async {
     }),
   );
 
-  print("🔎 STATUS CODE: ${response.statusCode}");
-  print("🔎 BODY: ${response.body}");
-
-  if (response.statusCode != 200) {
-    throw Exception('AI request failed');
-  }
+	  if (response.statusCode != 200) {
+	    throw Exception('AI request failed');
+	  }
 
   final data = jsonDecode(response.body);
 
-final text =
-    data['raw']?['candidates']?[0]?['content']?['parts']?[0]?['text'];
-print("🧠 TEXTO EXTRAÍDO: $text");
-return text;
-}
+	final text =
+	    data['raw']?['candidates']?[0]?['content']?['parts']?[0]?['text'];
+	return text;
+	}
   // ===============================
   // GET ENTRIES BY DATE RANGE
   // ===============================

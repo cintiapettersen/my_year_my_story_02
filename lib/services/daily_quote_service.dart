@@ -1,13 +1,22 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:myyearmystory/services/app_session.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DailyQuoteService {
   final supabase = Supabase.instance.client;
 
   Future<Map<String, dynamic>?> getRandomQuote(String lang) async {
-    // 🛑 BLOQUEIO CRÍTICO — evita JWT expirado
-    if (!AppSession.isAuthenticated) {
-      return null; // ou {"text": "..."} se quiser fallback
+    final user = supabase.auth.currentUser;
+    if (user == null) return null;
+
+    final prefs = await SharedPreferences.getInstance();
+    final todayKey = _dateKey(DateTime.now());
+    final cacheDateKey = 'daily_quote_${lang}_date';
+    final cacheTextKey = 'daily_quote_${lang}_text';
+
+    final cachedDate = prefs.getString(cacheDateKey);
+    final cachedText = prefs.getString(cacheTextKey)?.trim();
+    if (cachedDate == todayKey && cachedText != null && cachedText.isNotEmpty) {
+      return {'text': cachedText};
     }
 
     try {
@@ -18,27 +27,35 @@ class DailyQuoteService {
           .limit(200);
 
       if (response.isEmpty) {
-        return null;
+        return cachedText != null && cachedText.isNotEmpty ? {'text': cachedText} : null;
       }
 
       response.shuffle();
       final quote = response.first;
 
+      String? resolved;
       if (lang == "en") {
         final textEn = quote["text_en"]?.toString().trim();
         if (textEn != null && textEn.isNotEmpty) {
-          return {"text": textEn};
+          resolved = textEn;
         }
       }
 
-      final textPt = quote["text"]?.toString().trim();
-      if (textPt != null && textPt.isNotEmpty) {
-        return {"text": textPt};
+      resolved ??= quote["text"]?.toString().trim();
+
+      resolved = resolved?.trim();
+      if (resolved != null && resolved.isNotEmpty) {
+        await prefs.setString(cacheDateKey, todayKey);
+        await prefs.setString(cacheTextKey, resolved);
+        return {'text': resolved};
       }
 
-      return {"text": ""};
+      return cachedText != null && cachedText.isNotEmpty ? {'text': cachedText} : {'text': ''};
     } catch (e) {
-      return null;
+      return cachedText != null && cachedText.isNotEmpty ? {'text': cachedText} : null;
     }
   }
+
+  String _dateKey(DateTime dt) =>
+      '${dt.year.toString().padLeft(4, '0')}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
 }

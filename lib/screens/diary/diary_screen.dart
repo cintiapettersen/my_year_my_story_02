@@ -576,14 +576,14 @@ void initState() {
 
                       const SizedBox(height: 20),
 
-                      /// TextField
-                      TextField(
-                        controller: _entryController,
-                        keyboardType: TextInputType.multiline,
-                        textInputAction: TextInputAction.newline,
-                        textCapitalization: TextCapitalization.sentences,
-                        enableSuggestions: true,
-                        autocorrect: true,
+	                      /// TextField
+	                      TextField(
+	                        controller: _entryController,
+	                        keyboardType: TextInputType.multiline,
+	                        textInputAction: TextInputAction.newline,
+	                        textCapitalization: TextCapitalization.sentences,
+	                        enableSuggestions: true,
+	                        autocorrect: true,
                         smartQuotesType: SmartQuotesType.enabled,
                         smartDashesType: SmartDashesType.enabled,
                         maxLines: null,
@@ -911,10 +911,8 @@ void initState() {
 
   // DIARIO INTELIGENTE
 
-  Future<void> _callDiaryAi(String text) async {
-  if (text.trim().isEmpty) return;
-
-  print("🔥 AI CALL INICIADO");
+	  Future<void> _callDiaryAi(String text) async {
+	  if (text.trim().isEmpty) return;
 
   _updateEntryModal(() {
     _isLoadingAi = true;
@@ -922,8 +920,13 @@ void initState() {
     _suggestedWords = [];
   });
 
-  try {
-    final prompt = _buildPrompt(text);
+	  try {
+	    final detectedLanguageCode =
+	        _detectLanguageCode(text) ?? context.locale.languageCode;
+	    final prompt = _buildPrompt(
+	      text,
+	      languageCode: detectedLanguageCode,
+	    );
 
     final response =
         await DiaryService.generateDiaryWithAI(prompt);
@@ -949,40 +952,72 @@ void initState() {
 	  }
 	}
 
- String _buildPrompt(String text) {
- return '''Leia o texto do diário abaixo.
+ String _buildPrompt(
+   String text, {
+   required String languageCode,
+ }) {
+   final normalized = languageCode.trim().toLowerCase();
+   if (normalized.startsWith('en')) {
+     return '''Read the journal entry below.
 
-Regras:
-- Responda no mesmo idioma do texto.
-- Use linguagem leve e acessível para adolescentes.
-- Responda em até 110 palavras.
-- Não faça diagnóstico ou aconselhamento clínico.
-- Não use emojis.
-- Evite tom de lição de vida.
-- Termine com UMA pergunta simples que incentive a continuar escrevendo.
-- Prioritize a calm and grounding tone.
-- Aim to leave the reader with a sense of relief or emotional settling.
+Rules:
+- Reply in the same language as the text (English).
+- Use light and accessible language for teenagers.
+- Keep it under 110 words.
+- Do not give clinical advice or diagnoses.
+- Do not use emojis.
+- Focus more on the inner experience than on the narrative.
+- Avoid dramatic or intense language.
+- End with ONE simple question that encourages continued writing.
+- Prioritize a calm, supportive, and gentle tone.
+- Aim to leave a sense of relief or emotional settling.
 - Avoid intensifying emotions.
 
-Estrutura:
-1) Mostre que entendeu o texto.
-2) Nomeie o sentimento principal.
-3) Valide de forma gentil.
-4) Sugira uma ideia leve para continuar escrevendo.
-5) Finalize com uma pergunta curta.
+Structure:
 
-Texto:
+1) Gently validate.
+2) Suggest a light idea to continue writing.
+3) Finish with a short, reflective question that encourages self-awareness (avoid questions about what happened).
+
+Text:
 """
 $text
 """''';
-}
+   }
+
+	 return '''Leia o texto do diário abaixo.
+
+	Regras:
+	- Responda no mesmo idioma do texto (português).
+	- Use linguagem leve e acessível para adolescentes.
+	- Responda em até 110 palavras.
+	- Não faça diagnóstico ou aconselhamento clínico.
+	- Não use emojis.
+	- Foque mais na experiência interna do que na narrativa.
+  - Evite linguagem dramática ou intensa.
+	- Termine com UMA pergunta simples que incentive a continuar escrevendo.
+	- Priorize um tom calmo, acolhedor e leve.
+	- Busque deixar uma sensação de alívio/assentamento emocional.
+	- Evite intensificar emoções.
+
+	Estrutura:
+	
+	1) Valide de forma gentil.
+	2) Sugira uma ideia leve para continuar escrevendo.
+	3) Finalize com uma pergunta curta e reflexiva que estimule autoconhecimento.(evite perguntas sobre o que aconteceu).
 
 
-  void _handleAiResponse(String raw) {
-    print("🟢 HANDLE AI RESPONSE CHAMADO");
-    final parts = raw.split('PALAVRAS:');
-    final body = parts.first.trim();
-    final wordsSection = parts.length > 1 ? parts[1] : '';
+	Texto:
+	"""
+	$text
+	"""''';
+	}
+
+
+	  void _handleAiResponse(String raw) {
+	    final parts = raw.split('PALAVRAS:');
+	    final body = parts.first.trim();
+	    final wordsSection = parts.length > 1 ? parts[1] : '';
 
     final extracted = wordsSection
         .split(RegExp(r'[\n\r]+'))

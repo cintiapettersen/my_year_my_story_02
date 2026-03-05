@@ -253,15 +253,19 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
                     ),
                   ),
 
-                  const SizedBox(height: 12),
+	                  const SizedBox(height: 12),
 
-                  TextField(
-                    controller: controller,
-                    maxLines: 4,
-                    readOnly: !_isPremiumUser && _freeSaveCount >= 1,
-                    onTap: () {
-                      if (!_isPremiumUser && _freeSaveCount >= 1) {
-                        showPremiumPopup(context);
+	                  TextField(
+	                    controller: controller,
+	                    autocorrect: true,
+	                    enableSuggestions: true,
+	                    smartQuotesType: SmartQuotesType.enabled,
+	                    smartDashesType: SmartDashesType.enabled,
+	                    maxLines: 4,
+	                    readOnly: !_isPremiumUser && _freeSaveCount >= 1,
+	                    onTap: () {
+	                      if (!_isPremiumUser && _freeSaveCount >= 1) {
+	                        showPremiumPopup(context);
                       }
                     },
                     decoration: InputDecoration(

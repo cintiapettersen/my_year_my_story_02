@@ -274,13 +274,17 @@ void _requireLogin() {
 
             const SizedBox(height: 16),
 
-            TextField(
-              controller: controller, // ✅ agora está sendo usado
-              maxLines: 4,
-              decoration: InputDecoration(
-                hintText: 'photos.comment_hint'.tr(),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+	            TextField(
+	              controller: controller, // ✅ agora está sendo usado
+	              autocorrect: true,
+	              enableSuggestions: true,
+	              smartQuotesType: SmartQuotesType.enabled,
+	              smartDashesType: SmartDashesType.enabled,
+	              maxLines: 4,
+	              decoration: InputDecoration(
+	                hintText: 'photos.comment_hint'.tr(),
+	                border: OutlineInputBorder(
+	                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
             ),

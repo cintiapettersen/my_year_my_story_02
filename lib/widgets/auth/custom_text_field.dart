@@ -6,6 +6,10 @@ class CustomTextField extends StatefulWidget {
   final IconData prefixIcon;
   final bool obscureText;
   final TextInputType? keyboardType;
+  final bool? autocorrect;
+  final bool? enableSuggestions;
+  final TextCapitalization? textCapitalization;
+  final TextInputAction? textInputAction;
   final String? Function(String?)? validator;
   final bool enabled;
 
@@ -16,6 +20,10 @@ class CustomTextField extends StatefulWidget {
     required this.prefixIcon,
     this.obscureText = false,
     this.keyboardType,
+    this.autocorrect,
+    this.enableSuggestions,
+    this.textCapitalization,
+    this.textInputAction,
     this.validator,
     this.enabled = true,
   });
@@ -36,6 +44,14 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final isEmail = widget.keyboardType == TextInputType.emailAddress;
+    final effectiveAutocorrect =
+        widget.autocorrect ?? (!widget.obscureText && !isEmail);
+    final effectiveSuggestions =
+        widget.enableSuggestions ?? (!widget.obscureText && !isEmail);
+    final effectiveCapitalization = widget.textCapitalization ??
+        (isEmail ? TextCapitalization.none : TextCapitalization.sentences);
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -65,6 +81,16 @@ class _CustomTextFieldState extends State<CustomTextField> {
           controller: widget.controller,
           obscureText: widget.obscureText && _isObscured,
           keyboardType: widget.keyboardType,
+          textInputAction: widget.textInputAction,
+          textCapitalization: effectiveCapitalization,
+          autocorrect: effectiveAutocorrect,
+          enableSuggestions: effectiveSuggestions,
+          smartQuotesType: effectiveSuggestions
+              ? SmartQuotesType.enabled
+              : SmartQuotesType.disabled,
+          smartDashesType: effectiveSuggestions
+              ? SmartDashesType.enabled
+              : SmartDashesType.disabled,
           validator: widget.validator,
           enabled: widget.enabled,
           style: Theme.of(context).textTheme.bodyMedium!.copyWith(

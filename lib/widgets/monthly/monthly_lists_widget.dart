@@ -368,12 +368,16 @@ void showOfflineSaveWarning(BuildContext context) {
                 duration: const Duration(milliseconds: 240),
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 12),
-                  child: TextField(
-                    controller: controller,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      hintText: "${"lists.item".tr()} ${index + 1}",
+	                  child: TextField(
+	                    controller: controller,
+	                    autocorrect: true,
+	                    enableSuggestions: true,
+	                    smartQuotesType: SmartQuotesType.enabled,
+	                    smartDashesType: SmartDashesType.enabled,
+	                    decoration: InputDecoration(
+	                      filled: true,
+	                      fillColor: Colors.white,
+	                      hintText: "${"lists.item".tr()} ${index + 1}",
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 14),
                       enabledBorder: OutlineInputBorder(

@@ -216,13 +216,17 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
           children: [
             Row(
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    style: const TextStyle(color: Colors.black),
-                    decoration: InputDecoration(
-                      hintText: 'gratitude.hint'.tr(),
-                      hintStyle: const TextStyle(color: Colors.black54),
+	                Expanded(
+	                  child: TextField(
+	                    controller: _controller,
+	                    autocorrect: true,
+	                    enableSuggestions: true,
+	                    smartQuotesType: SmartQuotesType.enabled,
+	                    smartDashesType: SmartDashesType.enabled,
+	                    style: const TextStyle(color: Colors.black),
+	                    decoration: InputDecoration(
+	                      hintText: 'gratitude.hint'.tr(),
+	                      hintStyle: const TextStyle(color: Colors.black54),
                       filled: true,
                       fillColor: Colors.white,
                       contentPadding: const EdgeInsets.symmetric(

@@ -369,9 +369,9 @@ return Center(
             child: Container(
   margin: const EdgeInsets.only(right: 10),
   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-  decoration: BoxDecoration(
-    color: isActive ? color : color.withOpacity(0.25),
-    borderRadius: BorderRadius.circular(20),
+	  decoration: BoxDecoration(
+	    color: isActive ? color : color.withOpacity(0.25),
+	    borderRadius: BorderRadius.circular(20),
     boxShadow: isActive
         ? [
             BoxShadow(
@@ -381,20 +381,36 @@ return Center(
             ),
           ]
         : [],
-  ),
-  child: Text(
-    tr(_labelKeyForType(type)),
-    style: GoogleFonts.robotoMono(
-      fontSize: 12,
-      color: Colors.white,
-      fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-    ),
-  ),
-)
+	  ),
+	  child: Text(
+	    _trCardTypeLabel(type),
+	    style: GoogleFonts.robotoMono(
+	      fontSize: 12,
+	      color: Colors.white,
+	      fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+	    ),
+	  ),
+	)
 );
         }).toList(),
       ),
     );
+  }
+
+  String _trCardTypeLabel(MessageType type) {
+    final key = _labelKeyForType(type);
+    final translated = tr(key);
+    if (translated != key && translated.trim().isNotEmpty) return translated;
+
+    final lang = context.locale.languageCode;
+    switch (type) {
+      case MessageType.weeklyReflection:
+        return lang == 'en' ? 'Reflection' : 'Reflexão';
+      case MessageType.moodInsight:
+        return lang == 'en' ? 'Emotions' : 'Emoções';
+      case MessageType.personality:
+        return lang == 'en' ? 'Patterns' : 'Padrões';
+    }
   }
 
 
@@ -454,7 +470,7 @@ Widget _buildMainCard() {
             children: [
               /// 🏷️ TÍTULO
               Text(
-                tr(_titleKeyForType(_activeType)),
+                _trCardTypeTitle(_activeType),
                 style: GoogleFonts.robotoMono(
                   fontSize: 13,
                   letterSpacing: 2,
@@ -483,7 +499,7 @@ Widget _buildMainCard() {
 
               const SizedBox(height: 24),
 
-              /// 🔘 AÇÕES
+	                  /// 🔘 AÇÕES
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -533,7 +549,23 @@ Widget _buildMainCard() {
       ),
     ),
   );
-}
+	}
+
+  String _trCardTypeTitle(MessageType type) {
+    final key = _titleKeyForType(type);
+    final translated = tr(key);
+    if (translated != key && translated.trim().isNotEmpty) return translated;
+
+    final lang = context.locale.languageCode;
+    switch (type) {
+      case MessageType.weeklyReflection:
+        return lang == 'en' ? 'WEEKLY REFLECTION' : 'REFLEXÃO DA SEMANA';
+      case MessageType.moodInsight:
+        return lang == 'en' ? 'FEELINGS & EXPRESSIONS' : 'SENTIMENTOS E EXPRESSÕES';
+      case MessageType.personality:
+        return lang == 'en' ? 'YOU, NOW' : 'VOCÊ, AGORA';
+    }
+  }
 
   Color _colorForType(MessageType type) {
     switch (type) {

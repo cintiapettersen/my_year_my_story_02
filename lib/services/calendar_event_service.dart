@@ -192,75 +192,29 @@ class CalendarEventService {
 
   
   /// ---------------------------------------------------------
-/// 5) EVENTS FOR MONTH (ORDERED + REPEAT EXPANSION)
+/// 5) EVENTS FOR MONTH (ORDERED)
+///
+/// NOTE:
+/// - We intentionally do NOT expand repeating alerts (daily/weekly/etc.) into
+///   synthetic per-day entries. The calendar UI should mark only the day where
+///   the event was created; otherwise "daily" would paint the whole month.
 /// ---------------------------------------------------------
-static Future<List<Map<String, dynamic>>> getEventsForMonth({
-  required String userId,
-  required int year,
-  required int month,
-}) async {
-  final res = await SupabaseConfig.client
-      .from('calendar_events')
-      .select()
-      .eq('user_id', userId)
-      .eq('year', year)
-      .eq('month', month)
-      .order('day')
-      .order('hour');
+	static Future<List<Map<String, dynamic>>> getEventsForMonth({
+	  required String userId,
+	  required int year,
+	  required int month,
+	}) async {
+	  final res = await SupabaseConfig.client
+	      .from('calendar_events')
+	      .select()
+	      .eq('user_id', userId)
+	      .eq('year', year)
+	      .eq('month', month)
+	      .order('day')
+	      .order('hour');
 
-  final List<Map<String, dynamic>> baseEvents =
-      List<Map<String, dynamic>>.from(res);
-
-  final List<Map<String, dynamic>> expandedEvents = [];
-
-  final daysInMonth = DateTime(year, month + 1, 0).day;
-
-  for (final e in baseEvents) {
-    expandedEvents.add(e);
-
-    final repeatType = e['repeat_type'] ?? 'none';
-    final int startDay = e['day'];
-
-    if (repeatType == 'daily') {
-      for (int d = startDay + 1; d <= daysInMonth; d++) {
-        expandedEvents.add({
-          ...e,
-          'day': d,
-          'id': '${e['id']}_$d', // id fake (UI only)
-        });
-      }
-    }
-
-    if (repeatType == 'weekly') {
-      final baseDate = DateTime(year, month, startDay);
-      final weekday = baseDate.weekday;
-
-      for (int d = 1; d <= daysInMonth; d++) {
-        final date = DateTime(year, month, d);
-        if (date.weekday == weekday && d != startDay) {
-          expandedEvents.add({
-            ...e,
-            'day': d,
-            'id': '${e['id']}_$d',
-          });
-        }
-      }
-    }
-
-    if (repeatType == 'monthly') {
-      // neste MVP, monthly = aparece só neste mês (já é o próprio evento)
-      // preparado para evoluir depois
-    }
-  }
-
-  expandedEvents.sort((a, b) {
-    final dayCompare = a['day'].compareTo(b['day']);
-    if (dayCompare != 0) return dayCompare;
-    return a['hour'].compareTo(b['hour']);
-  });
-
-  return expandedEvents;
-}
+	  return List<Map<String, dynamic>>.from(res);
+	}
 
 
   /// ---------------------------------------------------------

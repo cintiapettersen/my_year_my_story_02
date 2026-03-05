@@ -337,13 +337,17 @@ child: RemoteDataWrapper(
 
                       const SizedBox(height: 16),
 
-                      TextField(
-                        controller: _controllers[index],
-                        maxLines: 5,
-                        decoration: InputDecoration(
-                          hintText: 'curiosities.answer_hint'.tr(),
-                          filled: true,
-                          fillColor: const Color(0xFFFCEAF4),
+	                      TextField(
+	                        controller: _controllers[index],
+	                        autocorrect: true,
+	                        enableSuggestions: true,
+	                        smartQuotesType: SmartQuotesType.enabled,
+	                        smartDashesType: SmartDashesType.enabled,
+	                        maxLines: 5,
+	                        decoration: InputDecoration(
+	                          hintText: 'curiosities.answer_hint'.tr(),
+	                          filled: true,
+	                          fillColor: const Color(0xFFFCEAF4),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14),
                             borderSide: BorderSide.none,

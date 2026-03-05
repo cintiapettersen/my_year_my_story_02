@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -21,6 +22,7 @@ import 'package:myyearmystory/screens/menus/app_drawer.dart';
 import 'package:myyearmystory/screens/messages/central_messages_page.dart';
 
 import 'package:myyearmystory/screens/notifications/daily_popup.dart';
+import 'package:myyearmystory/services/daily_notification_service.dart';
 import 'package:myyearmystory/services/daily_quote_service.dart';
 import 'package:myyearmystory/utils/month_colors.dart';
 import 'package:myyearmystory/screens/quiz/standalone.dart';
@@ -104,11 +106,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _syncUserLanguage();
     _initReviewData();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadDashboardData();
-      _scheduleReviewPopup();
-    });
-  }
+	    WidgetsBinding.instance.addPostFrameCallback((_) {
+	      _loadDashboardData();
+	      unawaited(showDailyNotification(context));
+	      _scheduleReviewPopup();
+	    });
+	  }
 
   void _scheduleReviewPopup() {
     Future.delayed(const Duration(seconds: 5), () async {

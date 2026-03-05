@@ -142,10 +142,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   setState(() {});
 }
-
-  // =============================================================
-  // APPLE LOGIN
-  // =============================================================
+//LOGIN COM APPLE
+// =============================================================
 Future<void> _signInWithApple() async {
   AppSession.flow = AppAuthFlow.authenticating;
 
@@ -157,18 +155,38 @@ Future<void> _signInWithApple() async {
       ],
     );
 
-    final idToken = credential.identityToken;
-
-    if (idToken == null) {
+    if (credential.identityToken == null) {
       throw Exception('Apple identity token is null');
     }
 
-    await Supabase.instance.client.auth.signInWithIdToken(
-  provider: OAuthProvider.apple,
-  idToken: credential.identityToken!,
-  accessToken: credential.authorizationCode,
-);
+    final response = await Supabase.instance.client.auth.signInWithIdToken(
+      provider: OAuthProvider.apple,
+      idToken: credential.identityToken!,
+      accessToken: credential.authorizationCode,
+    );
 
+    final user = response.user;
+
+    if (user != null) {
+      final fullName = [
+        credential.givenName,
+        credential.familyName,
+      ]
+          .where((e) => e != null && e!.isNotEmpty)
+          .join(' ')
+          .trim();
+
+      // ⚡ Só salva o nome se ele existir (primeiro login)
+      if (fullName.isNotEmpty) {
+        await Supabase.instance.client.from('profiles').upsert({
+          'id': user.id,
+          'email': user.email,
+          'full_name': fullName,
+          'profile_type': 'standard',
+          'created_at': DateTime.now().toIso8601String(),
+        });
+      }
+    }
   } catch (e) {
     AppSession.flow = AppAuthFlow.splash;
     debugPrint('Apple login error: $e');
@@ -428,31 +446,22 @@ Future<void> _signInWithApple() async {
             ),
           ],
         ),
-        const SizedBox(height: 14),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final sideBySide = constraints.maxWidth >= 360;
-            if (sideBySide) {
-              return Row(
-                children: [
-                  Expanded(child: _buildGoogleButton(isTablet)),
-                  const SizedBox(width: 12),
-                  Expanded(child: _buildAppleButton(isTablet)),
-                ],
-              );
-            }
-            return Column(
-              children: [
-                _buildGoogleButton(isTablet),
-                const SizedBox(height: 12),
-                _buildAppleButton(isTablet),
-              ],
-            );
-          },
-        ),
-      ],
-    );
-  }
+	        const SizedBox(height: 14),
+	        LayoutBuilder(
+	          builder: (context, constraints) {
+	            final gap = constraints.maxWidth < 360 ? 8.0 : 12.0;
+	            return Row(
+	              children: [
+	                Expanded(child: _buildGoogleButton(isTablet)),
+	                SizedBox(width: gap),
+	                Expanded(child: _buildAppleButton(isTablet)),
+	              ],
+	            );
+	          },
+	        ),
+	      ],
+	    );
+	  }
 
   Widget _buildGoogleButton(bool isTablet) {
     return OutlinedButton(
@@ -463,29 +472,32 @@ Future<void> _signInWithApple() async {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         side: const BorderSide(color: Color(0xFFE4D8EB)),
       ),
-      child:
-          _isGoogleLoading
-              ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-              : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset(
-                    "assets/icons/google_icon.png",
-                    height: isTablet ? 26 : 20,
-                  ),
-                  const SizedBox(width: 10),
-                  const Text(
-                    "Google",
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                ],
-              ),
-    );
-  }
+	      child:
+	          _isGoogleLoading
+	              ? const SizedBox(
+	                height: 20,
+	                width: 20,
+	                child: CircularProgressIndicator(strokeWidth: 2),
+	              )
+	              : FittedBox(
+	                fit: BoxFit.scaleDown,
+	                child: Row(
+	                  mainAxisAlignment: MainAxisAlignment.center,
+	                  children: [
+	                    Image.asset(
+	                      "assets/icons/google_icon.png",
+	                      height: isTablet ? 26 : 20,
+	                    ),
+	                    const SizedBox(width: 10),
+	                    const Text(
+	                      "Google",
+	                      style: TextStyle(fontWeight: FontWeight.w600),
+	                    ),
+	                  ],
+	                ),
+	              ),
+	    );
+	  }
 
   Widget _buildAppleButton(bool isTablet) {
     return OutlinedButton(
@@ -495,17 +507,21 @@ Future<void> _signInWithApple() async {
         padding: EdgeInsets.symmetric(vertical: isTablet ? 16 : 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.apple, color: Colors.white),
-          const SizedBox(width: 10),
-          const Text(
-            "Apple",
-            style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
-          ),
-        ],
-      ),
-    );
-  }
+	      child: FittedBox(
+	        fit: BoxFit.scaleDown,
+	        child: Row(
+	          mainAxisAlignment: MainAxisAlignment.center,
+	          children: [
+	            const Icon(Icons.apple, color: Colors.white),
+	            const SizedBox(width: 10),
+	            const Text(
+	              "Apple",
+	              style:
+	                  TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
+	            ),
+	          ],
+	        ),
+	      ),
+	    );
+	  }
 }

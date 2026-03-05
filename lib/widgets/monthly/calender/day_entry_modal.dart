@@ -239,13 +239,17 @@ Row(
 
                   const SizedBox(height: 12),
 
-                  // TEXT
-                  TextField(
-                    controller: _textController,
-                    maxLines: 3,
-                    decoration: InputDecoration(
-                      hintText: tr("calendar.describe"),
-                      filled: true,
+	                  // TEXT
+	                  TextField(
+	                    controller: _textController,
+	                    autocorrect: true,
+	                    enableSuggestions: true,
+	                    smartQuotesType: SmartQuotesType.enabled,
+	                    smartDashesType: SmartDashesType.enabled,
+	                    maxLines: 3,
+	                    decoration: InputDecoration(
+	                      hintText: tr("calendar.describe"),
+	                      filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),

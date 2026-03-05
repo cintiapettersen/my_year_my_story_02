@@ -1,10 +1,14 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/message_card.dart';
 import '../models/message_category.dart';
 
+import 'dart:convert';
 
 class MessageServiceSupabase {
   final SupabaseClient _client;
+
+  static const Duration _geminiCacheTtl = Duration(days: 3);
   
 
   MessageServiceSupabase(
@@ -105,7 +109,12 @@ Future<MessageCard> getCardByType(
   String? context,
   String outputLanguage,
 ) async {
- 
+  final cached = await _readGeminiCache(
+    type: type,
+    context: context,
+    outputLanguage: outputLanguage,
+  );
+  if (cached != null && cached.trim().isNotEmpty) return cached;
 
   final prompt = _buildPrompt(
     type,
@@ -123,15 +132,81 @@ Future<MessageCard> getCardByType(
       },
     );
 
-    final result = response.data?['text'] as String?;
+    final result = (response.data?['text'] as String?)?.trim();
 
-    
+    if (result == null || result.isEmpty) return null;
+
+    await _writeGeminiCache(
+      type: type,
+      context: context,
+      outputLanguage: outputLanguage,
+      text: result,
+    );
 
     return result;
   } catch (e) {
     return null;
   }
 }
+
+  String _geminiCacheBaseKey({
+    required MessageType type,
+    required String? context,
+    required String outputLanguage,
+	  }) {
+	    final lang = outputLanguage.trim().toLowerCase();
+	    final ctxKey = _contextKey(context);
+	    return 'gemini_card_${type.name}_${lang}_$ctxKey';
+	  }
+
+  String _contextKey(String? context) {
+    if (context == null || context.trim().isEmpty) return 'none';
+    final normalized = context.trim().replaceAll(RegExp(r'\s+'), ' ');
+    final b64 = base64Url.encode(utf8.encode(normalized));
+    return b64.length <= 16 ? b64 : b64.substring(0, 16);
+  }
+
+  Future<String?> _readGeminiCache({
+    required MessageType type,
+    required String? context,
+    required String outputLanguage,
+  }) async {
+    final user = _client.auth.currentUser;
+    if (user == null) return null;
+
+    final prefs = await SharedPreferences.getInstance();
+    final base = _geminiCacheBaseKey(
+      type: type,
+      context: context,
+      outputLanguage: outputLanguage,
+    );
+    final ts = prefs.getInt('${base}_ts');
+    final text = prefs.getString('${base}_text')?.trim();
+    if (ts == null || text == null || text.isEmpty) return null;
+
+    final createdAt = DateTime.fromMillisecondsSinceEpoch(ts);
+    if (DateTime.now().difference(createdAt) > _geminiCacheTtl) return null;
+    return text;
+  }
+
+  Future<void> _writeGeminiCache({
+    required MessageType type,
+    required String? context,
+    required String outputLanguage,
+    required String text,
+  }) async {
+    final user = _client.auth.currentUser;
+    if (user == null) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final base = _geminiCacheBaseKey(
+      type: type,
+      context: context,
+      outputLanguage: outputLanguage,
+    );
+    await prefs.setInt('${base}_ts', DateTime.now().millisecondsSinceEpoch);
+    await prefs.setString('${base}_text', text);
+  }
 
   String _buildPrompt(
     MessageType type,
