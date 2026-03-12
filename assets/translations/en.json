@@ -194,7 +194,7 @@
     "trial_line_monthly": "7-day free trial. Then {0} per month.",
     "trial_line_yearly": "7-day free trial. Then {0} per year.",
     "renew_line1": "Renews automatically unless canceled at least 24 hours before the end of the current period.",
-    "renew_line2": "Manage or cancel anytime in your Apple ID settings.",
+    "renew_line2": "Manage or cancel anytime in your Apple or Google account settings.",
     "see_all": "See all benefits",
     "see_less": "Hide benefits",
     "footer_links": "Restore Purchases | Terms of Use | Privacy Policy",
@@ -203,13 +203,17 @@
     "restore_success": "Purchases restored!",
     "restore_none": "No purchases found.",
     "restore_error": "Could not restore purchases.",
-    "cta_trial": "Start 7-Day Free Trial",
+    "cta_trial": "Try free for 7 days",
     "cta_subscribe": "Subscribe Now",
     "terms": "Terms of Use",
     "privacy": "Privacy Policy",
     "link_error": "Could not open link.",
     "already_premium": "You are already Premium 💜",
-    "save_percent": "Save {}%"
+    "save_percent": "Save {}%",
+    "save_33": "Save 33%",
+    "monthly_note_1": "Flexible",
+    "monthly_note_2": "Cancel anytime"
+    
   },
 
   "signup": {
@@ -691,6 +695,9 @@
     "productive": "Productive",
     "disappointed": "Disappointed",
     "limit_message": "💗 You’ve already registered your mood! Try again in 1 hour.",
+    "guest_saved": "Mood saved for today 💜",
+    "guest_title": "Guest mode",
+    "guest_description": "You can track your moods, but they won’t be saved without an account.",
     
     "search_other_dates": "Search other dates",
     "choose_period": "Choose period",

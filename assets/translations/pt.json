@@ -183,7 +183,7 @@
 "trial_title": "7 dias gratuitos",
 "trial_subtitle": "Depois {0} / mês",
 "renew_line1": "Renova automaticamente, a menos que seja cancelado com 24h de antecedência.",
-"renew_line2": "Gerencie ou cancele a qualquer momento nas configurações do seu ID Apple.",
+"renew_line2": "Gerencie ou cancele a qualquer momento nas configurações da sua conta Apple ou Google.",
 "see_all": "Ver todos os benefícios",
 "see_less": "Menos benefícios",
 "footer_links": "Restaurar Compras | Termos de Uso | Política de Privacidade",
@@ -194,17 +194,20 @@
 "restore_success": "Compras restauradas com sucesso!",
 "restore_none": "Nenhuma compra encontrada.",
 "restore_error": "Não foi possível restaurar as compras.",
-"cta_trial": "Começar 7 dias grátis",
+"cta_trial": "Experimentar grátis por 7 dias",
 "cta_subscribe": "Assinar agora",
 "terms": "Termos de Uso",
 "privacy": "Política de Privacidade",
 "link_error": "Não foi possível abrir o link.",
 "already_premium": "Você já é Premium 💜",
-"save_percent": "Economize {}%"
+	"save_percent": "Economize {}%",
+	"save_33": "Economize 33%",
+	"monthly_note_1": "Flexível",
+	"monthly_note_2": "Cancele quando\nquiser"
 
-  },
-"signup": {
-  "success": "Conta criada com sucesso!",
+	  },
+	"signup": {
+	  "success": "Conta criada com sucesso!",
   "error_general": "Erro ao criar conta. Tente novamente.",
 
   "subtitle": "Crie sua conta para começar sua jornada.",
@@ -892,9 +895,9 @@
 
 "calendar_description": "This is your mood calendar.\nEvery day you can record how you're feeling, and little by little your mood icons will start appearing here.",
 "calendar_register_hint": "Tap the buttons below to record your mood for today",
-"guest_saved": "Mood saved for today 💜",
-"guest_title": "Guest mode",
-"guest_description": "You can track your moods, but they won’t be saved without an account.",
+	"guest_saved": "Humor salvo por hoje 💜",
+	"guest_title": "Modo convidado",
+	"guest_description": "Você pode registrar seu humor, mas ele não será salvo sem uma conta.",
 
   "search_other_dates": "Pesquisar outras datas",
     "choose_period": "Escolher período",

@@ -57,16 +57,20 @@ Future<void> main() async {
   await SupabaseConfig.initialize();
 
   runApp(
-    EasyLocalization(
-      supportedLocales: const [Locale('en'), Locale('pt')],
-      path: 'assets/translations',
-      fallbackLocale: const Locale('pt'),
-      child: MultiProvider(
-        providers: [ChangeNotifierProvider(create: (_) => PurchaseService())],
-        child: const MyApp(),
-      ),
+  EasyLocalization(
+    supportedLocales: const [Locale('en'), Locale('pt')],
+    path: 'assets/translations',
+    fallbackLocale: const Locale('pt'),
+    child: MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => PurchaseService()..init(),
+        ),
+      ],
+      child: const MyApp(),
     ),
-  );
+  ),
+);
 }
 
 class MyApp extends StatefulWidget {
