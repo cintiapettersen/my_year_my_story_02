@@ -129,49 +129,84 @@ class _MyAppState extends State<MyApp> {
         builder: (_, __) => const NotificationsPage(),
       ),
       GoRoute(
-        path: '/current_month',
-        builder: (_, state) {
-          final args = (state.extra as Map?) ?? {};
-          return CurrentMonthScreen(
-            month: args['month'] ?? DateTime.now().month,
-            year: args['year'] ?? DateTime.now().year,
-          );
-        },
-      ),
-      GoRoute(
-        path: '/central_messages',
-        builder: (_, __) => const CentralMessagesPage(),
-      ),
-      GoRoute(
-        path: '/calendar_page',
-        builder: (_, state) {
-          final args = (state.extra as Map?) ?? {};
-          return CalendarPage(
-            month: args['month'] ?? DateTime.now().month,
-            year: args['year'] ?? DateTime.now().year,
-          );
-        },
-      ),
-      GoRoute(
-        path: '/mood',
-        builder: (_, state) {
-          final args = (state.extra as Map?) ?? {};
-          return MoodScreen(
-            month: args['month'] ?? DateTime.now().month,
-            year: args['year'] ?? DateTime.now().year,
-          );
-        },
-      ),
-      GoRoute(
-        path: '/interactive_quiz',
-        builder: (_, state) {
-          final args = (state.extra as Map?) ?? {};
-          return InteractiveQuizStandalone(
-            month: args['month'] ?? DateTime.now().month,
-            year: args['year'] ?? DateTime.now().year,
-          );
-        },
-      ),
+  path: '/current_month',
+  builder: (_, state) {
+    final queryMonth = int.tryParse(state.uri.queryParameters['month'] ?? '');
+    final queryYear = int.tryParse(state.uri.queryParameters['year'] ?? '');
+    final extra = (state.extra as Map?) ?? {};
+
+    final month = queryMonth ?? extra['month'] ?? DateTime.now().month;
+    final year = queryYear ?? extra['year'] ?? DateTime.now().year;
+
+    return CurrentMonthScreen(
+      month: month,
+      year: year,
+    );
+  },
+),
+
+// CHAPTER → Central Messages
+GoRoute(
+  path: '/chapter',
+  builder: (_, __) => const CentralMessagesPage(),
+),
+
+// mantém compatibilidade com rota antiga
+GoRoute(
+  path: '/central_messages',
+  builder: (_, __) => const CentralMessagesPage(),
+),
+
+GoRoute(
+  path: '/calendar_page',
+  builder: (_, state) {
+    final queryMonth = int.tryParse(state.uri.queryParameters['month'] ?? '');
+    final queryYear = int.tryParse(state.uri.queryParameters['year'] ?? '');
+    final extra = (state.extra as Map?) ?? {};
+
+    final month = queryMonth ?? extra['month'] ?? DateTime.now().month;
+    final year = queryYear ?? extra['year'] ?? DateTime.now().year;
+
+    return CalendarPage(
+      month: month,
+      year: year,
+    );
+  },
+),
+
+GoRoute(
+  path: '/mood',
+  builder: (_, state) {
+    final queryMonth = int.tryParse(state.uri.queryParameters['month'] ?? '');
+    final queryYear = int.tryParse(state.uri.queryParameters['year'] ?? '');
+    final extra = (state.extra as Map?) ?? {};
+
+    final month = queryMonth ?? extra['month'] ?? DateTime.now().month;
+    final year = queryYear ?? extra['year'] ?? DateTime.now().year;
+
+    return MoodScreen(
+      month: month,
+      year: year,
+    );
+  },
+),
+
+GoRoute(
+  path: '/interactive_quiz',
+  builder: (_, state) {
+    final queryMonth = int.tryParse(state.uri.queryParameters['month'] ?? '');
+    final queryYear = int.tryParse(state.uri.queryParameters['year'] ?? '');
+    final extra = (state.extra as Map?) ?? {};
+
+    final month = queryMonth ?? extra['month'] ?? DateTime.now().month;
+    final year = queryYear ?? extra['year'] ?? DateTime.now().year;
+
+    return InteractiveQuizStandalone(
+      month: month,
+      year: year,
+    );
+  },
+),
       GoRoute(
         path: '/monthly_goals',
         builder:

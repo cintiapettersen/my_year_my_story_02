@@ -54,6 +54,27 @@ class _MoodCalendarState extends State<MoodCalendar> {
     loadMoods();
   }
 
+  @override
+  void didUpdateWidget(covariant MoodCalendar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    final monthChanged = oldWidget.month != widget.month;
+    final yearChanged = oldWidget.year != widget.year;
+    final userChanged = oldWidget.userId != widget.userId;
+
+    if (monthChanged || yearChanged || userChanged) {
+      setState(() {
+        selectedDay = null;
+        _offlineMoodWarned = false;
+
+        // Evita mostrar humores do período anterior enquanto recarrega.
+        moodByDay = {};
+      });
+
+      loadMoods();
+    }
+  }
+
  
 
 

@@ -97,6 +97,25 @@ class _MoodScreenState extends State<MoodScreen> {
     fetchMonthlySummary();
   }
 
+  @override
+  void didUpdateWidget(covariant MoodScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    final monthChanged = oldWidget.month != widget.month;
+    final yearChanged = oldWidget.year != widget.year;
+
+    if (monthChanged || yearChanged) {
+      setState(() {
+        tempMonth = widget.month;
+        tempYear = widget.year;
+        selectedDay = null;
+        topMoods = [];
+      });
+
+      fetchMonthlySummary();
+    }
+  }
+
   Future<void> fetchMonthlySummary() async {
     final user = supabase.auth.currentUser;
 

@@ -11,7 +11,6 @@ import 'package:myyearmystory/screens/auth/forgot_password_screen.dart';
 import 'package:myyearmystory/services/user_service.dart';
 import 'package:myyearmystory/services/google_auth_service.dart';
 import 'package:myyearmystory/services/app_session.dart';
-import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 
@@ -77,37 +76,51 @@ class _LoginScreenState extends State<LoginScreen> {
     FocusScope.of(context).unfocus();
 
     AppSession.flow = AppAuthFlow.authenticating;
-
-    final response = await UserService.signIn(
-      _emailController.text.trim(),
-      _passwordController.text.trim(),
-    );
-
-    if (!mounted) return;
-
-    if (response['success'] == true) {
-      await _saveRememberedEmail();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('auth.login.success'.tr()),
-          backgroundColor: Colors.green,
-          duration: const Duration(seconds: 1),
-        ),
+    try {
+      final response = await UserService.signIn(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
       );
-      // ❌ não navega — AuthListener assume
-    } else {
-    
 
+      final success = response['success'] == true;
+
+      if (success) {
+        await _saveRememberedEmail();
+
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('auth.login.success'.tr()),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 1),
+          ),
+        );
+        // ❌ não navega — AuthListener assume
+      } else {
+        // Importante: em caso de erro (ex: senha errada), sai do estado
+        // "authenticating" para não ficar preso na tela branca de loading.
+        AppSession.reset();
+
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response['message'].toString()),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (_) {
+      AppSession.reset();
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(response['message'].toString().tr()),
+          content: Text('auth.login.error_general'.tr()),
           backgroundColor: Colors.red,
         ),
       );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
-
-    if (mounted) setState(() => _isLoading = false);
   }
 
   // =============================================================
@@ -172,7 +185,8 @@ Future<void> _signInWithApple() async {
         credential.givenName,
         credential.familyName,
       ]
-          .where((e) => e != null && e!.isNotEmpty)
+          .whereType<String>()
+          .where((e) => e.isNotEmpty)
           .join(' ')
           .trim();
 
