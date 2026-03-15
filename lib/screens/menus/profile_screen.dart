@@ -6,6 +6,7 @@ import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:myyearmystory/services/profile_service.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:myyearmystory/widgets/shared/app_pill_button.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -464,27 +465,13 @@ const SizedBox(height: 80),
   // SAVE BUTTON
   // -------------------------------------------------------
   Widget _saveButton() {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFFE066A6),
-            Color(0xFFDA82C2),
-          ],
-        ),
-      ),
-      child: TextButton(
-        onPressed: _saveProfile,
-        child: Text(
-          "profile.save_button".tr(),
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+    return AppPillButton(
+      expand: true,
+      text: "profile.save_button".tr(),
+      onPressed: _saveProfile,
+      textStyle: const TextStyle(
+        fontSize: 17,
+        fontWeight: FontWeight.w600,
       ),
     );
   }

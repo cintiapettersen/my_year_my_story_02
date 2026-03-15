@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/message_card.dart';
 import '../models/message_category.dart';
+import 'package:myyearmystory/supabase/supabase_config.dart';
 
 import 'dart:convert';
 
@@ -125,8 +126,14 @@ Future<MessageCard> getCardByType(
  
 
   try {
+    final accessToken =
+        Supabase.instance.client.auth.currentSession?.accessToken ??
+            SupabaseConfig.supabaseAnonKey;
     final response = await Supabase.instance.client.functions.invoke(
       'generate-message',
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+      },
       body: {
         'prompt': prompt,
       },

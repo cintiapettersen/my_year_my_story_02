@@ -9,6 +9,8 @@ import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/utils/access_control.dart';
 import 'package:myyearmystory/screens/popups/popup_login.dart';
 import 'package:myyearmystory/widgets/shared/remote_data_wrapper.dart';
+import 'package:myyearmystory/widgets/shared/app_pill_button.dart';
+import 'package:myyearmystory/widgets/monthly/curiosity_fallback.dart';
 
 
 class CuriositiesWidget extends StatefulWidget {
@@ -115,10 +117,12 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
     final res = await SupabaseConfig.client
         .from('curiosities_entries')
         .select('questions, questions_en')
+        .eq('year', widget.year)
         .eq('month', widget.month)
         .order('group_number');
 
     final List<Map<String, String>> allQuestions = [];
+    var globalIndex = 0;
 
     for (final row in res) {
       final rawQuestions =
@@ -129,11 +133,25 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
           final q = rawQuestions[i];
           if (q is String && q.trim().isNotEmpty) {
             allQuestions.add({
-              'id': i.toString(),
-              'text': q,
+              'id': globalIndex.toString(),
+              'text': q.trim(),
             });
+            globalIndex++;
           }
         }
+      }
+    }
+
+    if (allQuestions.isEmpty) {
+      final fallback =
+          language == 'en'
+              ? (curiosityFallbackQuestionsEn[widget.month] ?? const [])
+              : (curiosityFallbackQuestionsPt[widget.month] ?? const []);
+      for (final q in fallback) {
+        final text = q.trim();
+        if (text.isEmpty) continue;
+        allQuestions.add({'id': globalIndex.toString(), 'text': text});
+        globalIndex++;
       }
     }
 
@@ -357,23 +375,9 @@ child: RemoteDataWrapper(
 
                       const SizedBox(height: 16),
 
-                      ElevatedButton(
+                      AppPillButton(
+                        text: 'curiosities.save'.tr(),
                         onPressed: () => _saveCurrentAnswer(index),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFE25BA6),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 32,
-                            vertical: 14,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(28),
-                          ),
-                          elevation: 4,
-                          shadowColor:
-                              const Color(0xFFE25BA6).withOpacity(0.35),
-                        ),
-                        child: Text('curiosities.save'.tr()),
                       ),
                     ],
                   ),

@@ -330,14 +330,16 @@
     "about_me": "Sobre Mim",
     "quiz": "Quiz Interativo",
     "signs": "Signos do Mês",
-    "tips": "Meu Momento",
+    "tips": "Mensagem do Dia",
     "facts": "Você Sabia?",
     "interview": "Conexões",
     "lists": "Minhas Listas",
-    "gratitude": "Gratidão",
-    "reflections": "Reflexões",
     "photos": "Fotos do Mês",
     "dates": "Calendário e Alertas",
+    "literary_quotes": "Verso e Poesia",
+    "time_capsule": "Cápsula do Tempo",
+    "gratitude": "Gratidão",
+    "reflections": "Reflexões",
     "choose_section": "O que você quer explorar hoje?"
   },
 
@@ -347,19 +349,19 @@
     "initialPlaceholder": "Clique para revelar sua mensagem do dia ✨",
     "loading": "Consultando o universo... ✨",
     "turnAgain": "Virar novamente",
-    "comeBackTomorrow": "Volte amanhã ✨",
+    "comeBackTomorrow": "Volte em 12h ✨",
     "consultingUniverse": "Consultando o universo... ✨",
     "limitPremiumUserMessage": "Limite diário atingido 💜",
-    "limitPremiumUserText": "Você já virou sua carta hoje.\nVolte amanhã para uma nova mensagem ✨",
-    "freeLimitTitle": "Volte amanhã ✨",
-    "freeLimitText": "Você já viu sua mensagem do dia. Amanhã tem mais surpresas pra você 💫",
+    "limitPremiumUserText": "Você já virou sua carta recentemente.\nVolte em 12h para uma nova mensagem ✨",
+    "freeLimitTitle": "Volte em 12h ✨",
+    "freeLimitText": "Você já viu sua mensagem do dia. Em 12h tem mais surpresas pra você 💫",
     "freeLimitButtonPremium": "Quero ver mais hoje",
     "freeLimitButtonCancel": "Agora não",
     "fallback1": "Hoje tem boas energias chegando pra você.",
     "fallback2": "Respira fundo e confia: o dia vai ser leve.",
     "fallback3": "Seu brilho interior tá mais forte do que nunca.",
     "premiumLimitTitle": "Limite diário atingido!",
-    "premiumLimitText": "Você já consultou suas mensagens de hoje. Volte amanhã para descobrir mais ✨",
+    "premiumLimitText": "Você já consultou suas mensagens recentemente. Volte em 12h para descobrir mais ✨",
     "premiumLimitButtonOk": "Ok"
 
 
@@ -509,6 +511,43 @@
   
   },
 
+  "time_capsule": {
+    "page_label": "Cápsula do Tempo",
+    "description": "Escreva algo para o seu futuro e escolha quando você quer ser lembrada.",
+    "card_title": "UMA MENSAGEM PARA O FUTURO",
+    "hint": "Escreva aqui uma mensagem que você quer lembrar no futuro…",
+    "pick_date": "Escolha a data do lembrete",
+    "remind_on": "Lembrar em:",
+    "choose": "Escolher",
+    "write_first": "Escreva uma mensagem antes de salvar ✨",
+    "pick_date_first": "Escolha quando você quer ser lembrada 💌",
+    "save_button": "Salvar cápsula",
+    "saving": "Salvando...",
+    "saved_success": "Cápsula do tempo salva 💖",
+    "save_error": "Não foi possível salvar agora. Tente novamente.",
+    "alert_title": "Cápsula do Tempo"
+  },
+
+  "literary_quotes": {
+  "page_label": "Verso e Poesia",
+  "subtitle": "Uma página que encontrou você hoje",
+  "empty": "Nenhum trecho disponível agora.",
+  "loading": "Procurando uma página para você...",
+    "placeholder": "Toque em \"Revelar\" para abrir o trecho de hoje.",
+    "reveal": "Revelar",
+    "new": "Novo trecho",
+    "new_premium": "Novo trecho (Premium)",
+    "come_back": "Volte amanhã",
+    "save": "Salvar",
+    "share": "Print",
+    "write": "Escrever sobre isso",
+    "share_caption": "from My Year My Story",
+    "share_error": "Não foi possível gerar o print agora.",
+    "save_coming_soon": "Salvar nos favoritos em breve",
+    "fallback_note": "Mostrando um trecho alternativo agora.",
+    "public_domain_note": "Trecho em domínio público."
+  },
+
   "curiosities": {
     "title": "Sobre Mim",
     "description": "Responda perguntas divertidas e descubra mais sobre você!",
@@ -529,7 +568,7 @@
     "phrase_title": "Energia do Signo",
     "moon_today": "Lua de hoje",
     "month_description": "Descubra as energias e características que influenciam o mês ✨",
-    "personal_year_helper": "Usamos sua data de nascimento para calcular seu Ano Pessoal.",
+    "personal_year_helper": "Para descobrir seu Ano Pessoal, precisamos da sua data de nascimento.\nSe você pulou essa etapa, preencha em Perfil.",
     "color": "Cor",
     "ruler": "Regente",
     "number": "Número",
@@ -701,7 +740,7 @@
 
   "button": {
     "discover_more": "Descobrir mais",
-    "come_back_tomorrow": "Volte amanhã 🌙"
+    "come_back_tomorrow": "Volte em 12h 🌙"
   },
 
   "categories": {
@@ -740,18 +779,18 @@
   },
 
   "tips": {
-  "page_label": "Meu Momento",
+  "page_label": "Mensagem do Dia",
   "description": "Um espaço para organizar pensamentos, cuidar de você e seguir com mais leveza.",
 
-  "seen_all_today": "Você viu todas as dicas de hoje. Volte amanhã 💛",
+	  "seen_all_today": "Você viu todas as dicas por agora. Volte em 12h 💛",
 
-  "refresh_title": "Volte amanhã ✨",
-  "refresh_message": "Você já atualizou suas sugestões de hoje!",
-  "refresh_ok": "OK",
+	  "refresh_title": "Volte em 12h ✨",
+	  "refresh_message": "Você já atualizou suas sugestões por agora!",
+	  "refresh_ok": "OK",
 
   "refresh_premium_button": "Atualizar mais dicas",
   "refresh_see_more": "Atualizar mais dicas",
-  "refresh_come_back_tomorrow": "Volte amanhã 🌙"
+	  "refresh_come_back_tomorrow": "Volte em 12h 🌙"
   
   
   },
@@ -1099,9 +1138,12 @@
   "daily_popup": {
   "default_title": "Alerta do dia",
   "subtitle": "Você tem um evento ou lembrete programado para hoje!",
-  "mark_seen": "Marcar como visto",
-  "cancel_alert": "Cancelar alerta"
-
+  "mark_seen": "Marcar como lido",
+  "close": "Fechar",
+  "cancel_alert": "Cancelar alerta",
+  "share": "Printar alerta",
+  "share_caption": "from My Year My Story",
+  "share_error": "Não foi possível gerar o print agora."
 },
 "review": {
 

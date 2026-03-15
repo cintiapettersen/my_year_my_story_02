@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:myyearmystory/services/calendar_event_service.dart';
 import 'package:intl/intl.dart';
+import 'package:myyearmystory/widgets/shared/app_pill_button.dart';
 
 
 class DayEntryModal extends StatefulWidget {
@@ -399,24 +400,13 @@ Row(
 Center(
   child: Column(
     children: [
-      ElevatedButton(
+      AppPillButton(
+        text: tr("common.save"),
         onPressed: _save,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFE2377D),
-          padding: const EdgeInsets.symmetric(
-            horizontal: 28,
-            vertical: 14,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-        ),
-        child: Text(
-          tr("common.save"),
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
+        backgroundColor: const Color(0xFFE2377D),
+        textStyle: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
         ),
       ),
 

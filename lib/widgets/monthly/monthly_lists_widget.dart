@@ -6,6 +6,7 @@ import 'package:myyearmystory/utils/access_control.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/screens/popups/popup_login.dart';
+import 'package:myyearmystory/widgets/shared/app_pill_button.dart';
 
 /// Config DEV/Admin igual à InterviewScreen
 class AppConfig {
@@ -420,25 +421,13 @@ void showOfflineSaveWarning(BuildContext context) {
 
           /// Save
           Center(
-            child: ElevatedButton(
+            child: AppPillButton(
+              text: 'lists.save'.tr(),
               onPressed: _isSaving ? null : () => _saveList(key),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: saveTextColor,
-                side: BorderSide(color: saveBorderColor),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 26, vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                elevation: 0,
-              ),
-              child: Text(
-                'lists.save'.tr(),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
+              backgroundColor: saveBorderColor,
+              textStyle: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),

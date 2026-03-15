@@ -8,6 +8,7 @@ import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/screens/popups/coming_soon.dart';
 import 'package:myyearmystory/screens/popups/popup_login.dart';
 import 'package:myyearmystory/widgets/shared/remote_data_wrapper.dart';
+import 'package:myyearmystory/widgets/shared/app_pill_button.dart';
 
 class AppConfig {
   static bool isDev = true;
@@ -390,13 +391,10 @@ class _InterviewScreenState extends State<InterviewScreen>
   Widget _buildButtons() => Row(
         children: [
           Expanded(
-            child: ElevatedButton(
+            child: AppPillButton(
+              expand: true,
+              text: "interview.save_button".tr(),
               onPressed: _isSaving ? null : _saveInterview,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFA1A8F0),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-              child: Text("interview.save_button".tr()),
             ),
           ),
           const SizedBox(width: 12),

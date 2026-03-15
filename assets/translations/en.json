@@ -324,14 +324,16 @@
     "about_me": "About Me",
     "quiz": "Interactive Quiz",
     "signs": "Zodiac of the Month",
-    "tips": "My Moment",
+    "tips": "Daily Message",
     "facts": "Did You Know?",
     "interview": "Connections",
     "lists": "My Lists",
-    "gratitude": "Gratitude",
-    "reflections": "Reflections",
     "photos": "Monthly Photos",
     "dates": "Calendar & Alerts",
+    "literary_quotes": "Verse & Poetry",
+    "time_capsule": "Time Capsule",
+    "gratitude": "Gratitude",
+    "reflections": "Reflections",
     "choose_section": "What would you like to explore today?"
   },
 
@@ -341,19 +343,19 @@
     "initialPlaceholder": "Tap to reveal your daily message ✨",
     "loading": "Consulting the universe... ✨",
     "turnAgain": "Turn again",
-    "comeBackTomorrow": "Come back tomorrow ✨",
+    "comeBackTomorrow": "Come back in 12h ✨",
     "consultingUniverse": "Consulting the universe... ✨",
     "limitPremiumUserMessage": "Daily limit reached 💜",
-    "limitPremiumUserText": "You’ve already drawn your card today.\nCome back tomorrow for a new message ✨",
-    "freeLimitTitle": "Come back tomorrow ✨",
-    "freeLimitText": "You’ve already seen today’s message. More surprises await you tomorrow 💫",
+    "limitPremiumUserText": "You’ve already drawn your card recently.\nCome back in 12h for a new message ✨",
+    "freeLimitTitle": "Come back in 12h ✨",
+    "freeLimitText": "You’ve already seen today’s message. More surprises await you in 12h 💫",
     "freeLimitButtonPremium": "I want to see more today",
     "freeLimitButtonCancel": "Not now",
     "fallback1": "Good energies are coming your way today.",
     "fallback2": "Take a deep breath and trust — today will be light.",
     "fallback3": "Your inner glow is stronger than ever.",
     "premiumLimitTitle": "Daily limit reached!",
-    "premiumLimitText": "You’ve already checked your messages today. Come back tomorrow to discover more ✨",
+    "premiumLimitText": "You’ve already checked your messages recently. Come back in 12h to discover more ✨",
     "premiumLimitButtonOk": "Ok"
   },
 
@@ -478,6 +480,43 @@
     "result_close": "Close"
   },
 
+  "time_capsule": {
+    "page_label": "Time Capsule",
+    "description": "Write something for your future and choose when you want to be reminded.",
+    "card_title": "A MESSAGE FOR THE FUTURE",
+    "hint": "Write a message you’d like to remember in the future…",
+    "pick_date": "Choose reminder date",
+    "remind_on": "Remind on:",
+    "choose": "Choose",
+    "write_first": "Write a message before saving ✨",
+    "pick_date_first": "Choose when you want to be reminded 💌",
+    "save_button": "Save capsule",
+    "saving": "Saving...",
+    "saved_success": "Time capsule saved 💖",
+    "save_error": "We couldn’t save this right now. Please try again.",
+    "alert_title": "Time Capsule"
+  },
+
+  "literary_quotes": {
+    "page_label": "Verse & Poetry",
+    "subtitle": "A page that found you today",
+    "empty": "No excerpt available right now.",
+    "loading": "Finding a page for you...",
+    "placeholder": "Tap “Reveal” to open today’s excerpt.",
+    "reveal": "Reveal",
+    "new": "New excerpt",
+    "new_premium": "New excerpt (Premium)",
+    "come_back": "Come back tomorrow",
+    "save": "Save",
+    "share": "Print",
+    "write": "Write about it",
+    "share_caption": "from My Year My Story",
+    "share_error": "Couldn’t create the image right now.",
+    "save_coming_soon": "Saving to favorites coming soon",
+    "fallback_note": "Showing a backup excerpt for now.",
+    "public_domain_note": "Public domain excerpt."
+  },
+
   "curiosities": {
     "title": "About Me",
     "description": "Answer fun questions and discover more about yourself!",
@@ -496,7 +535,7 @@
     "phrase_title": "Zodiac Energy",
     "moon_today": "Today’s Moon",
     "month_description": "Discover the energies and characteristics influencing the month ✨",
-    "personal_year_helper": "We use your birth date to calculate your Personal Year.",
+    "personal_year_helper": "To discover your Personal Year, we need your birth date.\nIf you skipped this step, you can add it in Profile.",
     "color": "Color",
     "ruler": "Ruler",
     "number": "Number",
@@ -802,8 +841,12 @@
   "daily_popup": {
     "default_title": "Today’s alert",
     "subtitle": "You have an event or reminder scheduled for today!",
-    "mark_seen": "Mark as seen",
-    "cancel_alert": "Cancel alert"
+    "mark_seen": "Mark as read",
+    "close": "Close",
+    "cancel_alert": "Cancel alert",
+    "share": "Save / Print",
+    "share_caption": "from My Year My Story",
+    "share_error": "Couldn’t create the image right now."
   },
 
   "dates": {
@@ -821,7 +864,7 @@
     "empty": "No curiosities found for today.",
     "button": {
       "discover_more": "Discover more",
-      "come_back_tomorrow": "Come back tomorrow 🌙"
+      "come_back_tomorrow": "Come back in 12h 🌙"
     },
     "categories": {
       "ciencia": "Science",
@@ -908,15 +951,15 @@
   },
 
   "tips": {
-    "page_label": "My Moment",
+    "page_label": "Daily Message",
     "description": "A space to organize thoughts, take care of yourself, and keep moving with lightness.",
-    "seen_all_today": "You’ve seen all of today’s tips. Come back tomorrow 💛",
-    "refresh_title": "Come back tomorrow ✨",
-    "refresh_message": "You’ve already refreshed your suggestions for today!",
+    "seen_all_today": "You’ve seen all tips for now. Come back in 12h 💛",
+    "refresh_title": "Come back in 12h ✨",
+    "refresh_message": "You’ve already refreshed your suggestions for now!",
     "refresh_ok": "OK",
     "refresh_premium_button": "Refresh more tips",
     "refresh_see_more": "Refresh more tips",
-    "refresh_come_back_tomorrow": "Come back tomorrow 🌙"
+    "refresh_come_back_tomorrow": "Come back in 12h 🌙"
   },
 
   "tips_categories": {

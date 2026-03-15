@@ -8,6 +8,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:myyearmystory/screens/popups/popup_login.dart';
 
 import 'package:myyearmystory/widgets/shared/month_page_template.dart';
+import 'package:myyearmystory/widgets/shared/app_pill_button.dart';
 
 class MonthlyPhotoGallery extends StatefulWidget {
   final int month;
@@ -30,6 +31,9 @@ class _MonthlyPhotoGalleryState extends State<MonthlyPhotoGallery>
 
   @override
   bool get wantKeepAlive => true;
+
+  static const Color _photosAccent = Color(0xFFb71691);
+  static const Color _shellSecondary = Color(0xFFD7C3EE);
 
   @override
   void initState() {
@@ -237,6 +241,44 @@ void _requireLogin() {
   showLoginPrompt(context);
 }
 
+  Widget _slotShell({required Widget child}) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            _photosAccent.withValues(alpha: 0.18),
+            _shellSecondary.withValues(alpha: 0.20),
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: _photosAccent.withValues(alpha: 0.18),
+              width: 1.2,
+            ),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: child,
+        ),
+      ),
+    );
+  }
+
   // =========================
   // COMMENT MODAL
   // =========================
@@ -293,7 +335,9 @@ void _requireLogin() {
 
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
+              child: AppPillButton(
+                expand: true,
+                text: 'common.save'.tr(),
                 onPressed: () async {
   try {
     await Supabase.instance.client
@@ -312,8 +356,6 @@ void _requireLogin() {
     );
   }
 },
-
-                child: Text('common.save'.tr()),
               ),
             ),
 
@@ -332,6 +374,8 @@ void _requireLogin() {
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final isTablet = MediaQuery.sizeOf(context).width > 600;
+    final maxWidth = isTablet ? 520.0 : 420.0;
 
     return MonthPageTemplate(
       title: '',
@@ -342,152 +386,195 @@ void _requireLogin() {
       description: 'photos.description'.tr(),
       child: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: 4,
-              gridDelegate:
-                  const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 12,
-              ),
-              itemBuilder: (context, index) {
-                final user =
-                    Supabase.instance.client.auth.currentUser;
+          : Column(
+              children: [
+                const SizedBox(height: 18),
+                Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: maxWidth),
+                    child: GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: 4,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 14,
+                        mainAxisSpacing: 14,
+                      ),
+                      itemBuilder: (context, index) {
+                        final user =
+                            Supabase.instance.client.auth.currentUser;
 
-                if (index < _photos.length) {
-                  final photo = _photos[index];
-                  final path = photo['file_path'] as String;
+                        if (index < _photos.length) {
+                          final photo = _photos[index];
+                          final path = photo['file_path'] as String;
 
-                  final imageUrl = Supabase.instance.client.storage
-                      .from('photos')
-                      .getPublicUrl(path);
+                          final imageUrl = Supabase.instance.client.storage
+                              .from('photos')
+                              .getPublicUrl(path);
 
-                  return GestureDetector(
-  onTap: () {
-    final user = Supabase.instance.client.auth.currentUser;
+                          return GestureDetector(
+                            onTap: () {
+                              final user =
+                                  Supabase.instance.client.auth.currentUser;
 
-    if (user == null) {
-      _requireLogin();
-      return;
-    }
+                              if (user == null) {
+                                _requireLogin();
+                                return;
+                              }
 
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.chat_bubble_outline),
-                title: Text('photos.comment_title'.tr()),
-                onTap: () {
-                  Navigator.pop(context);
-                  _openCommentModal(photo);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.swap_horiz),
-                title: Text('photos.replace'.tr()),
-                onTap: () async {
-                  Navigator.pop(context);
-                  await Future.delayed(const Duration(milliseconds: 300));
-                  if (!mounted) return;
-                  _replacePhoto(photo);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: Text('photos.delete'.tr()),
-                onTap: () {
-                  Navigator.pop(context);
-                  _deletePhoto(photo);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  },
-  child: ClipRRect(
-    borderRadius: BorderRadius.circular(14),
-    child: Stack(
-      children: [
-        Image.network(
-          imageUrl,
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: double.infinity,
-        ),
-                          Positioned(
-                            bottom: 8,
-                            right: 8,
-                            child: GestureDetector(
-                              onTap: () =>
-                                  _openCommentModal(photo),
-                              child: Container(
-                                padding:
-                                    const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: Colors.black
-                                      .withOpacity(0.45),
-                                  shape: BoxShape.circle,
+                              showModalBottomSheet(
+                                context: context,
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(20),
+                                  ),
                                 ),
-                                child: Icon(
-                                  photo['description'] == null
-                                      ? Icons
-                                          .chat_bubble_outline
-                                      : Icons.chat_bubble,
-                                  size: 16,
-                                  color: Colors.white,
+                                builder: (_) {
+                                  return SafeArea(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        ListTile(
+                                          leading: const Icon(
+                                            Icons.chat_bubble_outline,
+                                          ),
+                                          title: Text(
+                                            'photos.comment_title'.tr(),
+                                          ),
+                                          onTap: () {
+                                            Navigator.pop(context);
+                                            _openCommentModal(photo);
+                                          },
+                                        ),
+                                        ListTile(
+                                          leading: const Icon(Icons.swap_horiz),
+                                          title: Text('photos.replace'.tr()),
+                                          onTap: () async {
+                                            Navigator.pop(context);
+                                            await Future.delayed(
+                                              const Duration(milliseconds: 300),
+                                            );
+                                            if (!mounted) return;
+                                            _replacePhoto(photo);
+                                          },
+                                        ),
+                                        ListTile(
+                                          leading: const Icon(
+                                            Icons.delete,
+                                            color: Colors.red,
+                                          ),
+                                          title: Text('photos.delete'.tr()),
+                                          onTap: () {
+                                            Navigator.pop(context);
+                                            _deletePhoto(photo);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                            child: _slotShell(
+                              child: Stack(
+                                children: [
+                                  Positioned.fill(
+                                    child: Image.network(
+                                      imageUrl,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                  Positioned(
+                                    bottom: 8,
+                                    right: 8,
+                                    child: GestureDetector(
+                                      onTap: () => _openCommentModal(photo),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withOpacity(0.45),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(
+                                          photo['description'] == null
+                                              ? Icons.chat_bubble_outline
+                                              : Icons.chat_bubble,
+                                          size: 16,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+
+                        // ADD BUTTON
+                        return GestureDetector(
+                          onTap: () async {
+                            if (user == null) {
+                              _requireLogin();
+                              return;
+                            }
+
+                            if (_photos.length >= 4) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('photos.limit_reached'.tr()),
+                                ),
+                              );
+                              return;
+                            }
+
+                            await _addPhoto(context);
+                          },
+                          child: _slotShell(
+                            child: Container(
+                              color: const Color(0xFFFFF7FA),
+                              child: Center(
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.photo_camera_rounded,
+                                      size: 46,
+                                      color: Colors.black.withValues(alpha: 0.30),
+                                    ),
+                                    Positioned(
+                                      bottom: 26,
+                                      right: 26,
+                                      child: Container(
+                                        width: 22,
+                                        height: 22,
+                                        decoration: BoxDecoration(
+                                          color: _photosAccent.withValues(
+                                            alpha: 0.92,
+                                          ),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.add,
+                                          size: 16,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
                           ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
-                  );
-                }
-
-                // ADD BUTTON
-return GestureDetector(
-  onTap: () async {
-    if (user == null) {
-  _requireLogin();
-  return;
-}
-
-    if (_photos.length >= 4) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('photos.limit_reached'.tr()),
-        ),
-      );
-      return;
-    }
-
-    await _addPhoto(context);
-  },
-  child: Container(
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(14),
-      color: const Color(0xFFFFE8F1),
-      border: Border.all(
-        color: const Color.fromARGB(255, 158, 118, 135),
-      ),
-    ),
-    child: const Icon(Icons.add, size: 42),
-  ),
-);
-
-              },
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
             ),
     );
   }

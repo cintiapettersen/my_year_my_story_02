@@ -31,9 +31,9 @@ import 'package:myyearmystory/services/app_session.dart';
 import 'package:myyearmystory/utils/app_theme.dart';
 import 'package:myyearmystory/widgets/monthly/curiosity_fallback.dart';
 import 'package:myyearmystory/services/review_service.dart';
+import 'package:myyearmystory/services/review_storage.dart';
 
 import 'package:myyearmystory/screens/popups/review_popup.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class DashboardScreen extends StatefulWidget {
   final int month;
@@ -74,10 +74,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   String _reviewStatus = 'never';
   DateTime? _lastReviewPrompt;
-  Duration _sessionTime = Duration.zero;
   int _daysSinceFirstOpen = 1;
+  int _consecutiveOpenDays = 1;
 
   Locale? _lastLocale;
+
+  DateTime? _sessionStart;
+  Timer? _reviewCheckTimerShort;
+  Timer? _reviewCheckTimerEngaged;
 
   // ==============================
   // TEMA
@@ -101,71 +105,77 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     selectedMonth = widget.month;
     selectedYear = widget.year;
+    _sessionStart = DateTime.now();
 
     _loadUserName();
     _syncUserLanguage();
-    _initReviewData();
 
 	    WidgetsBinding.instance.addPostFrameCallback((_) {
 	      _loadDashboardData();
 	      unawaited(showDailyNotification(context));
-	      _scheduleReviewPopup();
+        unawaited(_initAndScheduleReviewPopup());
 	    });
 	  }
 
+  @override
+  void dispose() {
+    _reviewCheckTimerShort?.cancel();
+    _reviewCheckTimerEngaged?.cancel();
+    super.dispose();
+  }
+
   void _scheduleReviewPopup() {
-    Future.delayed(const Duration(seconds: 5), () async {
-      if (!mounted) return;
+    _reviewCheckTimerShort?.cancel();
+    _reviewCheckTimerEngaged?.cancel();
 
-      final user = supabase.auth.currentUser;
-      if (user == null) return;
+    _reviewCheckTimerShort =
+        Timer(const Duration(minutes: 8), () => _maybeShowReview());
+    _reviewCheckTimerEngaged =
+        Timer(const Duration(minutes: 10), () => _maybeShowReview());
+  }
 
-      final canShow = ReviewService.canShowReview(
-        reviewStatus: _reviewStatus,
-        lastPrompt: _lastReviewPrompt,
-        sessionTime: _sessionTime,
-        daysSinceFirstOpen: _daysSinceFirstOpen,
-      );
+  Future<void> _initAndScheduleReviewPopup() async {
+    await _initReviewData();
+    if (!mounted) return;
+    _scheduleReviewPopup();
+  }
 
-      if (!canShow) return;
+  Future<void> _maybeShowReview() async {
+    if (!mounted) return;
+    final user = supabase.auth.currentUser;
+    if (user == null) return;
 
-      // ⛔ pega o context ANTES do await
-      final ctx = context;
+    final start = _sessionStart ?? DateTime.now();
+    final sessionTime = DateTime.now().difference(start);
+    final canShow = ReviewService.canShowReview(
+      reviewStatus: _reviewStatus,
+      lastPrompt: _lastReviewPrompt,
+      sessionTime: sessionTime,
+      daysSinceFirstOpen: _daysSinceFirstOpen,
+      consecutiveOpenDays: _consecutiveOpenDays,
+    );
 
-      showReviewPopup(ctx);
+    if (!canShow) return;
 
-      final prefs = await SharedPreferences.getInstance();
-      final now = DateTime.now();
+    final ctx = context;
+    await showReviewPopup(ctx);
 
-      await prefs.setString('last_review_prompt', now.toIso8601String());
-
-      _lastReviewPrompt = now;
-    });
+    final now = DateTime.now();
+    await ReviewStorage.saveLastPrompt(now);
+    _lastReviewPrompt = now;
   }
 
   // ==============================
   // INIT REVIEW DATA
   // ==============================
   Future<void> _initReviewData() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    final last = prefs.getString('last_review_prompt');
-    _lastReviewPrompt = last != null ? DateTime.parse(last) : null;
-
-    // status inicial (pode evoluir depois)
-    _reviewStatus = 'eligible';
-
-    // por enquanto fixo — depois dá pra calcular real
-    _daysSinceFirstOpen = 1;
-    _sessionTime = Duration.zero;
-  }
-
-  Future<void> saveLastReviewPrompt(DateTime date) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('last_review_prompt', date.toIso8601String());
-
-    // atualiza o estado local também
-    _lastReviewPrompt = date;
+    _reviewStatus = await ReviewStorage.getReviewStatus();
+    _lastReviewPrompt = await ReviewStorage.getLastPrompt();
+    final firstOpen = await ReviewStorage.getFirstOpenDate();
+    final diff = DateTime.now().difference(firstOpen);
+    _daysSinceFirstOpen = diff.inDays + 1;
+    _consecutiveOpenDays =
+        await ReviewStorage.recordOpenAndGetConsecutiveDays();
   }
 
   // ==============================
@@ -704,14 +714,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       // ==============================
       // CURIOSITIES_ENTRIES (perguntas do mês)
+      // - Pode ter vários grupos (group_number), então precisamos juntar tudo.
       // ==============================
       final curiositiesSource =
           await supabase
               .from("curiosities_entries")
-              .select("questions, questions_en")
+              .select("questions, questions_en, group_number")
               .eq("month", selectedMonth)
               .eq("year", selectedYear)
-              .maybeSingle();
+              .order("group_number");
 
       if (!mounted) return;
 
@@ -719,11 +730,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
       // CURIOSIDADES (PERGUNTA + RESPOSTA)
       // ==============================
 
-      // perguntas do mês vindas do banco
-      final List questionsFromDb =
-          lang == 'en'
-              ? (curiositiesSource?['questions_en'] ?? [])
-              : (curiositiesSource?['questions'] ?? []);
+      // perguntas do mês vindas do banco (juntando todos os grupos)
+      final List<String> questionsFromDb = [];
+      for (final row in (curiositiesSource as List? ?? const [])) {
+        if (row is! Map) continue;
+        final raw = lang == 'en' ? row['questions_en'] : row['questions'];
+        if (raw is! List) continue;
+        for (final q in raw) {
+          if (q is String && q.trim().isNotEmpty) {
+            questionsFromDb.add(q.trim());
+          }
+        }
+      }
 
       // fallback por mês
       final List<String> fallbackQuestions =
@@ -743,20 +761,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
       String? answer;
       int? answeredIndex;
 
-      Map<String, dynamic>? selected;
-
+      // Pega a última resposta salva (normalmente é a mais recente).
       if (curiosityJson is List && curiosityJson.isNotEmpty) {
-        for (final item in curiosityJson) {
-          if (item is Map && item['index'] == 0) {
-            selected = Map<String, dynamic>.from(item);
-            break;
-          }
+        for (final item in curiosityJson.reversed) {
+          if (item is! Map) continue;
+          final idx = item['index'];
+          final ans = item['answer'];
+          if (idx is! int) continue;
+          final text = (ans ?? '').toString().trim();
+          if (text.isEmpty) continue;
+          answeredIndex = idx;
+          answer = text;
+          break;
         }
-      }
-
-      if (selected != null) {
-        answer = selected['answer']?.toString().trim();
-        answeredIndex = selected['index'];
       }
 
       if (!mounted) return;

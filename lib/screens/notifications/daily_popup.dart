@@ -1,11 +1,14 @@
 import 'dart:ui';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:share_plus/share_plus.dart';
 
 class DailyPopup {
-  static void show(BuildContext context, Map<String, dynamic> event) {
-    showDialog(
+  static Future<void> show(BuildContext context, Map<String, dynamic> event) {
+    return showDialog<void>(
       context: context,
       barrierDismissible: true,
       builder: (_) => _DailyPopupContent(event: event),
@@ -24,12 +27,53 @@ class _DailyPopupContent extends StatefulWidget {
 
 class _DailyPopupContentState extends State<_DailyPopupContent> {
   final supabase = SupabaseConfig.client;
+  final GlobalKey _shareKey = GlobalKey();
+
+  static const String _timeCapsuleColorHex = 'ff679bd3';
+
+  bool _isTimeCapsule(Map<String, dynamic> event) {
+    final color = (event['color'] ?? '').toString().trim().toLowerCase();
+    return color == _timeCapsuleColorHex;
+  }
+
+  Future<void> _shareAsImage() async {
+    final ctx = _shareKey.currentContext;
+    if (ctx == null) return;
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    try {
+      final boundary = ctx.findRenderObject() as RenderRepaintBoundary;
+      final image = await boundary.toImage(pixelRatio: 3);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) return;
+      final pngBytes = byteData.buffer.asUint8List();
+
+      await Share.shareXFiles(
+        [
+          XFile.fromData(
+            pngBytes,
+            mimeType: 'image/png',
+            name: 'alert.png',
+          ),
+        ],
+        text: 'daily_popup.share_caption'.tr(),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      messenger?.showSnackBar(
+        SnackBar(
+          content: Text('daily_popup.share_error'.tr()),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final event = widget.event;
     final colorHex = event['color'] ?? "FFe04cb7";
     final color = Color(int.parse(colorHex, radix: 16));
+    final isTimeCapsule = _isTimeCapsule(event);
 
     return Center(
       child: BackdropFilter(
@@ -37,7 +81,9 @@ class _DailyPopupContentState extends State<_DailyPopupContent> {
         child: Dialog(
           backgroundColor: Colors.transparent,
           insetPadding: const EdgeInsets.symmetric(horizontal: 26),
-          child: Container(
+          child: RepaintBoundary(
+            key: _shareKey,
+            child: Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(26),
@@ -105,27 +151,78 @@ class _DailyPopupContentState extends State<_DailyPopupContent> {
                         ),
                       ),
 
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 12),
 
-                      Text(
-                        "daily_popup.subtitle".tr(),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.white.withOpacity(0.9),
+                      if ((event['description'] ?? '').toString().trim().isNotEmpty)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.18),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.18),
+                            ),
+                          ),
+                          child: SingleChildScrollView(
+                            physics: const BouncingScrollPhysics(),
+                            child: Text(
+                              event['description'].toString(),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 15,
+                                height: 1.45,
+                                color: Colors.white.withOpacity(0.95),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        Text(
+                          "daily_popup.subtitle".tr(),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: Colors.white.withOpacity(0.9),
+                          ),
                         ),
-                      ),
 
                       const SizedBox(height: 26),
 
                       ElevatedButton(
-                        onPressed: () async {
-                          await supabase
-                              .from('calendar_events')
-                              .update({'seen_today': true})
-                              .eq('id', event['id']);
+                        onPressed: _shareAsImage,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white.withOpacity(0.18),
+                          elevation: 0,
+                          minimumSize: const Size(double.infinity, 48),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: Text(
+                          "daily_popup.share".tr(),
+                          style: const TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                      ),
 
-                          Navigator.pop(context);
+                      const SizedBox(height: 12),
+
+                      ElevatedButton(
+                        onPressed: () async {
+                          final navigator = Navigator.of(context);
+                          if (isTimeCapsule) {
+                            await supabase
+                                .from('calendar_events')
+                                .update({'remind': false})
+                                .eq('id', event['id']);
+                          }
+
+                          if (!mounted) return;
+                          navigator.pop();
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white.withOpacity(0.25),
@@ -136,7 +233,9 @@ class _DailyPopupContentState extends State<_DailyPopupContent> {
                           ),
                         ),
                         child: Text(
-                          "daily_popup.mark_seen".tr(),
+                          isTimeCapsule
+                              ? "daily_popup.mark_seen".tr()
+                              : "daily_popup.close".tr(),
                           style: const TextStyle(color: Colors.white, fontSize: 16),
                         ),
                       ),
@@ -145,12 +244,14 @@ class _DailyPopupContentState extends State<_DailyPopupContent> {
 
                       TextButton(
                         onPressed: () async {
+                          final navigator = Navigator.of(context);
                           await supabase
                               .from('calendar_events')
                               .update({'remind': false})
                               .eq('id', event['id']);
 
-                          Navigator.pop(context);
+                          if (!mounted) return;
+                          navigator.pop();
                         },
                         child: Text(
                           "daily_popup.cancel_alert".tr(),
@@ -168,6 +269,7 @@ class _DailyPopupContentState extends State<_DailyPopupContent> {
                 ),
               ],
             ),
+          ),
           ),
         ),
       ),

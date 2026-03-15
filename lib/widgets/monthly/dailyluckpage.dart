@@ -24,6 +24,8 @@ class DailyLuckPage extends StatefulWidget {
 }
 
 class _DailyLuckPageState extends State<DailyLuckPage> {
+  static const Duration _turnWindow = Duration(hours: 12);
+
   bool _isLoading = false;
   String? _luckMessage;
 
@@ -79,17 +81,37 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
   Future<void> _loadTurnData() async {
     final prefs = await SharedPreferences.getInstance();
 
-    final savedDate = prefs.getString("luck_last_turn_date");
     final savedTurns = prefs.getInt("luck_turns_today") ?? 0;
+    final savedTs = prefs.getInt("luck_last_turn_ts");
+    final savedDate = prefs.getString("luck_last_turn_date"); // legacy
 
-    if (savedDate != null) {
-      _lastTurnDate = DateTime.parse(savedDate);
-      if (!_isSameDay(_lastTurnDate!, DateTime.now())) {
-        _turnsToday = 0;
-      } else {
-        _turnsToday = savedTurns;
+    DateTime? last;
+    if (savedTs != null) {
+      last = DateTime.fromMillisecondsSinceEpoch(savedTs);
+    } else if (savedDate != null) {
+      // migração do formato antigo (por dia) para timestamp (janela de 12h)
+      last = DateTime.tryParse(savedDate);
+      if (last != null) {
+        await prefs.setInt("luck_last_turn_ts", last.millisecondsSinceEpoch);
       }
     }
+
+    if (last == null) return;
+
+    _lastTurnDate = last;
+    final expired = DateTime.now().difference(last) >= _turnWindow;
+    if (expired) {
+      _turnsToday = 0;
+      _lastTurnDate = null;
+      await prefs.remove("luck_turns_today");
+      await prefs.remove("luck_last_turn_ts");
+      await prefs.remove("luck_last_turn_date");
+      await prefs.remove("luck_last_message");
+      await prefs.remove("luck_last_color");
+      return;
+    }
+
+    _turnsToday = savedTurns;
   }
 
   bool _isSameDay(DateTime a, DateTime b) =>
@@ -99,14 +121,27 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
   // 🔓 ilimitado SOMENTE no debug local
   if (kDebugMode) return true;
 
-  // 👑 Premium: 3 por dia
+  // 🔄 Reseta janela de uso após 12h (sem depender de virar o dia)
+  if (_lastTurnDate != null &&
+      DateTime.now().difference(_lastTurnDate!) >= _turnWindow) {
+    final prefs = await SharedPreferences.getInstance();
+    _turnsToday = 0;
+    _lastTurnDate = null;
+    await prefs.remove("luck_turns_today");
+    await prefs.remove("luck_last_turn_ts");
+    await prefs.remove("luck_last_turn_date");
+    await prefs.remove("luck_last_message");
+    await prefs.remove("luck_last_color");
+  }
+
+  // 👑 Premium: 3 por janela (12h)
   if (_isPremium) {
     return _turnsToday < 3;
   }
 
   // 👤 Guest ou usuário não premium
-  // Guest → 1 por dia
-  // Usuário logado free → 2 por dia
+  // Guest → 1 por janela (12h)
+  // Usuário logado free → 2 por janela (12h)
   final isLoggedIn = supabase.auth.currentUser != null;
 
   if (!isLoggedIn) {
@@ -123,7 +158,11 @@ class _DailyLuckPageState extends State<DailyLuckPage> {
     _turnsToday++;
     _lastTurnDate = DateTime.now();
 
-    await prefs.setString("luck_last_turn_date", _lastTurnDate!.toIso8601String());
+    await prefs.setInt("luck_last_turn_ts", _lastTurnDate!.millisecondsSinceEpoch);
+    await prefs.setString(
+      "luck_last_turn_date",
+      _lastTurnDate!.toIso8601String(),
+    );
     await prefs.setInt("luck_turns_today", _turnsToday);
 
     // 🔥 analytics simples

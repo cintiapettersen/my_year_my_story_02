@@ -6,6 +6,8 @@ import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/utils/access_control.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:myyearmystory/screens/popups/popup_login.dart';
+import 'package:myyearmystory/widgets/shared/app_pill_button.dart';
+import 'package:myyearmystory/utils/month_colors.dart';
 
 
 class ReflectionsWidget extends StatefulWidget {
@@ -200,6 +202,7 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
 
     final month = widget.month ?? DateTime.now().month;
     final year = widget.year ?? DateTime.now().year;
+    final monthAccent = getMonthColor(month);
 
     return MonthPageTemplate(
       month: month,
@@ -285,31 +288,24 @@ class _ReflectionsWidgetState extends State<ReflectionsWidget>
           const SizedBox(height: 20),
 
           /// BOTÃO SALVAR
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _isSaving
-                  ? null
-                  : () {
-                      if (!_isPremiumUser && _freeSaveCount >= 1) {
-                        showPremiumPopup(context);
-                        return;
-                      }
-                      _saveReflections();
-                    },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 183, 103, 199),
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: Text(
-                'reflection.save_button'.tr(),
-                style: const TextStyle(
-                  fontSize: 15,
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 320),
+              child: AppPillButton(
+                expand: true,
+                text: 'reflection.save_button'.tr(),
+                backgroundColor: monthAccent,
+                onPressed: _isSaving
+                    ? null
+                    : () {
+                        if (!_isPremiumUser && _freeSaveCount >= 1) {
+                          showPremiumPopup(context);
+                          return;
+                        }
+                        _saveReflections();
+                      },
+                textStyle: const TextStyle(
+                  fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
               ),

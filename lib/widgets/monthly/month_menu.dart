@@ -24,35 +24,16 @@ class MonthMenu extends StatelessWidget {
     final double screenWidth = MediaQuery.of(context).size.width;
 
     final double gridIconSize =
-        (screenWidth * 0.08).clamp(32, 48);
+        (screenWidth * 0.065).clamp(24, 40);
 
     final double gridTextSize =
-        (screenWidth * 0.032).clamp(14, 18);
-
-    final double titleSize =
-        (screenWidth * 0.055).clamp(20, 26);
+        (screenWidth * 0.027).clamp(11, 14);
 
     final double subtitleSize =
         (screenWidth * 0.032).clamp(13, 16);
 
     final double sectionTitleSize =
         (screenWidth * 0.036).clamp(15, 18);
-
-    // 🔤 chaves existentes no JSON
-    final List<String> monthKeys = [
-      "month.january",
-      "month.february",
-      "month.march",
-      "month.april",
-      "month.may",
-      "month.june",
-      "month.july",
-      "month.august",
-      "month.september",
-      "month.october",
-      "month.november",
-      "month.december",
-    ];
 
     // 🌎 Detecta o idioma atual via EasyLocalization
     final locale = context.locale.languageCode;
@@ -84,10 +65,12 @@ class MonthMenu extends StatelessWidget {
       {'title': 'month_menu.facts', 'icon': PhosphorIconsRegular.lightbulb, 'color': const Color(0xFFdbaf35)},
       {'title': 'month_menu.interview', 'icon': PhosphorIconsRegular.microphone, 'color': const Color(0xFF7382D7)},
       {'title': 'month_menu.lists', 'icon': PhosphorIconsRegular.listChecks, 'color': const Color(0xFF776fb5)},
-      {'title': 'month_menu.gratitude', 'icon': PhosphorIconsRegular.heart, 'color': const Color(0xFFE2377D)},
-      {'title': 'month_menu.reflections', 'icon': PhosphorIconsRegular.quotes, 'color': const Color(0xFFcf78f7)},
       {'title': 'month_menu.photos', 'icon': PhosphorIconsRegular.camera, 'color': const Color(0xFFb71691)},
       {'title': 'month_menu.dates', 'icon': PhosphorIconsRegular.calendarDots, 'color': const Color(0xFFbeb6f2)},
+      {'title': 'month_menu.literary_quotes', 'icon': PhosphorIconsRegular.bookOpen, 'color': const Color(0xFF9A5DBA)},
+      {'title': 'month_menu.time_capsule', 'icon': Icons.hourglass_bottom_rounded, 'color': const Color(0xFF679bd3)},
+      {'title': 'month_menu.gratitude', 'icon': PhosphorIconsRegular.heart, 'color': const Color(0xFFE2377D)},
+      {'title': 'month_menu.reflections', 'icon': PhosphorIconsRegular.quotes, 'color': const Color(0xFFcf78f7)},
     ];
 
     return Container(
@@ -175,10 +158,10 @@ Text(
             child: GridView.builder(
               itemCount: menuItems.length,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                childAspectRatio: 1,
+                crossAxisCount: 3,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 0.92,
               ),
               itemBuilder: (context, index) {
                 final item = menuItems[index];
@@ -193,7 +176,7 @@ Text(
                     duration: const Duration(milliseconds: 200),
                     decoration: BoxDecoration(
                       color: item['color'] as Color,
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.08),
@@ -210,7 +193,7 @@ Text(
                           size: gridIconSize,
                           color: Colors.white,
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 8),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 6),
                           child: Text(
@@ -220,6 +203,7 @@ Text(
                               fontSize: gridTextSize,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
+                              height: 1.15,
                             ),
                           ),
                         ),

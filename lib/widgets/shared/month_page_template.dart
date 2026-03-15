@@ -58,7 +58,7 @@ class MonthPageTemplate extends StatelessWidget {
   elevation: 4,
   color: Colors.white, // ← 🌟 FUNDO BRANCO AQUI!
   shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(20),
+    borderRadius: BorderRadius.zero,
   ),
         child: Column(
           children: [

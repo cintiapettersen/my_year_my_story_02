@@ -19,6 +19,8 @@ import 'package:myyearmystory/widgets/monthly/gratitude_widget.dart';
 import 'package:myyearmystory/widgets/monthly/reflections_widget.dart';
 import 'package:myyearmystory/widgets/monthly/photo_gallery_widget.dart';
 import 'package:myyearmystory/widgets/monthly/calender/calendar_page.dart';
+import 'package:myyearmystory/widgets/monthly/time_capsule_widget.dart';
+import 'package:myyearmystory/widgets/monthly/literary_quotes_widget.dart';
 import 'package:myyearmystory/screens/quiz/standalone.dart';
 
 
@@ -92,10 +94,12 @@ class _CurrentMonthScreenState extends State<CurrentMonthScreen> {
       DidYouKnowWidget(month: month, year: year),
       InterviewScreen(month: month, year: year),
       MonthlyListsWidget(month: month, year: year),
-      GratitudeWidget(month: month, year: year),
-      ReflectionsWidget(month: month, year: year),
       MonthlyPhotoGallery(month: month, year: year),
       CalendarPage(month: month, year: year),
+      LiteraryQuotesWidget(month: month, year: year),
+      TimeCapsuleWidget(month: month, year: year),
+      GratitudeWidget(month: month, year: year),
+      ReflectionsWidget(month: month, year: year),
     ];
 
     return MainScaffold(
@@ -105,24 +109,7 @@ class _CurrentMonthScreenState extends State<CurrentMonthScreen> {
           color: const Color(0xFFFFF7FA), // 🌸 fundo rosinha geral
           child: Column(
             children: [
-              // 🔹 Cabeçalho com paginação
-              Padding(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      '${_currentPage + 1} / ${pages.length}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
+              const SizedBox(height: 3),
               // 🔹 Carrossel de páginas (com fundo branco e bordas suaves)
               Expanded(
                 child: PageView.builder(
@@ -139,14 +126,12 @@ class _CurrentMonthScreenState extends State<CurrentMonthScreen> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 0, vertical: 0),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: Card(
-                            elevation: isActive ? 6 : 2,
-                            margin: EdgeInsets.zero,
-                            color: Colors.white,
-                            child: pages[index],
-                          ),
+                        child: Card(
+                          elevation: isActive ? 6 : 2,
+                          margin: EdgeInsets.zero,
+                          color: Colors.white,
+                          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                          child: pages[index],
                         ),
                       ),
                     );

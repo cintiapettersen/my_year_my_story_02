@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:in_app_review/in_app_review.dart';
 
+import 'package:myyearmystory/services/review_storage.dart';
 
 
 
 
 class ReviewDialog extends StatelessWidget {
   const ReviewDialog({super.key});
+
+  static const String _iosAppStoreId =
+      String.fromEnvironment('IOS_APP_STORE_ID', defaultValue: '');
 
   @override
   Widget build(BuildContext context) {
@@ -62,8 +66,18 @@ class ReviewDialog extends StatelessWidget {
                   Navigator.pop(context);
 
                   final inAppReview = InAppReview.instance;
-                  if (await inAppReview.isAvailable()) {
-                    await inAppReview.requestReview();
+                  await ReviewStorage.setReviewStatus('reviewed');
+
+                  try {
+                    if (await inAppReview.isAvailable()) {
+                      await inAppReview.requestReview();
+                    } else {
+                      await inAppReview.openStoreListing(
+                        appStoreId: _iosAppStoreId.isEmpty ? null : _iosAppStoreId,
+                      );
+                    }
+                  } catch (_) {
+                    // ignore
                   }
                 },
                 child: Text('review.cta'.tr()),
@@ -72,7 +86,10 @@ class ReviewDialog extends StatelessWidget {
 
             // 👉 botão "Agora não" (opcional, mas lindo)
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () async {
+                Navigator.pop(context);
+                await ReviewStorage.setReviewStatus('dismissed');
+              },
               child: Text('review.not_now'.tr()),
             ),
           ],

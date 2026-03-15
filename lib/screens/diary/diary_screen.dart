@@ -11,6 +11,7 @@ import 'package:myyearmystory/screens/premium/premium_popup.dart';
 import 'package:myyearmystory/widgets/shared/show_login_prompt.dart';
 import 'package:myyearmystory/widgets/shared/main_scaffold.dart';
 import 'package:myyearmystory/utils/access_control.dart';
+import 'package:myyearmystory/widgets/shared/app_pill_button.dart';
 
 enum _DiaryAiMode { reflection, writing }
 
@@ -796,7 +797,10 @@ void initState() {
               const SizedBox(height: 12),
 
               /// 🔹 BOTÃO FIXO NA BASE
-              ElevatedButton(
+              AppPillButton(
+                expand: true,
+                backgroundColor: _userThemeColor,
+                text: 'diary.save'.tr(),
                 onPressed: _isSavingEntry
                     ? null
                     : () async {
@@ -818,13 +822,6 @@ void initState() {
                           if (mounted) setState(() => _isSavingEntry = false);
                         }
                       },
-
-
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _userThemeColor,
-                  foregroundColor: Colors.white,
-                ),
-                child: Text('diary.save'.tr()),
               ),
             ],
           ),

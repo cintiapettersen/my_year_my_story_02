@@ -3,6 +3,8 @@ import 'package:myyearmystory/widgets/shared/month_page_template.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:myyearmystory/utils/month_colors.dart';
+import 'package:myyearmystory/widgets/shared/app_pill_button.dart';
 
 import 'package:myyearmystory/screens/popups/popup_login.dart';
 
@@ -29,6 +31,15 @@ class _ZodiacWidgetState extends State<ZodiacWidget> {
   
 bool _isLoading = true;
 bool _hasError = false;
+
+  final List<Color> _zodiacAccentColors = const [
+    Color(0xFF7FA9D1),
+    Color(0xFFD7C3EE),
+    Color(0xFFD84A75),
+    Color(0xFFE78AC6),
+    Color(0xFFCBA5E3),
+    Color(0xFFD8CA7D),
+  ];
 
 
  bool get isGuest {
@@ -105,106 +116,199 @@ void _showPersonalYearModal({
   required String meaning,
   required String colorName,
 }) {
+  final monthAccent = getMonthColor(widget.month);
+  final accent =
+      _zodiacAccentColors[personalYear.abs() % _zodiacAccentColors.length];
+
   showDialog(
     context: context,
     builder: (_) => Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       insetPadding: const EdgeInsets.symmetric(horizontal: 26, vertical: 40),
       child: Stack(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(26),
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  Text(
-                    year.toString(),
-                    style: GoogleFonts.sacramento(
-                      fontSize: 40,
-                      color: parsedColor,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    tr("zodiac.personal_year_title"),
-                    style: GoogleFonts.satisfy(fontSize: 22),
-                  ),
-                  const SizedBox(height: 22),
-                  Container(
-                    width: 130,
-                    height: 130,
-                    decoration: BoxDecoration(
-                      color: parsedColor.withOpacity(0.20),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        "$personalYear",
-                        style: GoogleFonts.poppins(
-                          fontSize: 48,
-                          fontWeight: FontWeight.w700,
-                          color: parsedColor,
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  monthAccent.withValues(alpha: 0.22),
+                  accent.withValues(alpha: 0.22),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.12),
+                  blurRadius: 30,
+                  offset: const Offset(0, 16),
+                ),
+              ],
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(
+                  color: accent.withValues(alpha: 0.18),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(22, 26, 22, 22),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Text(
+                        year.toString(),
+                        style: GoogleFonts.sacramento(
+                          fontSize: 40,
+                          color: monthAccent.withValues(alpha: 0.90),
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 8),
+                      Text(
+                        tr("zodiac.personal_year_title"),
+                        style: GoogleFonts.satisfy(
+                          fontSize: 22,
+                          color: Colors.black.withValues(alpha: 0.75),
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      Container(
+                        width: 130,
+                        height: 130,
+                        decoration: BoxDecoration(
+                          color: accent.withValues(alpha: 0.18),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text(
+                            "$personalYear",
+                            style: GoogleFonts.poppins(
+                              fontSize: 48,
+                              fontWeight: FontWeight.w700,
+                              color: accent.withValues(alpha: 0.92),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 26),
+                      Text(
+                        title,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: accent.withValues(alpha: 0.92),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        meaning,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          height: 1.45,
+                          color: Colors.black.withValues(alpha: 0.78),
+                        ),
+                      ),
+                      const SizedBox(height: 26),
+                      Column(
+                        children: [
+                          Text(
+                            tr("zodiac.personal_year_color_label"),
+                            style: GoogleFonts.poppins(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black.withValues(alpha: 0.80),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF8EDF2),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: accent.withValues(alpha: 0.35),
+                                width: 1.2,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 14,
+                                  height: 14,
+                                  decoration: BoxDecoration(
+                                    color: parsedColor,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color:
+                                            Colors.black.withValues(alpha: 0.12),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Flexible(
+                                  child: Text(
+                                    colorName,
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color:
+                                          Colors.black.withValues(alpha: 0.75),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 26),
-                  Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.poppins(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: parsedColor,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    meaning,
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.poppins(fontSize: 15, height: 1.45),
-                  ),
-                  const SizedBox(height: 26),
-                  Column(
-  children: [
-    Text(
-      tr("zodiac.personal_year_color_label"),
-      style: GoogleFonts.poppins(
-        fontSize: 15,
-        fontWeight: FontWeight.w700,
-      ),
-    ),
-    const SizedBox(height: 8),
-    Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: parsedColor.withOpacity(0.25),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: parsedColor, width: 1.5),
-      ),
-      child: Text(
-        colorName,
-        textAlign: TextAlign.center,
-        style: GoogleFonts.poppins(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: parsedColor,
-        ),
-      ),
-    ),
-  ],
-),
-
-                ],
+                ),
               ),
             ),
           ),
           Positioned(
-            right: 12,
-            top: 12,
-            child: GestureDetector(
+            right: 10,
+            top: 10,
+            child: InkResponse(
               onTap: () => Navigator.pop(context),
-              child: const Icon(Icons.close),
+              radius: 22,
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.90),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.10),
+                      blurRadius: 10,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Icons.close,
+                  color: Colors.black.withValues(alpha: 0.70),
+                ),
+              ),
             ),
           ),
         ],
@@ -341,18 +445,18 @@ final profile = await Supabase.instance.client
   // UI HELPERS
   // --------------------------------------------------------
   Widget _buildPersonalYearButton() {
-    return GestureDetector(
-      onTap: _openPersonalYearDialog,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 14),
-        decoration: BoxDecoration(
-          color: const Color(0xFFBFA8E5),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Text(
-          tr("zodiac.discover_personal_year_button"),
-          style: GoogleFonts.poppins(
-            color: Colors.white,
+    final monthAccent = getMonthColor(widget.month);
+
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 320),
+        child: AppPillButton(
+          expand: true,
+          text: tr("zodiac.discover_personal_year_button"),
+          onPressed: _openPersonalYearDialog,
+          backgroundColor: monthAccent,
+          textStyle: GoogleFonts.poppins(
+            fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -393,39 +497,81 @@ final profile = await Supabase.instance.client
 
   Widget _zodiacCard(Map<String, dynamic> sign) {
     final isEN = context.locale.languageCode == 'en';
+    final monthAccent = getMonthColor(widget.month);
+    final idHash = (sign['id']?.toString() ?? (sign['signo_pt'] ?? 'z')).hashCode;
+    final accent = _zodiacAccentColors[idHash.abs() % _zodiacAccentColors.length];
+
+    final descriptionStyle = GoogleFonts.robotoSerif(
+      fontSize: 14,
+      height: 1.55,
+      color: Colors.black.withValues(alpha: 0.82),
+    );
 
     return Container(
       margin: const EdgeInsets.only(bottom: 28),
-      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFFF5DCEB).withOpacity(0.38),
+        gradient: LinearGradient(
+          colors: [
+            monthAccent.withValues(alpha: 0.22),
+            accent.withValues(alpha: 0.22),
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
         borderRadius: BorderRadius.circular(26),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 26,
+            offset: const Offset(0, 12),
+          ),
+        ],
       ),
-      child: Column(
-        children: [
-          Text(sign['emoji'] ?? "⭐", style: const TextStyle(fontSize: 60)),
-          const SizedBox(height: 12),
-          Text(
-            (isEN ? sign['signo_en'] : sign['signo_pt']).toUpperCase(),
-            style: GoogleFonts.poppins(
-                fontSize: 26, fontWeight: FontWeight.w700),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(22, 22, 22, 24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: accent.withValues(alpha: 0.25),
           ),
-          const SizedBox(height: 6),
-          Text(isEN ? sign['periodo_en'] : sign['periodo_pt']),
-          const SizedBox(height: 18),
-          Text(
-            isEN ? sign['descricao_en'] : sign['descricao_pt'],
-            textAlign: TextAlign.center,
-          ),
+        ),
+        child: Column(
+          children: [
+            Text(
+              sign['emoji'] ?? "⭐",
+              style: const TextStyle(fontSize: 60),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              (isEN ? sign['signo_en'] : sign['signo_pt']).toUpperCase(),
+              style: GoogleFonts.poppins(
+                fontSize: 26,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              isEN ? sign['periodo_en'] : sign['periodo_pt'],
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                color: Colors.black.withValues(alpha: 0.55),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 18),
+            Text(
+              isEN ? sign['descricao_en'] : sign['descricao_pt'],
+              textAlign: TextAlign.center,
+              style: descriptionStyle,
+            ),
+            const SizedBox(height: 24),
 
-          const SizedBox(height: 24),
-
-          // 🔄 SWIPE
-          SizedBox(
-            height: 120,
-            child: PageView(
-              controller: PageController(viewportFraction: 0.85),
-              children: [
+            // 🔄 SWIPE
+            _ZodiacInfoCarousel(
+              pages: [
                 _zodiacPageItem(
                   label: "zodiac.color".tr(),
                   value: isEN ? sign['cor_en'] : sign['cor_pt'],
@@ -438,45 +584,48 @@ final profile = await Supabase.instance.client
                 ),
                 _zodiacPageItem(
                   label: "zodiac.element".tr(),
-                  value: isEN
-                      ? sign['elemento_en']
-                      : sign['elemento_pt'],
+                  value: isEN ? sign['elemento_en'] : sign['elemento_pt'],
                   icon: Icons.local_fire_department,
                 ),
                 _zodiacPageItem(
                   label: "zodiac.stone".tr(),
-                  value:
-                      isEN ? sign['pedra_en'] : sign['pedra_pt'],
+                  value: isEN ? sign['pedra_en'] : sign['pedra_pt'],
                   icon: Icons.diamond,
                 ),
                 _zodiacPageItem(
                   label: "zodiac.flower".tr(),
-                  value:
-                      isEN ? sign['flor_en'] : sign['flor_pt'],
+                  value: isEN ? sign['flor_en'] : sign['flor_pt'],
                   icon: Icons.local_florist,
                 ),
                 _zodiacPageItem(
                   label: "zodiac.ruler".tr(),
-                  value: isEN
-                      ? sign['regente_en']
-                      : sign['regente_pt'],
+                  value: isEN ? sign['regente_en'] : sign['regente_pt'],
                   icon: Icons.public,
                 ),
               ],
             ),
-          ),
-
-          const SizedBox(height: 32),
-
-          Text(
-            "“${isEN ? sign['frase_en'] : sign['frase_pt']}”",
-            textAlign: TextAlign.center,
-            style: GoogleFonts.satisfy(
-              fontSize: 22,
-              color: const Color(0xFF554587),
+            const SizedBox(height: 8),
+            Text(
+              isEN ? "Swipe for more" : "Arraste para ver mais",
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: Colors.black.withValues(alpha: 0.45),
+              ),
             ),
-          ),
-        ],
+
+            const SizedBox(height: 28),
+
+            Text(
+              "“${isEN ? sign['frase_en'] : sign['frase_pt']}”",
+              textAlign: TextAlign.center,
+              style: descriptionStyle.copyWith(
+                fontStyle: FontStyle.italic,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF554587).withValues(alpha: 0.90),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -536,12 +685,19 @@ Widget build(BuildContext context) {
 
           const SizedBox(height: 12),
 
-          Text(
-            tr("zodiac.personal_year_helper"),
-            textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
-              fontSize: 13,
-              color: const Color(0xFF8D63C3).withOpacity(0.7),
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 320),
+              child: Text(
+                tr("zodiac.personal_year_helper"),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  height: 1.35,
+                  color: Colors.black87,
+                ),
+              ),
             ),
           ),
 
@@ -551,4 +707,102 @@ Widget build(BuildContext context) {
     ),
   );
 }
+}
+
+class _ZodiacInfoCarousel extends StatefulWidget {
+  final List<Widget> pages;
+
+  const _ZodiacInfoCarousel({
+    required this.pages,
+  });
+
+  @override
+  State<_ZodiacInfoCarousel> createState() => _ZodiacInfoCarouselState();
+}
+
+class _ZodiacInfoCarouselState extends State<_ZodiacInfoCarousel> {
+  late final PageController _controller;
+  int _index = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = PageController(viewportFraction: 0.84);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _previous() async {
+    if (_index <= 0) return;
+    await _controller.previousPage(
+      duration: const Duration(milliseconds: 260),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  Future<void> _next() async {
+    if (_index >= widget.pages.length - 1) return;
+    await _controller.nextPage(
+      duration: const Duration(milliseconds: 260),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final canGoBack = _index > 0;
+    final canGoNext = _index < widget.pages.length - 1;
+
+    return SizedBox(
+      height: 132,
+      child: Stack(
+        children: [
+          PageView(
+            controller: _controller,
+            physics: const BouncingScrollPhysics(),
+            onPageChanged: (i) => setState(() => _index = i),
+            children: widget.pages,
+          ),
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            child: Center(
+              child: IconButton(
+                onPressed: canGoBack ? _previous : null,
+                icon: Icon(
+                  Icons.chevron_left_rounded,
+                  size: 30,
+                  color: Colors.black.withValues(
+                    alpha: canGoBack ? 0.30 : 0.10,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            right: 0,
+            top: 0,
+            bottom: 0,
+            child: Center(
+              child: IconButton(
+                onPressed: canGoNext ? _next : null,
+                icon: Icon(
+                  Icons.chevron_right_rounded,
+                  size: 30,
+                  color: Colors.black.withValues(
+                    alpha: canGoNext ? 0.30 : 0.10,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

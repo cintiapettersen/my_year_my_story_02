@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:characters/characters.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -28,6 +29,14 @@ class _MonthlyQuizWidgetState extends State<MonthlyQuizWidget> {
   Map<String, dynamic>? quizData;
 
   bool loading = true;
+
+  String _toSentenceCase(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return trimmed;
+    final lower = trimmed.toLowerCase();
+    final chars = lower.characters;
+    return '${chars.first.toUpperCase()}${chars.skip(1)}';
+  }
   bool _isPremiumUser = false;
 
   bool hasSavedResult = false;
@@ -562,7 +571,7 @@ Widget _buildQuizContent() {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              quizTitle!,
+              _toSentenceCase(quizTitle!),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontFamily: 'Poppins',
