@@ -191,10 +191,11 @@
     "plan_monthly_price": "{0} per month",
     "plan_yearly_price": "{0} per year",
     "plan_unavailable": "Price unavailable",
-    "trial_line_monthly": "7-day free trial. Then {0} per month.",
-    "trial_line_yearly": "7-day free trial. Then {0} per year.",
+    "trial_line_monthly": "7-day free trial. After that, you'll be charged automatically {0}/month.",
+    "trial_line_yearly": "7-day free trial. After that, you'll be charged automatically {0}/year.",
+    "trial_line_generic": "7-day free trial. After that, you’ll be charged automatically for the selected plan.",
     "renew_line1": "Renews automatically unless canceled at least 24 hours before the end of the current period.",
-    "renew_line2": "Manage or cancel anytime in your Apple or Google account settings.",
+    "renew_line2": "You can manage or cancel anytime in your Google Play settings (or Apple ID settings).",
     "see_all": "See all benefits",
     "see_less": "Hide benefits",
     "footer_links": "Restore Purchases | Terms of Use | Privacy Policy",
@@ -319,22 +320,39 @@
     "view_more": "see more...",
     "completed_message": "Well done! ✨"
   },
-  "month_menu": {
-    "goals": "Monthly Goals",
-    "about_me": "About Me",
-    "quiz": "Interactive Quiz",
-    "signs": "Zodiac of the Month",
-    "tips": "Daily Message",
-    "facts": "Did You Know?",
-    "interview": "Connections",
+	  "month_menu": {
+	    "goals": "Monthly Goals",
+	    "about_me": "About Me",
+	    "between_lines": "Between the Lines",
+	    "quiz": "Interactive Quiz",
+	    "signs": "Zodiac of the Month",
+	    "tips": "Daily Message",
+	    "facts": "Did You Know?",
+	    "interview": "Connections",
     "lists": "My Lists",
     "photos": "Monthly Photos",
     "dates": "Calendar & Alerts",
     "literary_quotes": "Verse & Poetry",
     "time_capsule": "Time Capsule",
     "gratitude": "Gratitude",
-    "reflections": "Reflections",
-    "choose_section": "What would you like to explore today?"
+	    "reflections": "Reflections",
+	    "choose_section": "What would you like to explore today?"
+	  },
+
+  "between_lines": {
+    "page_label": "Between the Lines",
+    "description": "Write it down before you forget — recipes, loose thoughts, quotes, lists… it all fits here.",
+    "card_title": "BETWEEN THE LINES",
+    "hint": "Write it down before you forget…",
+    "saving": "Saving…",
+    "save": "Save",
+    "saved": "Note saved ✨",
+    "save_error": "Couldn’t save right now.",
+    "my_notes": "My notes",
+    "search_hint": "Search your notes",
+    "empty": "Nothing here yet. Write something and save ✍️",
+    "no_results": "No notes found.",
+    "update": "Update"
   },
 
   "dailyLuck": {
@@ -492,6 +510,15 @@
     "pick_date_first": "Choose when you want to be reminded 💌",
     "save_button": "Save capsule",
     "saving": "Saving...",
+    "saved_state": "Last saved capsule",
+    "edit_button": "Edit",
+    "new_button": "New",
+    "my_capsules": "My capsules",
+    "no_saved": "No saved capsules yet.",
+    "new_confirm_title": "Create a new capsule?",
+    "new_confirm_desc": "Your current capsule will stay scheduled. Do you want to write a new one now?",
+    "new_confirm_cancel": "Cancel",
+    "new_confirm_ok": "Yes",
     "saved_success": "Time capsule saved 💖",
     "save_error": "We couldn’t save this right now. Please try again.",
     "alert_title": "Time Capsule"
@@ -571,6 +598,7 @@
     "default_description": "Ask questions to someone special and keep their answers forever.",
     "fixed_description": "Be a guardian of memories and record stories worth remembering. This can be a unique moment with special people.",
     "who_prompt": "Who would you like to interview?",
+    "identification_title": "INTERVIEW DETAILS",
     "name_label": "Name",
     "name_hint": "Enter the name",
     "relation_hint": "Relationship (friend, mother, uncle…)",
@@ -741,7 +769,8 @@
     "search_other_dates": "Search other dates",
     "choose_period": "Choose period",
     "choose_period_desc": "Select the month and year you want to view.",
-    "select_day_first": "Please select a day on the calendar first 😊"
+    "select_day_first": "Please select a day on the calendar first 😊",
+    "free_limit_reached": "You’ve reached the limit of {limit} mood entries this month. Go Premium to continue 💖"
 
   },
 

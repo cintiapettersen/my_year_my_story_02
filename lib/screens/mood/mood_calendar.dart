@@ -45,9 +45,6 @@ class _MoodCalendarState extends State<MoodCalendar> {
   Map<int, String> moodByDay = {};
   int? selectedDay;
 
-
-  bool _offlineMoodWarned = false; // 👈 AQUI
-
   @override
   void initState() {
     super.initState();
@@ -65,7 +62,6 @@ class _MoodCalendarState extends State<MoodCalendar> {
     if (monthChanged || yearChanged || userChanged) {
       setState(() {
         selectedDay = null;
-        _offlineMoodWarned = false;
 
         // Evita mostrar humores do período anterior enquanto recarrega.
         moodByDay = {};
@@ -74,27 +70,6 @@ class _MoodCalendarState extends State<MoodCalendar> {
       loadMoods();
     }
   }
-
- 
-
-
-  // 👇 COLOCA AQUI
-  void _showOfflineMoodWarning() {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      behavior: SnackBarBehavior.floating,
-      duration: const Duration(seconds: 3),
-      backgroundColor: const Color(0xFFFFEEF4),
-      content: Text(
-        'Para registrar o humor, é preciso estar online 💭',
-        style: const TextStyle(color: Color(0xFF6D2C4A)),
-      ),
-    ),
-  );
-}
-
-
-  
 
   void setGuestMood(int day, String moodKey) {
     setState(() {
@@ -384,16 +359,7 @@ Future<void> _deleteMood(int day) async {
         return;
       }
 
-      // 🟠 Dia vazio + guest → avisa uma vez
-      if (widget.userId == null) {
-        if (!_offlineMoodWarned && mounted) {
-          _showOfflineMoodWarning();
-          _offlineMoodWarned = true;
-        }
-        return;
-      }
-
-      // ✅ Usuário válido → segue fluxo normal
+      // ✅ Dia vazio: ainda permite selecionar no modo convidado
       widget.onDaySelected?.call(day);
     },
     child: Container(

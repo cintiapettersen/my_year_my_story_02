@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -203,7 +204,9 @@ Future<void> _signInWithApple() async {
     }
   } catch (e) {
     AppSession.flow = AppAuthFlow.splash;
-    debugPrint('Apple login error: $e');
+    if (kDebugMode) {
+      debugPrint('Apple login error: $e');
+    }
   }
 
   setState(() {});

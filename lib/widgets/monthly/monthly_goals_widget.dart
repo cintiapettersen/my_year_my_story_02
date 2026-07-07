@@ -42,10 +42,13 @@ class _MonthlyGoalsWidgetState extends State<MonthlyGoalsWidget> {
 
 
 
-    // 🔒 Limites plano free
+  // 🔒 Limites plano free (logado, não-premium)
   static const int freeMonthlyLimit = 3;
   static const int freeDailyLimit = 5;
 
+  // 🟡 Limites convidado (local)
+  static const int guestMonthlyLimit = 5;
+  static const int guestDailyLimit = 8;
 
   List<MonthlyGoal> _monthlyGoals = [];
   Map<String, List<Map<String, dynamic>>> _dailyGoalsByDate = {};
@@ -94,16 +97,16 @@ Future<void> _addMonthlyGoal() async {
   final text = _monthlyController.text.trim();
   if (text.isEmpty) return;
 
-  final user = SupabaseConfig.client.auth.currentUser;
-
-  // 👤 não logado
-  if (user == null) {
-    showLoginPrompt(context);
-    return;
+  // 👤 convidado
+  if (isGuest) {
+    if (_monthlyGoals.length >= guestMonthlyLimit) {
+      showLoginPrompt(context);
+      return;
+    }
   }
 
   // 🔒 limite plano free
-  if (!_isPremiumUser && _monthlyGoals.length >= freeMonthlyLimit) {
+  if (!isGuest && !_isPremiumUser && _monthlyGoals.length >= freeMonthlyLimit) {
     showPremiumPopup(context);
     return;
   }
@@ -166,14 +169,6 @@ Future<void> _addMonthlyGoal() async {
 //. Helper para metas do DIA
 
 bool _canAddDailyGoal() {
-  final user = SupabaseConfig.client.auth.currentUser;
-
-  // 👤 não logado
-  if (user == null) {
-    showLoginPrompt(context);
-    return false;
-  }
-
   // 🗓️ data de hoje
   final now = DateTime.now();
   final todayKey =
@@ -182,6 +177,15 @@ bool _canAddDailyGoal() {
       '${now.day.toString().padLeft(2, '0')}';
 
   final todaysGoals = _dailyGoalsByDate[todayKey]?.length ?? 0;
+
+  // 👤 convidado
+  if (isGuest) {
+    if (todaysGoals >= guestDailyLimit) {
+      showLoginPrompt(context);
+      return false;
+    }
+    return true;
+  }
 
   // 🔒 limite plano free (POR DIA)
   if (!_isPremiumUser && todaysGoals >= freeDailyLimit) {
@@ -382,11 +386,17 @@ final TextStyle tabTextStyle = const TextStyle(
                     goalId: goal.id,
                     conteudo: goal.conteudo,
                     concluido: true,
+                    mes: widget.month,
+                    ano: widget.year,
                   );
                   await _loadMonthlyGoals();
                 },
                 onDelete: () async {
-                  await MonthlyGoalService.deleteGoal(goal.id);
+                  await MonthlyGoalService.deleteGoal(
+                    goal.id,
+                    mes: widget.month,
+                    ano: widget.year,
+                  );
                   await _loadMonthlyGoals();
                 },
               ),
@@ -413,6 +423,8 @@ final TextStyle tabTextStyle = const TextStyle(
                       goalId: goal.id,
                       conteudo: goal.conteudo,
                       concluido: false,
+                      mes: widget.month,
+                      ano: widget.year,
                     );
                     await _loadMonthlyGoals();
                   },
@@ -543,12 +555,17 @@ final TextStyle tabTextStyle = const TextStyle(
                             await DailyGoalService.toggleCompleted(
                               goalId: goal['id'],
                               completed: true,
+                              month: widget.month,
+                              year: widget.year,
                             );
                             await _loadDailyGoals();
                           },
                           onDelete: () async {
                             await DailyGoalService.deleteGoal(
-                                goal['id']);
+                              goal['id'],
+                              month: widget.month,
+                              year: widget.year,
+                            );
                             await _loadDailyGoals();
                           },
                         );
@@ -576,6 +593,8 @@ final TextStyle tabTextStyle = const TextStyle(
                           await DailyGoalService.toggleCompleted(
                             goalId: goal['id'],
                             completed: false,
+                            month: widget.month,
+                            year: widget.year,
                           );
                           await _loadDailyGoals();
                         },

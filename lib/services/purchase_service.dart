@@ -150,7 +150,9 @@ _products = loadedProducts;
       );
       await _restorePurchases();
     } catch (e) {
-      debugPrint("Erro ao carregar produtos: $e");
+      if (kDebugMode) {
+        debugPrint("Erro ao carregar produtos: $e");
+      }
     } finally {
       _isLoading = false;
       notifyListeners();

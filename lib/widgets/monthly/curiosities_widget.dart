@@ -56,6 +56,8 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
     Color(0xFFFFB74D),
   ];
 
+  static const Color _aboutMeAccent = Color(0xFFc79fe2);
+
   @override
   void initState() {
     super.initState();
@@ -292,14 +294,14 @@ class _CuriositiesWidgetState extends State<CuriositiesWidget> {
   // ==============================
   // BUILD
   // ==============================
-  @override
+@override
 Widget build(BuildContext context) {
   return MonthPageTemplate(
     month: widget.month,
     year: widget.year,
     title: '',
     pageLabel: 'curiosities.title'.tr(),
-    labelColor: const Color(0xFFc79fe2),
+    labelColor: _aboutMeAccent,
     description: 'curiosities.description_fixed'.tr(),
 
 child: RemoteDataWrapper(
@@ -312,126 +314,148 @@ child: RemoteDataWrapper(
         Text(
           '${_currentPage + 1} / ${_questions.length}',
           style: const TextStyle(fontSize: 13, color: Colors.black54),
+        )
+      else
+        Padding(
+          padding: const EdgeInsets.only(top: 10),
+          child: Text(
+            'dashboard.no_curiosity_message'.tr(),
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.black.withValues(alpha: 0.55)),
+          ),
         ),
 
       const SizedBox(height: 12),
 
-      SizedBox(
-        height: 340,
-        child: PageView.builder(
-          controller: _pageController,
-          physics: const BouncingScrollPhysics(),
-          itemCount: _questions.length,
-          onPageChanged: (i) =>
-              setState(() => _currentPage = i),
-          itemBuilder: (_, index) => LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                child: ConstrainedBox(
-                  constraints:
-                      BoxConstraints(minHeight: constraints.maxHeight - 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.favorite,
-                        color: heartColors[index % heartColors.length],
-                        size: 22,
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      Text(
-                        _questions[index]['text'] ?? '',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFFBD3E7D),
-                          height: 1.4,
+      if (_questions.isNotEmpty)
+        SizedBox(
+          height: 340,
+          child: PageView.builder(
+            controller: _pageController,
+            physics: const BouncingScrollPhysics(),
+            itemCount: _questions.length,
+            onPageChanged: (i) => setState(() => _currentPage = i),
+            itemBuilder: (_, index) => LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                  child: ConstrainedBox(
+                    constraints:
+                        BoxConstraints(minHeight: constraints.maxHeight - 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.favorite,
+                          color: heartColors[index % heartColors.length],
+                          size: 22,
                         ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-	                      TextField(
-	                        controller: _controllers[index],
-	                        autocorrect: true,
-	                        enableSuggestions: true,
-	                        smartQuotesType: SmartQuotesType.enabled,
-	                        smartDashesType: SmartDashesType.enabled,
-	                        maxLines: 5,
-	                        decoration: InputDecoration(
-	                          hintText: 'curiosities.answer_hint'.tr(),
-	                          filled: true,
-	                          fillColor: const Color(0xFFFCEAF4),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide.none,
+                        const SizedBox(height: 8),
+                        Text(
+                          _questions[index]['text'] ?? '',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFFBD3E7D),
+                            height: 1.4,
                           ),
                         ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      AppPillButton(
-                        text: 'curiosities.save'.tr(),
-                        onPressed: () => _saveCurrentAnswer(index),
-                      ),
-                    ],
+                        const SizedBox(height: 16),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: _aboutMeAccent.withValues(alpha: 0.42),
+                            borderRadius: BorderRadius.circular(22),
+                          ),
+                          padding: const EdgeInsets.all(14),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFCEAF4),
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(
+                                color: _aboutMeAccent.withValues(alpha: 0.18),
+                                width: 1.2,
+                              ),
+                            ),
+                            child: TextField(
+                              controller: _controllers[index],
+                              autocorrect: true,
+                              enableSuggestions: true,
+                              smartQuotesType: SmartQuotesType.enabled,
+                              smartDashesType: SmartDashesType.enabled,
+                              maxLines: 5,
+                              decoration: InputDecoration(
+                                hintText: 'curiosities.answer_hint'.tr(),
+                                hintStyle: TextStyle(
+                                  color: Colors.black.withValues(alpha: 0.35),
+                                ),
+                                filled: true,
+                                fillColor: Colors.transparent,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 16,
+                                ),
+                                border: InputBorder.none,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        AppPillButton(
+                          backgroundColor: _aboutMeAccent,
+                          text: 'curiosities.save'.tr(),
+                          onPressed: () => _saveCurrentAnswer(index),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
-      ),
 
       const SizedBox(height: 12),
 
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back_ios),
-            onPressed: _currentPage > 0
-                ? () => _pageController.previousPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeOut,
-                    )
-                : null,
-          ),
-
-          Row(
-            children: List.generate(_questions.length, (index) {
-              final isActive = index == _currentPage;
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                width: isActive ? 10 : 8,
-                height: isActive ? 10 : 8,
-                decoration: BoxDecoration(
-                  color: isActive
-                      ? const Color(0xFFE25BA6)
-                      : Colors.black26,
-                  shape: BoxShape.circle,
-                ),
-              );
-            }),
-          ),
-
-          IconButton(
-            icon: const Icon(Icons.arrow_forward_ios),
-            onPressed: _currentPage < _questions.length - 1
-                ? () => _pageController.nextPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeOut,
-                    )
-                : null,
-          ),
-        ],
-      ),
+      if (_questions.isNotEmpty)
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back_ios),
+              onPressed: _currentPage > 0
+                  ? () => _pageController.previousPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut,
+                      )
+                  : null,
+            ),
+            Row(
+              children: List.generate(_questions.length, (index) {
+                final isActive = index == _currentPage;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  width: isActive ? 10 : 8,
+                  height: isActive ? 10 : 8,
+                  decoration: BoxDecoration(
+                    color: isActive ? const Color(0xFFE25BA6) : Colors.black26,
+                    shape: BoxShape.circle,
+                  ),
+                );
+              }),
+            ),
+            IconButton(
+              icon: const Icon(Icons.arrow_forward_ios),
+              onPressed: _currentPage < _questions.length - 1
+                  ? () => _pageController.nextPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut,
+                      )
+                  : null,
+            ),
+          ],
+        ),
     ],
   ),
 ),

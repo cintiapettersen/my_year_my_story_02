@@ -48,7 +48,7 @@ class InterviewService {
   ) async {
     final response = await _client
         .from('entries')
-        .select('interview_data')
+        .select('interview_data, updated_at')
         .eq('user_id', userId)
         .eq('month', month)
         .eq('year', year)
@@ -62,10 +62,13 @@ class InterviewService {
           'age': '',
         },
         'questions': [],
+        'updated_at': response?['updated_at'],
       };
     }
 
-    return Map<String, dynamic>.from(response['interview_data']);
+    final payload = Map<String, dynamic>.from(response['interview_data']);
+    payload['updated_at'] = response['updated_at'];
+    return payload;
   }
 
   /// 🔹 Salva / atualiza entrevista
@@ -78,9 +81,12 @@ class InterviewService {
     required String interviewName,
     required String interviewRelation,
     required String interviewAge,
+    String? createdAtIso,
   }) async {
     try {
+      final createdAt = createdAtIso ?? DateTime.now().toIso8601String();
       final jsonData = {
+        'created_at': createdAt,
         'person': {
           'name': interviewName,
           'relation': interviewRelation,

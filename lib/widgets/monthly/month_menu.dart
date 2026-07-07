@@ -24,7 +24,7 @@ class MonthMenu extends StatelessWidget {
     final double screenWidth = MediaQuery.of(context).size.width;
 
     final double gridIconSize =
-        (screenWidth * 0.065).clamp(24, 40);
+        (screenWidth * 0.070).clamp(26, 42);
 
     final double gridTextSize =
         (screenWidth * 0.027).clamp(11, 14);
@@ -59,6 +59,7 @@ class MonthMenu extends StatelessWidget {
     final List<Map<String, dynamic>> menuItems = [
       {'title': 'month_menu.goals', 'icon': PhosphorIconsRegular.target, 'color': const Color(0xFFe04cb7)},
       {'title': 'month_menu.about_me', 'icon': PhosphorIconsRegular.userCircle, 'color': const Color(0xFFc79fe2)},
+      {'title': 'month_menu.between_lines', 'icon': PhosphorIconsRegular.notebook, 'color': const Color(0xFFE25BA6)},
       {'title': 'month_menu.quiz', 'icon': PhosphorIconsRegular.star, 'color': const Color.fromARGB(255, 221, 156, 183)},
       {'title': 'month_menu.signs', 'icon': PhosphorIconsRegular.moonStars, 'color': const Color(0xFF7654a3)},
       {'title': 'month_menu.tips', 'icon': PhosphorIconsRegular.flower, 'color': const Color(0xFFb539bc)},
@@ -75,7 +76,7 @@ class MonthMenu extends StatelessWidget {
 
     return Container(
       color: const Color(0xFFFFF7FA),
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -159,9 +160,9 @@ Text(
               itemCount: menuItems.length,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
-                mainAxisSpacing: 12,
+                mainAxisSpacing: 14,
                 crossAxisSpacing: 12,
-                childAspectRatio: 0.92,
+                childAspectRatio: 1.0,
               ),
               itemBuilder: (context, index) {
                 final item = menuItems[index];
@@ -176,27 +177,27 @@ Text(
                     duration: const Duration(milliseconds: 200),
                     decoration: BoxDecoration(
                       color: item['color'] as Color,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(18),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
+                          color: Colors.black.withValues(alpha: 0.10),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
                       ],
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          item['icon'] as IconData,
-                          size: gridIconSize,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(height: 8),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
-                          child: Text(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            item['icon'] as IconData,
+                            size: gridIconSize,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
                             (item['title'] as String).tr(),
                             textAlign: TextAlign.center,
                             style: TextStyle(
@@ -206,8 +207,8 @@ Text(
                               height: 1.15,
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 );

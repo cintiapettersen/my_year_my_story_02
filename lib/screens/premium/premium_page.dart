@@ -48,11 +48,25 @@ class _PremiumPageState extends State<PremiumPage> {
       );
     }
 
-    final monthlyProduct = purchaseService.monthlyProduct;
-    final yearlyProduct = purchaseService.yearlyProduct;
+	    final monthlyProduct = purchaseService.monthlyProduct;
+	    final yearlyProduct = purchaseService.yearlyProduct;
 
-   final monthlyPrice = _compactPrice(monthlyProduct?.price ?? "");
-   final yearlyPrice = _compactPrice(yearlyProduct?.price ?? "");   
+	   final monthlyPrice = _compactPrice(monthlyProduct?.price ?? "");
+	   final yearlyPrice = _compactPrice(yearlyProduct?.price ?? "");
+
+	    final selectedTrialLine = _selectedPlan == _Plan.yearly
+	        ? (yearlyPrice.isEmpty
+	            ? tr("premium.trial_line_generic")
+	            : tr(
+	                "premium.trial_line_yearly",
+	                args: [yearlyPrice],
+	              ))
+	        : (monthlyPrice.isEmpty
+	            ? tr("premium.trial_line_generic")
+	            : tr(
+	                "premium.trial_line_monthly",
+	                args: [monthlyPrice],
+	              ));
    
    
    
@@ -237,14 +251,25 @@ class _PremiumPageState extends State<PremiumPage> {
                             ),
                           ),
 
-                          const SizedBox(height: 15),
+	                          const SizedBox(height: 15),
 
-                          Text(
-                            tr("premium.renew_line1"),
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              color: Colors.black.withOpacity(0.7),
+	                          Text(
+	                            selectedTrialLine,
+	                            textAlign: TextAlign.center,
+	                            style: GoogleFonts.inter(
+	                              fontSize: 12,
+	                              color: Colors.black.withOpacity(0.7),
+	                            ),
+	                          ),
+
+	                          const SizedBox(height: 10),
+
+	                          Text(
+	                            tr("premium.renew_line1"),
+	                            textAlign: TextAlign.center,
+	                            style: GoogleFonts.inter(
+	                              fontSize: 12,
+	                              color: Colors.black.withOpacity(0.7),
                             ),
                           ),
 

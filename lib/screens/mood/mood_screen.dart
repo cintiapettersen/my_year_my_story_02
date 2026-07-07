@@ -6,7 +6,9 @@ import 'package:go_router/go_router.dart';
 
 import 'package:myyearmystory/widgets/shared/main_scaffold.dart';
 import 'package:myyearmystory/screens/mood/mood_calendar.dart';
+import 'package:myyearmystory/screens/popups/popup_login.dart';
 import 'package:myyearmystory/screens/premium/premium_popup.dart';
+import 'package:myyearmystory/utils/access_control.dart';
 
 class MoodScreen extends StatefulWidget {
   final int month;
@@ -25,6 +27,8 @@ class MoodScreen extends StatefulWidget {
 class _MoodScreenState extends State<MoodScreen> {
   final supabase = Supabase.instance.client;
 
+  static const int _freeMoodMonthlyLimit = 6;
+
   int tempMonth = 1;
   int tempYear = DateTime.now().year;
 
@@ -35,7 +39,7 @@ class _MoodScreenState extends State<MoodScreen> {
 
   // 👤 GUEST CONTROL
   int guestMoodCount = 0;
-  static const int guestMoodLimit = 3;
+  static const int guestMoodLimit = 2;
 
   String trMood(String key) => "mood.$key".tr();
 
@@ -168,7 +172,7 @@ class _MoodScreenState extends State<MoodScreen> {
     if (day == null) {
       _showSnack(
         "mood.select_day_first".tr(),
-        Colors.black87,
+        const Color(0xFFE25BA6),
       );
       return;
     }
@@ -178,7 +182,7 @@ class _MoodScreenState extends State<MoodScreen> {
     // 👤 GUEST
     if (user == null) {
       if (guestMoodCount >= guestMoodLimit) {
-        showPremiumPopup(context);
+        showLoginPrompt(context);
         return;
       }
 
@@ -194,10 +198,45 @@ class _MoodScreenState extends State<MoodScreen> {
 
       if (guestMoodCount >= guestMoodLimit) {
         Future.delayed(const Duration(milliseconds: 300), () {
-          showPremiumPopup(context);
+          showLoginPrompt(context);
         });
       }
       return;
+    }
+
+    // 👤 Logged but not premium: limit unique days registered per month.
+    final isPremiumUser = await AccessControl.isPremium();
+    if (!isPremiumUser) {
+      final existingForDay = await supabase
+          .from('mood_entries')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('day', day)
+          .eq('month', widget.month)
+          .eq('year', widget.year)
+          .maybeSingle();
+
+      // If the user is editing an already-registered day, allow.
+      if (existingForDay == null) {
+        final existingThisMonth = await supabase
+            .from('mood_entries')
+            .select('day')
+            .eq('user_id', user.id)
+            .eq('month', widget.month)
+            .eq('year', widget.year);
+
+        if (existingThisMonth.length >= _freeMoodMonthlyLimit) {
+          if (!mounted) return;
+          _showSnack(
+            "mood.free_limit_reached".tr(
+              namedArgs: {'limit': _freeMoodMonthlyLimit.toString()},
+            ),
+            const Color(0xFFE25BA6),
+          );
+          showPremiumPopup(context);
+          return;
+        }
+      }
     }
 
     if (isSaving) return;

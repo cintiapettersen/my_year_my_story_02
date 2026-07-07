@@ -72,6 +72,10 @@ This app needs access to your photo library so users can add photos to personali
 This app needs access to your photo library so users can add photos to personalize their memories.
 This app needs access to your photo library so users can add photos to personalize their memories.
 </string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Precisamos do microfone para transcrever suas respostas na entrevista.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Precisamos do reconhecimento de fala para transcrever suas respostas na entrevista.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

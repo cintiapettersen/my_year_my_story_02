@@ -129,30 +129,31 @@ class MonthPageTemplate extends StatelessWidget {
           title.isEmpty ? (pageLabel ?? '') : title,
           style: const TextStyle(
             fontFamily: 'Cinzel',
-            fontSize: 20,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Colors.white,
-            letterSpacing: 1.1,
+            letterSpacing: 1.0,
           ),
         ),
       ),
 
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(14, 14, 14, 40),
-          child: Column(
-            children: [
-              MonthHeader(
-                month: month,
-                year: year,
-                title: title,
-                pageLabel: pageLabel,
-                labelColor: resolvedLabelColor,
-              ),
-              const SizedBox(height: 12),
-              child,
-            ],
-          ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: 40),
+        child: Column(
+          children: [
+            MonthHeader(
+              month: month,
+              year: year,
+              title: title,
+              pageLabel: pageLabel,
+              labelColor: resolvedLabelColor,
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              child: child,
+            ),
+          ],
         ),
       ),
 

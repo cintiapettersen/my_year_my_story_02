@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:myyearmystory/widgets/shared/app_bottom_menu.dart';
@@ -33,9 +34,13 @@ class _MainScaffoldState extends State<MainScaffold> {
         if (!navigator.canPop()) return;
         await navigator.maybePop();
       } on AssertionError catch (e) {
-        debugPrint('MainScaffold back pop blocked (navigator locked): $e');
+        if (kDebugMode) {
+          debugPrint('MainScaffold back pop blocked (navigator locked): $e');
+        }
       } catch (e) {
-        debugPrint('MainScaffold back pop failed: $e');
+        if (kDebugMode) {
+          debugPrint('MainScaffold back pop failed: $e');
+        }
       } finally {
         if (mounted) setState(() => _backBusy = false);
       }

@@ -2,7 +2,7 @@ name: myyearmystory
 description: "Diário interativo mensal para registro de histórias, emoções e reflexões."
 publish_to: "none"
 
-version: 1.0.0+50
+version: 2.0.2+55
 
 environment:
   sdk: ">=3.7.0 <4.0.0"
@@ -15,13 +15,16 @@ dependencies:
   webview_flutter: ^4.7.0
   flutter_dotenv: ^6.0.0
 
-  # 📊 Gráficos e UI
+  # 📊 Gráficos e UI,
   fl_chart: 1.1.1
   flutter_svg: ^2.2.3
   smooth_page_indicator: ^2.0.1
 
   # 🎙️ Áudio
   just_audio: ^0.10.5
+  speech_to_text: ^7.0.0
+  record: ^6.0.0
+  storage_client: ^2.4.1
   path_provider: ^2.1.5
 
   # 🌍 Localização

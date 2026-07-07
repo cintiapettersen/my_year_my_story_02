@@ -45,16 +45,15 @@ class MonthHeader extends StatelessWidget {
     final translated = monthKey.tr();
     final monthName = translated[0].toUpperCase() + translated.substring(1).toLowerCase();
 
+    final monthShort =
+        monthName.length >= 3 ? '${monthName.substring(0, 3)}.' : monthName;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 18),
       decoration: BoxDecoration(
         color: bannerColor,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
+        borderRadius: BorderRadius.zero,
       ),
 
       child: Column(
@@ -73,9 +72,11 @@ class MonthHeader extends StatelessWidget {
               child: Text(
                 pageLabel!,
                 style: const TextStyle(
+                  fontFamily: 'Cinzel',
                   fontSize: 18,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.bold,
                   color: Colors.white,
+                  letterSpacing: 1.0,
                 ),
               ),
             ),
@@ -86,16 +87,17 @@ class MonthHeader extends StatelessWidget {
 
 
           /// 📅 Mês + ano
-Text(
-  "$monthName $year",
-  style: const TextStyle(
-    fontSize: 15,
-    fontWeight: FontWeight.bold,
-    color: Colors.white,
-    letterSpacing: 0.5,
-  ),
-  textAlign: TextAlign.center,
-),
+          Text(
+            "$monthShort $year",
+            style: const TextStyle(
+              fontFamily: 'Cinzel',
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+              letterSpacing: 0.9,
+            ),
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 6),
 
         

@@ -27,6 +27,14 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
   bool _isLoading = false;
   bool _isPremiumUser = false;
 
+  bool get isGuest => SupabaseConfig.client.auth.currentUser == null;
+
+  // 🔒 Limite plano free (logado, não-premium)
+  static const int freeGratitudeLimit = 3;
+
+  // 🟡 Limite convidado (local)
+  static const int guestGratitudeLimit = 5;
+
   final List<Color> trashColors = const [
     Color(0xFFcdd8e8),
     Color(0xFFe04cb7),
@@ -108,13 +116,14 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
 
-    final user = SupabaseConfig.client.auth.currentUser;
-    if (user == null) {
-      showLoginPrompt(context);
-      return;
+    if (isGuest) {
+      if (_gratitudes.length >= guestGratitudeLimit) {
+        showLoginPrompt(context);
+        return;
+      }
     }
 
-    if (!_isPremiumUser && _gratitudes.length >= 3) {
+    if (!isGuest && !_isPremiumUser && _gratitudes.length >= freeGratitudeLimit) {
       showPremiumPopup(context);
       return;
     }
@@ -158,12 +167,6 @@ class _GratitudeWidgetState extends State<GratitudeWidget> {
   }
 
   Future<void> _deleteGratitude(int index) async {
-    final user = SupabaseConfig.client.auth.currentUser;
-    if (user == null) {
-      showLoginPrompt(context);
-      return;
-    }
-
     setState(() => _isLoading = true);
 
     final newList = List<String>.from(_gratitudes)..removeAt(index);

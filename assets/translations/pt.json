@@ -182,13 +182,14 @@
 "plan_unavailable": "Preço indisponível",
 "trial_title": "7 dias gratuitos",
 "trial_subtitle": "Depois {0} / mês",
-"renew_line1": "Renova automaticamente, a menos que seja cancelado com 24h de antecedência.",
-"renew_line2": "Gerencie ou cancele a qualquer momento nas configurações da sua conta Apple ou Google.",
+"renew_line1": "A assinatura é renovada automaticamente, a menos que seja cancelada com pelo menos 24 horas de antecedência.",
+"renew_line2": "Você pode gerenciar ou cancelar a qualquer momento nas configurações da sua conta Google Play (ou Apple ID).",
 "see_all": "Ver todos os benefícios",
 "see_less": "Menos benefícios",
 "footer_links": "Restaurar Compras | Termos de Uso | Política de Privacidade",
-"trial_line_monthly": "7 dias grátis. Depois {0} por mês.",
-"trial_line_yearly": "7 dias grátis. Depois {0} por ano.",
+"trial_line_monthly": "Teste gratuito de 7 dias. Após esse período, você será cobrado automaticamente {0}/mês.",
+"trial_line_yearly": "Teste gratuito de 7 dias. Após esse período, você será cobrado automaticamente {0}/ano.",
+"trial_line_generic": "Teste gratuito de 7 dias. Após esse período, você será cobrado automaticamente pelo plano selecionado (mensal ou anual).",
 "best_value": "Melhor valor",
 "restore_button": "Restaurar compras",
 "restore_success": "Compras restauradas com sucesso!",
@@ -325,22 +326,39 @@
 
   },
 
-  "month_menu": {
-    "goals": "Metas do Mês",
-    "about_me": "Sobre Mim",
-    "quiz": "Quiz Interativo",
-    "signs": "Signos do Mês",
-    "tips": "Mensagem do Dia",
-    "facts": "Você Sabia?",
-    "interview": "Conexões",
+	  "month_menu": {
+	    "goals": "Metas do Mês",
+	    "about_me": "Sobre Mim",
+	    "between_lines": "Entrelinhas",
+	    "quiz": "Quiz Interativo",
+	    "signs": "Signos do Mês",
+	    "tips": "Mensagem do Dia",
+	    "facts": "Você Sabia?",
+	    "interview": "Conexões",
     "lists": "Minhas Listas",
     "photos": "Fotos do Mês",
     "dates": "Calendário e Alertas",
     "literary_quotes": "Verso e Poesia",
     "time_capsule": "Cápsula do Tempo",
     "gratitude": "Gratidão",
-    "reflections": "Reflexões",
-    "choose_section": "O que você quer explorar hoje?"
+	    "reflections": "Reflexões",
+	    "choose_section": "O que você quer explorar hoje?"
+	  },
+
+  "between_lines": {
+    "page_label": "Entrelinhas",
+    "description": "Anote essa ideia antes de esquecer — receitas, pensamentos soltos, frases, listas… tudo cabe aqui.",
+    "card_title": "ENTRELINHAS",
+    "hint": "Anote essa ideia antes de esquecer…",
+    "saving": "Salvando…",
+    "save": "Salvar",
+    "saved": "Anotação salva ✨",
+    "save_error": "Não foi possível salvar agora.",
+    "my_notes": "Minhas anotações",
+    "search_hint": "Pesquisar nas anotações",
+    "empty": "Ainda não tem nada por aqui. Escreve algo e salva ✍️",
+    "no_results": "Nenhuma anotação encontrada.",
+    "update": "Atualizar"
   },
 
   "dailyLuck": {
@@ -523,6 +541,15 @@
     "pick_date_first": "Escolha quando você quer ser lembrada 💌",
     "save_button": "Salvar cápsula",
     "saving": "Salvando...",
+    "saved_state": "Última cápsula salva",
+    "edit_button": "Editar",
+    "new_button": "Nova",
+    "my_capsules": "Minhas cápsulas",
+    "no_saved": "Nenhuma cápsula salva ainda.",
+    "new_confirm_title": "Criar uma nova cápsula?",
+    "new_confirm_desc": "A cápsula atual continuará agendada. Quer escrever uma nova agora?",
+    "new_confirm_cancel": "Cancelar",
+    "new_confirm_ok": "Sim",
     "saved_success": "Cápsula do tempo salva 💖",
     "save_error": "Não foi possível salvar agora. Tente novamente.",
     "alert_title": "Cápsula do Tempo"
@@ -611,6 +638,7 @@
 
   
   "who_prompt": "Quem você quer entrevistar?",
+  "identification_title": "DADOS DA ENTREVISTA",
   "name_label": "Nome",
   "name_hint": "Digite o nome",
   "relation_hint": "Parentesco (amigo, mãe, tio…)",
@@ -941,7 +969,9 @@
   "search_other_dates": "Pesquisar outras datas",
     "choose_period": "Escolher período",
     "choose_period_desc": "Selecione o mês e o ano que você deseja visualizar.",
-    "select_day_first": "Escolha um dia no calendário primeiro 😊"
+  "select_day_first": "Escolha um dia no calendário primeiro 😊"
+  ,
+  "free_limit_reached": "Você chegou ao limite de {limit} registros de humor neste mês. Vire Premium para continuar 💖"
 
 
   },

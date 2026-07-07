@@ -47,16 +47,9 @@ class _DailyPopupContentState extends State<_DailyPopupContent> {
       if (byteData == null) return;
       final pngBytes = byteData.buffer.asUint8List();
 
-      await Share.shareXFiles(
-        [
-          XFile.fromData(
-            pngBytes,
-            mimeType: 'image/png',
-            name: 'alert.png',
-          ),
-        ],
-        text: 'daily_popup.share_caption'.tr(),
-      );
+      await Share.shareXFiles([
+        XFile.fromData(pngBytes, mimeType: 'image/png', name: 'alert.png'),
+      ], text: 'daily_popup.share_caption'.tr());
     } catch (_) {
       if (!mounted) return;
       messenger?.showSnackBar(
@@ -71,9 +64,17 @@ class _DailyPopupContentState extends State<_DailyPopupContent> {
   @override
   Widget build(BuildContext context) {
     final event = widget.event;
-    final colorHex = event['color'] ?? "FFe04cb7";
+    final colorHex = (event['color'] ?? "FFe04cb7").toString();
     final color = Color(int.parse(colorHex, radix: 16));
     final isTimeCapsule = _isTimeCapsule(event);
+
+    final media = MediaQuery.of(context);
+    final maxDialogHeight = (media.size.height - media.padding.vertical) * 0.86;
+    final maxMessageHeight = maxDialogHeight * (isTimeCapsule ? 0.52 : 0.40);
+
+    final title =
+        (event['title'] ?? "daily_popup.default_title".tr()).toString();
+    final description = (event['description'] ?? '').toString().trim();
 
     return Center(
       child: BackdropFilter(
@@ -83,193 +84,204 @@ class _DailyPopupContentState extends State<_DailyPopupContent> {
           insetPadding: const EdgeInsets.symmetric(horizontal: 26),
           child: RepaintBoundary(
             key: _shareKey,
-            child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(26),
-              color: const Color(0xFFFFE4EC).withOpacity(0.60),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.35),
-                width: 1.3,
-              ),
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFFFFF1F7).withOpacity(0.65),
-                  const Color(0xFFFFD4E3).withOpacity(0.55),
-                ],
-              ),
-            ),
-            child: Stack(
-              children: [
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.28),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.close,
-                          size: 20, color: Colors.white),
-                    ),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: maxDialogHeight),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(26),
+                  color: const Color(0xFFFFE4EC).withOpacity(0.60),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.35),
+                    width: 1.3,
                   ),
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.only(top: 32),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-
-                      const SizedBox(height: 10),
-
-                      Container(
-                        padding: const EdgeInsets.all(18),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: color.withOpacity(0.28),
-                        ),
-                        child: const Icon(
-                          Icons.notifications_active,
-                          color: Colors.white,
-                          size: 32,
-                        ),
-                      ),
-
-                      const SizedBox(height: 18),
-
-                      Text(
-                        event['title'] ?? "daily_popup.default_title".tr(),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      if ((event['description'] ?? '').toString().trim().isNotEmpty)
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 14,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.18),
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.18),
-                            ),
-                          ),
-                          child: SingleChildScrollView(
-                            physics: const BouncingScrollPhysics(),
-                            child: Text(
-                              event['description'].toString(),
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 15,
-                                height: 1.45,
-                                color: Colors.white.withOpacity(0.95),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        )
-                      else
-                        Text(
-                          "daily_popup.subtitle".tr(),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.white.withOpacity(0.9),
-                          ),
-                        ),
-
-                      const SizedBox(height: 26),
-
-                      ElevatedButton(
-                        onPressed: _shareAsImage,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white.withOpacity(0.18),
-                          elevation: 0,
-                          minimumSize: const Size(double.infinity, 48),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: Text(
-                          "daily_popup.share".tr(),
-                          style: const TextStyle(color: Colors.white, fontSize: 16),
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      ElevatedButton(
-                        onPressed: () async {
-                          final navigator = Navigator.of(context);
-                          if (isTimeCapsule) {
-                            await supabase
-                                .from('calendar_events')
-                                .update({'remind': false})
-                                .eq('id', event['id']);
-                          }
-
-                          if (!mounted) return;
-                          navigator.pop();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white.withOpacity(0.25),
-                          elevation: 0,
-                          minimumSize: const Size(double.infinity, 48),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: Text(
-                          isTimeCapsule
-                              ? "daily_popup.mark_seen".tr()
-                              : "daily_popup.close".tr(),
-                          style: const TextStyle(color: Colors.white, fontSize: 16),
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      TextButton(
-                        onPressed: () async {
-                          final navigator = Navigator.of(context);
-                          await supabase
-                              .from('calendar_events')
-                              .update({'remind': false})
-                              .eq('id', event['id']);
-
-                          if (!mounted) return;
-                          navigator.pop();
-                        },
-                        child: Text(
-                          "daily_popup.cancel_alert".tr(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 8),
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFFFFF1F7).withOpacity(0.65),
+                      const Color(0xFFFFD4E3).withOpacity(0.55),
                     ],
                   ),
                 ),
-              ],
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.28),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.close,
+                            size: 20,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 32),
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(height: 10),
+                            Container(
+                              padding: const EdgeInsets.all(18),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: color.withOpacity(0.28),
+                              ),
+                              child: const Icon(
+                                Icons.notifications_active,
+                                color: Colors.white,
+                                size: 32,
+                              ),
+                            ),
+                            const SizedBox(height: 18),
+                            Text(
+                              title,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            if (description.isNotEmpty)
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 14,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.18),
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.18),
+                                  ),
+                                ),
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    maxHeight: maxMessageHeight,
+                                  ),
+                                  child: Scrollbar(
+                                    thumbVisibility: false,
+                                    child: SingleChildScrollView(
+                                      physics: const BouncingScrollPhysics(),
+                                      child: Text(
+                                        description,
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: isTimeCapsule ? 14 : 15,
+                                          height: 1.42,
+                                          color: Colors.white.withOpacity(0.95),
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            else
+                              Text(
+                                "daily_popup.subtitle".tr(),
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.white.withOpacity(0.9),
+                                ),
+                              ),
+                            const SizedBox(height: 26),
+                            ElevatedButton(
+                              onPressed: _shareAsImage,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white.withOpacity(0.18),
+                                elevation: 0,
+                                minimumSize: const Size(double.infinity, 48),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                              child: Text(
+                                "daily_popup.share".tr(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            ElevatedButton(
+                              onPressed: () async {
+                                final navigator = Navigator.of(context);
+                                if (isTimeCapsule) {
+                                  await supabase
+                                      .from('calendar_events')
+                                      .update({'remind': false})
+                                      .eq('id', event['id']);
+                                }
+
+                                if (!mounted) return;
+                                navigator.pop();
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white.withOpacity(0.25),
+                                elevation: 0,
+                                minimumSize: const Size(double.infinity, 48),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                              child: Text(
+                                isTimeCapsule
+                                    ? "daily_popup.mark_seen".tr()
+                                    : "daily_popup.close".tr(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            TextButton(
+                              onPressed: () async {
+                                final navigator = Navigator.of(context);
+                                await supabase
+                                    .from('calendar_events')
+                                    .update({'remind': false})
+                                    .eq('id', event['id']);
+
+                                if (!mounted) return;
+                                navigator.pop();
+                              },
+                              child: Text(
+                                "daily_popup.cancel_alert".tr(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
           ),
         ),
       ),

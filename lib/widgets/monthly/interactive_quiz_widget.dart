@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:characters/characters.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -277,14 +276,25 @@ if (user != null) {
       ),
     );
 
+    // Matches the “new card” framed style used across recent monthly screens.
+    const accent = Color(0xFFc79fe2);
     return Padding(
       padding: const EdgeInsets.all(12),
-      child: Card(
-        color: const Color(0xFFF8DFF0),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+      child: Container(
+        decoration: BoxDecoration(
+          color: accent.withValues(alpha: 0.42),
+          borderRadius: BorderRadius.circular(22),
         ),
-        child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8DFF0),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: accent.withValues(alpha: 0.18),
+              width: 1.2,
+            ),
+          ),
           padding: const EdgeInsets.all(18),
           child: SingleChildScrollView(
             padding: const EdgeInsets.only(bottom: 80),
@@ -332,14 +342,13 @@ if (user != null) {
             margin: const EdgeInsets.only(bottom: 10),
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: isSelected
-                  ? const Color(0xFFE2377D).withOpacity(0.12)
-                  : Colors.white,
+              color:
+                  isSelected
+                      ? const Color(0xFFE2377D).withValues(alpha: 0.12)
+                      : Colors.white,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: isSelected
-                    ? const Color(0xFFE2377D)
-                    : Colors.grey.shade300,
+                color: isSelected ? const Color(0xFFE2377D) : Colors.grey.shade300,
               ),
             ),
             child: Row(
@@ -347,9 +356,10 @@ if (user != null) {
                 Icon(
                   Icons.favorite,
                   size: 18,
-                  color: isSelected
-                      ? const Color(0xFFE2377D)
-                      : Colors.grey.shade400,
+                  color:
+                      isSelected
+                          ? const Color(0xFFE2377D)
+                          : Colors.grey.shade400,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -546,6 +556,7 @@ Widget build(BuildContext context) {
 
 Widget _buildQuizContent() {
   final hasResult = hasSavedResult;
+  const accent = Color(0xFFc79fe2);
 
   if (hasResult) {
     return _buildResultPage();
@@ -562,28 +573,39 @@ Widget _buildQuizContent() {
             right: 16,
           ),
           child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 10,
-            ),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8DFF0),
-              borderRadius: BorderRadius.circular(20),
+              color: accent.withValues(alpha: 0.38),
+              borderRadius: BorderRadius.circular(28),
             ),
-            child: Text(
-              _toSentenceCase(quizTitle!),
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Color.fromARGB(255, 153, 58, 99),
+            padding: const EdgeInsets.all(10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 22,
+                vertical: 12,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8DFF0),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(
+                  color: accent.withValues(alpha: 0.26),
+                  width: 1.6,
+                ),
+              ),
+              child: Text(
+                _toSentenceCase(quizTitle!),
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Color.fromARGB(255, 153, 58, 99),
+                ),
               ),
             ),
           ),
         ),
 
-      const SizedBox(height: 16),
+      const SizedBox(height: 6),
 
       SizedBox(
         height: 420,

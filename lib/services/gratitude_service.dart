@@ -1,10 +1,17 @@
 import 'package:myyearmystory/supabase/supabase_config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class GratitudeService {
   static final _supabase = SupabaseConfig.client;
 
+  static String _guestPrefsKey({
+    required int month,
+    required int year,
+  }) =>
+      'guest_gratitude_${year}_${month.toString().padLeft(2, '0')}';
+
   /// 🔎 Busca a lista de gratidão do mês
-  /// - Guest → retorna lista vazia
+  /// - Guest → busca local (SharedPreferences)
   /// - Usuário logado → busca no banco
   static Future<List<String>> getGratitudeList(
     int month,
@@ -12,7 +19,13 @@ class GratitudeService {
   ) async {
     try {
       final user = _supabase.auth.currentUser;
-      if (user == null) return <String>[];
+      if (user == null) {
+        final prefs = await SharedPreferences.getInstance();
+        return prefs.getStringList(
+              _guestPrefsKey(month: month, year: year),
+            ) ??
+            <String>[];
+      }
 
       final row = await _supabase
           .from('entries')
@@ -36,7 +49,7 @@ class GratitudeService {
   }
 
   /// 💾 Salva a lista de gratidão
-  /// - Guest → retorna false
+  /// - Guest → salva local (SharedPreferences)
   /// - Usuário logado → insere ou atualiza
   static Future<bool> saveGratitudeList(
     List<String> items,
@@ -45,7 +58,14 @@ class GratitudeService {
   ) async {
     try {
       final user = _supabase.auth.currentUser;
-      if (user == null) return false;
+      if (user == null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setStringList(
+          _guestPrefsKey(month: month, year: year),
+          items,
+        );
+        return true;
+      }
 
       final existing = await _supabase
           .from('entries')
