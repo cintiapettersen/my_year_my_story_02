@@ -15,7 +15,6 @@ import 'package:myyearmystory/widgets/shared/app_pill_button.dart';
 
 enum _DiaryAiMode { reflection, writing }
 
-
 class DiaryScreen extends StatefulWidget {
   final DateTime date;
 
@@ -53,31 +52,32 @@ class _DiaryScreenState extends State<DiaryScreen> {
   }
 
   void _updateEntryModal(VoidCallback fn) {
-  final setter = _entryModalSetState;
+    final setter = _entryModalSetState;
 
-  if (setter != null && mounted) {
-    try {
-      setter(fn);
-      return;
-    } catch (_) {
-      _entryModalSetState = null;
+    if (setter != null && mounted) {
+      try {
+        setter(fn);
+        return;
+      } catch (_) {
+        _entryModalSetState = null;
+      }
+    }
+
+    if (mounted) {
+      setState(fn);
     }
   }
-
-  if (mounted) {
-    setState(fn);
-  }
-}
 
   String? _detectLanguageCode(String text) {
     // Very small heuristic: compares common stop-words.
     // Returns 'pt', 'en', or null (unknown/low confidence).
-    final words = text
-        .toLowerCase()
-        .replaceAll(RegExp(r"[^a-zA-ZÀ-ÿ'\s]"), ' ')
-        .split(RegExp(r'\s+'))
-        .where((w) => w.isNotEmpty)
-        .toList();
+    final words =
+        text
+            .toLowerCase()
+            .replaceAll(RegExp(r"[^a-zA-ZÀ-ÿ'\s]"), ' ')
+            .split(RegExp(r'\s+'))
+            .where((w) => w.isNotEmpty)
+            .toList();
 
     if (words.length < 10) return null;
 
@@ -235,13 +235,12 @@ class _DiaryScreenState extends State<DiaryScreen> {
   Color _userThemeColor = const Color(0xFFE04CB7);
 
   @override
-void initState() {
-  super.initState();
-  _selectedDate = widget.date;
-  _checkPremiumStatus();
-  _loadEntries();
-}
-
+  void initState() {
+    super.initState();
+    _selectedDate = widget.date;
+    _checkPremiumStatus();
+    _loadEntries();
+  }
 
   Future<void> _checkPremiumStatus() async {
     final premium = await AccessControl.isPremium();
@@ -253,22 +252,20 @@ void initState() {
   // ===============================
 
   Future<void> _loadEntries() async {
-  try {
-    setState(() => _isLoading = true);
+    try {
+      setState(() => _isLoading = true);
 
-    final entries = await DiaryService.getEntries();
+      final entries = await DiaryService.getEntries();
 
-    if (!mounted) return;
-    setState(() {
-      _entries = entries;
-    });
-  } finally {
-    if (!mounted) return;
-    setState(() => _isLoading = false);
+      if (!mounted) return;
+      setState(() {
+        _entries = entries;
+      });
+    } finally {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+    }
   }
-}
-
-
 
   // ===============================
   // LIMIT
@@ -276,9 +273,11 @@ void initState() {
 
   int _entriesThisMonth() {
     final now = DateTime.now();
-    return _entries.where((e) =>
-        e.entryDate.year == now.year &&
-        e.entryDate.month == now.month).length;
+    return _entries
+        .where(
+          (e) => e.entryDate.year == now.year && e.entryDate.month == now.month,
+        )
+        .length;
   }
 
   bool _canSaveEntry() {
@@ -306,8 +305,6 @@ void initState() {
     _openEntryModal();
   }
 
-  
-
   // ===============================
   // UI
   // ===============================
@@ -322,9 +319,10 @@ void initState() {
             children: [
               _buildHeader(),
               Expanded(
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _entries.isEmpty
+                child:
+                    _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : _entries.isEmpty
                         ? _buildEmptyState()
                         : _buildEntriesList(),
               ),
@@ -363,14 +361,11 @@ void initState() {
               const SizedBox(height: 40),
               Text(
                 'diary.title'.tr().toLowerCase(),
-                 style: GoogleFonts.monteCarlo (
+                style: GoogleFonts.monteCarlo(
                   fontSize: 35,
                   fontWeight: FontWeight.w600,
                   color: const Color.fromARGB(221, 0, 0, 0),
                   letterSpacing: 1.5,
-                  
-                  
-                  
                 ),
               ),
               const SizedBox(height: 10),
@@ -382,25 +377,26 @@ void initState() {
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: diaryUserThemes.map((color) {
-                  final isSelected = color == _userThemeColor;
-                  return GestureDetector(
-                    onTap: () => setState(() => _userThemeColor = color),
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 6),
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white,
-                          width: isSelected ? 3 : 2,
+                children:
+                    diaryUserThemes.map((color) {
+                      final isSelected = color == _userThemeColor;
+                      return GestureDetector(
+                        onTap: () => setState(() => _userThemeColor = color),
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 6),
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            color: color,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white,
+                              width: isSelected ? 3 : 2,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  );
-                }).toList(),
+                      );
+                    }).toList(),
               ),
             ],
           ),
@@ -435,72 +431,73 @@ void initState() {
   }
 
   Widget _buildEntryCard(DiaryEntryModel entry) {
-  return GestureDetector(
-    onTap: () => _editEntry(entry), // 👈 AQUI está o segredo
-    child: Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Text(entry.moodIcon ?? "😊", style: const TextStyle(fontSize: 18)),
-                    const SizedBox(width: 6),
-                    Text(
-                      _formatDate(entry.entryDate),
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: _userThemeColor,
+    return GestureDetector(
+      onTap: () => _editEntry(entry), // 👈 AQUI está o segredo
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        entry.moodIcon ?? "😊",
+                        style: const TextStyle(fontSize: 18),
                       ),
-                    ),
-                  ],
-                ),
-                PopupMenuButton<String>(
-                  onSelected: (value) {
-                    if (value == 'delete') _deleteEntry(entry);
-                    if (value == 'edit') _editEntry(entry);
-                  },
-                  itemBuilder: (_) => [
-                    PopupMenuItem(
-                      value: 'edit',
-                      child: Text('diary.edit'.tr()),
-                    ),
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: Text(
-                        'diary.delete'.tr(),
-                        style: const TextStyle(color: Colors.red),
+                      const SizedBox(width: 6),
+                      Text(
+                        _formatDate(entry.entryDate),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: _userThemeColor,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-  entry.content,
-  maxLines: entry.content.length > 80 ? 3 : null,
-  overflow: TextOverflow.ellipsis,
-  style: const TextStyle(height: 1.5),
-),
+                    ],
+                  ),
+                  PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (value == 'delete') _deleteEntry(entry);
+                      if (value == 'edit') _editEntry(entry);
+                    },
+                    itemBuilder:
+                        (_) => [
+                          PopupMenuItem(
+                            value: 'edit',
+                            child: Text('diary.edit'.tr()),
+                          ),
+                          PopupMenuItem(
+                            value: 'delete',
+                            child: Text(
+                              'diary.delete'.tr(),
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                entry.content,
+                maxLines: entry.content.length > 80 ? 3 : null,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(height: 1.5),
+              ),
 
-            const SizedBox(height: 12),
-            Text(
-              _formatTime(entry.entryDate),
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-          ],
+              const SizedBox(height: 12),
+              Text(
+                _formatTime(entry.entryDate),
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -509,386 +506,405 @@ void initState() {
     return StatefulBuilder(
       builder: (context, modalSetState) {
         _entryModalSetState = modalSetState;
-        return Padding(
-	        padding: EdgeInsets.fromLTRB(
-	          20,
-	          20,
-          20,
-          MediaQuery.of(context).viewInsets.bottom + 20,
-        ),
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height * 0.75,
-          child: Column(
-            children: [
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              20,
+              20,
+              20,
+              MediaQuery.of(context).viewInsets.bottom + 20,
+            ),
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.75,
+              child: Column(
+                children: [
+                  /// 🔹 CONTEÚDO ROLÁVEL
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          /// Título
+                          Text(
+                            'diary.new_entry'.tr(),
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
 
-              /// 🔹 CONTEÚDO ROLÁVEL
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
+                          const SizedBox(height: 24),
 
-                      /// Título
-                      Text(
-                        'diary.new_entry'.tr(),
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
+                          /// Emojis
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children:
+                                moodIcons.map((icon) {
+                                  final selected = icon == _selectedMoodIcon;
 
-                      const SizedBox(height: 24),
+                                  return GestureDetector(
+                                    onTap: () {
+                                      modalSetState(() {
+                                        _selectedMoodIcon = icon;
+                                      });
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            selected
+                                                ? _userThemeColor.withOpacity(
+                                                  0.25,
+                                                )
+                                                : Colors.grey[200],
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color:
+                                              selected
+                                                  ? _userThemeColor
+                                                  : Colors.transparent,
+                                          width: 2,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        icon,
+                                        style: const TextStyle(fontSize: 26),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                          ),
 
-                      /// Emojis
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: moodIcons.map((icon) {
-                          final selected = icon == _selectedMoodIcon;
+                          const SizedBox(height: 20),
 
-                          return GestureDetector(
-                            onTap: () {
-                              modalSetState(() {
-                                _selectedMoodIcon = icon;
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: selected
-                                    ? _userThemeColor.withOpacity(0.25)
-                                    : Colors.grey[200],
+                          /// TextField
+                          TextField(
+                            controller: _entryController,
+                            keyboardType: TextInputType.multiline,
+                            textInputAction: TextInputAction.newline,
+                            textCapitalization: TextCapitalization.sentences,
+                            enableSuggestions: true,
+                            autocorrect: true,
+                            smartQuotesType: SmartQuotesType.enabled,
+                            smartDashesType: SmartDashesType.enabled,
+                            maxLines: null,
+                            onChanged: _handleEntryTextChanged,
+                            decoration: InputDecoration(
+                              hintText: 'diary.hint_text'.tr(),
+                              filled: true,
+                              fillColor: Colors.grey[50],
+                              border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: selected
-                                      ? _userThemeColor
-                                      : Colors.transparent,
-                                  width: 2,
+                              ),
+                            ),
+                          ),
+
+                          if (_detectedTextLanguageCode != null &&
+                              _detectedTextLanguageCode !=
+                                  context.locale.languageCode)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 6),
+                              child: Text(
+                                'diary.language_hint'.tr(
+                                  args: [
+                                    (_detectedTextLanguageCode == 'en'
+                                            ? 'diary.language_english'
+                                            : 'diary.language_portuguese')
+                                        .tr(),
+                                  ],
+                                ),
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  height: 1.2,
+                                  color: Colors.black.withOpacity(0.55),
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              child: Text(
-                                icon,
-                                style: const TextStyle(fontSize: 26),
+                            ),
+
+                          const SizedBox(height: 12),
+
+                          /// Botão refletir
+                          SizedBox(
+                            width: double.infinity,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    const Color(0xFFFF2D8D),
+                                    const Color(0xFFFF2D8D).withOpacity(0.85),
+                                  ],
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                ),
+                                borderRadius: BorderRadius.circular(14),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(
+                                      0xFFFF2D8D,
+                                    ).withOpacity(0.28),
+                                    blurRadius: 18,
+                                    offset: const Offset(0, 10),
+                                  ),
+                                ],
+                              ),
+                              child: ElevatedButton.icon(
+                                onPressed: _onReflectionButtonPressed,
+                                icon: Icon(
+                                  (_reflectionSourceText ==
+                                              _entryController.text.trim() &&
+                                          _aiResponse != null)
+                                      ? (_isReflectionVisible
+                                          ? Icons.expand_less
+                                          : Icons.expand_more)
+                                      : Icons.favorite_rounded,
+                                  size: 18,
+                                ),
+                                label: Text(
+                                  (_reflectionSourceText ==
+                                              _entryController.text.trim() &&
+                                          _aiResponse != null)
+                                      ? 'diary.ai_action_button_read_reflection'
+                                          .tr()
+                                      : 'diary.ai_action_button'.tr(),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                    horizontal: 16,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  textStyle: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
                               ),
                             ),
-                          );
-                        }).toList(),
-                      ),
-
-                      const SizedBox(height: 20),
-
-	                      /// TextField
-	                      TextField(
-	                        controller: _entryController,
-	                        keyboardType: TextInputType.multiline,
-	                        textInputAction: TextInputAction.newline,
-	                        textCapitalization: TextCapitalization.sentences,
-	                        enableSuggestions: true,
-	                        autocorrect: true,
-                        smartQuotesType: SmartQuotesType.enabled,
-                        smartDashesType: SmartDashesType.enabled,
-                        maxLines: null,
-                        onChanged: _handleEntryTextChanged,
-                        decoration: InputDecoration(
-                          hintText: 'diary.hint_text'.tr(),
-                          filled: true,
-                          fillColor: Colors.grey[50],
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ),
-                      ),
-
-                      if (_detectedTextLanguageCode != null &&
-                          _detectedTextLanguageCode !=
-                              context.locale.languageCode)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Text(
-                            'diary.language_hint'.tr(
-                              args: [
-                                (_detectedTextLanguageCode == 'en'
-                                        ? 'diary.language_english'
-                                        : 'diary.language_portuguese')
-                                    .tr(),
-                              ],
-                            ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'diary.ai_helper_private'.tr(),
                             style: TextStyle(
                               fontSize: 12.5,
-                              height: 1.2,
+                              height: 1.25,
                               color: Colors.black.withOpacity(0.55),
-                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                        ),
 
-                      const SizedBox(height: 12),
+                          const SizedBox(height: 12),
 
-		                      /// Botão refletir
-		                      SizedBox(
-		                        width: double.infinity,
-		                        child: DecoratedBox(
-		                          decoration: BoxDecoration(
-		                            gradient: LinearGradient(
-		                              colors: [
-		                                const Color(0xFFFF2D8D),
-		                                const Color(0xFFFF2D8D).withOpacity(0.85),
-		                              ],
-		                              begin: Alignment.centerLeft,
-		                              end: Alignment.centerRight,
-		                            ),
-		                            borderRadius: BorderRadius.circular(14),
-		                            boxShadow: [
-		                              BoxShadow(
-		                                color: const Color(0xFFFF2D8D)
-		                                    .withOpacity(0.28),
-		                                blurRadius: 18,
-		                                offset: const Offset(0, 10),
-		                              ),
-		                            ],
-		                          ),
-		                          child: ElevatedButton.icon(
-		                            onPressed: _onReflectionButtonPressed,
-		                            icon: Icon(
-		                              (_reflectionSourceText ==
-		                                          _entryController.text.trim() &&
-		                                      _aiResponse != null)
-		                                  ? (_isReflectionVisible
-		                                      ? Icons.expand_less
-		                                      : Icons.expand_more)
-		                                  : Icons.favorite_rounded,
-		                              size: 18,
-		                            ),
-		                            label: Text(
-		                              (_reflectionSourceText ==
-		                                          _entryController.text.trim() &&
-		                                      _aiResponse != null)
-		                                  ? 'diary.ai_action_button_read_reflection'
-		                                      .tr()
-		                                  : 'diary.ai_action_button'.tr(),
-		                            ),
-		                            style: ElevatedButton.styleFrom(
-		                              backgroundColor: Colors.transparent,
-		                              shadowColor: Colors.transparent,
-		                              foregroundColor: Colors.white,
-	                              padding: const EdgeInsets.symmetric(
-	                                vertical: 14,
-	                                horizontal: 16,
-	                              ),
-	                              shape: RoundedRectangleBorder(
-	                                borderRadius: BorderRadius.circular(14),
-	                              ),
-	                              textStyle: const TextStyle(
-	                                fontWeight: FontWeight.w700,
-	                              ),
-	                            ),
-		                          ),
-		                        ),
-		                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'diary.ai_helper_private'.tr(),
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          height: 1.25,
-                          color: Colors.black.withOpacity(0.55),
-                        ),
-                      ),
-
-	                      const SizedBox(height: 12),
-
-                      /// Loading
-                      if (_isLoadingAi)
-                        const Center(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: 12),
-                            child: CircularProgressIndicator(),
-                          ),
-                        ),
-
-                      /// Resposta da IA
-                      if (_aiResponse != null && !_isLoadingAi && _isReflectionVisible)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Card(
-                            elevation: 0,
-                            color: Colors.grey[50],
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: BorderSide(
-                                color: _userThemeColor.withOpacity(0.3),
+                          /// Loading
+                          if (_isLoadingAi)
+                            const Center(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 12),
+                                child: CircularProgressIndicator(),
                               ),
                             ),
-                            child: Padding(
+
+                          /// Resposta da IA
+                          if (_aiResponse != null &&
+                              !_isLoadingAi &&
+                              _isReflectionVisible)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Card(
+                                elevation: 0,
+                                color: Colors.grey[50],
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  side: BorderSide(
+                                    color: _userThemeColor.withOpacity(0.3),
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        _aiResponse!,
+                                        style: const TextStyle(height: 1.45),
+                                      ),
+                                      const SizedBox(height: 10),
+                                      Wrap(
+                                        spacing: 8,
+                                        children:
+                                            _suggestedWords
+                                                .map(
+                                                  (word) => ActionChip(
+                                                    label: Text(word),
+                                                    backgroundColor:
+                                                        _userThemeColor
+                                                            .withOpacity(0.12),
+                                                    labelStyle: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                      color: _userThemeColor,
+                                                    ),
+                                                    onPressed:
+                                                        () =>
+                                                            _insertSuggestedWord(
+                                                              word,
+                                                            ),
+                                                  ),
+                                                )
+                                                .toList(),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                          const SizedBox(height: 20),
+
+                          /// Aviso visitante
+                          if (SupabaseConfig.client.auth.currentUser == null)
+                            Container(
+                              margin: const EdgeInsets.only(bottom: 12),
                               padding: const EdgeInsets.all(12),
-                              child: Column(
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFEEF4),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: const Color(0xFFF2C6D6),
+                                ),
+                              ),
+                              child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    _aiResponse!,
-                                    style: const TextStyle(height: 1.45),
+                                  const Icon(
+                                    Icons.info_outline,
+                                    color: Color(0xFFB03062),
+                                    size: 20,
                                   ),
-                                  const SizedBox(height: 10),
-                                  Wrap(
-                                    spacing: 8,
-                                    children: _suggestedWords
-	                                        .map(
-	                                          (word) => ActionChip(
-	                                            label: Text(word),
-	                                            backgroundColor:
-	                                                _userThemeColor.withOpacity(0.12),
-	                                            labelStyle: TextStyle(
-	                                              fontWeight: FontWeight.w700,
-	                                              color: _userThemeColor,
-	                                            ),
-	                                            onPressed: () =>
-	                                                _insertSuggestedWord(word),
-	                                          ),
-	                                        )
-                                        .toList(),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'diary.guest_save_warning'.tr(),
+                                      style: const TextStyle(
+                                        fontSize: 13.5,
+                                        height: 1.4,
+                                        color: Color(0xFF6D2C4A),
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
                             ),
-                          ),
-                        ),
 
-                      const SizedBox(height: 20),
+                          const SizedBox(height: 16),
 
-                      /// Aviso visitante
-                      if (SupabaseConfig.client.auth.currentUser == null)
-                        Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFEEF4),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: const Color(0xFFF2C6D6),
-                            ),
+                          AppPillButton(
+                            expand: true,
+                            backgroundColor: _userThemeColor,
+                            text: 'diary.save'.tr(),
+                            onPressed:
+                                _isSavingEntry
+                                    ? null
+                                    : () async {
+                                      if (_isSavingEntry) return;
+                                      setState(() => _isSavingEntry = true);
+                                      try {
+                                        final user =
+                                            SupabaseConfig
+                                                .client
+                                                .auth
+                                                .currentUser;
+                                        if (user == null) {
+                                          showLoginPrompt(context);
+                                          return;
+                                        }
+
+                                        await _saveEntry();
+                                        if (!context.mounted) return;
+
+                                        await Navigator.of(context).maybePop();
+                                      } finally {
+                                        if (mounted) {
+                                          setState(
+                                            () => _isSavingEntry = false,
+                                          );
+                                        }
+                                      }
+                                    },
                           ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Icon(
-                                Icons.info_outline,
-                                color: Color(0xFFB03062),
-                                size: 20,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'diary.guest_save_warning'.tr(),
-                                  style: const TextStyle(
-                                    fontSize: 13.5,
-                                    height: 1.4,
-                                    color: Color(0xFF6D2C4A),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
-
-              const SizedBox(height: 12),
-
-              /// 🔹 BOTÃO FIXO NA BASE
-              AppPillButton(
-                expand: true,
-                backgroundColor: _userThemeColor,
-                text: 'diary.save'.tr(),
-                onPressed: _isSavingEntry
-                    ? null
-                    : () async {
-                        if (_isSavingEntry) return;
-                        setState(() => _isSavingEntry = true);
-                        try {
-                          final user =
-                              SupabaseConfig.client.auth.currentUser;
-                          if (user == null) {
-                            showLoginPrompt(context);
-                            return;
-                          }
-
-                          await _saveEntry();
-                          if (!context.mounted) return;
-
-                          await Navigator.of(context).maybePop();
-                        } finally {
-                          if (mounted) setState(() => _isSavingEntry = false);
-                        }
-                      },
-              ),
-            ],
+            ),
           ),
-        ),
-      );
-    },
-  );
-}
-  Future<void> _saveEntry() async {
-  if (_entryController.text.trim().isEmpty) return;
-
-  final user = SupabaseConfig.client.auth.currentUser;
-  if (user == null) {
-    showLoginPrompt(context);
-    return;
-  }
-
-  try {
-    if (_editingEntry != null) {
-      await DiaryService.updateEntry(
-     _editingEntry!.id,
-     _entryController.text.trim(),
-     _selectedDate, // 👈 ESTE era o argumento faltando
-  moodIcon: _selectedMoodIcon,
-);
-
-
-    } else {
-      await DiaryService.createEntry(
-        _entryController.text.trim(),
-        _selectedDate,
-        moodIcon: _selectedMoodIcon,
-      );
-    }
-
-    await _clearDraft();
-    _editingEntry = null;
-    await _loadEntries();
-  } catch (e) {
-    
-
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: const Color.fromARGB(255, 142, 136, 232),
-        content: Text('offline.save_warning'.tr()),
-      ),
+        );
+      },
     );
   }
-}
 
+  Future<void> _saveEntry() async {
+    if (_entryController.text.trim().isEmpty) return;
+
+    final user = SupabaseConfig.client.auth.currentUser;
+    if (user == null) {
+      showLoginPrompt(context);
+      return;
+    }
+
+    try {
+      if (_editingEntry != null) {
+        await DiaryService.updateEntry(
+          _editingEntry!.id,
+          _entryController.text.trim(),
+          _selectedDate, // 👈 ESTE era o argumento faltando
+          moodIcon: _selectedMoodIcon,
+        );
+      } else {
+        await DiaryService.createEntry(
+          _entryController.text.trim(),
+          _selectedDate,
+          moodIcon: _selectedMoodIcon,
+        );
+      }
+
+      await _clearDraft();
+      _editingEntry = null;
+      await _loadEntries();
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: const Color.fromARGB(255, 142, 136, 232),
+          content: Text('offline.save_warning'.tr()),
+        ),
+      );
+    }
+  }
 
   Future<void> _onReflectionButtonPressed() async {
     final text = _entryController.text.trim();
     if (text.length < 100) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('diary.ai_min_characters'.tr()),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('diary.ai_min_characters'.tr())));
       return;
     }
 
     final hasReflectionForCurrentText =
-        _reflectionSourceText != null && _reflectionSourceText == text && _aiResponse != null;
+        _reflectionSourceText != null &&
+        _reflectionSourceText == text &&
+        _aiResponse != null;
 
     if (hasReflectionForCurrentText) {
       _updateEntryModal(() {
@@ -908,54 +924,47 @@ void initState() {
 
   // DIARIO INTELIGENTE
 
-	  Future<void> _callDiaryAi(String text) async {
-	  if (text.trim().isEmpty) return;
+  Future<void> _callDiaryAi(String text) async {
+    if (text.trim().isEmpty) return;
 
-  _updateEntryModal(() {
-    _isLoadingAi = true;
-    _aiResponse = null;
-    _suggestedWords = [];
-  });
+    _updateEntryModal(() {
+      _isLoadingAi = true;
+      _aiResponse = null;
+      _suggestedWords = [];
+    });
 
-	  try {
-	    final detectedLanguageCode =
-	        _detectLanguageCode(text) ?? context.locale.languageCode;
-	    final prompt = _buildPrompt(
-	      text,
-	      languageCode: detectedLanguageCode,
-	    );
+    try {
+      final detectedLanguageCode =
+          _detectLanguageCode(text) ?? context.locale.languageCode;
+      final prompt = _buildPrompt(text, languageCode: detectedLanguageCode);
 
-    final response =
-        await DiaryService.generateDiaryWithAI(prompt);
+      final response = await DiaryService.generateDiaryWithAI(prompt);
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-	    _updateEntryModal(() {
-	      _aiResponse = response;
-	      _reflectionSourceText = text.trim();
-	      _isReflectionVisible = true;
-	      _isLoadingAi = false;
-	    });
-	  } catch (e) {
-	    if (!mounted) return;
+      _updateEntryModal(() {
+        _aiResponse = response;
+        _reflectionSourceText = text.trim();
+        _isReflectionVisible = true;
+        _isLoadingAi = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
 
-	    _updateEntryModal(() {
-	      _aiResponse =
-	          "Não foi possível gerar a reflexão agora. Tente novamente em instantes.";
-	      _reflectionSourceText = null;
-	      _isReflectionVisible = false;
-	      _isLoadingAi = false;
-	    });
-	  }
-	}
+      _updateEntryModal(() {
+        _aiResponse =
+            "Não foi possível gerar a reflexão agora. Tente novamente em instantes.";
+        _reflectionSourceText = null;
+        _isReflectionVisible = false;
+        _isLoadingAi = false;
+      });
+    }
+  }
 
- String _buildPrompt(
-   String text, {
-   required String languageCode,
- }) {
-   final normalized = languageCode.trim().toLowerCase();
-   if (normalized.startsWith('en')) {
-     return '''Read the journal entry below.
+  String _buildPrompt(String text, {required String languageCode}) {
+    final normalized = languageCode.trim().toLowerCase();
+    if (normalized.startsWith('en')) {
+      return '''Read the journal entry below.
 
 Rules:
 - Reply in the same language as the text (English).
@@ -980,9 +989,9 @@ Text:
 """
 $text
 """''';
-   }
+    }
 
-	 return '''Leia o texto do diário abaixo.
+    return '''Leia o texto do diário abaixo.
 
 	Regras:
 	- Responda no mesmo idioma do texto (português).
@@ -1008,19 +1017,19 @@ $text
 	"""
 	$text
 	"""''';
-	}
+  }
 
+  void _handleAiResponse(String raw) {
+    final parts = raw.split('PALAVRAS:');
+    final body = parts.first.trim();
+    final wordsSection = parts.length > 1 ? parts[1] : '';
 
-	  void _handleAiResponse(String raw) {
-	    final parts = raw.split('PALAVRAS:');
-	    final body = parts.first.trim();
-	    final wordsSection = parts.length > 1 ? parts[1] : '';
-
-    final extracted = wordsSection
-        .split(RegExp(r'[\n\r]+'))
-        .map((w) => w.trim())
-        .where((w) => w.isNotEmpty)
-        .toList();
+    final extracted =
+        wordsSection
+            .split(RegExp(r'[\n\r]+'))
+            .map((w) => w.trim())
+            .where((w) => w.isNotEmpty)
+            .toList();
 
     _updateEntryModal(() {
       _aiResponse = body;
@@ -1041,221 +1050,211 @@ $text
     _scheduleDraftAutosave();
   }
 
+  // ===============================
+  // EDIT ENTRY
+  // ===============================
+  void _editEntry(DiaryEntryModel entry) {
+    setState(() {
+      _editingEntry = entry;
+      _entryController.text = entry.content;
+      _selectedMoodIcon = entry.moodIcon ?? "😊";
+    });
 
-// ===============================
-// EDIT ENTRY
-// ===============================
-void _editEntry(DiaryEntryModel entry) {
-  setState(() {
-    _editingEntry = entry;
-    _entryController.text = entry.content;
-    _selectedMoodIcon = entry.moodIcon ?? "😊";
-  });
-
-  _openEntryModal(isEditing: true);
-}
-
-// ===============================
-// OPEN ENTRY MODAL
-// ===============================
-void _openEntryModal({bool isEditing = false}) {
-  if (!isEditing) {
-    _entryController.clear();
-    _selectedMoodIcon = "😊";
-    _editingEntry = null;
+    _openEntryModal(isEditing: true);
   }
-	  _aiResponse = null;
-	  _suggestedWords = [];
-	  _isLoadingAi = false;
-	  _reflectionSourceText = null;
-	  _isReflectionVisible = false;
-	  _entryModalSetState = null;
-	  _draftAutosaveTimer?.cancel();
-	  _draftAutosaveTimer = null;
-	  _detectedTextLanguageCode = _detectLanguageCode(_entryController.text);
 
-  final future = showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-    ),
-    builder: (_) => _buildEntryDialog(),
-  );
-  future.whenComplete(() {
+  // ===============================
+  // OPEN ENTRY MODAL
+  // ===============================
+  void _openEntryModal({bool isEditing = false}) {
+    if (!isEditing) {
+      _entryController.clear();
+      _selectedMoodIcon = "😊";
+      _editingEntry = null;
+    }
+    _aiResponse = null;
+    _suggestedWords = [];
+    _isLoadingAi = false;
+    _reflectionSourceText = null;
+    _isReflectionVisible = false;
     _entryModalSetState = null;
     _draftAutosaveTimer?.cancel();
     _draftAutosaveTimer = null;
-  });
+    _detectedTextLanguageCode = _detectLanguageCode(_entryController.text);
 
-  unawaited(_restoreDraftIfAny(isEditing: isEditing));
-}
+    final future = showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => _buildEntryDialog(),
+    );
+    future.whenComplete(() {
+      _entryModalSetState = null;
+      _draftAutosaveTimer?.cancel();
+      _draftAutosaveTimer = null;
+    });
 
-// ===============================
-// DELETE ENTRY
-// ===============================
-void _deleteEntry(DiaryEntryModel entry) async {
-  try {
-    await DiaryService.deleteEntry(entry.id);
-    await _loadEntries();
-  } catch (e) {
-   
+    unawaited(_restoreDraftIfAny(isEditing: isEditing));
+  }
 
-    if (!mounted) return;
+  // ===============================
+  // DELETE ENTRY
+  // ===============================
+  void _deleteEntry(DiaryEntryModel entry) async {
+    try {
+      await DiaryService.deleteEntry(entry.id);
+      await _loadEntries();
+    } catch (e) {
+      if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: const Color.fromARGB(255, 130, 121, 182),
-        content: Text('offline.delete_warning'.tr()),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: const Color.fromARGB(255, 130, 121, 182),
+          content: Text('offline.delete_warning'.tr()),
+        ),
+      );
+    }
+  }
+
+  // ===============================
+  // FORMATTERS
+  // ===============================
+  String _formatDate(DateTime date) => '${date.day}/${date.month}/${date.year}';
+
+  String _formatTime(DateTime date) =>
+      '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+
+  // ===============================
+  // EMPTY STATE
+  // ===============================
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Text('diary.no_entries_day'.tr(), textAlign: TextAlign.center),
       ),
     );
   }
-}
-
-// ===============================
-// FORMATTERS
-// ===============================
-String _formatDate(DateTime date) =>
-    '${date.day}/${date.month}/${date.year}';
-
-String _formatTime(DateTime date) =>
-    '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-
-// ===============================
-// EMPTY STATE
-// ===============================
-Widget _buildEmptyState() {
-  return Center(
-    child: Padding(
-      padding: const EdgeInsets.all(32),
-      child: Text(
-        'diary.no_entries_day'.tr(),
-        textAlign: TextAlign.center,
-      ),
-    ),
-  );
-}
 
   Future<void> _showGuestInfoDialog() async {
-  if (!context.mounted) return;
+    if (!context.mounted) return;
 
-  return showDialog(
-    context: context,
-    barrierDismissible: true,
-    builder: (BuildContext dialogContext) {
-      return Material(
-        type: MaterialType.transparency,
-        child: Stack(
-          children: [
-            Center(
-              child: AlertDialog(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(22),
-                ),
-                contentPadding:
-                    const EdgeInsets.fromLTRB(24, 32, 24, 20),
-                backgroundColor: const Color(0xFFFFF1F6),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.edit_note,
-                      size: 42,
-                      color: Color(0xFFB03062),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'diary.guest_info_title'.tr(),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
+    return showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext dialogContext) {
+        return Material(
+          type: MaterialType.transparency,
+          child: Stack(
+            children: [
+              Center(
+                child: AlertDialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(22),
+                  ),
+                  contentPadding: const EdgeInsets.fromLTRB(24, 32, 24, 20),
+                  backgroundColor: const Color(0xFFFFF1F6),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.edit_note,
+                        size: 42,
                         color: Color(0xFFB03062),
                       ),
-                    ),
-                    const SizedBox(height: 14),
-                    Text(
-                      'diary.guest_info_message'.tr(),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        height: 1.4,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 26),
-
-                    /// BOTÃO PRINCIPAL — LOGIN
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-  Navigator.of(dialogContext).pop();
-
-  Future.microtask(() {
-    if (!mounted) return;
-    showLoginPrompt(context);
-  });
-},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFCD4B78),
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: Text(
-                          'diary.guest_login'.tr(),
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    /// AÇÃO SECUNDÁRIA — CONTINUAR
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(dialogContext).pop();
-Future.microtask(() {
-  _openEntryModal();
-});
-                      },
-                      child: Text(
-                        'diary.guest_continue'.tr(),
+                      const SizedBox(height: 12),
+                      Text(
+                        'diary.guest_info_title'.tr(),
+                        textAlign: TextAlign.center,
                         style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
                           color: Color(0xFFB03062),
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 14),
+                      Text(
+                        'diary.guest_info_message'.tr(),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          height: 1.4,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 26),
+
+                      /// BOTÃO PRINCIPAL — LOGIN
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(dialogContext).pop();
+
+                            Future.microtask(() {
+                              if (!mounted) return;
+                              showLoginPrompt(context);
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFCD4B78),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: Text(
+                            'diary.guest_login'.tr(),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      /// AÇÃO SECUNDÁRIA — CONTINUAR
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(dialogContext).pop();
+                          Future.microtask(() {
+                            _openEntryModal();
+                          });
+                        },
+                        child: Text(
+                          'diary.guest_continue'.tr(),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFFB03062),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
 
-            /// BOTÃO FECHAR
-            Positioned(
-              top: 12,
-              right: 12,
-              child: IconButton(
-                icon: const Icon(Icons.close, color: Colors.grey),
-                onPressed: () => Navigator.of(dialogContext).pop(),
+              /// BOTÃO FECHAR
+              Positioned(
+                top: 12,
+                right: 12,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.grey),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                ),
               ),
-            ),
-          ],
-        ),
-      );
-    },
-  );
-}
-
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
