@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:myyearmystory/services/analytics_service.dart';
 
 class PurchaseService extends ChangeNotifier {
-
   final InAppPurchase _inAppPurchase = InAppPurchase.instance;
 
   PurchaseService() {
@@ -11,19 +11,18 @@ class PurchaseService extends ChangeNotifier {
   }
 
   Future<void> _restorePurchases() async {
-  try {
-    if (kDebugMode) {
-      debugPrint("🔄 RESTORING PURCHASES...");
-    }
+    try {
+      if (kDebugMode) {
+        debugPrint("🔄 RESTORING PURCHASES...");
+      }
 
-    await _inAppPurchase.restorePurchases();
-
-  } catch (e) {
-    if (kDebugMode) {
-      debugPrint("❌ ERRO AO RESTAURAR COMPRAS: $e");
+      await _inAppPurchase.restorePurchases();
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint("❌ ERRO AO RESTAURAR COMPRAS: $e");
+      }
     }
   }
-}
 
   bool _initialized = false;
 
@@ -36,12 +35,12 @@ class PurchaseService extends ChangeNotifier {
   List<ProductDetails> _products = [];
   List<ProductDetails> get products => _products;
 
-  static const String monthlyId =
-      'com.myyear.myyearmystory.premium_monthly';
-  static const String yearlyId =
-      'com.myyear.myyearmystory.premium_yearly';
+  static const String monthlyId = 'com.myyear.myyearmystory.premium_monthly';
+  static const String yearlyId = 'com.myyear.myyearmystory.premium_yearly';
 
   StreamSubscription<List<PurchaseDetails>>? _subscription;
+  bool _userRequestedRestore = false;
+  final Set<String> _completedPlans = <String>{};
 
   Future<void> init() async {
     if (_initialized) return;
@@ -60,82 +59,79 @@ class PurchaseService extends ChangeNotifier {
         return;
       }
 
-      final Set<String> productIds = {
-        monthlyId,
-        yearlyId,
-      };
+      final Set<String> productIds = {monthlyId, yearlyId};
 
       if (kDebugMode) debugPrint("QUERYING PRODUCTS: $productIds");
 
-      final response =
-    await _inAppPurchase.queryProductDetails(productIds);
+      final response = await _inAppPurchase.queryProductDetails(productIds);
 
-if (kDebugMode) {
-  debugPrint("🔎 PRODUCT IDS ENVIADOS: $productIds");
-  debugPrint("🔎 PRODUTOS ENCONTRADOS: ${response.productDetails.length}");
-  debugPrint("🔎 PRODUTOS NÃO ENCONTRADOS: ${response.notFoundIDs}");
+      if (kDebugMode) {
+        debugPrint("🔎 PRODUCT IDS ENVIADOS: $productIds");
+        debugPrint(
+          "🔎 PRODUTOS ENCONTRADOS: ${response.productDetails.length}",
+        );
+        debugPrint("🔎 PRODUTOS NÃO ENCONTRADOS: ${response.notFoundIDs}");
 
-  for (final ProductDetails product in response.productDetails) {
-    debugPrint("🛒 PRODUTO ENCONTRADO → ${product.id}");
-    debugPrint("💰 PREÇO → ${product.price} | raw:${product.rawPrice}");
-  }
-}
+        for (final ProductDetails product in response.productDetails) {
+          debugPrint("🛒 PRODUTO ENCONTRADO → ${product.id}");
+          debugPrint("💰 PREÇO → ${product.price} | raw:${product.rawPrice}");
+        }
+      }
 
-/// Filtrar apenas os produtos que realmente usamos
-final List<ProductDetails> loadedProducts = [];
+      /// Filtrar apenas os produtos que realmente usamos
+      final List<ProductDetails> loadedProducts = [];
 
-for (final ProductDetails product in response.productDetails) {
+      for (final ProductDetails product in response.productDetails) {
+        if ((product.id == monthlyId || product.id == yearlyId) &&
+            product.rawPrice > 0) {
+          loadedProducts.add(product);
 
-  if ((product.id == monthlyId || product.id == yearlyId) && product.rawPrice > 0) {
+          if (kDebugMode) {
+            debugPrint("✅ PRODUTO ACEITO → ${product.id} | ${product.price}");
+          }
+        } else {
+          if (kDebugMode) {
+            debugPrint(
+              "⛔ PRODUTO IGNORADO → ${product.id} | raw:${product.rawPrice}",
+            );
+          }
+        }
+      }
+      _products = loadedProducts;
 
-    loadedProducts.add(product);
+      /// Log final para confirmar os planos carregados
+      if (kDebugMode) {
+        debugPrint("📦 PLANOS CARREGADOS NO APP:");
+        for (final p in _products) {
+          debugPrint("➡ ${p.id} | ${p.price}");
+        }
+      }
 
-    if (kDebugMode) {
-      debugPrint("✅ PRODUTO ACEITO → ${product.id} | ${product.price}");
-    }
-
-  } else {
-
-    if (kDebugMode) {
-      debugPrint("⛔ PRODUTO IGNORADO → ${product.id} | raw:${product.rawPrice}");
-    }
-
-  }
-}
-_products = loadedProducts;
-
-/// Log final para confirmar os planos carregados
-if (kDebugMode) {
-  debugPrint("📦 PLANOS CARREGADOS NO APP:");
-  for (final p in _products) {
-    debugPrint("➡ ${p.id} | ${p.price}");
-  }
-}
-
-if (response.notFoundIDs.isNotEmpty) {
-  if (kDebugMode) {
-    debugPrint("⚠️ PRODUTOS NÃO ENCONTRADOS: ${response.notFoundIDs}");
-  }
-}
+      if (response.notFoundIDs.isNotEmpty) {
+        if (kDebugMode) {
+          debugPrint("⚠️ PRODUTOS NÃO ENCONTRADOS: ${response.notFoundIDs}");
+        }
+      }
 
       /// NOTE:
       /// Do not filter by `rawPrice`. For subscriptions with free trials or
       /// intro phases, some stores can report 0 in the first pricing phase.
       /// Filtering would make products disappear and prices show as "...".
-      
 
-for (final ProductDetails product in response.productDetails) {
-  if (product.id == monthlyId || product.id == yearlyId) {
-    loadedProducts.add(product);
-  }
-}
+      for (final ProductDetails product in response.productDetails) {
+        if (product.id == monthlyId || product.id == yearlyId) {
+          loadedProducts.add(product);
+        }
+      }
 
-_products = loadedProducts;
+      _products = loadedProducts;
 
       /// LOG DETALHADO
       for (var p in _products) {
         if (kDebugMode) {
-          debugPrint("PRODUCT LOADED → ${p.id} | ${p.price} | raw:${p.rawPrice}");
+          debugPrint(
+            "PRODUCT LOADED → ${p.id} | ${p.price} | raw:${p.rawPrice}",
+          );
         }
       }
 
@@ -189,14 +185,11 @@ _products = loadedProducts;
       return;
     }
 
-    final purchaseParam =
-        PurchaseParam(productDetails: product);
+    final purchaseParam = PurchaseParam(productDetails: product);
 
     if (kDebugMode) debugPrint("STARTING MONTHLY PURCHASE");
 
-    await _inAppPurchase.buyNonConsumable(
-      purchaseParam: purchaseParam,
-    );
+    await _inAppPurchase.buyNonConsumable(purchaseParam: purchaseParam);
   }
 
   /// COMPRA ANUAL
@@ -209,14 +202,11 @@ _products = loadedProducts;
       return;
     }
 
-    final purchaseParam =
-        PurchaseParam(productDetails: product);
+    final purchaseParam = PurchaseParam(productDetails: product);
 
     if (kDebugMode) debugPrint("STARTING YEARLY PURCHASE");
 
-    await _inAppPurchase.buyNonConsumable(
-      purchaseParam: purchaseParam,
-    );
+    await _inAppPurchase.buyNonConsumable(purchaseParam: purchaseParam);
   }
 
   /// RESTAURAR COMPRAS
@@ -224,13 +214,18 @@ _products = loadedProducts;
   Future<void> restorePurchases() async {
     if (kDebugMode) debugPrint("RESTORING PURCHASES");
 
-    await _inAppPurchase.restorePurchases();
+    _userRequestedRestore = true;
+    try {
+      await _inAppPurchase.restorePurchases();
+    } catch (_) {
+      _userRequestedRestore = false;
+      rethrow;
+    }
   }
 
   /// LISTENER DE COMPRAS
 
-  void _listenToPurchaseUpdated(
-      List<PurchaseDetails> purchaseDetailsList) {
+  void _listenToPurchaseUpdated(List<PurchaseDetails> purchaseDetailsList) {
     for (var purchaseDetails in purchaseDetailsList) {
       if (kDebugMode) {
         debugPrint("PURCHASE UPDATE: ${purchaseDetails.status}");
@@ -243,6 +238,11 @@ _products = loadedProducts;
           _isPremium = true;
           notifyListeners();
 
+          final planType = _planTypeForProduct(purchaseDetails.productID);
+          if (planType != null && _completedPlans.add(planType)) {
+            AnalyticsService.instance.subscriptionCompleted(planType);
+          }
+
           break;
 
         case PurchaseStatus.restored:
@@ -250,6 +250,11 @@ _products = loadedProducts;
 
           _isPremium = true;
           notifyListeners();
+
+          if (_userRequestedRestore) {
+            AnalyticsService.instance.logEvent('purchase_restored');
+            _userRequestedRestore = false;
+          }
 
           break;
 
@@ -272,6 +277,12 @@ _products = loadedProducts;
         _inAppPurchase.completePurchase(purchaseDetails);
       }
     }
+  }
+
+  String? _planTypeForProduct(String productId) {
+    if (productId == monthlyId) return 'monthly';
+    if (productId == yearlyId) return 'yearly';
+    return null;
   }
 
   @override

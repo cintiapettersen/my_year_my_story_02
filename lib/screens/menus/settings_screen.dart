@@ -1,621 +1,108 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:myyearmystory/services/user_service.dart';
-import 'package:myyearmystory/screens/auth/login_screen.dart';
-import 'package:go_router/go_router.dart';
-import 'package:go_router/go_router.dart';
+import 'package:myyearmystory/services/analytics_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+class PrivacyDataScreen extends StatefulWidget {
+  const PrivacyDataScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  State<PrivacyDataScreen> createState() => _PrivacyDataScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
-  bool _notificationsEnabled = true;
-  bool _dailyReminders = true;
-  bool _weeklyReports = false;
-  bool _darkMode = false;
-  bool _rememberMeEnabled = false;
-  String _selectedLanguage = 'Português';
+class _PrivacyDataScreenState extends State<PrivacyDataScreen> {
+  static final Uri _privacyPolicyUri = Uri.parse(
+    'https://sonhodepapel.com/my-year-my-story-policy/',
+  );
 
-  @override
-  void initState() {
-    super.initState();
-    _loadRememberMeSettings();
+  bool _saving = false;
+
+  Future<void> _setAnalyticsEnabled(bool enabled) async {
+    if (_saving) return;
+    setState(() => _saving = true);
+    await AnalyticsService.instance.setConsent(enabled);
+    if (mounted) setState(() => _saving = false);
   }
 
-  Future<void> _loadRememberMeSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _rememberMeEnabled = prefs.getBool('remember_me') ?? false;
-    });
+  Future<void> _openPrivacyPolicy() async {
+    await launchUrl(_privacyPolicyUri, mode: LaunchMode.externalApplication);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: const Color(0xFFFCE9EF),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFE04CB7),
+        foregroundColor: Colors.white,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black87),
-        title: Text(
-          'Configurações',
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        title: Text('privacy_data.title'.tr()),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            _buildNotificationSection(),
-            const SizedBox(height: 16),
-            _buildAppearanceSection(),
-            const SizedBox(height: 16),
-            _buildLanguageSection(),
-            const SizedBox(height: 16),
-            _buildLoginSecuritySection(),
-            const SizedBox(height: 16),
-            _buildPrivacySection(),
-            const SizedBox(height: 16),
-            _buildSupportSection(),
-            const SizedBox(height: 16),
-            _buildAboutSection(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNotificationSection() {
-    return _buildSettingsCard(
-      title: 'Notificações',
-      children: [
-        _buildSwitchTile(
-          title: 'Ativar Notificações',
-          subtitle: 'Receba lembretes e atualizações',
-          value: _notificationsEnabled,
-          onChanged: (value) {
-            setState(() {
-              _notificationsEnabled = value;
-            });
-          },
-        ),
-        _buildSwitchTile(
-          title: 'Lembretes Diários',
-          subtitle: 'Lembrete para escrever no diário',
-          value: _dailyReminders,
-          onChanged: _notificationsEnabled ? (value) {
-            setState(() {
-              _dailyReminders = value;
-            });
-          } : null,
-        ),
-        _buildSwitchTile(
-          title: 'Relatórios Semanais',
-          subtitle: 'Resumo semanal das atividades',
-          value: _weeklyReports,
-          onChanged: _notificationsEnabled ? (value) {
-            setState(() {
-              _weeklyReports = value;
-            });
-          } : null,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAppearanceSection() {
-    return _buildSettingsCard(
-      title: 'Aparência',
-      children: [
-        _buildSwitchTile(
-          title: 'Modo Escuro',
-          subtitle: 'Usar tema escuro no aplicativo',
-          value: _darkMode,
-          onChanged: (value) {
-            setState(() {
-              _darkMode = value;
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Funcionalidade em desenvolvimento!'),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLanguageSection() {
-    return _buildSettingsCard(
-      title: 'Idioma',
-      children: [
-        ListTile(
-          leading: Icon(Icons.language, color: Theme.of(context).primaryColor),
-          title: const Text('Idioma do App'),
-          subtitle: Text(_selectedLanguage),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: _showLanguageSelector,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLoginSecuritySection() {
-    return _buildSettingsCard(
-      title: 'Login e Segurança',
-      children: [
-        SwitchListTile(
-          title: const Text('Lembrar de mim'),
-          subtitle: Text(_rememberMeEnabled 
-              ? 'Login automático ativado'
-              : 'Fazer login automático ao abrir o app'),
-          value: _rememberMeEnabled,
-          onChanged: (value) => _toggleRememberMe(value),
-          activeThumbColor: Theme.of(context).primaryColor,
-          secondary: Icon(
-            _rememberMeEnabled ? Icons.login : Icons.logout,
-            color: _rememberMeEnabled ? Theme.of(context).primaryColor : Colors.grey,
-          ),
-        ),
-        ListTile(
-          leading: Icon(Icons.cleaning_services, color: Theme.of(context).primaryColor),
-          title: const Text('Limpar dados de login'),
-          subtitle: const Text('Remover credenciais salvas'),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: _clearLoginData,
-        ),
-        ListTile(
-          leading: Icon(Icons.logout, color: Colors.orange),
-          title: const Text('Sair da conta', style: TextStyle(color: Colors.orange)),
-          subtitle: const Text('Fazer logout do aplicativo'),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.orange),
-          onTap: _signOut,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPrivacySection() {
-    return _buildSettingsCard(
-      title: 'Privacidade e Segurança',
-      children: [
-        ListTile(
-          leading: Icon(Icons.lock_outline, color: Theme.of(context).primaryColor),
-          title: const Text('Alterar Senha'),
-          subtitle: const Text('Atualize sua senha de acesso'),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: _showChangePassword,
-        ),
-        ListTile(
-          leading: Icon(Icons.backup, color: Theme.of(context).primaryColor),
-          title: const Text('Backup de Dados'),
-          subtitle: const Text('Faça backup dos seus dados'),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: _showBackupOptions,
-        ),
-        ListTile(
-          leading: const Icon(Icons.delete_forever, color: Colors.red),
-          title: const Text('Excluir Conta', style: TextStyle(color: Colors.red)),
-          subtitle: const Text('Remover permanentemente sua conta'),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.red),
-          onTap: _showDeleteAccount,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSupportSection() {
-    return _buildSettingsCard(
-      title: 'Suporte',
-      children: [
-        ListTile(
-          leading: Icon(Icons.help_outline, color: Theme.of(context).primaryColor),
-          title: const Text('Central de Ajuda'),
-          subtitle: const Text('Perguntas frequentes e tutoriais'),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: _showHelpCenter,
-        ),
-        ListTile(
-          leading: Icon(Icons.email_outlined, color: Theme.of(context).primaryColor),
-          title: const Text('Entre em Contato'),
-          subtitle: const Text('Envie feedback ou reporte problemas'),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: _showContact,
-        ),
-        ListTile(
-          leading: Icon(Icons.star_outline, color: Theme.of(context).primaryColor),
-          title: const Text('Avaliar App'),
-          subtitle: const Text('Deixe sua avaliação na loja'),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: _showRateApp,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAboutSection() {
-    return _buildSettingsCard(
-      title: 'Sobre',
-      children: [
-        ListTile(
-          leading: Icon(Icons.info_outline, color: Theme.of(context).primaryColor),
-          title: const Text('Versão do App'),
-          subtitle: const Text('1.0.0'),
-        ),
-        ListTile(
-          leading: Icon(Icons.privacy_tip_outlined, color: Theme.of(context).primaryColor),
-          title: const Text('Política de Privacidade'),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: _showPrivacyPolicy,
-        ),
-        ListTile(
-          leading: Icon(Icons.article_outlined, color: Theme.of(context).primaryColor),
-          title: const Text('Termos de Uso'),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: _showTermsOfService,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSettingsCard({
-    required String title,
-    required List<Widget> children,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            offset: const Offset(0, 2),
-            blurRadius: 8,
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              title,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-          ),
-          ...children,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSwitchTile({
-    required String title,
-    required String subtitle,
-    required bool value,
-    required ValueChanged<bool>? onChanged,
-  }) {
-    return SwitchListTile(
-      title: Text(title),
-      subtitle: Text(subtitle),
-      value: value,
-      onChanged: onChanged,
-      activeThumbColor: Theme.of(context).primaryColor,
-      secondary: Icon(
-        value ? Icons.notifications_active : Icons.notifications_off,
-        color: onChanged != null 
-            ? (value ? Theme.of(context).primaryColor : Colors.grey)
-            : Colors.grey[400],
-      ),
-    );
-  }
-
-  void _showLanguageSelector() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(20),
           children: [
             Text(
-              'Selecionar Idioma',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
+              'privacy_data.introduction'.tr(),
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: const Color(0xFF624B59),
+                height: 1.45,
               ),
             ),
             const SizedBox(height: 20),
-            ListTile(
-              title: const Text('Português'),
-              trailing: _selectedLanguage == 'Português' 
-                  ? Icon(Icons.check, color: Theme.of(context).primaryColor)
-                  : null,
-              onTap: () {
-                setState(() {
-                  _selectedLanguage = 'Português';
-                });
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: const Text('English'),
-              trailing: _selectedLanguage == 'English' 
-                  ? Icon(Icons.check, color: Theme.of(context).primaryColor)
-                  : null,
-              onTap: () {
-                setState(() {
-                  _selectedLanguage = 'English';
-                });
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Idioma em desenvolvimento!'),
-                    behavior: SnackBarBehavior.floating,
+            DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x14000000),
+                    blurRadius: 10,
+                    offset: Offset(0, 3),
                   ),
-                );
-              },
+                ],
+              ),
+              child: Material(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                clipBehavior: Clip.antiAlias,
+                child: ValueListenableBuilder<AnalyticsConsentStatus>(
+                  valueListenable: AnalyticsService.instance.consent,
+                  builder: (context, status, _) {
+                    return SwitchListTile.adaptive(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 8,
+                      ),
+                      secondary: const Icon(
+                        Icons.analytics_outlined,
+                        color: Color(0xFFE04CB7),
+                      ),
+                      title: Text('analytics_settings.title'.tr()),
+                      subtitle: Text('analytics_settings.description'.tr()),
+                      value: status == AnalyticsConsentStatus.granted,
+                      onChanged: _saving ? null : _setAnalyticsEnabled,
+                      activeThumbColor: const Color(0xFFE04CB7),
+                    );
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Material(
+              color: Colors.transparent,
+              child: ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                leading: const Icon(
+                  Icons.privacy_tip_outlined,
+                  color: Color(0xFFE04CB7),
+                ),
+                title: Text('privacy_data.policy_link'.tr()),
+                trailing: const Icon(Icons.open_in_new, size: 20),
+                onTap: _openPrivacyPolicy,
+              ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _showChangePassword() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Alterar Senha'),
-        content: const Text('Funcionalidade em desenvolvimento!'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'OK',
-              style: TextStyle(color: Theme.of(context).primaryColor),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showBackupOptions() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Backup de Dados'),
-        content: const Text('Funcionalidade em desenvolvimento!'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'OK',
-              style: TextStyle(color: Theme.of(context).primaryColor),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showDeleteAccount() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Excluir Conta'),
-        content: const Text(
-          'Tem certeza que deseja excluir permanentemente sua conta? '
-          'Esta ação não pode ser desfeita.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Funcionalidade em desenvolvimento!'),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-            child: const Text('Excluir', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showHelpCenter() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Central de Ajuda em desenvolvimento!'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
-  void _showContact() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Contato em desenvolvimento!'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
-  void _showRateApp() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Funcionalidade de avaliação em desenvolvimento!'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
-  void _showPrivacyPolicy() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Política de Privacidade em desenvolvimento!'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
-  void _showTermsOfService() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Termos de Uso em desenvolvimento!'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
-  Future<void> _toggleRememberMe(bool value) async {
-    final prefs = await SharedPreferences.getInstance();
-    
-    if (value) {
-      // Ativando "lembrar de mim"
-      await prefs.setBool('remember_me', true);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Login automático ativado! Suas credenciais serão salvas no próximo login.'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } else {
-      // Desativando "lembrar de mim" - limpar todas as credenciais
-      await prefs.setBool('remember_me', false);
-      await prefs.remove('remembered_email');
-      await prefs.remove('remembered_password');
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Login automático desativado e credenciais removidas.'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-    }
-    
-    setState(() {
-      _rememberMeEnabled = value;
-    });
-  }
-
-  Future<void> _clearLoginData() async {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Limpar dados de login'),
-        content: const Text(
-          'Isto irá remover todas as credenciais salvas e desativar o login automático. '
-          'Você precisará fazer login novamente na próxima vez que abrir o app.\n\n'
-          'Deseja continuar?'
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.remove('remembered_email');
-              await prefs.remove('remembered_password');
-              await prefs.setBool('remember_me', false);
-              
-              setState(() {
-                _rememberMeEnabled = false;
-              });
-              
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Dados de login removidos com sucesso!'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            },
-            child: const Text('Limpar', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _signOut() async {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Sair da conta'),
-        content: const Text(
-          'Deseja sair da sua conta? Você precisará fazer login novamente '
-          'para acessar o aplicativo.'
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              
-              try {
-                // Fazer logout do Supabase
-                await UserService.signOut();
-                
-                // Limpar preferências se solicitado
-                final prefs = await SharedPreferences.getInstance();
-                if (!_rememberMeEnabled) {
-                  await prefs.remove('remembered_email');
-                  await prefs.remove('remembered_password');
-                }
-                
-                // Navegar para tela de login
-                if (mounted) {
-                  context.go('/login');
-                }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Erro ao sair: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              }
-            },
-            child: const Text('Sair', style: TextStyle(color: Colors.red)),
-          ),
-        ],
       ),
     );
   }

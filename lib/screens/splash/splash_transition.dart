@@ -6,13 +6,11 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:myyearmystory/services/app_session.dart';
-
-
-
+import 'package:myyearmystory/services/analytics_service.dart';
 
 // 🎨 CORES FIXAS DA SPLASH
 const Color splashPrimary = Color(0xFFC03B66);
-const Color splashAccent  = Color(0xFFE2377D);
+const Color splashAccent = Color(0xFFE2377D);
 
 // ======================================================
 //  SPLASH TRANSITION SCREEN
@@ -21,10 +19,8 @@ class SplashTransitionScreen extends StatefulWidget {
   const SplashTransitionScreen({super.key});
 
   @override
-  State<SplashTransitionScreen> createState() =>
-      _SplashTransitionScreenState();
+  State<SplashTransitionScreen> createState() => _SplashTransitionScreenState();
 }
-
 
 class _SplashTransitionScreenState extends State<SplashTransitionScreen>
     with SingleTickerProviderStateMixin {
@@ -37,6 +33,7 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
   @override
   void initState() {
     super.initState();
+    AnalyticsService.instance.logOnce('onboarding_started');
 
     _controller = AnimationController(
       vsync: this,
@@ -49,10 +46,7 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
     );
 
     _scaleAnimation = Tween<double>(begin: 0.95, end: 1.03).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeInOutCubic,
-      ),
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic),
     );
 
     _controller.forward();
@@ -62,21 +56,20 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
     });
   }
 
-
   void _goToLogin() {
+    AnalyticsService.instance.logOnce('onboarding_completed');
     AppSession.reset();
     if (!mounted) return;
     context.go('/login');
   }
 
   void _enterAsGuest() {
-  AppSession.flow = AppAuthFlow.guest;
+    AnalyticsService.instance.logOnce('onboarding_completed');
+    AppSession.flow = AppAuthFlow.guest;
 
-  if (!mounted) return;
-  context.go('/dashboard');
-}
-
-
+    if (!mounted) return;
+    context.go('/dashboard');
+  }
 
   @override
   void dispose() {
@@ -92,178 +85,162 @@ class _SplashTransitionScreenState extends State<SplashTransitionScreen>
       backgroundColor: Colors.white,
       body: Center(
         child: AnimatedSwitcher(
-  duration: const Duration(milliseconds: 600),
-  child: !_showButtons
-      ? _buildAnimatedSplash(isTablet)
-      : _buildButtons(isTablet),
-),
+          duration: const Duration(milliseconds: 600),
+          child:
+              !_showButtons
+                  ? _buildAnimatedSplash(isTablet)
+                  : _buildButtons(isTablet),
+        ),
       ),
     );
   }
 
-
-
-  
-Widget _buildAnimatedSplash(bool isTablet, {Key? key}) {
-  return Column(
-    key: key,
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      FadeTransition(
-        opacity: _fadeAnimation,
-        child: ScaleTransition(
-          scale: _scaleAnimation,
-          child: Image.asset(
-            'assets/imagens/logo.png',
-            height: isTablet ? 180 : 120,
-          ),
-        ),
-      ),
-
-      const SizedBox(height: 20),
-
-      // 🟣 TEXTO DA TRANSIÇÃO (APENAS ESTE)
-      ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: isTablet ? 500 : 300,
-        ),
-        child: Text(
-          context.tr('splash.new_chapter'),
-          textAlign: TextAlign.center,
-          maxLines: 2,
-          style: GoogleFonts.cedarvilleCursive(
-            fontSize: isTablet ? 30 : 26,
-            height: 1.2,
-            color: splashPrimary,
-          ),
-        ),
-      ),
-
-      const SizedBox(height: 30),
-
-      FadeTransition(
-        opacity: _fadeAnimation,
-        child: const CircularProgressIndicator(
-          strokeWidth: 2.5,
-          valueColor: AlwaysStoppedAnimation(splashPrimary),
-        ),
-      ),
-    ],
-  );
-}
-
-
-
- Widget _buildButtons(bool isTablet, {Key? key}) {
-  return Padding(
-    key: key,
-    padding: EdgeInsets.symmetric(horizontal: isTablet ? 80 : 40),
-    child: Column(
+  Widget _buildAnimatedSplash(bool isTablet, {Key? key}) {
+    return Column(
+      key: key,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // LOGO
-        Image.asset(
-          'assets/imagens/logo.png',
-          height: isTablet ? 180 : 120,
-        ),
-
-        const SizedBox(height: 5),
-
-        // 🟣 TEXTO FIXO DA TELA DE AÇÃO
-        // "Sua história. Do seu jeito."
-        Text(
-          context.tr('splash.subtitle'),
-          textAlign: TextAlign.center,
-          softWrap: true,
-          maxLines: 2,
-          style: GoogleFonts.cedarvilleCursive(
-            fontSize: isTablet ? 40 : 22,
-            height: 1.25,
-            color: Colors.black87,
-          ),
-        ),
-
-        const SizedBox(height: 60),
-
-        // BOTÃO LOGIN / CRIAR CONTA
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: _goToLogin,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFe2377d),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-            child: Text(
-              'splash.login_button'.tr(),
-              style: TextStyle(
-                fontSize: isTablet ? 22 : 16,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+        FadeTransition(
+          opacity: _fadeAnimation,
+          child: ScaleTransition(
+            scale: _scaleAnimation,
+            child: Image.asset(
+              'assets/imagens/logo.png',
+              height: isTablet ? 180 : 120,
             ),
           ),
         ),
 
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
 
-        // BOTÃO ENTRAR COMO CONVIDADO
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton(
-            onPressed: _enterAsGuest,
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(
-                color: Color(0xFFC03B66),
-                width: 2,
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
+        // 🟣 TEXTO DA TRANSIÇÃO (APENAS ESTE)
+        ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: isTablet ? 500 : 300),
+          child: Text(
+            context.tr('splash.new_chapter'),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            style: GoogleFonts.cedarvilleCursive(
+              fontSize: isTablet ? 30 : 26,
+              height: 1.2,
+              color: splashPrimary,
             ),
-            child: Text(
-              'splash.guest_button'.tr(),
-              style: TextStyle(
-                fontSize: isTablet ? 22 : 16,
-                color: const Color(0xFFC03B66),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-    
           ),
         ),
 
-        const SizedBox(height: 24),
+        const SizedBox(height: 30),
 
-GestureDetector(
-  onTap: () {
-    launchUrl(
-      Uri.parse('https://sonhodepapel.com/my-year-my-story-policy/'),
-      mode: LaunchMode.externalApplication,
-    );
-  },
-  child: Text(
-    context.tr('splash.privacy_notice'),
-    textAlign: TextAlign.center,
-    style: TextStyle(
-      fontSize: isTablet ? 14 : 12,
-      color: Colors.black54,
-      height: 1.4,
-      decoration: TextDecoration.underline,
-    ),
-  ),
-),
-
-        const SizedBox(height: 8),
-
-       
+        FadeTransition(
+          opacity: _fadeAnimation,
+          child: const CircularProgressIndicator(
+            strokeWidth: 2.5,
+            valueColor: AlwaysStoppedAnimation(splashPrimary),
+          ),
+        ),
       ],
-    ),
-  );
-}
+    );
+  }
 
+  Widget _buildButtons(bool isTablet, {Key? key}) {
+    return Padding(
+      key: key,
+      padding: EdgeInsets.symmetric(horizontal: isTablet ? 80 : 40),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // LOGO
+          Image.asset('assets/imagens/logo.png', height: isTablet ? 180 : 120),
+
+          const SizedBox(height: 5),
+
+          // 🟣 TEXTO FIXO DA TELA DE AÇÃO
+          // "Sua história. Do seu jeito."
+          Text(
+            context.tr('splash.subtitle'),
+            textAlign: TextAlign.center,
+            softWrap: true,
+            maxLines: 2,
+            style: GoogleFonts.cedarvilleCursive(
+              fontSize: isTablet ? 40 : 22,
+              height: 1.25,
+              color: Colors.black87,
+            ),
+          ),
+
+          const SizedBox(height: 60),
+
+          // BOTÃO LOGIN / CRIAR CONTA
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _goToLogin,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFe2377d),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              child: Text(
+                'splash.login_button'.tr(),
+                style: TextStyle(
+                  fontSize: isTablet ? 22 : 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // BOTÃO ENTRAR COMO CONVIDADO
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: _enterAsGuest,
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFFC03B66), width: 2),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              child: Text(
+                'splash.guest_button'.tr(),
+                style: TextStyle(
+                  fontSize: isTablet ? 22 : 16,
+                  color: const Color(0xFFC03B66),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          GestureDetector(
+            onTap: () {
+              launchUrl(
+                Uri.parse('https://sonhodepapel.com/my-year-my-story-policy/'),
+                mode: LaunchMode.externalApplication,
+              );
+            },
+            child: Text(
+              context.tr('splash.privacy_notice'),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: isTablet ? 14 : 12,
+                color: Colors.black54,
+                height: 1.4,
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
 }

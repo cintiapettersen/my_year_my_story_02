@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:myyearmystory/services/analytics_service.dart';
 
 import 'package:myyearmystory/models/diary_entry.dart';
 import 'package:myyearmystory/services/diary_service.dart';
@@ -243,6 +244,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
   @override
   void initState() {
     super.initState();
+    AnalyticsService.instance.logEvent('diary_opened');
     _selectedDate = widget.date;
     _checkPremiumStatus();
     _loadEntries();
@@ -313,6 +315,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
       return;
     }
 
+    await AnalyticsService.instance.logEvent('diary_entry_started');
     _openEntryModal();
   }
 
@@ -782,6 +785,12 @@ class _DiaryScreenState extends State<DiaryScreen> {
       _dateFilterStart = start;
       _dateFilterEndExclusive = endExclusive;
     });
+    final filterType = switch (type) {
+      _DiaryDateFilterType.month => 'month',
+      _DiaryDateFilterType.day => 'date',
+      _DiaryDateFilterType.range => 'range',
+    };
+    AnalyticsService.instance.diaryFilterUsed(filterType);
     _loadEntries();
   }
 
@@ -792,6 +801,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
       _dateFilterStart = null;
       _dateFilterEndExclusive = null;
     });
+    AnalyticsService.instance.logEvent('diary_filter_cleared');
     _loadEntries();
   }
 
@@ -1237,6 +1247,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
     }
 
     try {
+      final isUpdate = _editingEntry != null;
       if (_editingEntry != null) {
         await DiaryService.updateEntry(
           _editingEntry!.id,
@@ -1253,6 +1264,9 @@ class _DiaryScreenState extends State<DiaryScreen> {
       }
 
       await _clearDraft();
+      await AnalyticsService.instance.logEvent(
+        isUpdate ? 'diary_entry_updated' : 'diary_entry_saved',
+      );
       _editingEntry = null;
       await _loadEntries();
     } catch (e) {
@@ -1303,6 +1317,8 @@ class _DiaryScreenState extends State<DiaryScreen> {
   Future<void> _callDiaryAi(String text) async {
     if (text.trim().isEmpty) return;
 
+    await AnalyticsService.instance.logEvent('reflection_requested');
+
     _updateEntryModal(() {
       _isLoadingAi = true;
       _aiResponse = null;
@@ -1324,6 +1340,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
         _isReflectionVisible = true;
         _isLoadingAi = false;
       });
+      await AnalyticsService.instance.logEvent('reflection_completed');
     } catch (e) {
       if (!mounted) return;
 
@@ -1481,6 +1498,7 @@ $text
   void _deleteEntry(DiaryEntryModel entry) async {
     try {
       await DiaryService.deleteEntry(entry.id);
+      await AnalyticsService.instance.logEvent('diary_entry_deleted');
       await _loadEntries();
     } catch (e) {
       if (!mounted) return;

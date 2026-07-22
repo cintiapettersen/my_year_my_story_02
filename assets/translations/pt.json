@@ -113,7 +113,8 @@
   "guest_name": "Visitante",
   "login_or_create": "Sign in or create account",
   "premium_active": "Você é Premium!",
-  "premium_cta": "Quero ser Premium"
+  "premium_cta": "Quero ser Premium",
+  "privacy_settings": "Privacidade e dados"
   
   
 },
@@ -1238,8 +1239,22 @@
       "title": "VOCÊ, AGORA"
     }
   }
-
-}
+},
+  "analytics_consent": {
+    "title": "Ajude a melhorar o My Year, My Story",
+    "message": "Você permite o compartilhamento de dados anônimos de uso? Isso nos ajuda a entender quais recursos são mais úteis e a melhorar o aplicativo. Nunca coletamos textos do diário, reflexões, áudios ou informações pessoais.",
+    "allow": "Permitir",
+    "not_now": "Agora não"
+  },
+  "analytics_settings": {
+    "title": "Dados anônimos de uso",
+    "description": "Ajude a melhorar o aplicativo compartilhando dados anônimos de uso. O conteúdo do diário e suas informações pessoais nunca são coletados."
+  },
+  "privacy_data": {
+    "title": "Privacidade e dados",
+    "introduction": "Você controla se os dados anônimos de uso são compartilhados. É possível alterar essa escolha a qualquer momento.",
+    "policy_link": "Política de Privacidade"
+  }
 
   
     }

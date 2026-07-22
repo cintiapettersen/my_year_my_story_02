@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -12,9 +14,8 @@ import 'package:myyearmystory/screens/auth/forgot_password_screen.dart';
 import 'package:myyearmystory/services/user_service.dart';
 import 'package:myyearmystory/services/google_auth_service.dart';
 import 'package:myyearmystory/services/app_session.dart';
+import 'package:myyearmystory/services/analytics_service.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-
-
 
 class LoginScreen extends StatefulWidget {
   final VoidCallback onCreateAccountTap;
@@ -87,6 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (success) {
         await _saveRememberedEmail();
+        unawaited(AnalyticsService.instance.logOnce('login_completed'));
 
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -128,89 +130,87 @@ class _LoginScreenState extends State<LoginScreen> {
   // GOOGLE LOGIN
   // =============================================================
   Future<void> _signInWithGoogle() async {
-  AppSession.flow = AppAuthFlow.authenticating;
+    AppSession.flow = AppAuthFlow.authenticating;
 
-  try {
-    final result = await GoogleAuthService.signInWithGoogle();
+    try {
+      final result = await GoogleAuthService.signInWithGoogle();
 
-    if (result['success'] != true) {
+      if (result['success'] != true) {
+        AppSession.flow = AppAuthFlow.splash;
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro no login Google: ${result['message']}'),
+            backgroundColor: Colors.red.shade600,
+          ),
+        );
+      }
+    } catch (e) {
       AppSession.flow = AppAuthFlow.splash;
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Erro no login Google: ${result['message']}'),
+          content: Text('Erro no login Google: $e'),
           backgroundColor: Colors.red.shade600,
         ),
       );
     }
-  } catch (e) {
-    AppSession.flow = AppAuthFlow.splash;
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Erro no login Google: $e'),
-        backgroundColor: Colors.red.shade600,
-      ),
-    );
+
+    setState(() {});
   }
 
-  setState(() {});
-}
-//LOGIN COM APPLE
-// =============================================================
-Future<void> _signInWithApple() async {
-  AppSession.flow = AppAuthFlow.authenticating;
+  //LOGIN COM APPLE
+  // =============================================================
+  Future<void> _signInWithApple() async {
+    AppSession.flow = AppAuthFlow.authenticating;
 
-  try {
-    final credential = await SignInWithApple.getAppleIDCredential(
-      scopes: [
-        AppleIDAuthorizationScopes.email,
-        AppleIDAuthorizationScopes.fullName,
-      ],
-    );
+    try {
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
 
-    if (credential.identityToken == null) {
-      throw Exception('Apple identity token is null');
-    }
+      if (credential.identityToken == null) {
+        throw Exception('Apple identity token is null');
+      }
 
-    final response = await Supabase.instance.client.auth.signInWithIdToken(
-      provider: OAuthProvider.apple,
-      idToken: credential.identityToken!,
-      accessToken: credential.authorizationCode,
-    );
+      final response = await Supabase.instance.client.auth.signInWithIdToken(
+        provider: OAuthProvider.apple,
+        idToken: credential.identityToken!,
+        accessToken: credential.authorizationCode,
+      );
 
-    final user = response.user;
+      final user = response.user;
 
-    if (user != null) {
-      final fullName = [
-        credential.givenName,
-        credential.familyName,
-      ]
-          .whereType<String>()
-          .where((e) => e.isNotEmpty)
-          .join(' ')
-          .trim();
+      if (user != null) {
+        final fullName =
+            [
+              credential.givenName,
+              credential.familyName,
+            ].whereType<String>().where((e) => e.isNotEmpty).join(' ').trim();
 
-      // ⚡ Só salva o nome se ele existir (primeiro login)
-      if (fullName.isNotEmpty) {
-        await Supabase.instance.client.from('profiles').upsert({
-          'id': user.id,
-          'email': user.email,
-          'full_name': fullName,
-          'profile_type': 'standard',
-          'created_at': DateTime.now().toIso8601String(),
-        });
+        // ⚡ Só salva o nome se ele existir (primeiro login)
+        if (fullName.isNotEmpty) {
+          await Supabase.instance.client.from('profiles').upsert({
+            'id': user.id,
+            'email': user.email,
+            'full_name': fullName,
+            'profile_type': 'standard',
+            'created_at': DateTime.now().toIso8601String(),
+          });
+        }
+      }
+    } catch (e) {
+      AppSession.flow = AppAuthFlow.splash;
+      if (kDebugMode) {
+        debugPrint('Apple login error: $e');
       }
     }
-  } catch (e) {
-    AppSession.flow = AppAuthFlow.splash;
-    if (kDebugMode) {
-      debugPrint('Apple login error: $e');
-    }
-  }
 
-  setState(() {});
-}
+    setState(() {});
+  }
 
   // =============================================================
   // UI
@@ -463,22 +463,22 @@ Future<void> _signInWithApple() async {
             ),
           ],
         ),
-	        const SizedBox(height: 14),
-	        LayoutBuilder(
-	          builder: (context, constraints) {
-	            final gap = constraints.maxWidth < 360 ? 8.0 : 12.0;
-	            return Row(
-	              children: [
-	                Expanded(child: _buildGoogleButton(isTablet)),
-	                SizedBox(width: gap),
-	                Expanded(child: _buildAppleButton(isTablet)),
-	              ],
-	            );
-	          },
-	        ),
-	      ],
-	    );
-	  }
+        const SizedBox(height: 14),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final gap = constraints.maxWidth < 360 ? 8.0 : 12.0;
+            return Row(
+              children: [
+                Expanded(child: _buildGoogleButton(isTablet)),
+                SizedBox(width: gap),
+                Expanded(child: _buildAppleButton(isTablet)),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
 
   Widget _buildGoogleButton(bool isTablet) {
     return OutlinedButton(
@@ -489,32 +489,32 @@ Future<void> _signInWithApple() async {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         side: const BorderSide(color: Color(0xFFE4D8EB)),
       ),
-	      child:
-	          _isGoogleLoading
-	              ? const SizedBox(
-	                height: 20,
-	                width: 20,
-	                child: CircularProgressIndicator(strokeWidth: 2),
-	              )
-	              : FittedBox(
-	                fit: BoxFit.scaleDown,
-	                child: Row(
-	                  mainAxisAlignment: MainAxisAlignment.center,
-	                  children: [
-	                    Image.asset(
-	                      "assets/icons/google_icon.png",
-	                      height: isTablet ? 26 : 20,
-	                    ),
-	                    const SizedBox(width: 10),
-	                    const Text(
-	                      "Google",
-	                      style: TextStyle(fontWeight: FontWeight.w600),
-	                    ),
-	                  ],
-	                ),
-	              ),
-	    );
-	  }
+      child:
+          _isGoogleLoading
+              ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+              : FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      "assets/icons/google_icon.png",
+                      height: isTablet ? 26 : 20,
+                    ),
+                    const SizedBox(width: 10),
+                    const Text(
+                      "Google",
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+    );
+  }
 
   Widget _buildAppleButton(bool isTablet) {
     return OutlinedButton(
@@ -524,21 +524,23 @@ Future<void> _signInWithApple() async {
         padding: EdgeInsets.symmetric(vertical: isTablet ? 16 : 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
-	      child: FittedBox(
-	        fit: BoxFit.scaleDown,
-	        child: Row(
-	          mainAxisAlignment: MainAxisAlignment.center,
-	          children: [
-	            const Icon(Icons.apple, color: Colors.white),
-	            const SizedBox(width: 10),
-	            const Text(
-	              "Apple",
-	              style:
-	                  TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
-	            ),
-	          ],
-	        ),
-	      ),
-	    );
-	  }
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.apple, color: Colors.white),
+            const SizedBox(width: 10),
+            const Text(
+              "Apple",
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

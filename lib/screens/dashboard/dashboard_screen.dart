@@ -32,6 +32,8 @@ import 'package:myyearmystory/utils/app_theme.dart';
 import 'package:myyearmystory/widgets/monthly/curiosity_fallback.dart';
 import 'package:myyearmystory/services/review_service.dart';
 import 'package:myyearmystory/services/review_storage.dart';
+import 'package:myyearmystory/services/analytics_service.dart';
+import 'package:myyearmystory/services/app_dialog_coordinator.dart';
 
 import 'package:myyearmystory/screens/popups/review_popup.dart';
 
@@ -106,32 +108,47 @@ class _DashboardScreenState extends State<DashboardScreen> {
     selectedMonth = widget.month;
     selectedYear = widget.year;
     _sessionStart = DateTime.now();
+    AnalyticsService.instance.consent.addListener(_onConsentChanged);
 
     _loadUserName();
     _syncUserLanguage();
 
-	    WidgetsBinding.instance.addPostFrameCallback((_) {
-	      _loadDashboardData();
-	      unawaited(showDailyNotification(context));
-        unawaited(_initAndScheduleReviewPopup());
-	    });
-	  }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadDashboardData();
+      unawaited(showDailyNotification(context));
+      unawaited(_initAndScheduleReviewPopup());
+    });
+  }
 
   @override
   void dispose() {
     _reviewCheckTimerShort?.cancel();
     _reviewCheckTimerEngaged?.cancel();
+    AnalyticsService.instance.consent.removeListener(_onConsentChanged);
     super.dispose();
+  }
+
+  void _onConsentChanged() {
+    if (AnalyticsService.instance.consent.value ==
+        AnalyticsConsentStatus.unknown) {
+      return;
+    }
+    _sessionStart = DateTime.now();
+    _scheduleReviewPopup();
   }
 
   void _scheduleReviewPopup() {
     _reviewCheckTimerShort?.cancel();
     _reviewCheckTimerEngaged?.cancel();
 
-    _reviewCheckTimerShort =
-        Timer(const Duration(minutes: 8), () => _maybeShowReview());
-    _reviewCheckTimerEngaged =
-        Timer(const Duration(minutes: 10), () => _maybeShowReview());
+    _reviewCheckTimerShort = Timer(
+      const Duration(minutes: 8),
+      () => _maybeShowReview(),
+    );
+    _reviewCheckTimerEngaged = Timer(
+      const Duration(minutes: 10),
+      () => _maybeShowReview(),
+    );
   }
 
   Future<void> _initAndScheduleReviewPopup() async {
@@ -142,6 +159,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _maybeShowReview() async {
     if (!mounted) return;
+    if (AnalyticsService.instance.consent.value ==
+        AnalyticsConsentStatus.unknown) {
+      return;
+    }
     final user = supabase.auth.currentUser;
     if (user == null) return;
 
@@ -157,8 +178,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (!canShow) return;
 
+    final dialogCoordinator = AppDialogCoordinator.instance;
+    if (!dialogCoordinator.tryBeginDialog()) {
+      _reviewCheckTimerShort?.cancel();
+      _reviewCheckTimerShort = Timer(
+        const Duration(minutes: 1),
+        _maybeShowReview,
+      );
+      return;
+    }
+
     final ctx = context;
-    await showReviewPopup(ctx);
+    try {
+      await showReviewPopup(ctx);
+    } finally {
+      dialogCoordinator.endDialog();
+    }
+
+    if (!mounted) return;
 
     final now = DateTime.now();
     await ReviewStorage.saveLastPrompt(now);
@@ -716,13 +753,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       // CURIOSITIES_ENTRIES (perguntas do mês)
       // - Pode ter vários grupos (group_number), então precisamos juntar tudo.
       // ==============================
-      final curiositiesSource =
-          await supabase
-              .from("curiosities_entries")
-              .select("questions, questions_en, group_number")
-              .eq("month", selectedMonth)
-              .eq("year", selectedYear)
-              .order("group_number");
+      final curiositiesSource = await supabase
+          .from("curiosities_entries")
+          .select("questions, questions_en, group_number")
+          .eq("month", selectedMonth)
+          .eq("year", selectedYear)
+          .order("group_number");
 
       if (!mounted) return;
 

@@ -16,6 +16,10 @@
         android:label="My Year, My Story"
         android:icon="@mipmap/ic_launcher">
 
+        <meta-data
+            android:name="firebase_analytics_collection_enabled"
+            android:value="false" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -14,13 +14,7 @@ import 'package:myyearmystory/services/purchase_service.dart';
 import 'package:provider/provider.dart';
 import 'package:myyearmystory/services/app_session.dart';
 
-
-
-
-
 final storage = const FlutterSecureStorage();
-
-
 
 class AppDrawer extends StatefulWidget {
   const AppDrawer({super.key});
@@ -45,7 +39,6 @@ class _AppDrawerState extends State<AppDrawer> {
     context.pop(); // fecha o drawer
     context.push(route);
   }
-
 
   // ------------------------------------------------------
   // LOAD PROFILE
@@ -84,9 +77,7 @@ class _AppDrawerState extends State<AppDrawer> {
                 .update({"avatar_emoji": emoji})
                 .eq("id", user["id"]);
           }
-        } catch (e) {
-          
-        }
+        } catch (e) {}
       },
       child: Container(
         margin: const EdgeInsets.only(right: 12),
@@ -98,20 +89,18 @@ class _AppDrawerState extends State<AppDrawer> {
             color: Colors.white.withOpacity(isSelected ? 0.9 : 0.5),
             width: isSelected ? 2 : 1.2,
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: Colors.purple.withOpacity(0.25),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  )
-                ]
-              : [],
+          boxShadow:
+              isSelected
+                  ? [
+                    BoxShadow(
+                      color: Colors.purple.withOpacity(0.25),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                  : [],
         ),
-        child: Text(
-          emoji,
-          style: const TextStyle(fontSize: 28),
-        ),
+        child: Text(emoji, style: const TextStyle(fontSize: 28)),
       ),
     );
   }
@@ -121,7 +110,6 @@ class _AppDrawerState extends State<AppDrawer> {
   // ------------------------------------------------------
   @override
   Widget build(BuildContext context) {
-
     final purchaseService = context.watch<PurchaseService>();
     final user = Supabase.instance.client.auth.currentUser;
     final bool isGuest = user == null;
@@ -228,86 +216,85 @@ class _AppDrawerState extends State<AppDrawer> {
         // ------------------------------------------------------
         // PREMIUM BUTTON
         // ------------------------------------------------------
-       const SizedBox(height: 34),
-       
-       PremiumButtonGlass(
-  isPremium: purchaseService.isPremium,
-  onTap: () {
-    context.pop();
+        const SizedBox(height: 34),
 
-    if (!purchaseService.isPremium) {
-      context.push('/premium');
-    }
-  },
-),
-         const SizedBox(height: 34),
+        PremiumButtonGlass(
+          isPremium: purchaseService.isPremium,
+          onTap: () {
+            context.pop();
+
+            if (!purchaseService.isPremium) {
+              context.push('/premium');
+            }
+          },
+        ),
+        const SizedBox(height: 34),
         // ------------------------------------------------------
         // MENU ITEMS
         // ------------------------------------------------------
-if (!isGuest)
-       GlassDrawerItem(
-  icon: Icons.person_outline,
-  color: Colors.white,
-  text: "drawer.profile".tr(),
-  onTap: () async {
-    context.pop(); // fecha o drawer
+        if (!isGuest)
+          GlassDrawerItem(
+            icon: Icons.person_outline,
+            color: Colors.white,
+            text: "drawer.profile".tr(),
+            onTap: () async {
+              context.pop(); // fecha o drawer
 
-    final updated = await context.push<bool>('/profile');
+              final updated = await context.push<bool>('/profile');
 
-    if (updated == true) {
-      context.go('/dashboard');
-    }
-  },
-),
-
+              if (updated == true) {
+                context.go('/dashboard');
+              }
+            },
+          ),
 
         GlassDrawerItem(
-           icon:  Icons.translate,
-           color: Colors.white,
-           text: "drawer.language".tr(),
-           onTap: () => _open(context, '/language'),
-         ),
+          icon: Icons.translate,
+          color: Colors.white,
+          text: "drawer.language".tr(),
+          onTap: () => _open(context, '/language'),
+        ),
 
-       
+        GlassDrawerItem(
+          icon: Icons.privacy_tip_outlined,
+          color: Colors.white,
+          text: 'drawer.privacy_settings'.tr(),
+          onTap: () => _open(context, '/settings'),
+        ),
+
         GlassDrawerItem(
           icon: Icons.info_outline,
           color: Colors.white,
           text: "drawer.about".tr(),
           onTap: () => _open(context, '/about'),
-
         ),
 
-      
-      
+        // ------------------------------------------------------
+        // LOGIN / LOGOUT
+        // ------------------------------------------------------
+        if (isGuest)
+          GlassDrawerItem(
+            icon: Icons.login,
+            color: Colors.white,
+            text: "drawer.login_or_create".tr(),
+            onTap: () {
+              // Fecha o drawer
+              context.pop();
 
-// ------------------------------------------------------
-// LOGIN / LOGOUT
-// ------------------------------------------------------
-if (isGuest)
-  GlassDrawerItem(
-    icon: Icons.login,
-    color: Colors.white,
-    text: "drawer.login_or_create".tr(),
-    onTap: () {
-      // Fecha o drawer
-      context.pop();
+              // Sai explicitamente do modo guest
+              AppSession.flow = AppAuthFlow.splash;
 
-      // Sai explicitamente do modo guest
-      AppSession.flow = AppAuthFlow.splash;
-
-      // Força ida ao fluxo de autenticação
-      context.go('/login');
-    },
-  )
-else
-  GlassDrawerItem(
-    icon: Icons.logout,
-    color: Colors.pinkAccent,
-    text: "drawer.logout".tr(),
-    onTap: () => _logout(context),
-  ),
-
-        
+              // Força ida ao fluxo de autenticação
+              context.go('/login');
+            },
+          )
+        else
+          GlassDrawerItem(
+            icon: Icons.logout,
+            color: Colors.pinkAccent,
+            text: "drawer.logout".tr(),
+            onTap: () => _logout(context),
+          ),
       ],
     );
   }
@@ -315,17 +302,15 @@ else
   // ------------------------------------------------------
   // Navegação
   // ------------------------------------------------------
- Future<void> _logout(BuildContext context) async {
-  // 1. Marca intenção de logout
-  AppSession.flow = AppAuthFlow.loggingOut;
+  Future<void> _logout(BuildContext context) async {
+    // 1. Marca intenção de logout
+    AppSession.flow = AppAuthFlow.loggingOut;
 
-  // 2. Chama logout REAL
-  await Supabase.instance.client.auth.signOut();
+    // 2. Chama logout REAL
+    await Supabase.instance.client.auth.signOut();
 
-  // ❌ NÃO navega
-  // ❌ NÃO fecha drawer aqui
-  // ❌ NÃO limpa storage
-}
-
-
+    // ❌ NÃO navega
+    // ❌ NÃO fecha drawer aqui
+    // ❌ NÃO limpa storage
+  }
 }

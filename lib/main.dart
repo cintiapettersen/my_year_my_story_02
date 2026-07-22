@@ -5,11 +5,16 @@ import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'package:myyearmystory/theme.dart';
 import 'package:myyearmystory/supabase/supabase_config.dart';
 import 'package:myyearmystory/services/app_session.dart';
 import 'package:myyearmystory/services/auth_listener.dart';
+import 'package:myyearmystory/services/analytics_service.dart';
+import 'package:myyearmystory/services/app_dialog_coordinator.dart';
+import 'package:myyearmystory/firebase_options.dart';
+import 'package:myyearmystory/widgets/analytics_consent_dialog.dart';
 
 import 'package:myyearmystory/services/app_navigator.dart';
 
@@ -27,6 +32,7 @@ import 'package:myyearmystory/screens/menus/profile_screen.dart';
 import 'package:myyearmystory/screens/menus/help_screen.dart';
 import 'package:myyearmystory/screens/menus/language_screen.dart';
 import 'package:myyearmystory/screens/menus/about_modal.dart';
+import 'package:myyearmystory/screens/menus/settings_screen.dart';
 import 'package:myyearmystory/screens/messages/central_messages_page.dart';
 import 'package:myyearmystory/screens/notifications/notifications_page.dart';
 import 'package:myyearmystory/widgets/monthly/calender/calendar_page.dart';
@@ -54,23 +60,23 @@ Future<void> main() async {
   ]);
 
   await EasyLocalization.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await AnalyticsService.instance.initialize();
   await SupabaseConfig.initialize();
 
   runApp(
-  EasyLocalization(
-    supportedLocales: const [Locale('en'), Locale('pt')],
-    path: 'assets/translations',
-    fallbackLocale: const Locale('pt'),
-    child: MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (_) => PurchaseService()..init(),
-        ),
-      ],
-      child: const MyApp(),
+    EasyLocalization(
+      supportedLocales: const [Locale('en'), Locale('pt')],
+      path: 'assets/translations',
+      fallbackLocale: const Locale('pt'),
+      child: MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => PurchaseService()..init()),
+        ],
+        child: const MyApp(),
+      ),
     ),
-  ),
-);
+  );
 }
 
 class MyApp extends StatefulWidget {
@@ -81,35 +87,38 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
+  final GlobalKey<NavigatorState> _rootNavigatorKey =
+      GlobalKey<NavigatorState>();
+  Timer? _consentTimer;
+  bool _consentDialogOpen = false;
 
   late final GoRouter _router = GoRouter(
-  initialLocation: '/splash',
-  debugLogDiagnostics: true,
+    navigatorKey: _rootNavigatorKey,
+    observers: [AppDialogCoordinator.instance.observer],
+    initialLocation: '/splash',
+    debugLogDiagnostics: true,
 
-  refreshListenable: GoRouterRefreshStream(
-    Supabase.instance.client.auth.onAuthStateChange,
-  ),
- 
+    refreshListenable: GoRouterRefreshStream(
+      Supabase.instance.client.auth.onAuthStateChange,
+    ),
+
     routes: [
       GoRoute(
         path: '/splash',
         builder: (_, __) => const SplashTransitionScreen(),
       ),
-      
-      GoRoute(path: '/login', 
-      builder: (_, __) => const AuthPageView()),
+
+      GoRoute(path: '/login', builder: (_, __) => const AuthPageView()),
 
       GoRoute(
-    path: '/login-callback',
-    builder: (_, __) => const SizedBox.shrink(),
-     ),
-     
+        path: '/login-callback',
+        builder: (_, __) => const SizedBox.shrink(),
+      ),
+
       GoRoute(
         path: '/reset-password',
         builder: (_, __) => const ResetPasswordScreen(),
       ),
-
 
       GoRoute(
         path: '/dashboard',
@@ -123,90 +132,95 @@ class _MyAppState extends State<MyApp> {
       GoRoute(path: '/help', builder: (_, __) => HelpScreen()),
       GoRoute(path: '/language', builder: (_, __) => const LanguageScreen()),
       GoRoute(path: '/about', builder: (_, __) => const AboutAppScreen()),
+      GoRoute(path: '/settings', builder: (_, __) => const PrivacyDataScreen()),
       GoRoute(path: '/premium', builder: (_, __) => const PremiumPage()),
       GoRoute(
         path: '/daily_notifications',
         builder: (_, __) => const NotificationsPage(),
       ),
       GoRoute(
-  path: '/current_month',
-  builder: (_, state) {
-    final queryMonth = int.tryParse(state.uri.queryParameters['month'] ?? '');
-    final queryYear = int.tryParse(state.uri.queryParameters['year'] ?? '');
-    final extra = (state.extra as Map?) ?? {};
+        path: '/current_month',
+        builder: (_, state) {
+          final queryMonth = int.tryParse(
+            state.uri.queryParameters['month'] ?? '',
+          );
+          final queryYear = int.tryParse(
+            state.uri.queryParameters['year'] ?? '',
+          );
+          final extra = (state.extra as Map?) ?? {};
 
-    final month = queryMonth ?? extra['month'] ?? DateTime.now().month;
-    final year = queryYear ?? extra['year'] ?? DateTime.now().year;
+          final month = queryMonth ?? extra['month'] ?? DateTime.now().month;
+          final year = queryYear ?? extra['year'] ?? DateTime.now().year;
 
-    return CurrentMonthScreen(
-      month: month,
-      year: year,
-    );
-  },
-),
+          return CurrentMonthScreen(month: month, year: year);
+        },
+      ),
 
-// CHAPTER → Central Messages
-GoRoute(
-  path: '/chapter',
-  builder: (_, __) => const CentralMessagesPage(),
-),
+      // CHAPTER → Central Messages
+      GoRoute(
+        path: '/chapter',
+        builder: (_, __) => const CentralMessagesPage(),
+      ),
 
-// mantém compatibilidade com rota antiga
-GoRoute(
-  path: '/central_messages',
-  builder: (_, __) => const CentralMessagesPage(),
-),
+      // mantém compatibilidade com rota antiga
+      GoRoute(
+        path: '/central_messages',
+        builder: (_, __) => const CentralMessagesPage(),
+      ),
 
-GoRoute(
-  path: '/calendar_page',
-  builder: (_, state) {
-    final queryMonth = int.tryParse(state.uri.queryParameters['month'] ?? '');
-    final queryYear = int.tryParse(state.uri.queryParameters['year'] ?? '');
-    final extra = (state.extra as Map?) ?? {};
+      GoRoute(
+        path: '/calendar_page',
+        builder: (_, state) {
+          final queryMonth = int.tryParse(
+            state.uri.queryParameters['month'] ?? '',
+          );
+          final queryYear = int.tryParse(
+            state.uri.queryParameters['year'] ?? '',
+          );
+          final extra = (state.extra as Map?) ?? {};
 
-    final month = queryMonth ?? extra['month'] ?? DateTime.now().month;
-    final year = queryYear ?? extra['year'] ?? DateTime.now().year;
+          final month = queryMonth ?? extra['month'] ?? DateTime.now().month;
+          final year = queryYear ?? extra['year'] ?? DateTime.now().year;
 
-    return CalendarPage(
-      month: month,
-      year: year,
-    );
-  },
-),
+          return CalendarPage(month: month, year: year);
+        },
+      ),
 
-GoRoute(
-  path: '/mood',
-  builder: (_, state) {
-    final queryMonth = int.tryParse(state.uri.queryParameters['month'] ?? '');
-    final queryYear = int.tryParse(state.uri.queryParameters['year'] ?? '');
-    final extra = (state.extra as Map?) ?? {};
+      GoRoute(
+        path: '/mood',
+        builder: (_, state) {
+          final queryMonth = int.tryParse(
+            state.uri.queryParameters['month'] ?? '',
+          );
+          final queryYear = int.tryParse(
+            state.uri.queryParameters['year'] ?? '',
+          );
+          final extra = (state.extra as Map?) ?? {};
 
-    final month = queryMonth ?? extra['month'] ?? DateTime.now().month;
-    final year = queryYear ?? extra['year'] ?? DateTime.now().year;
+          final month = queryMonth ?? extra['month'] ?? DateTime.now().month;
+          final year = queryYear ?? extra['year'] ?? DateTime.now().year;
 
-    return MoodScreen(
-      month: month,
-      year: year,
-    );
-  },
-),
+          return MoodScreen(month: month, year: year);
+        },
+      ),
 
-GoRoute(
-  path: '/interactive_quiz',
-  builder: (_, state) {
-    final queryMonth = int.tryParse(state.uri.queryParameters['month'] ?? '');
-    final queryYear = int.tryParse(state.uri.queryParameters['year'] ?? '');
-    final extra = (state.extra as Map?) ?? {};
+      GoRoute(
+        path: '/interactive_quiz',
+        builder: (_, state) {
+          final queryMonth = int.tryParse(
+            state.uri.queryParameters['month'] ?? '',
+          );
+          final queryYear = int.tryParse(
+            state.uri.queryParameters['year'] ?? '',
+          );
+          final extra = (state.extra as Map?) ?? {};
 
-    final month = queryMonth ?? extra['month'] ?? DateTime.now().month;
-    final year = queryYear ?? extra['year'] ?? DateTime.now().year;
+          final month = queryMonth ?? extra['month'] ?? DateTime.now().month;
+          final year = queryYear ?? extra['year'] ?? DateTime.now().year;
 
-    return InteractiveQuizStandalone(
-      month: month,
-      year: year,
-    );
-  },
-),
+          return InteractiveQuizStandalone(month: month, year: year);
+        },
+      ),
       GoRoute(
         path: '/monthly_goals',
         builder:
@@ -310,56 +324,52 @@ GoRoute(
       ),
     ],
 
-  redirect: (_, state) {
-  final session = Supabase.instance.client.auth.currentSession;
-  final loc = state.matchedLocation;
+    redirect: (_, state) {
+      final session = Supabase.instance.client.auth.currentSession;
+      final loc = state.matchedLocation;
 
-  final isLogin = loc == '/login';
-  final isSplash = loc == '/splash';
-  final isCallback = loc == '/login-callback';
+      final isLogin = loc == '/login';
+      final isSplash = loc == '/splash';
+      final isCallback = loc == '/login-callback';
 
-  // nunca interfere no callback
-  if (isCallback) return null;
+      // nunca interfere no callback
+      if (isCallback) return null;
 
-  // 🟢 PERMITE CONVIDADO
-  if (AppSession.flow == AppAuthFlow.guest) {
-    return null;
-  }
+      // 🟢 PERMITE CONVIDADO
+      if (AppSession.flow == AppAuthFlow.guest) {
+        return null;
+      }
 
-  // sem sessão → login
-  if (session == null) {
-    if (isLogin || isSplash) return null;
-    return '/login';
-  }
+      // sem sessão → login
+      if (session == null) {
+        if (isLogin || isSplash) return null;
+        return '/login';
+      }
 
-  // com sessão → dashboard
-  if (isLogin || isSplash) {
-    return '/dashboard';
-  }
+      // com sessão → dashboard
+      if (isLogin || isSplash) {
+        return '/dashboard';
+      }
 
-  return null;
-},
+      return null;
+    },
 
     // 🔥 AQUI ESTÁ A MÁGICA
-  errorBuilder: (_, state) {
-    final uri = state.uri.toString();
+    errorBuilder: (_, state) {
+      final uri = state.uri.toString();
 
-    // Se for deep link do Supabase, não quebra o app
-    if (uri.startsWith('com.myyear.myyearmystory://')) {
-      return const SizedBox.shrink();
-    }
+      // Se for deep link do Supabase, não quebra o app
+      if (uri.startsWith('com.myyear.myyearmystory://')) {
+        return const SizedBox.shrink();
+      }
 
-    // Qualquer outro erro real
-    return Scaffold(
-      body: Center(
-        child: Text('Page not found: ${state.uri}'),
-      ),
-    );
-  },
-);
+      // Qualquer outro erro real
+      return Scaffold(
+        body: Center(child: Text('Page not found: ${state.uri}')),
+      );
+    },
+  );
 
-
- 
   StreamSubscription<AuthState>? _authSub;
 
   @override
@@ -367,7 +377,141 @@ GoRoute(
     super.initState();
     _authSub = AuthListener.stream.listen(_handleAuthChange);
     AppNavigator.setRouter(_router);
+    _router.routerDelegate.addListener(_trackCurrentScreen);
+    _router.routerDelegate.addListener(_scheduleConsentIfNeeded);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _trackCurrentScreen();
+      _scheduleConsentIfNeeded();
+    });
   }
+
+  static const Set<String> _consentEligiblePaths = {
+    '/dashboard',
+    '/profile',
+    '/help',
+    '/language',
+    '/settings',
+    '/about',
+    '/premium',
+    '/daily_notifications',
+    '/current_month',
+    '/chapter',
+    '/central_messages',
+    '/calendar_page',
+    '/mood',
+    '/interactive_quiz',
+    '/monthly_goals',
+    '/gratitude',
+    '/reflections',
+    '/curiosities',
+    '/zodiac',
+    '/skills_development',
+    '/did_you_know',
+    '/interview',
+    '/monthly_lists',
+    '/monthly_photo_gallery',
+    '/diary',
+  };
+
+  void _scheduleConsentIfNeeded() {
+    _consentTimer?.cancel();
+    if (!mounted ||
+        AnalyticsService.instance.hasConsentChoice ||
+        _consentDialogOpen) {
+      return;
+    }
+    final scheduledPath = _router.routerDelegate.currentConfiguration.uri.path;
+    if (!_consentEligiblePaths.contains(scheduledPath)) return;
+
+    _consentTimer = Timer(const Duration(milliseconds: 900), () async {
+      if (!mounted ||
+          AnalyticsService.instance.hasConsentChoice ||
+          _consentDialogOpen ||
+          scheduledPath !=
+              _router.routerDelegate.currentConfiguration.uri.path) {
+        return;
+      }
+
+      final coordinator = AppDialogCoordinator.instance;
+      if (!coordinator.tryBeginDialog()) {
+        _scheduleConsentRetry();
+        return;
+      }
+
+      final dialogContext = _rootNavigatorKey.currentContext;
+      if (dialogContext == null) {
+        coordinator.endDialog();
+        _scheduleConsentRetry();
+        return;
+      }
+
+      _consentDialogOpen = true;
+      bool? choice;
+      try {
+        choice = await showDialog<bool>(
+          context: dialogContext,
+          useRootNavigator: true,
+          barrierDismissible: false,
+          builder: (_) => const AnalyticsConsentDialog(),
+        );
+      } finally {
+        _consentDialogOpen = false;
+        coordinator.endDialog();
+      }
+
+      if (choice == null) {
+        _scheduleConsentRetry();
+        return;
+      }
+      await AnalyticsService.instance.setConsent(choice);
+      if (choice) _trackCurrentScreen();
+    });
+  }
+
+  void _scheduleConsentRetry() {
+    if (!mounted || AnalyticsService.instance.hasConsentChoice) return;
+    _consentTimer?.cancel();
+    _consentTimer = Timer(const Duration(seconds: 3), _scheduleConsentIfNeeded);
+  }
+
+  void _trackCurrentScreen() {
+    final path = _router.routerDelegate.currentConfiguration.uri.path;
+    final screenName = _screenNames[path];
+    if (screenName != null) {
+      unawaited(AnalyticsService.instance.trackScreen(screenName));
+    }
+  }
+
+  static const Map<String, String> _screenNames = {
+    '/splash': 'onboarding',
+    '/login': 'authentication',
+    '/reset-password': 'reset_password',
+    '/dashboard': 'dashboard',
+    '/profile': 'profile',
+    '/help': 'help',
+    '/language': 'language_settings',
+    '/settings': 'privacy_settings',
+    '/about': 'about',
+    '/premium': 'premium',
+    '/daily_notifications': 'notifications',
+    '/current_month': 'current_month',
+    '/chapter': 'weekly_chapter',
+    '/central_messages': 'weekly_chapter',
+    '/calendar_page': 'calendar',
+    '/mood': 'mood',
+    '/interactive_quiz': 'interactive_quiz',
+    '/monthly_goals': 'monthly_goals',
+    '/gratitude': 'gratitude',
+    '/reflections': 'monthly_reflections',
+    '/curiosities': 'curiosities',
+    '/zodiac': 'zodiac',
+    '/skills_development': 'skills_development',
+    '/did_you_know': 'did_you_know',
+    '/interview': 'interview',
+    '/monthly_lists': 'monthly_lists',
+    '/monthly_photo_gallery': 'monthly_photo_gallery',
+    '/diary': 'diary',
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -383,37 +527,39 @@ GoRoute(
   }
 
   void _handleAuthChange(AuthState data) async {
-  if (kDebugMode) {
-    debugPrint("=== AUTH EVENT ===");
-    debugPrint("EVENT: ${data.event}");
-    debugPrint("SESSION NULL? ${data.session == null}");
-    debugPrint("FLOW: ${AppSession.flow}");
-    debugPrint("==================");
-  }
+    if (kDebugMode) {
+      debugPrint("=== AUTH EVENT ===");
+      debugPrint("EVENT: ${data.event}");
+      debugPrint("SESSION NULL? ${data.session == null}");
+      debugPrint("FLOW: ${AppSession.flow}");
+      debugPrint("==================");
+    }
 
-  final event = data.event;
-  final session = data.session;
+    final event = data.event;
+    final session = data.session;
 
-  // 🔥 ADICIONE ISSO AQUI (não substitui nada)
-  if (event == AuthChangeEvent.signedIn &&
-      AppSession.flow == AppAuthFlow.authenticated) {
-    if (kDebugMode) debugPrint("⚠️ Ignorando signedIn duplicado");
-    return;
-  }
+    if (event == AuthChangeEvent.signedIn &&
+        AppSession.flow == AppAuthFlow.authenticating) {
+      await AnalyticsService.instance.logOnce('login_completed');
+    }
 
-  switch (event) {
-        
-       
-       case AuthChangeEvent.signedOut:
-  // Evita logout fantasma logo após login OAuth
-  if (AppSession.flow == AppAuthFlow.authenticating) {
-    return;
-  }
+    // 🔥 ADICIONE ISSO AQUI (não substitui nada)
+    if (event == AuthChangeEvent.signedIn &&
+        AppSession.flow == AppAuthFlow.authenticated) {
+      if (kDebugMode) debugPrint("⚠️ Ignorando signedIn duplicado");
+      return;
+    }
 
-  AppSession.flow = AppAuthFlow.splash;
-  _router.go('/login');
-  break;
+    switch (event) {
+      case AuthChangeEvent.signedOut:
+        // Evita logout fantasma logo após login OAuth
+        if (AppSession.flow == AppAuthFlow.authenticating) {
+          return;
+        }
 
+        AppSession.flow = AppAuthFlow.splash;
+        _router.go('/login');
+        break;
 
       case AuthChangeEvent.passwordRecovery:
         if (session == null) return;
@@ -428,6 +574,9 @@ GoRoute(
   @override
   void dispose() {
     _authSub?.cancel();
+    _consentTimer?.cancel();
+    _router.routerDelegate.removeListener(_trackCurrentScreen);
+    _router.routerDelegate.removeListener(_scheduleConsentIfNeeded);
     super.dispose();
   }
 }

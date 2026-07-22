@@ -1,4 +1,6 @@
 // lib/screens/auth/signup_screen.dart
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -8,6 +10,7 @@ import 'package:myyearmystory/widgets/auth/auth_button.dart';
 import 'package:myyearmystory/widgets/auth/divider_with_text.dart';
 import 'package:myyearmystory/services/user_service.dart';
 import 'package:go_router/go_router.dart';
+import 'package:myyearmystory/services/analytics_service.dart';
 
 class SignupScreen extends StatefulWidget {
   final VoidCallback? onLoginTap;
@@ -54,8 +57,7 @@ class _SignupScreenState extends State<SignupScreen> {
     if (picked != null) {
       setState(() {
         _selectedDate = picked;
-        _birthDateController.text =
-            DateFormat('dd/MM/yyyy').format(picked);
+        _birthDateController.text = DateFormat('dd/MM/yyyy').format(picked);
       });
     }
   }
@@ -71,9 +73,10 @@ class _SignupScreenState extends State<SignupScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
         name: _nameController.text.trim(),
-        birthDate: _selectedDate != null
-            ? DateFormat('yyyy-MM-dd').format(_selectedDate!)
-            : null,
+        birthDate:
+            _selectedDate != null
+                ? DateFormat('yyyy-MM-dd').format(_selectedDate!)
+                : null,
       );
 
       if (!mounted) return;
@@ -99,6 +102,7 @@ class _SignupScreenState extends State<SignupScreen> {
       }
 
       // ✅ SUCESSO
+      unawaited(AnalyticsService.instance.logEvent('sign_up_completed'));
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('signup.success'.tr()),
@@ -164,7 +168,8 @@ class _SignupScreenState extends State<SignupScreen> {
                               color: const Color(0xFFA66ABD),
                               size: isTablet ? 30 : 22,
                             ),
-                            onPressed: widget.onLoginTap ??
+                            onPressed:
+                                widget.onLoginTap ??
                                 () {
                                   context.go('/login');
                                 },
@@ -202,14 +207,13 @@ class _SignupScreenState extends State<SignupScreen> {
                         Text(
                           'signup.subtitle'.tr(),
                           textAlign: TextAlign.center,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyLarge!
-                              .copyWith(
-                                color: Colors.black87,
-                                height: 1.4,
-                                fontSize: isTablet ? 20 : 16,
-                              ),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodyLarge!.copyWith(
+                            color: Colors.black87,
+                            height: 1.4,
+                            fontSize: isTablet ? 20 : 16,
+                          ),
                         ),
 
                         SizedBox(height: isTablet ? 60 : 40),
@@ -250,9 +254,11 @@ class _SignupScreenState extends State<SignupScreen> {
                               borderSide: BorderSide.none,
                             ),
                           ),
-                          validator: (_) => _selectedDate == null
-                              ? 'signup.error_birth'.tr()
-                              : null,
+                          validator:
+                              (_) =>
+                                  _selectedDate == null
+                                      ? 'signup.error_birth'.tr()
+                                      : null,
                         ),
 
                         SizedBox(height: isTablet ? 24 : 16),
@@ -267,8 +273,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             if (value == null || value.trim().isEmpty) {
                               return 'signup.error_email_required'.tr();
                             }
-                            final emailRegex =
-                                RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                            final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
                             if (!emailRegex.hasMatch(value.trim())) {
                               return 'signup.error_email_invalid'.tr();
                             }
@@ -331,8 +336,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         SizedBox(height: isTablet ? 36 : 24),
 
                         Padding(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 16),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Text(
                             'signup.bio_info'.tr(),
                             textAlign: TextAlign.center,
@@ -347,7 +351,8 @@ class _SignupScreenState extends State<SignupScreen> {
                         SizedBox(height: isTablet ? 40 : 32),
 
                         TextButton(
-                          onPressed: widget.onLoginTap ??
+                          onPressed:
+                              widget.onLoginTap ??
                               () {
                                 context.go('/login');
                               },

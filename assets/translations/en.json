@@ -121,7 +121,8 @@
     "guest_name": "Guest",
     "login_or_create": "Sign in or create account",
     "premium_active": "You're Premium!",
-    "premium_cta": "Go Premium"
+    "premium_cta": "Go Premium",
+    "privacy_settings": "Privacy and data"
   },
 
 
@@ -1084,5 +1085,20 @@
         "title": "YOU, NOW"
       }
     }
+  },
+  "analytics_consent": {
+    "title": "Help improve My Year, My Story",
+    "message": "Would you like to share anonymous usage data? This helps us understand which features are most useful and improve the app. We never collect diary text, reflections, audio, or personal information.",
+    "allow": "Allow",
+    "not_now": "Not now"
+  },
+  "analytics_settings": {
+    "title": "Anonymous usage data",
+    "description": "Help improve the app by sharing anonymous usage data. Your diary content and personal information are never collected."
+  },
+  "privacy_data": {
+    "title": "Privacy and data",
+    "introduction": "You control whether anonymous usage data is shared. You can change this choice at any time.",
+    "policy_link": "Privacy Policy"
   }
 }
