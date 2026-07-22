@@ -37,6 +37,13 @@
             {
               "client_id": "322091920984-otlpuptqnpqc0g35q8dv2gnd8nsof81r.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "322091920984-neqaqv51v49l5ljt4s6oi5pd317rgvh4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.myyear.myyearmystory"
+              }
             }
           ]
         }
