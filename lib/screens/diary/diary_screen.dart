@@ -15,6 +15,8 @@ import 'package:myyearmystory/widgets/shared/app_pill_button.dart';
 
 enum _DiaryAiMode { reflection, writing }
 
+enum _DiaryDateFilterType { month, day, range }
+
 class DiaryScreen extends StatefulWidget {
   final DateTime date;
 
@@ -28,6 +30,10 @@ class _DiaryScreenState extends State<DiaryScreen> {
   final TextEditingController _entryController = TextEditingController();
 
   List<DiaryEntryModel> _entries = [];
+
+  _DiaryDateFilterType? _dateFilterType;
+  DateTime? _dateFilterStart;
+  DateTime? _dateFilterEndExclusive;
 
   bool _isLoading = false;
   bool _isSavingEntry = false;
@@ -255,7 +261,12 @@ class _DiaryScreenState extends State<DiaryScreen> {
     try {
       setState(() => _isLoading = true);
 
-      final entries = await DiaryService.getEntries();
+      final start = _dateFilterStart;
+      final endExclusive = _dateFilterEndExclusive;
+      final entries =
+          start != null && endExclusive != null
+              ? await DiaryService.getEntriesByDateRange(start, endExclusive)
+              : await DiaryService.getEntries();
 
       if (!mounted) return;
       setState(() {
@@ -323,7 +334,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
                     _isLoading
                         ? const Center(child: CircularProgressIndicator())
                         : _entries.isEmpty
-                        ? _buildEmptyState()
+                        ? _buildEmptyState(isFiltered: _hasActiveDateFilter)
                         : _buildEntriesList(),
               ),
             ],
@@ -398,6 +409,8 @@ class _DiaryScreenState extends State<DiaryScreen> {
                       );
                     }).toList(),
               ),
+              const SizedBox(height: 18),
+              _buildDateFilterControl(),
             ],
           ),
         ),
@@ -417,6 +430,369 @@ class _DiaryScreenState extends State<DiaryScreen> {
         ),
       ],
     );
+  }
+
+  bool get _hasActiveDateFilter =>
+      _dateFilterStart != null && _dateFilterEndExclusive != null;
+
+  Widget _buildDateFilterControl() {
+    return Material(
+      color: Colors.white.withValues(alpha: 0.72),
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        onTap: _showDateFilterSheet,
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 44),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: _userThemeColor.withValues(alpha: 0.2)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.calendar_month_outlined,
+                size: 19,
+                color: _userThemeColor,
+              ),
+              const SizedBox(width: 9),
+              Flexible(
+                child: Text(
+                  _dateFilterLabel(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              if (_hasActiveDateFilter)
+                InkWell(
+                  onTap: _clearDateFilter,
+                  customBorder: const CircleBorder(),
+                  child: Padding(
+                    padding: const EdgeInsets.all(2),
+                    child: Icon(
+                      Icons.close,
+                      size: 18,
+                      color: Colors.black.withValues(alpha: 0.6),
+                    ),
+                  ),
+                )
+              else
+                Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  size: 20,
+                  color: Colors.black.withValues(alpha: 0.55),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _dateFilterLabel() {
+    final start = _dateFilterStart;
+    final endExclusive = _dateFilterEndExclusive;
+    if (start == null || endExclusive == null) {
+      return 'diary.date_filter_all'.tr();
+    }
+
+    final locale = context.locale.toString();
+    switch (_dateFilterType) {
+      case _DiaryDateFilterType.month:
+        return DateFormat.yMMMM(locale).format(start);
+      case _DiaryDateFilterType.day:
+        return DateFormat.yMMMd(locale).format(start);
+      case _DiaryDateFilterType.range:
+        final endInclusive = DateTime(
+          endExclusive.year,
+          endExclusive.month,
+          endExclusive.day - 1,
+        );
+        return 'diary.date_filter_range_label'.tr(
+          args: [
+            DateFormat.yMMMd(locale).format(start),
+            DateFormat.yMMMd(locale).format(endInclusive),
+          ],
+        );
+      case null:
+        return 'diary.date_filter_all'.tr();
+    }
+  }
+
+  Future<void> _showDateFilterSheet() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'diary.date_filter_title'.tr(),
+                  style: Theme.of(
+                    sheetContext,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 8),
+                _buildDateFilterOption(
+                  context: sheetContext,
+                  icon: Icons.calendar_view_month_outlined,
+                  title: 'diary.date_filter_month'.tr(),
+                  onTap: _selectMonthFilter,
+                ),
+                _buildDateFilterOption(
+                  context: sheetContext,
+                  icon: Icons.today_outlined,
+                  title: 'diary.date_filter_day'.tr(),
+                  onTap: _selectDayFilter,
+                ),
+                _buildDateFilterOption(
+                  context: sheetContext,
+                  icon: Icons.date_range_outlined,
+                  title: 'diary.date_filter_range'.tr(),
+                  onTap: _selectRangeFilter,
+                ),
+                _buildDateFilterOption(
+                  context: sheetContext,
+                  icon: Icons.filter_alt_off_outlined,
+                  title: 'diary.date_filter_clear'.tr(),
+                  onTap: _clearDateFilter,
+                  enabled: _hasActiveDateFilter,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDateFilterOption({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    bool enabled = true,
+  }) {
+    return ListTile(
+      enabled: enabled,
+      contentPadding: EdgeInsets.zero,
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: _userThemeColor.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(icon, color: _userThemeColor, size: 21),
+      ),
+      title: Text(title),
+      trailing: const Icon(Icons.chevron_right_rounded),
+      onTap: () {
+        Navigator.of(context).pop();
+        onTap();
+      },
+    );
+  }
+
+  Future<void> _selectMonthFilter() async {
+    final initial = _dateFilterStart ?? DateTime.now();
+    var selectedMonth = initial.month;
+    var selectedYear = initial.year;
+    final currentYear = DateTime.now().year;
+
+    final selection = await showDialog<DateTime>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final locale = context.locale.toString();
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: Text('diary.date_filter_month_title'.tr()),
+              content: Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: DropdownButtonFormField<int>(
+                      initialValue: selectedMonth,
+                      decoration: InputDecoration(
+                        labelText: 'diary.date_filter_month_label'.tr(),
+                        border: const OutlineInputBorder(),
+                      ),
+                      items: [
+                        for (var month = 1; month <= 12; month++)
+                          DropdownMenuItem(
+                            value: month,
+                            child: Text(
+                              DateFormat.MMMM(
+                                locale,
+                              ).format(DateTime(2024, month)),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) {
+                          setDialogState(() => selectedMonth = value);
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: DropdownButtonFormField<int>(
+                      initialValue: selectedYear,
+                      decoration: InputDecoration(
+                        labelText: 'diary.date_filter_year_label'.tr(),
+                        border: const OutlineInputBorder(),
+                      ),
+                      items: [
+                        for (var year = currentYear + 5; year >= 2000; year--)
+                          DropdownMenuItem(value: year, child: Text('$year')),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) {
+                          setDialogState(() => selectedYear = value);
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: Text('diary.date_filter_cancel'.tr()),
+                ),
+                FilledButton(
+                  onPressed:
+                      () => Navigator.of(
+                        dialogContext,
+                      ).pop(DateTime(selectedYear, selectedMonth)),
+                  child: Text('diary.date_filter_apply'.tr()),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (selection == null || !mounted) return;
+    final endExclusive = DateTime(selection.year, selection.month + 1);
+    _applyDateFilter(
+      type: _DiaryDateFilterType.month,
+      start: selection,
+      endExclusive: endExclusive,
+    );
+  }
+
+  Future<void> _selectDayFilter() async {
+    final now = DateTime.now();
+    final initial = _dateFilterStart ?? now;
+    final selection = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(now.year + 5, 12, 31),
+      helpText: 'diary.date_filter_day_title'.tr(),
+      cancelText: 'diary.date_filter_cancel'.tr(),
+      confirmText: 'diary.date_filter_apply'.tr(),
+    );
+
+    if (selection == null || !mounted) return;
+    final start = DateTime(selection.year, selection.month, selection.day);
+    _applyDateFilter(
+      type: _DiaryDateFilterType.day,
+      start: start,
+      endExclusive: DateTime(start.year, start.month, start.day + 1),
+    );
+  }
+
+  Future<void> _selectRangeFilter() async {
+    final now = DateTime.now();
+    final initialStart = _dateFilterStart ?? now;
+    final currentEndExclusive = _dateFilterEndExclusive;
+    final initialEnd =
+        currentEndExclusive == null
+            ? initialStart
+            : DateTime(
+              currentEndExclusive.year,
+              currentEndExclusive.month,
+              currentEndExclusive.day - 1,
+            );
+    final selection = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(now.year + 5, 12, 31),
+      initialDateRange: DateTimeRange(start: initialStart, end: initialEnd),
+      helpText: 'diary.date_filter_range_title'.tr(),
+      cancelText: 'diary.date_filter_cancel'.tr(),
+      confirmText: 'diary.date_filter_apply'.tr(),
+      saveText: 'diary.date_filter_apply'.tr(),
+    );
+
+    if (selection == null || !mounted) return;
+    final start = DateTime(
+      selection.start.year,
+      selection.start.month,
+      selection.start.day,
+    );
+    final inclusiveEnd = DateTime(
+      selection.end.year,
+      selection.end.month,
+      selection.end.day,
+    );
+    _applyDateFilter(
+      type: _DiaryDateFilterType.range,
+      start: start,
+      endExclusive: DateTime(
+        inclusiveEnd.year,
+        inclusiveEnd.month,
+        inclusiveEnd.day + 1,
+      ),
+    );
+  }
+
+  void _applyDateFilter({
+    required _DiaryDateFilterType type,
+    required DateTime start,
+    required DateTime endExclusive,
+  }) {
+    setState(() {
+      _dateFilterType = type;
+      _dateFilterStart = start;
+      _dateFilterEndExclusive = endExclusive;
+    });
+    _loadEntries();
+  }
+
+  void _clearDateFilter() {
+    if (!_hasActiveDateFilter) return;
+    setState(() {
+      _dateFilterType = null;
+      _dateFilterStart = null;
+      _dateFilterEndExclusive = null;
+    });
+    _loadEntries();
   }
 
   Widget _buildEntriesList() {
@@ -1130,11 +1506,49 @@ $text
   // ===============================
   // EMPTY STATE
   // ===============================
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState({required bool isFiltered}) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
-        child: Text('diary.no_entries_day'.tr(), textAlign: TextAlign.center),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isFiltered
+                  ? Icons.event_busy_outlined
+                  : Icons.auto_stories_outlined,
+              size: 42,
+              color: _userThemeColor.withValues(alpha: 0.7),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              isFiltered
+                  ? 'diary.date_filter_empty_title'.tr()
+                  : 'diary.empty_title'.tr(),
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              isFiltered
+                  ? 'diary.date_filter_empty_description'.tr()
+                  : 'diary.empty_description'.tr(),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                height: 1.4,
+                color: Colors.black.withValues(alpha: 0.62),
+              ),
+            ),
+            if (isFiltered) ...[
+              const SizedBox(height: 14),
+              TextButton.icon(
+                onPressed: _clearDateFilter,
+                icon: const Icon(Icons.close, size: 18),
+                label: Text('diary.date_filter_clear'.tr()),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

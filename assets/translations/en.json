@@ -808,7 +808,23 @@
     "language_hint": "Tip: it looks like you're writing in {}.",
     "language_english": "English",
     "language_portuguese": "Portuguese",
-    "ai_helper_private": "Automatic and private reflection."
+    "ai_helper_private": "Automatic and private reflection.",
+    "date_filter_all": "All dates",
+    "date_filter_title": "Filter diary by date",
+    "date_filter_month": "Choose month and year",
+    "date_filter_day": "Choose a specific date",
+    "date_filter_range": "Choose a date range",
+    "date_filter_clear": "Clear filter",
+    "date_filter_month_title": "Choose month and year",
+    "date_filter_month_label": "Month",
+    "date_filter_year_label": "Year",
+    "date_filter_day_title": "Choose a date",
+    "date_filter_range_title": "Choose a date range",
+    "date_filter_cancel": "Cancel",
+    "date_filter_apply": "Apply",
+    "date_filter_range_label": "{} – {}",
+    "date_filter_empty_title": "No entries in this period",
+    "date_filter_empty_description": "Try another date or clear the filter to see all your entries."
   },
 
   "notifications": {

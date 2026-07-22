@@ -2,7 +2,7 @@ name: myyearmystory
 description: "Diário interativo mensal para registro de histórias, emoções e reflexões."
 publish_to: "none"
 
-version: 2.0.2+56
+version: 2.0.3+57
 
 environment:
   sdk: ">=3.7.0 <4.0.0"
