@@ -5,6 +5,9 @@ on:
     # Runs daily at 05:00 UTC
     - cron: '0 5 * * *'
   workflow_dispatch: # Allows manual triggering from GitHub Actions tab
+  push:
+    branches:
+      - main
 
 jobs:
   ping-supabase:
