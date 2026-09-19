@@ -1,0 +1,52 @@
+name: Supabase Keep-Alive
+
+on:
+  schedule:
+    # Runs daily at 05:00 UTC
+    - cron: '0 5 * * *'
+  workflow_dispatch: # Allows manual triggering from GitHub Actions tab
+
+jobs:
+  ping-supabase:
+    name: Keep Supabase Active
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase Database
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::error::SUPABASE_URL or SUPABASE_ANON_KEY secret is missing. Please add them in GitHub: Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+
+          # Remove trailing slash if present
+          CLEAN_URL="${SUPABASE_URL%/}"
+
+          # Target query: checks public stories with limit 1.
+          # Runs a genuine SQL query against PostgreSQL through PostgREST.
+          # Strictly obeys RLS and accesses zero private data.
+          TARGET_URL="${CLEAN_URL}/rest/v1/stories?select=id&is_public=eq.true&limit=1"
+
+          echo "Sending keep-alive query to Supabase: $TARGET_URL"
+
+          HTTP_RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -X GET "$TARGET_URL" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            -H "Content-Type: application/json")
+
+          # Split response body and HTTP status code
+          HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed '$d')
+          HTTP_STATUS=$(echo "$HTTP_RESPONSE" | tail -n 1)
+
+          echo "Response HTTP Status: $HTTP_STATUS"
+          echo "Response Body: $HTTP_BODY"
+
+          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
+            echo "✅ Supabase responded successfully ($HTTP_STATUS). Database activity registered."
+          else
+            echo "::error::Keep-alive request failed with status $HTTP_STATUS. Response: $HTTP_BODY"
+            exit 1
+          fi
