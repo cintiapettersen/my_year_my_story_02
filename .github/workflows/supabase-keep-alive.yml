@@ -24,10 +24,10 @@ jobs:
           # Remove trailing slash if present
           CLEAN_URL="${SUPABASE_URL%/}"
 
-          # Target query: checks public stories with limit 1.
+          # Target query: requests limit 1 from entries table.
           # Runs a genuine SQL query against PostgreSQL through PostgREST.
-          # Strictly obeys RLS and accesses zero private data.
-          TARGET_URL="${CLEAN_URL}/rest/v1/stories?select=id&is_public=eq.true&limit=1"
+          # Strictly obeys RLS and accesses zero private data (returns [] for unauthenticated requests).
+          TARGET_URL="${CLEAN_URL}/rest/v1/entries?select=id&limit=1"
 
           echo "Sending keep-alive query to Supabase: $TARGET_URL"
 
